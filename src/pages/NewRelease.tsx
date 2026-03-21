@@ -446,13 +446,25 @@ export default function NewRelease() {
     );
   }
 
+  if (loadingEdit) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="mx-auto w-full max-w-2xl">
         <div className="mb-6 text-left sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">New Release</h1>
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">
+            {editReleaseId ? 'Edit Release' : 'New Release'}
+          </h1>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            Fill in the details to distribute your music.
+            {editReleaseId ? 'Update the details of your pending release.' : 'Fill in the details to distribute your music.'}
           </p>
         </div>
 
