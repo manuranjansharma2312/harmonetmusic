@@ -375,6 +375,8 @@ export default function NewRelease() {
             producer: track.producer || null,
             instagram_link: track.instagramLink || null,
             callertune_time: track.callertuneTime || null,
+            copyright_line: track.copyrightLine || null,
+            phonogram_line: track.phonogramLine || null,
             track_order: i + 1,
           });
 
