@@ -40,7 +40,8 @@ function App() {
                   <Route path="/" element={<Navigate to="/auth" replace />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
-                  <Route path="/submit" element={<ProtectedRoute><SubmitSong /></ProtectedRoute>} />
+                  <Route path="/submit" element={<ProtectedRoute><NewRelease /></ProtectedRoute>} />
+                  <Route path="/admin/genres-languages" element={<ProtectedRoute requiredRole="admin"><AdminGenresLanguages /></ProtectedRoute>} />
                   <Route path="/my-songs" element={<ProtectedRoute><MySongs /></ProtectedRoute>} />
                   <Route path="/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
                   <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />

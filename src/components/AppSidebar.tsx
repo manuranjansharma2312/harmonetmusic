@@ -37,6 +37,7 @@ const adminLinks = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/submissions', label: 'All Submissions', icon: ListMusic },
+  { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
 ];
 
 export function AppSidebar() {
