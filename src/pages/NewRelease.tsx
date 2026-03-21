@@ -75,19 +75,53 @@ export default function NewRelease() {
   const handlePosterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.type !== 'image/jpeg') {
-      toast.error('Only JPG files are allowed for the poster.');
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file.');
       return;
     }
     const img = new Image();
     img.onload = () => {
-      if (img.width !== 3000 || img.height !== 3000) {
-        toast.error('Poster must be exactly 3000x3000 pixels.');
-        return;
+      if (img.width === 3000 && img.height === 3000) {
+        // Perfect size — convert to JPG if needed
+        if (file.type === 'image/jpeg') {
+          setPosterFile(file);
+        } else {
+          const canvas = document.createElement('canvas');
+          canvas.width = 3000;
+          canvas.height = 3000;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((blob) => {
+              if (blob) setPosterFile(new File([blob], 'poster.jpg', { type: 'image/jpeg' }));
+            }, 'image/jpeg', 0.92);
+          }
+        }
+      } else {
+        // Show crop modal
+        setCropImageSrc(URL.createObjectURL(file));
+        setShowCropModal(true);
       }
-      setPosterFile(file);
     };
     img.src = URL.createObjectURL(file);
+  };
+
+  const handleCropComplete = (croppedFile: File) => {
+    setPosterFile(croppedFile);
+    setShowCropModal(false);
+    if (cropImageSrc) {
+      URL.revokeObjectURL(cropImageSrc);
+      setCropImageSrc(null);
+    }
+    toast.success('Poster cropped to 3000×3000!');
+  };
+
+  const handleCropCancel = () => {
+    setShowCropModal(false);
+    if (cropImageSrc) {
+      URL.revokeObjectURL(cropImageSrc);
+      setCropImageSrc(null);
+    }
   };
 
   const maxTracks = contentType === 'single' ? 1 : Infinity;
