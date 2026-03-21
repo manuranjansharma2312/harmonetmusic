@@ -332,6 +332,9 @@ export default function AdminUsers() {
                         <button onClick={() => handleLoginAs(profile)} className="p-2 rounded-lg hover:bg-blue-500/20 text-muted-foreground hover:text-blue-400 transition-all" title="Login as user">
                           <LogIn className="h-4 w-4" />
                         </button>
+                        <button onClick={() => setResetPasswordProfile(profile)} className="p-2 rounded-lg hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all" title="Reset password">
+                          <KeyRound className="h-4 w-4" />
+                        </button>
                         <button
                           onClick={() => setDeleteConfirm({ type: 'single', userId: profile.user_id, name: profile.legal_name })}
                           className="p-2 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all"
