@@ -313,14 +313,14 @@ export default function AdminUsers() {
                       {profile.user_type === 'artist' ? profile.artist_name : profile.record_label_name}
                       <span className="block text-xs text-muted-foreground">{profile.legal_name}</span>
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-3 px-3 hidden sm:table-cell">
                       <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground capitalize whitespace-nowrap">
                         {profile.user_type === 'record_label' ? 'Label' : 'Artist'}
                       </span>
                     </td>
-                    <td className="py-3 px-3 text-muted-foreground">{profile.email}</td>
+                    <td className="py-3 px-3 text-muted-foreground hidden md:table-cell">{profile.email}</td>
                     <td className="py-3 px-3"><VerificationBadge status={profile.verification_status} /></td>
-                    <td className="py-3 px-3 text-muted-foreground whitespace-nowrap">{new Date(profile.created_at).toLocaleDateString()}</td>
+                    <td className="py-3 px-3 text-muted-foreground whitespace-nowrap hidden lg:table-cell">{new Date(profile.created_at).toLocaleDateString()}</td>
                     <td className="py-3 px-3">
                       <div className="flex items-center justify-end gap-1">
                         <button onClick={() => setViewProfile(profile)} className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all" title="View">
