@@ -8,6 +8,7 @@ import { Loader2, Upload, Plus, Trash2, Music, CheckCircle2 } from 'lucide-react
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { TrackForm, type TrackData } from '@/components/release/TrackForm';
+import { PosterCropModal } from '@/components/release/PosterCropModal';
 
 const CONTENT_TYPES = [
   { value: 'single', label: 'Single' },
@@ -33,6 +34,8 @@ export default function NewRelease() {
   const [upc, setUpc] = useState('');
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [showCropModal, setShowCropModal] = useState(false);
   const [releaseDate, setReleaseDate] = useState('');
   const [copyrightLine, setCopyrightLine] = useState('');
   const [phonogramLine, setPhonogramLine] = useState('');
@@ -72,19 +75,53 @@ export default function NewRelease() {
   const handlePosterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.type !== 'image/jpeg') {
-      toast.error('Only JPG files are allowed for the poster.');
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file.');
       return;
     }
     const img = new Image();
     img.onload = () => {
-      if (img.width !== 3000 || img.height !== 3000) {
-        toast.error('Poster must be exactly 3000x3000 pixels.');
-        return;
+      if (img.width === 3000 && img.height === 3000) {
+        // Perfect size — convert to JPG if needed
+        if (file.type === 'image/jpeg') {
+          setPosterFile(file);
+        } else {
+          const canvas = document.createElement('canvas');
+          canvas.width = 3000;
+          canvas.height = 3000;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((blob) => {
+              if (blob) setPosterFile(new File([blob], 'poster.jpg', { type: 'image/jpeg' }));
+            }, 'image/jpeg', 0.92);
+          }
+        }
+      } else {
+        // Show crop modal
+        setCropImageSrc(URL.createObjectURL(file));
+        setShowCropModal(true);
       }
-      setPosterFile(file);
     };
     img.src = URL.createObjectURL(file);
+  };
+
+  const handleCropComplete = (croppedFile: File) => {
+    setPosterFile(croppedFile);
+    setShowCropModal(false);
+    if (cropImageSrc) {
+      URL.revokeObjectURL(cropImageSrc);
+      setCropImageSrc(null);
+    }
+    toast.success('Poster cropped to 3000×3000!');
+  };
+
+  const handleCropCancel = () => {
+    setShowCropModal(false);
+    if (cropImageSrc) {
+      URL.revokeObjectURL(cropImageSrc);
+      setCropImageSrc(null);
+    }
   };
 
   const maxTracks = contentType === 'single' ? 1 : Infinity;
@@ -302,7 +339,7 @@ export default function NewRelease() {
                 Upload Poster * <span className="text-xs text-muted-foreground">(3000×3000 px, JPG only)</span>
               </label>
               <div className="relative">
-                <input type="file" accept=".jpg,.jpeg,image/jpeg" onChange={handlePosterChange} className="hidden" id="poster-upload" />
+                <input type="file" accept="image/*" onChange={handlePosterChange} className="hidden" id="poster-upload" />
                 <label htmlFor="poster-upload" className={`${inputClass} flex min-w-0 cursor-pointer items-center gap-2`}>
                   <Upload className="h-4 w-4 shrink-0" />
                   <span className="truncate">{posterFile?.name || 'Choose poster image'}</span>
@@ -416,6 +453,13 @@ export default function NewRelease() {
           </div>
         </GlassCard>
       </div>
+
+      <PosterCropModal
+        open={showCropModal}
+        imageSrc={cropImageSrc || ''}
+        onCropComplete={handleCropComplete}
+        onCancel={handleCropCancel}
+      />
     </DashboardLayout>
   );
 }
