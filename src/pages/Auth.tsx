@@ -49,10 +49,7 @@ export default function Auth() {
       <BackgroundBlobs />
       <div className="glass-card-glow w-full max-w-md p-8 animate-scale-in relative z-10">
         <div className="flex flex-col items-center mb-8">
-          <div className="p-3 rounded-xl btn-primary-gradient mb-4">
-            <Music className="h-8 w-8 text-primary-foreground" />
-          </div>
-          <h1 className="font-display text-2xl font-bold text-foreground">MusicDist</h1>
+          <img src={logoWhite} alt="Harmonet Music" className="h-16 w-auto mb-4" />
           <p className="text-muted-foreground text-sm mt-1">
             {isLogin ? 'Sign in to your account' : 'Create your artist account'}
           </p>

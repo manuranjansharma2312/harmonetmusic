@@ -29,13 +29,7 @@ export function AppSidebar() {
     <aside className="glass-strong w-64 min-h-screen flex flex-col fixed left-0 top-0 z-30">
       <div className="p-6 border-b border-border/50">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg btn-primary-gradient">
-            <Music className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="font-display font-bold text-lg text-foreground">MusicDist</h1>
-            <p className="text-xs text-muted-foreground">Distribution Hub</p>
-          </div>
+          <img src={logoWhite} alt="Harmonet Music" className="h-10 w-auto" />
         </div>
       </div>
 
