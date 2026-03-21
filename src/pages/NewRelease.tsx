@@ -157,6 +157,17 @@ export default function NewRelease() {
     }
 
     setSubmitting(true);
+    setSubmitProgress(0);
+    setSubmitStep('Uploading poster...');
+
+    const totalSteps = 2 + tracks.length; // poster + release record + each track
+    let completed = 0;
+    const advance = (step: string) => {
+      completed++;
+      setSubmitProgress(Math.round((completed / totalSteps) * 100));
+      setSubmitStep(step);
+    };
+
     try {
       // Upload poster
       let poster_url = null;
@@ -167,6 +178,7 @@ export default function NewRelease() {
         const { data: urlData } = supabase.storage.from('posters').getPublicUrl(path);
         poster_url = urlData.publicUrl;
       }
+      advance('Creating release...');
 
       // Create release
       const { data: release, error: releaseError } = await supabase
@@ -186,6 +198,7 @@ export default function NewRelease() {
         .single();
 
       if (releaseError) throw releaseError;
+      advance(`Uploading track 1 of ${tracks.length}...`);
 
       // Upload audio files and create tracks
       for (let i = 0; i < tracks.length; i++) {
@@ -193,6 +206,7 @@ export default function NewRelease() {
         let audio_url = null;
 
         if (track.audioFile) {
+          setSubmitStep(`Uploading audio for track ${i + 1} of ${tracks.length}...`);
           const path = `${user.id}/${Date.now()}-${track.audioFile.name}`;
           const { error } = await supabase.storage.from('audio').upload(path, track.audioFile);
           if (error) throw error;
@@ -222,14 +236,18 @@ export default function NewRelease() {
         });
 
         if (trackError) throw trackError;
+        if (i < tracks.length - 1) advance(`Uploading track ${i + 2} of ${tracks.length}...`);
       }
 
+      setSubmitProgress(100);
+      setSubmitStep('Done!');
       toast.success('Release submitted successfully!');
-      navigate('/my-songs');
+      setTimeout(() => navigate('/my-releases'), 800);
     } catch (err: any) {
       toast.error(err.message || 'Submission failed');
-    } finally {
       setSubmitting(false);
+      setSubmitProgress(0);
+      setSubmitStep('');
     }
   };
 
