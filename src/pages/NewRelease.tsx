@@ -67,6 +67,73 @@ export default function NewRelease() {
     fetchData();
   }, []);
 
+  // Load existing release for edit mode
+  useEffect(() => {
+    if (!editReleaseId || !user) return;
+    const loadRelease = async () => {
+      setLoadingEdit(true);
+      const { data: release } = await supabase
+        .from('releases')
+        .select('*')
+        .eq('id', editReleaseId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (!release || release.status !== 'pending') {
+        toast.error('Release not found or cannot be edited.');
+        navigate('/my-releases');
+        return;
+      }
+
+      setReleaseType(release.release_type as 'new_release' | 'transfer');
+      setContentType(release.content_type);
+      setAlbumName(release.album_name || '');
+      setEpName(release.ep_name || '');
+      setUpc(release.upc || '');
+      setReleaseDate(release.release_date);
+      setStoreSelection(release.store_selection);
+      if (release.poster_url) {
+        setExistingPosterUrl(release.poster_url);
+        setPosterPreview(release.poster_url);
+      }
+
+      const { data: tracksData } = await supabase
+        .from('tracks')
+        .select('*')
+        .eq('release_id', editReleaseId)
+        .order('track_order');
+
+      if (tracksData) {
+        setTracks(tracksData.map(t => ({
+          songTitle: t.song_title,
+          isrc: t.isrc || '',
+          audioFile: null,
+          audioType: t.audio_type as 'with_vocal' | 'instrumental',
+          language: t.language || '',
+          genre: t.genre || '',
+          primaryArtists: [{
+            name: t.primary_artist || '',
+            spotifyLink: t.spotify_link || '',
+            appleMusicLink: t.apple_music_link || '',
+            isNewProfile: t.is_new_artist_profile || false,
+          }],
+          lyricist: t.lyricist || '',
+          composer: t.composer || '',
+          producer: t.producer || '',
+          instagramLink: t.instagram_link || '',
+          callertuneTime: t.callertune_time || '',
+          copyrightLine: '',
+          phonogramLine: '',
+          _existingAudioUrl: t.audio_url,
+          _trackId: t.id,
+        } as TrackData & { _existingAudioUrl?: string; _trackId?: string })));
+      }
+
+      setLoadingEdit(false);
+    };
+    loadRelease();
+  }, [editReleaseId, user]);
+
   useEffect(() => {
     if (posterFile) {
       const url = URL.createObjectURL(posterFile);
