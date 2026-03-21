@@ -29,6 +29,8 @@ type Track = {
   producer: string | null;
   instagram_link: string | null;
   callertune_time: string | null;
+  copyright_line: string | null;
+  phonogram_line: string | null;
   track_order: number;
 };
 
