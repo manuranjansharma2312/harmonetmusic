@@ -85,6 +85,10 @@ export default function Auth() {
       toast.error('Password must be at least 6 characters');
       return;
     }
+    if (!idFront || !idBack) {
+      toast.error('Please upload both front and back of your ID proof');
+      return;
+    }
     setSubmitting(true);
 
     try {
@@ -349,7 +353,7 @@ export default function Auth() {
 
             {/* ID Proof */}
             <div>
-              <label className="block text-sm text-muted-foreground mb-2">ID Proof Upload</label>
+              <label className="block text-sm text-muted-foreground mb-2">ID Proof Upload *</label>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <input type="file" accept="image/*" onChange={(e) => setIdFront(e.target.files?.[0] || null)} className="hidden" id="id-front" />
