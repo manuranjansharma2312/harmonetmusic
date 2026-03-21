@@ -55,8 +55,8 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-border/50">
       <SidebarHeader className="p-4 border-b border-border/50">
-        <div className="flex items-center gap-3">
-          <img src={logoWhite} alt="Harmonet Music" className={collapsed ? 'h-6 w-auto' : 'h-10 w-auto'} />
+        <div className="flex items-center justify-center">
+          <img src={logoWhite} alt="Harmonet Music" className={collapsed ? 'h-7 w-auto' : 'h-14 w-auto'} />
         </div>
       </SidebarHeader>
 
