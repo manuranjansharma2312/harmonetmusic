@@ -155,7 +155,7 @@ export default function Auth() {
     'w-full px-4 py-3 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center relative px-3 sm:px-4 py-6 sm:py-8">
       <BackgroundBlobs />
       <div className="glass-card-glow w-full max-w-lg p-8 animate-scale-in relative z-10 max-h-[95vh] overflow-y-auto">
         <div className="flex flex-col items-center mb-6">
