@@ -6,8 +6,7 @@ import { Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import logoWhite from '@/assets/logo-white.png';
 import { supabase } from '@/integrations/supabase/client';
-import { countries } from '@/data/countries';
-import { statesByCountry } from '@/data/states';
+import { countries, getStatesForCountry } from '@/data/locations';
 
 const SocialIcon = ({ type }: { type: string }) => {
   const icons: Record<string, string> = {
@@ -27,11 +26,9 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // Login fields
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
 
-  // Signup fields
   const [userType, setUserType] = useState<'artist' | 'record_label'>('artist');
   const [artistName, setArtistName] = useState('');
   const [labelName, setLabelName] = useState('');
@@ -65,7 +62,8 @@ export default function Auth() {
     return <Navigate to={role === 'admin' ? '/admin' : '/dashboard'} replace />;
   }
 
-  const selectedCountry = countries.find((c) => c.dialCode === whatsappCode);
+  const selectedWhatsAppCountry = countries.find((item) => item.dialCode === whatsappCode);
+  const availableStates = country ? getStatesForCountry(country) : [];
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,19 +90,17 @@ export default function Auth() {
     setSubmitting(true);
 
     try {
-      // 1. Create auth user
       const { error: signUpError } = await signUp(email, password);
       if (signUpError) throw signUpError;
 
-      // 2. Sign in immediately to get session
       const { error: signInError } = await signIn(email, password);
       if (signInError) throw signInError;
 
-      // 3. Get user
-      const { data: { user: newUser } } = await supabase.auth.getUser();
+      const {
+        data: { user: newUser },
+      } = await supabase.auth.getUser();
       if (!newUser) throw new Error('User not found after signup');
 
-      // 4. Upload ID proofs
       let idFrontUrl = null;
       let idBackUrl = null;
 
@@ -124,7 +120,6 @@ export default function Auth() {
         idBackUrl = data.publicUrl;
       }
 
-      // 5. Create profile
       const { error: profileError } = await supabase.from('profiles').insert({
         user_id: newUser.id,
         user_type: userType,
@@ -156,7 +151,8 @@ export default function Auth() {
     }
   };
 
-  const inputClass = "w-full px-4 py-3 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm";
+  const inputClass =
+    'w-full px-4 py-3 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
 
   return (
     <div className="min-h-screen flex items-center justify-center relative px-4 py-8">
@@ -170,28 +166,47 @@ export default function Auth() {
         </div>
 
         {isLogin ? (
-          /* LOGIN FORM */
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-              <input type="email" placeholder="Email address" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required className={`${inputClass} pl-11`} />
+              <input
+                type="email"
+                placeholder="Email address"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                required
+                className={`${inputClass} pl-11`}
+              />
             </div>
             <div className="relative">
               <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-              <input type={showPassword ? 'text' : 'password'} placeholder="Password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required className={`${inputClass} pl-11 pr-11`} />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-muted-foreground hover:text-foreground">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                required
+                className={`${inputClass} pl-11 pr-11`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+              >
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
-            <button type="submit" disabled={submitting} className="w-full py-3 rounded-lg btn-primary-gradient text-primary-foreground font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full py-3 rounded-lg btn-primary-gradient text-primary-foreground font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+            >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
               Sign In
             </button>
           </form>
         ) : (
-          /* SIGNUP FORM */
           <form onSubmit={handleSignup} className="space-y-4">
-            {/* User Type */}
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-2">I am a *</label>
               <div className="grid grid-cols-2 gap-3">
@@ -220,47 +235,68 @@ export default function Auth() {
               </div>
             </div>
 
-            {/* Artist/Label Name */}
             {userType === 'artist' ? (
               <div>
                 <label className="block text-sm text-muted-foreground mb-1">Artist Name *</label>
-                <input className={inputClass} placeholder="Your artist / stage name" value={artistName} onChange={(e) => setArtistName(e.target.value)} required />
+                <input
+                  className={inputClass}
+                  placeholder="Your artist / stage name"
+                  value={artistName}
+                  onChange={(e) => setArtistName(e.target.value)}
+                  required
+                />
               </div>
             ) : (
               <div>
                 <label className="block text-sm text-muted-foreground mb-1">Record Label Name *</label>
-                <input className={inputClass} placeholder="Your record label name" value={labelName} onChange={(e) => setLabelName(e.target.value)} required />
+                <input
+                  className={inputClass}
+                  placeholder="Your record label name"
+                  value={labelName}
+                  onChange={(e) => setLabelName(e.target.value)}
+                  required
+                />
               </div>
             )}
 
-            {/* Legal Name */}
             <div>
               <label className="block text-sm text-muted-foreground mb-1">Legal Name *</label>
-              <input className={inputClass} placeholder="Full legal name" value={legalName} onChange={(e) => setLegalName(e.target.value)} required />
+              <input
+                className={inputClass}
+                placeholder="Full legal name"
+                value={legalName}
+                onChange={(e) => setLegalName(e.target.value)}
+                required
+              />
             </div>
 
-            {/* Email */}
             <div>
               <label className="block text-sm text-muted-foreground mb-1">Email *</label>
-              <input type="email" className={inputClass} placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <input
+                type="email"
+                className={inputClass}
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
 
-            {/* WhatsApp */}
             <div>
               <label className="block text-sm text-muted-foreground mb-1">WhatsApp Number *</label>
               <div className="flex gap-2">
                 <div className="relative flex-shrink-0">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-xl pointer-events-none">
-                    {countries.find(c => c.dialCode === whatsappCode)?.flag || '🏳️'}
+                    {selectedWhatsAppCountry?.flag || '🏳️'}
                   </div>
                   <select
                     value={whatsappCode}
                     onChange={(e) => setWhatsappCode(e.target.value)}
                     className={`${inputClass} w-[120px] pl-10 appearance-none`}
                   >
-                    {countries.map((c) => (
-                      <option key={c.code} value={c.dialCode}>
-                        {c.flag} {c.dialCode}
+                    {countries.map((item) => (
+                      <option key={item.code} value={item.dialCode}>
+                        {item.flag} {item.dialCode}
                       </option>
                     ))}
                   </select>
@@ -276,62 +312,129 @@ export default function Auth() {
               </div>
             </div>
 
-            {/* Social Links */}
             <div className="space-y-3">
               <label className="block text-sm text-muted-foreground">Social Links</label>
               <div className="relative">
-                <div className="absolute left-3 top-3"><SocialIcon type="instagram" /></div>
-                <input className={`${inputClass} pl-11`} placeholder="Instagram profile URL" value={instagram} onChange={(e) => setInstagram(e.target.value)} />
+                <div className="absolute left-3 top-3">
+                  <SocialIcon type="instagram" />
+                </div>
+                <input
+                  className={`${inputClass} pl-11`}
+                  placeholder="Instagram profile URL"
+                  value={instagram}
+                  onChange={(e) => setInstagram(e.target.value)}
+                />
               </div>
               <div className="relative">
-                <div className="absolute left-3 top-3"><SocialIcon type="facebook" /></div>
-                <input className={`${inputClass} pl-11`} placeholder="Facebook profile URL" value={facebook} onChange={(e) => setFacebook(e.target.value)} />
+                <div className="absolute left-3 top-3">
+                  <SocialIcon type="facebook" />
+                </div>
+                <input
+                  className={`${inputClass} pl-11`}
+                  placeholder="Facebook profile URL"
+                  value={facebook}
+                  onChange={(e) => setFacebook(e.target.value)}
+                />
               </div>
               <div className="relative">
-                <div className="absolute left-3 top-3"><SocialIcon type="spotify" /></div>
-                <input className={`${inputClass} pl-11`} placeholder="Spotify artist URL" value={spotify} onChange={(e) => setSpotify(e.target.value)} />
+                <div className="absolute left-3 top-3">
+                  <SocialIcon type="spotify" />
+                </div>
+                <input
+                  className={`${inputClass} pl-11`}
+                  placeholder="Spotify artist URL"
+                  value={spotify}
+                  onChange={(e) => setSpotify(e.target.value)}
+                />
               </div>
               <div className="relative">
-                <div className="absolute left-3 top-3"><SocialIcon type="youtube" /></div>
-                <input className={`${inputClass} pl-11`} placeholder="YouTube channel URL" value={youtube} onChange={(e) => setYoutube(e.target.value)} />
+                <div className="absolute left-3 top-3">
+                  <SocialIcon type="youtube" />
+                </div>
+                <input
+                  className={`${inputClass} pl-11`}
+                  placeholder="YouTube channel URL"
+                  value={youtube}
+                  onChange={(e) => setYoutube(e.target.value)}
+                />
               </div>
             </div>
 
-            {/* Country & State */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm text-muted-foreground mb-1">Country *</label>
-                <select className={inputClass} value={country} onChange={(e) => { setCountry(e.target.value); setState(''); }} required>
+                <select
+                  className={inputClass}
+                  value={country}
+                  onChange={(e) => {
+                    setCountry(e.target.value);
+                    setState('');
+                  }}
+                  required
+                >
                   <option value="">Select Country</option>
-                  {countries.map((c) => (
-                    <option key={c.code} value={c.name}>{c.flag} {c.name}</option>
+                  {countries.map((item) => (
+                    <option key={item.code} value={item.name}>
+                      {item.flag} {item.name}
+                    </option>
                   ))}
                 </select>
               </div>
               <div>
                 <label className="block text-sm text-muted-foreground mb-1">State *</label>
-                <select className={inputClass} value={state} onChange={(e) => setState(e.target.value)} required>
-                  <option value="">{country ? 'Select State' : 'Select country first'}</option>
-                  {country && statesByCountry[country] && statesByCountry[country].map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                <select
+                  className={inputClass}
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                  required
+                  disabled={!country || availableStates.length === 0}
+                >
+                  <option value="">
+                    {!country
+                      ? 'Select country first'
+                      : availableStates.length > 0
+                        ? 'Select State'
+                        : 'No states available'}
+                  </option>
+                  {availableStates.map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
                   ))}
                 </select>
               </div>
             </div>
 
-            {/* Address */}
             <div>
               <label className="block text-sm text-muted-foreground mb-1">Address *</label>
-              <textarea className={`${inputClass} resize-none`} rows={2} placeholder="Full address" value={address} onChange={(e) => setAddress(e.target.value)} required />
+              <textarea
+                className={`${inputClass} resize-none`}
+                rows={2}
+                placeholder="Full address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                required
+              />
             </div>
 
-            {/* Passwords */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm text-muted-foreground mb-1">Password *</label>
                 <div className="relative">
-                  <input type={showPassword ? 'text' : 'password'} className={`${inputClass} pr-10`} placeholder="Min 6 chars" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-muted-foreground hover:text-foreground">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className={`${inputClass} pr-10`}
+                    placeholder="Min 6 chars"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                  >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
@@ -339,34 +442,61 @@ export default function Auth() {
               <div>
                 <label className="block text-sm text-muted-foreground mb-1">Confirm Password *</label>
                 <div className="relative">
-                  <input type={showConfirm ? 'text' : 'password'} className={`${inputClass} pr-10`} placeholder="Repeat password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={6} />
-                  <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-3 text-muted-foreground hover:text-foreground">
+                  <input
+                    type={showConfirm ? 'text' : 'password'}
+                    className={`${inputClass} pr-10`}
+                    placeholder="Repeat password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                  >
                     {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* ID Proof */}
             <div>
               <label className="block text-sm text-muted-foreground mb-2">ID Proof Upload *</label>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <input type="file" accept="image/*" onChange={(e) => setIdFront(e.target.files?.[0] || null)} className="hidden" id="id-front" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setIdFront(e.target.files?.[0] || null)}
+                    className="hidden"
+                    id="id-front"
+                  />
                   <label htmlFor="id-front" className={`${inputClass} cursor-pointer flex items-center justify-center gap-2 text-center`}>
-                    📄 {idFront ? idFront.name.slice(0, 15) + '...' : 'Front Side'}
+                    📄 {idFront ? `${idFront.name.slice(0, 15)}...` : 'Front Side'}
                   </label>
                 </div>
                 <div>
-                  <input type="file" accept="image/*" onChange={(e) => setIdBack(e.target.files?.[0] || null)} className="hidden" id="id-back" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setIdBack(e.target.files?.[0] || null)}
+                    className="hidden"
+                    id="id-back"
+                  />
                   <label htmlFor="id-back" className={`${inputClass} cursor-pointer flex items-center justify-center gap-2 text-center`}>
-                    📄 {idBack ? idBack.name.slice(0, 15) + '...' : 'Back Side'}
+                    📄 {idBack ? `${idBack.name.slice(0, 15)}...` : 'Back Side'}
                   </label>
                 </div>
               </div>
             </div>
 
-            <button type="submit" disabled={submitting} className="w-full py-3 rounded-lg btn-primary-gradient text-primary-foreground font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full py-3 rounded-lg btn-primary-gradient text-primary-foreground font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+            >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
               Create Account
             </button>
