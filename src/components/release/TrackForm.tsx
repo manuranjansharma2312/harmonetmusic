@@ -62,6 +62,8 @@ export function TrackForm({ genres, languages, isTransfer, initialData, onSubmit
       producer: '',
       instagramLink: '',
       callertuneTime: '',
+      copyrightLine: '',
+      phonogramLine: '',
     }
   );
 
