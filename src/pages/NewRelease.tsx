@@ -8,6 +8,7 @@ import { Loader2, Upload, Plus, Trash2, Music, CheckCircle2 } from 'lucide-react
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { TrackForm, type TrackData } from '@/components/release/TrackForm';
+import { PosterCropModal } from '@/components/release/PosterCropModal';
 
 const CONTENT_TYPES = [
   { value: 'single', label: 'Single' },
