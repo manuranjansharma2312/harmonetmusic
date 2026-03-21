@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Eye, CheckCircle, XCircle, Search, Shield, ShieldCheck, ShieldX, Pencil, LogIn } from 'lucide-react';
+import { Loader2, Eye, CheckCircle, XCircle, Search, Shield, ShieldCheck, ShieldX, ShieldAlert, Pencil, LogIn, Ban } from 'lucide-react';
 import { toast } from 'sonner';
 import { EditProfileModal } from '@/components/EditProfileModal';
 import { useImpersonate } from '@/hooks/useImpersonate';
@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 type Profile = {
   id: string;
   user_id: string;
+  display_id: number;
   user_type: string;
   artist_name: string | null;
   record_label_name: string | null;
@@ -32,9 +33,10 @@ type Profile = {
 };
 
 function VerificationBadge({ status }: { status: string }) {
-  if (status === 'verified') return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400"><ShieldCheck className="h-3 w-3" />Verified</span>;
-  if (status === 'rejected') return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400"><ShieldX className="h-3 w-3" />Rejected</span>;
-  return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400"><Shield className="h-3 w-3" />Pending</span>;
+  if (status === 'verified') return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 whitespace-nowrap"><ShieldCheck className="h-3 w-3" />Verified</span>;
+  if (status === 'rejected') return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 whitespace-nowrap"><ShieldX className="h-3 w-3" />Rejected</span>;
+  if (status === 'suspended') return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-500/20 text-orange-400 whitespace-nowrap"><ShieldAlert className="h-3 w-3" />Suspended</span>;
+  return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400 whitespace-nowrap"><Shield className="h-3 w-3" />Pending</span>;
 }
 
 export default function AdminUsers() {
@@ -63,7 +65,8 @@ export default function AdminUsers() {
         p.legal_name.toLowerCase().includes(q) ||
         p.email.toLowerCase().includes(q) ||
         (p.artist_name?.toLowerCase().includes(q)) ||
-        (p.record_label_name?.toLowerCase().includes(q))
+        (p.record_label_name?.toLowerCase().includes(q)) ||
+        String(p.display_id).includes(q)
       );
     }
     return true;
@@ -96,10 +99,10 @@ export default function AdminUsers() {
         <p className="text-muted-foreground mt-1">Manage and verify registered users.</p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
         <GlassCard className="!p-4 text-center">
           <p className="text-2xl font-bold font-display text-foreground">{profiles.length}</p>
-          <p className="text-xs text-muted-foreground">Total Users</p>
+          <p className="text-xs text-muted-foreground">Total</p>
         </GlassCard>
         <GlassCard className="!p-4 text-center">
           <p className="text-2xl font-bold font-display text-yellow-400">{profiles.filter(p => p.verification_status === 'pending').length}</p>
@@ -113,78 +116,92 @@ export default function AdminUsers() {
           <p className="text-2xl font-bold font-display text-red-400">{profiles.filter(p => p.verification_status === 'rejected').length}</p>
           <p className="text-xs text-muted-foreground">Rejected</p>
         </GlassCard>
+        <GlassCard className="!p-4 text-center">
+          <p className="text-2xl font-bold font-display text-orange-400">{profiles.filter(p => p.verification_status === 'suspended').length}</p>
+          <p className="text-xs text-muted-foreground">Suspended</p>
+        </GlassCard>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input className={`${inputClass} w-full pl-10`} placeholder="Search by name or email..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          <input className={`${inputClass} w-full pl-10`} placeholder="Search by ID, name or email..." value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <select className={inputClass} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
           <option value="all">All Status</option>
           <option value="pending">Pending</option>
           <option value="verified">Verified</option>
           <option value="rejected">Rejected</option>
+          <option value="suspended">Suspended</option>
         </select>
       </div>
 
-      <GlassCard className="animate-fade-in overflow-x-auto">
+      <GlassCard className="animate-fade-in">
         {filtered.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">No users found.</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border/50 text-muted-foreground">
-                <th className="text-left py-3 px-4 font-medium">Name</th>
-                <th className="text-left py-3 px-4 font-medium hidden sm:table-cell">Type</th>
-                <th className="text-left py-3 px-4 font-medium hidden md:table-cell">Email</th>
-                <th className="text-left py-3 px-4 font-medium">Status</th>
-                <th className="text-left py-3 px-4 font-medium hidden lg:table-cell">Joined</th>
-                <th className="text-right py-3 px-4 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((profile) => (
-                <tr key={profile.id} className="border-b border-border/30 table-row-hover">
-                  <td className="py-3 px-4 text-foreground font-medium">
-                    {profile.user_type === 'artist' ? profile.artist_name : profile.record_label_name}
-                    <span className="block text-xs text-muted-foreground">{profile.legal_name}</span>
-                  </td>
-                  <td className="py-3 px-4 hidden sm:table-cell">
-                    <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground capitalize">
-                      {profile.user_type === 'record_label' ? 'Label' : 'Artist'}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-muted-foreground hidden md:table-cell">{profile.email}</td>
-                  <td className="py-3 px-4"><VerificationBadge status={profile.verification_status} /></td>
-                  <td className="py-3 px-4 text-muted-foreground hidden lg:table-cell">{new Date(profile.created_at).toLocaleDateString()}</td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center justify-end gap-1">
-                      <button onClick={() => setViewProfile(profile)} className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all" title="View">
-                        <Eye className="h-4 w-4" />
-                      </button>
-                      <button onClick={() => setEditProfile(profile)} className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all" title="Edit">
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                      <button onClick={() => handleLoginAs(profile)} className="p-2 rounded-lg hover:bg-blue-500/20 text-muted-foreground hover:text-blue-400 transition-all" title="Login as user">
-                        <LogIn className="h-4 w-4" />
-                      </button>
-                      {profile.verification_status !== 'verified' && (
-                        <button onClick={() => handleVerification(profile.user_id, 'verified')} className="p-2 rounded-lg hover:bg-green-500/20 text-muted-foreground hover:text-green-400 transition-all" title="Verify">
-                          <CheckCircle className="h-4 w-4" />
-                        </button>
-                      )}
-                      {profile.verification_status !== 'rejected' && (
-                        <button onClick={() => handleVerification(profile.user_id, 'rejected')} className="p-2 rounded-lg hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-all" title="Reject">
-                          <XCircle className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
+          <div className="overflow-x-auto -mx-5 px-5">
+            <table className="w-full text-sm min-w-[700px]">
+              <thead>
+                <tr className="border-b border-border/50 text-muted-foreground">
+                  <th className="text-left py-3 px-3 font-medium w-16">ID</th>
+                  <th className="text-left py-3 px-3 font-medium">Name</th>
+                  <th className="text-left py-3 px-3 font-medium">Type</th>
+                  <th className="text-left py-3 px-3 font-medium">Email</th>
+                  <th className="text-left py-3 px-3 font-medium">Status</th>
+                  <th className="text-left py-3 px-3 font-medium">Joined</th>
+                  <th className="text-right py-3 px-3 font-medium">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filtered.map((profile) => (
+                  <tr key={profile.id} className="border-b border-border/30 table-row-hover">
+                    <td className="py-3 px-3 text-foreground font-mono font-bold">#{profile.display_id}</td>
+                    <td className="py-3 px-3 text-foreground font-medium whitespace-nowrap">
+                      {profile.user_type === 'artist' ? profile.artist_name : profile.record_label_name}
+                      <span className="block text-xs text-muted-foreground">{profile.legal_name}</span>
+                    </td>
+                    <td className="py-3 px-3">
+                      <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground capitalize whitespace-nowrap">
+                        {profile.user_type === 'record_label' ? 'Label' : 'Artist'}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-muted-foreground">{profile.email}</td>
+                    <td className="py-3 px-3"><VerificationBadge status={profile.verification_status} /></td>
+                    <td className="py-3 px-3 text-muted-foreground whitespace-nowrap">{new Date(profile.created_at).toLocaleDateString()}</td>
+                    <td className="py-3 px-3">
+                      <div className="flex items-center justify-end gap-1">
+                        <button onClick={() => setViewProfile(profile)} className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all" title="View">
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => setEditProfile(profile)} className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all" title="Edit">
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => handleLoginAs(profile)} className="p-2 rounded-lg hover:bg-blue-500/20 text-muted-foreground hover:text-blue-400 transition-all" title="Login as user">
+                          <LogIn className="h-4 w-4" />
+                        </button>
+                        {profile.verification_status !== 'verified' && (
+                          <button onClick={() => handleVerification(profile.user_id, 'verified')} className="p-2 rounded-lg hover:bg-green-500/20 text-muted-foreground hover:text-green-400 transition-all" title="Verify">
+                            <CheckCircle className="h-4 w-4" />
+                          </button>
+                        )}
+                        {profile.verification_status !== 'rejected' && (
+                          <button onClick={() => handleVerification(profile.user_id, 'rejected')} className="p-2 rounded-lg hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-all" title="Reject">
+                            <XCircle className="h-4 w-4" />
+                          </button>
+                        )}
+                        {profile.verification_status !== 'suspended' && (
+                          <button onClick={() => handleVerification(profile.user_id, 'suspended')} className="p-2 rounded-lg hover:bg-orange-500/20 text-muted-foreground hover:text-orange-400 transition-all" title="Suspend">
+                            <Ban className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </GlassCard>
 
@@ -195,11 +212,13 @@ export default function AdminUsers() {
           <div className="glass-strong rounded-2xl p-6 max-w-lg w-full relative animate-scale-in max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <button onClick={() => setViewProfile(null)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors">✕</button>
 
-            <h2 className="font-display text-xl font-bold text-foreground mb-1">
-              {viewProfile.user_type === 'artist' ? viewProfile.artist_name : viewProfile.record_label_name}
-            </h2>
-            <p className="text-xs text-muted-foreground capitalize mb-1">{viewProfile.user_type === 'record_label' ? 'Record Label' : 'Artist'}</p>
-            <p className="text-xs text-muted-foreground mb-4 font-mono">ID: {viewProfile.user_id}</p>
+            <div className="flex items-center gap-3 mb-1">
+              <span className="text-xs font-mono font-bold bg-primary/20 text-primary px-2 py-0.5 rounded">#{viewProfile.display_id}</span>
+              <h2 className="font-display text-xl font-bold text-foreground">
+                {viewProfile.user_type === 'artist' ? viewProfile.artist_name : viewProfile.record_label_name}
+              </h2>
+            </div>
+            <p className="text-xs text-muted-foreground capitalize mb-4">{viewProfile.user_type === 'record_label' ? 'Record Label' : 'Artist'}</p>
 
             <div className="space-y-3 text-sm">
               <Row label="Legal Name" value={viewProfile.legal_name} />
@@ -255,19 +274,18 @@ export default function AdminUsers() {
             </div>
             <div className="flex gap-3 mt-3">
               {viewProfile.verification_status !== 'verified' && (
-                <button
-                  onClick={() => handleVerification(viewProfile.user_id, 'verified')}
-                  className="flex-1 py-2.5 rounded-lg bg-green-500/20 text-green-400 font-medium hover:bg-green-500/30 transition-all flex items-center justify-center gap-2"
-                >
+                <button onClick={() => handleVerification(viewProfile.user_id, 'verified')} className="flex-1 py-2.5 rounded-lg bg-green-500/20 text-green-400 font-medium hover:bg-green-500/30 transition-all flex items-center justify-center gap-2">
                   <CheckCircle className="h-4 w-4" /> Verify
                 </button>
               )}
               {viewProfile.verification_status !== 'rejected' && (
-                <button
-                  onClick={() => handleVerification(viewProfile.user_id, 'rejected')}
-                  className="flex-1 py-2.5 rounded-lg bg-red-500/20 text-red-400 font-medium hover:bg-red-500/30 transition-all flex items-center justify-center gap-2"
-                >
+                <button onClick={() => handleVerification(viewProfile.user_id, 'rejected')} className="flex-1 py-2.5 rounded-lg bg-red-500/20 text-red-400 font-medium hover:bg-red-500/30 transition-all flex items-center justify-center gap-2">
                   <XCircle className="h-4 w-4" /> Reject
+                </button>
+              )}
+              {viewProfile.verification_status !== 'suspended' && (
+                <button onClick={() => handleVerification(viewProfile.user_id, 'suspended')} className="flex-1 py-2.5 rounded-lg bg-orange-500/20 text-orange-400 font-medium hover:bg-orange-500/30 transition-all flex items-center justify-center gap-2">
+                  <Ban className="h-4 w-4" /> Suspend
                 </button>
               )}
             </div>
