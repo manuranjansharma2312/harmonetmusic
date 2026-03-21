@@ -1,11 +1,21 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { AppSidebar } from './AppSidebar';
 import { BackgroundBlobs } from './BackgroundBlobs';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 
+const SIDEBAR_STORAGE_KEY = 'sidebar-open';
+
 export function DashboardLayout({ children }: { children: ReactNode }) {
+  const [open, setOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = document.cookie.match(/sidebar:state=([^;]+)/)?.[1];
+      return stored === 'true';
+    }
+    return true;
+  });
+
   return (
-    <SidebarProvider>
+    <SidebarProvider open={open} onOpenChange={setOpen}>
       <div className="min-h-screen relative flex w-full">
         <BackgroundBlobs />
         <AppSidebar />
