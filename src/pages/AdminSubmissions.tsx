@@ -92,7 +92,7 @@ export default function AdminSubmissions() {
     const userIds = [...new Set(releasesData.map((r) => r.user_id))];
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('user_id, email, artist_name, display_id')
+      .select('user_id, email, artist_name, legal_name, display_id')
       .in('user_id', userIds);
 
     const emailMap: Record<string, string> = {};
