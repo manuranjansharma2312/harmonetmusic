@@ -310,16 +310,12 @@ export default function Auth() {
               </div>
               <div>
                 <label className="block text-sm text-muted-foreground mb-1">State *</label>
-                {country && statesByCountry[country] ? (
-                  <select className={inputClass} value={state} onChange={(e) => setState(e.target.value)} required>
-                    <option value="">Select State</option>
-                    {statesByCountry[country].map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <input className={inputClass} placeholder="State / Province" value={state} onChange={(e) => setState(e.target.value)} required />
-                )}
+                <select className={inputClass} value={state} onChange={(e) => setState(e.target.value)} required>
+                  <option value="">{country ? 'Select State' : 'Select country first'}</option>
+                  {country && statesByCountry[country] && statesByCountry[country].map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
