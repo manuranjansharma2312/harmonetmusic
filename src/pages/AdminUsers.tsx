@@ -5,13 +5,21 @@ import { supabase } from '@/integrations/supabase/client';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import {
   Loader2, Eye, CheckCircle, XCircle, Search, Shield, ShieldCheck, ShieldX, KeyRound,
-  ShieldAlert, Pencil, LogIn, Ban, Trash2, Download, FileX, CheckSquare,
+  ShieldAlert, Pencil, LogIn, Ban, Trash2, Download, FileX, CheckSquare, MoreVertical,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { EditProfileModal } from '@/components/EditProfileModal';
 import { ResetPasswordModal } from '@/components/ResetPasswordModal';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { useNavigate } from 'react-router-dom';
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 
 type Profile = {
   id: string;
@@ -277,7 +285,7 @@ export default function AdminUsers() {
           <p className="text-center text-muted-foreground py-8">No users found.</p>
         ) : (
           <div className="overflow-x-auto -mx-5 px-5">
-            <table className="w-full text-sm min-w-[700px]">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border/50 text-muted-foreground">
                   <th className="py-3 px-3 w-10">
@@ -322,41 +330,51 @@ export default function AdminUsers() {
                     <td className="py-3 px-3"><VerificationBadge status={profile.verification_status} /></td>
                     <td className="py-3 px-3 text-muted-foreground whitespace-nowrap hidden lg:table-cell">{new Date(profile.created_at).toLocaleDateString()}</td>
                     <td className="py-3 px-3">
-                      <div className="flex items-center justify-end gap-0.5 flex-wrap">
-                        <button onClick={() => setViewProfile(profile)} className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all" title="View">
+                      <div className="flex items-center justify-end gap-0.5">
+                        <button onClick={() => setViewProfile(profile)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all" title="View">
                           <Eye className="h-4 w-4" />
                         </button>
-                        <button onClick={() => setEditProfile(profile)} className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all" title="Edit">
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button onClick={() => handleLoginAs(profile)} className="p-2 rounded-lg hover:bg-blue-500/20 text-muted-foreground hover:text-blue-400 transition-all" title="Login as user">
-                          <LogIn className="h-4 w-4" />
-                        </button>
-                        <button onClick={() => setResetPasswordProfile(profile)} className="p-2 rounded-lg hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all" title="Reset password">
-                          <KeyRound className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => setDeleteConfirm({ type: 'single', userId: profile.user_id, name: profile.legal_name })}
-                          className="p-2 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all"
-                          title="Delete user"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                        {profile.verification_status !== 'verified' && (
-                          <button onClick={() => handleVerification(profile.user_id, 'verified')} className="p-2 rounded-lg hover:bg-green-500/20 text-muted-foreground hover:text-green-400 transition-all" title="Verify">
-                            <CheckCircle className="h-4 w-4" />
-                          </button>
-                        )}
-                        {profile.verification_status !== 'rejected' && (
-                          <button onClick={() => handleVerification(profile.user_id, 'rejected')} className="p-2 rounded-lg hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-all" title="Reject">
-                            <XCircle className="h-4 w-4" />
-                          </button>
-                        )}
-                        {profile.verification_status !== 'suspended' && (
-                          <button onClick={() => handleVerification(profile.user_id, 'suspended')} className="p-2 rounded-lg hover:bg-orange-500/20 text-muted-foreground hover:text-orange-400 transition-all" title="Suspend">
-                            <Ban className="h-4 w-4" />
-                          </button>
-                        )}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all" title="More actions">
+                              <MoreVertical className="h-4 w-4" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem onClick={() => setEditProfile(profile)}>
+                              <Pencil className="h-4 w-4 mr-2" /> Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleLoginAs(profile)}>
+                              <LogIn className="h-4 w-4 mr-2" /> Login as User
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setResetPasswordProfile(profile)}>
+                              <KeyRound className="h-4 w-4 mr-2" /> Reset Password
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            {profile.verification_status !== 'verified' && (
+                              <DropdownMenuItem onClick={() => handleVerification(profile.user_id, 'verified')} className="text-green-400 focus:text-green-400">
+                                <CheckCircle className="h-4 w-4 mr-2" /> Verify
+                              </DropdownMenuItem>
+                            )}
+                            {profile.verification_status !== 'rejected' && (
+                              <DropdownMenuItem onClick={() => handleVerification(profile.user_id, 'rejected')} className="text-red-400 focus:text-red-400">
+                                <XCircle className="h-4 w-4 mr-2" /> Reject
+                              </DropdownMenuItem>
+                            )}
+                            {profile.verification_status !== 'suspended' && (
+                              <DropdownMenuItem onClick={() => handleVerification(profile.user_id, 'suspended')} className="text-orange-400 focus:text-orange-400">
+                                <Ban className="h-4 w-4 mr-2" /> Suspend
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => setDeleteConfirm({ type: 'single', userId: profile.user_id, name: profile.legal_name })}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" /> Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </td>
                   </tr>
