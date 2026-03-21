@@ -20,6 +20,7 @@ export type Database = {
           artist_name: string | null
           country: string
           created_at: string
+          display_id: number
           email: string
           facebook_link: string | null
           id: string
@@ -43,6 +44,7 @@ export type Database = {
           artist_name?: string | null
           country: string
           created_at?: string
+          display_id?: number
           email: string
           facebook_link?: string | null
           id?: string
@@ -66,6 +68,7 @@ export type Database = {
           artist_name?: string | null
           country?: string
           created_at?: string
+          display_id?: number
           email?: string
           facebook_link?: string | null
           id?: string
