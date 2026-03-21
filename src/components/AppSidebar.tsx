@@ -28,7 +28,9 @@ const adminLinks = [
 
 export function AppSidebar() {
   const { role, signOut, user } = useAuth();
-  const links = role === 'admin' ? adminLinks : userLinks;
+  const { isImpersonating } = useImpersonate();
+  const showUserView = isImpersonating || role !== 'admin';
+  const links = showUserView ? userLinks : adminLinks;
 
   return (
     <aside className="glass-strong w-64 min-h-screen flex flex-col fixed left-0 top-0 z-30">
