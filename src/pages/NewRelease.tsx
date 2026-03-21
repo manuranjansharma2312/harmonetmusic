@@ -623,7 +623,7 @@ export default function NewRelease() {
                   className="w-full btn-primary-gradient py-3 font-semibold text-primary-foreground"
                 >
                   {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Submit Release
+                  {editReleaseId ? 'Update Release' : 'Submit Release'}
                 </Button>
               </>
             )}
