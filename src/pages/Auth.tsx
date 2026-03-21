@@ -162,7 +162,7 @@ export default function Auth() {
   return (
     <div className="min-h-[100dvh] flex items-center justify-center relative px-3 sm:px-4 py-4 sm:py-8 overflow-auto">
       <BackgroundBlobs />
-      <div className="glass-card-glow w-full max-w-lg p-5 sm:p-8 animate-scale-in relative z-10 my-auto">
+      <div className="glass-card-glow w-full max-w-lg p-4 sm:p-8 animate-scale-in relative z-10 my-auto">
         <div className="flex flex-col items-center mb-6">
           <img src={logoWhite} alt="Harmonet Music" className="h-12 sm:h-16 w-auto mb-4" />
           <p className="text-muted-foreground text-sm">
@@ -289,7 +289,7 @@ export default function Auth() {
 
             <div>
               <label className="block text-sm text-muted-foreground mb-1">WhatsApp Number *</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col min-[420px]:flex-row gap-2">
                 <div className="relative flex-shrink-0">
                   <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-lg sm:text-xl pointer-events-none">
                     {selectedWhatsAppCountry?.flag || '🏳️'}
@@ -297,7 +297,7 @@ export default function Auth() {
                   <select
                     value={whatsappCode}
                     onChange={(e) => setWhatsappCode(e.target.value)}
-                     className={compactSelectClass}
+                     className={`${compactSelectClass} w-full min-[420px]:w-[100px] sm:w-[120px]`}
                   >
                     {countries.map((item) => (
                       <option key={item.code} value={item.dialCode}>
@@ -478,7 +478,7 @@ export default function Auth() {
                     className="hidden"
                     id="id-front"
                   />
-                  <label htmlFor="id-front" className={`${inputClass} cursor-pointer flex items-center justify-center gap-2 text-center`}>
+                  <label htmlFor="id-front" className={`${inputClass} cursor-pointer flex items-center justify-center gap-2 text-center break-all`}>
                     📄 {idFront ? `${idFront.name.slice(0, 15)}...` : 'Front Side'}
                   </label>
                 </div>
@@ -490,7 +490,7 @@ export default function Auth() {
                     className="hidden"
                     id="id-back"
                   />
-                  <label htmlFor="id-back" className={`${inputClass} cursor-pointer flex items-center justify-center gap-2 text-center`}>
+                  <label htmlFor="id-back" className={`${inputClass} cursor-pointer flex items-center justify-center gap-2 text-center break-all`}>
                     📄 {idBack ? `${idBack.name.slice(0, 15)}...` : 'Back Side'}
                   </label>
                 </div>

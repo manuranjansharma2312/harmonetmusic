@@ -18,7 +18,8 @@ export function ResetPasswordModal({ userId, email, name, onClose }: ResetPasswo
   const [loading, setLoading] = useState(false);
 
   const inputClass =
-    'w-full px-4 py-2.5 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
+    'w-full px-3 sm:px-4 py-2.5 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
+  const inputWithActionClass = `${inputClass} pr-10 sm:pr-11`;
 
   const invokeAction = async (action: string, body: Record<string, string>) => {
     setLoading(true);
@@ -61,7 +62,7 @@ export function ResetPasswordModal({ userId, email, name, onClose }: ResetPasswo
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
       <div
-        className="glass-strong rounded-2xl p-6 max-w-md w-full relative animate-scale-in"
+        className="glass-strong rounded-2xl p-4 sm:p-6 max-w-md w-full relative animate-scale-in max-h-[90vh] overflow-y-auto overflow-x-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors">
@@ -69,7 +70,7 @@ export function ResetPasswordModal({ userId, email, name, onClose }: ResetPasswo
         </button>
 
         <h2 className="font-display text-xl font-bold text-foreground mb-1">Reset Password</h2>
-        <p className="text-sm text-muted-foreground mb-5">
+        <p className="text-sm text-muted-foreground mb-5 break-words">
           For <span className="font-medium text-foreground">{name}</span> ({email})
         </p>
 
@@ -111,7 +112,7 @@ export function ResetPasswordModal({ userId, email, name, onClose }: ResetPasswo
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  className={inputClass}
+                  className={inputWithActionClass}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Min 6 characters"
@@ -121,7 +122,7 @@ export function ResetPasswordModal({ userId, email, name, onClose }: ResetPasswo
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -141,7 +142,7 @@ export function ResetPasswordModal({ userId, email, name, onClose }: ResetPasswo
               />
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setMode('choose')}

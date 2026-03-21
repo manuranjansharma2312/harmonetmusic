@@ -125,7 +125,7 @@ export default function SubmitSong() {
                   className="hidden"
                   id="audio-upload"
                 />
-                <label htmlFor="audio-upload" className={`${inputClass} cursor-pointer flex items-center gap-2`}>
+                  <label htmlFor="audio-upload" className={`${inputClass} cursor-pointer flex items-center gap-2 min-w-0`}>
                   <Upload className="h-4 w-4" />
                   <span className="truncate">{audioFile?.name || 'Choose audio file'}</span>
                 </label>
@@ -141,7 +141,7 @@ export default function SubmitSong() {
                   className="hidden"
                   id="cover-upload"
                 />
-                <label htmlFor="cover-upload" className={`${inputClass} cursor-pointer flex items-center gap-2`}>
+                  <label htmlFor="cover-upload" className={`${inputClass} cursor-pointer flex items-center gap-2 min-w-0`}>
                   <Upload className="h-4 w-4" />
                   <span className="truncate">{coverFile?.name || 'Choose cover image'}</span>
                 </label>
