@@ -1,11 +1,11 @@
 import {
   LayoutDashboard,
-  Music,
   Upload,
   ListMusic,
   LogOut,
   Shield,
 } from 'lucide-react';
+import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';

@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { BackgroundBlobs } from '@/components/BackgroundBlobs';
-import { Music, Mail, Lock, Loader2 } from 'lucide-react';
+import { Mail, Lock, Loader2 } from 'lucide-react';
+import logoWhite from '@/assets/logo-white.png';
 import { toast } from 'sonner';
 
 export default function Auth() {
