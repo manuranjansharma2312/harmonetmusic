@@ -42,7 +42,8 @@ function App() {
                   <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
                   <Route path="/submit" element={<ProtectedRoute><NewRelease /></ProtectedRoute>} />
                   <Route path="/admin/genres-languages" element={<ProtectedRoute requiredRole="admin"><AdminGenresLanguages /></ProtectedRoute>} />
-                  <Route path="/my-songs" element={<ProtectedRoute><MySongs /></ProtectedRoute>} />
+                  <Route path="/my-releases" element={<ProtectedRoute><MyReleases /></ProtectedRoute>} />
+                  <Route path="/my-songs" element={<Navigate to="/my-releases" replace />} />
                   <Route path="/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
                   <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
                   <Route path="/admin/submissions" element={<ProtectedRoute requiredRole="admin"><AdminSubmissions /></ProtectedRoute>} />
