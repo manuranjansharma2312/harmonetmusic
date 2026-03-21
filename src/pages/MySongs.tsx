@@ -66,7 +66,7 @@ export default function MySongs() {
         <p className="text-muted-foreground mt-1 text-sm sm:text-base">View and manage your submissions.</p>
       </div>
 
-      <GlassCard className="animate-fade-in overflow-x-auto">
+      <GlassCard className="animate-fade-in overflow-hidden">
         {songs.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">No songs submitted yet.</p>
         ) : (
