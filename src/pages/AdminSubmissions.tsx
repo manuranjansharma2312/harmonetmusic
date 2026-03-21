@@ -285,7 +285,7 @@ export default function AdminSubmissions() {
                   <th className="text-left py-3 px-3 font-medium">Release</th>
                   <th className="text-left py-3 px-3 font-medium">Type</th>
                   <th className="text-left py-3 px-3 font-medium hidden md:table-cell">UPC</th>
-                  <th className="text-left py-3 px-3 font-medium hidden md:table-cell">User</th>
+                  <th className="text-left py-3 px-3 font-medium hidden md:table-cell">Submitted By</th>
                   <th className="text-left py-3 px-3 font-medium">Status</th>
                   <th className="text-left py-3 px-3 font-medium hidden lg:table-cell">Date</th>
                   <th className="text-right py-3 px-3 font-medium">Actions</th>
