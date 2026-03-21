@@ -314,7 +314,7 @@ export default function NewRelease() {
         setSubmitProgress(100);
         setSubmitStep('Done!');
         toast.success('Release updated successfully!');
-        setTimeout(() => navigate('/my-releases'), 800);
+        setTimeout(() => navigate(role === 'admin' ? '/admin/submissions' : '/my-releases'), 800);
       } else {
         // CREATE new release
         const { data: release, error: releaseError } = await supabase
