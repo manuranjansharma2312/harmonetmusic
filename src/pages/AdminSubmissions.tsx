@@ -56,6 +56,7 @@ type Release = {
 };
 
 export default function AdminSubmissions() {
+  const navigate = useNavigate();
   const [releases, setReleases] = useState<Release[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
