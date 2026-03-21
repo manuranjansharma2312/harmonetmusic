@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { EditProfileModal } from '@/components/EditProfileModal';
+import { ResetPasswordModal } from '@/components/ResetPasswordModal';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { useNavigate } from 'react-router-dom';
 
