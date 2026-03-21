@@ -340,9 +340,10 @@ export default function AdminSubmissions() {
                         </td>
                         <td className="py-3 px-3 hidden md:table-cell">
                           <div className="text-xs">
-                            <p className="text-foreground">{release.user_email}</p>
+                            <p className="text-foreground font-medium">{release.user_name}</p>
+                            <p className="text-muted-foreground">{release.user_email}</p>
                             {release.user_display_id && (
-                              <p className="text-muted-foreground">ID: {release.user_display_id}</p>
+                              <p className="text-muted-foreground">ID: #{release.user_display_id}</p>
                             )}
                           </div>
                         </td>
