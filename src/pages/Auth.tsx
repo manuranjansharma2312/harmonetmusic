@@ -15,7 +15,7 @@ const SocialIcon = ({ type }: { type: string }) => {
     spotify: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/spotify.svg',
     youtube: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg',
   };
-  return <img src={icons[type]} alt={type} className="h-5 w-5 invert opacity-50" />;
+  return <img src={icons[type]} alt={type} className="h-4 w-4 sm:h-5 sm:w-5 invert opacity-50" />;
 };
 
 export default function Auth() {
@@ -151,8 +151,13 @@ export default function Auth() {
     }
   };
 
-  const inputClass =
-    'w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
+  const inputBaseClass =
+    'w-full rounded-lg bg-muted/50 border border-border py-2.5 sm:py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all';
+  const inputClass = `${inputBaseClass} px-3 sm:px-4`;
+  const inputWithLeftIconClass = `${inputBaseClass} pl-10 sm:pl-11 pr-3 sm:pr-4`;
+  const inputWithSideActionClass = `${inputBaseClass} pl-10 sm:pl-11 pr-10 sm:pr-11`;
+  const inputWithActionClass = `${inputBaseClass} px-3 sm:px-4 pr-10 sm:pr-11`;
+  const compactSelectClass = `${inputBaseClass} w-[100px] sm:w-[120px] pl-8 sm:pl-10 pr-7 sm:pr-8 appearance-none`;
 
   return (
     <div className="min-h-[100dvh] flex items-center justify-center relative px-3 sm:px-4 py-4 sm:py-8 overflow-auto">
@@ -168,30 +173,30 @@ export default function Auth() {
         {isLogin ? (
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="relative">
-              <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground sm:h-5 sm:w-5" />
               <input
                 type="email"
                 placeholder="Email address"
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
                 required
-                className={`${inputClass} pl-11`}
+                className={inputWithLeftIconClass}
               />
             </div>
             <div className="relative">
-              <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+              <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground sm:h-5 sm:w-5" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Password"
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
                 required
-                className={`${inputClass} pl-11 pr-11`}
+                className={inputWithSideActionClass}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
@@ -292,7 +297,7 @@ export default function Auth() {
                   <select
                     value={whatsappCode}
                     onChange={(e) => setWhatsappCode(e.target.value)}
-                    className={`${inputClass} w-[100px] sm:w-[120px] pl-9 sm:pl-10 appearance-none`}
+                     className={compactSelectClass}
                   >
                     {countries.map((item) => (
                       <option key={item.code} value={item.dialCode}>
@@ -315,44 +320,44 @@ export default function Auth() {
             <div className="space-y-3">
               <label className="block text-sm text-muted-foreground">Social Links</label>
               <div className="relative">
-                <div className="absolute left-3 top-3">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
                   <SocialIcon type="instagram" />
                 </div>
                 <input
-                  className={`${inputClass} pl-11`}
+                  className={inputWithLeftIconClass}
                   placeholder="Instagram profile URL"
                   value={instagram}
                   onChange={(e) => setInstagram(e.target.value)}
                 />
               </div>
               <div className="relative">
-                <div className="absolute left-3 top-3">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
                   <SocialIcon type="facebook" />
                 </div>
                 <input
-                  className={`${inputClass} pl-11`}
+                  className={inputWithLeftIconClass}
                   placeholder="Facebook profile URL"
                   value={facebook}
                   onChange={(e) => setFacebook(e.target.value)}
                 />
               </div>
               <div className="relative">
-                <div className="absolute left-3 top-3">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
                   <SocialIcon type="spotify" />
                 </div>
                 <input
-                  className={`${inputClass} pl-11`}
+                  className={inputWithLeftIconClass}
                   placeholder="Spotify artist URL"
                   value={spotify}
                   onChange={(e) => setSpotify(e.target.value)}
                 />
               </div>
               <div className="relative">
-                <div className="absolute left-3 top-3">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
                   <SocialIcon type="youtube" />
                 </div>
                 <input
-                  className={`${inputClass} pl-11`}
+                  className={inputWithLeftIconClass}
                   placeholder="YouTube channel URL"
                   value={youtube}
                   onChange={(e) => setYoutube(e.target.value)}
@@ -423,7 +428,7 @@ export default function Auth() {
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    className={`${inputClass} pr-10`}
+                    className={inputWithActionClass}
                     placeholder="Min 6 chars"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -433,7 +438,7 @@ export default function Auth() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -444,7 +449,7 @@ export default function Auth() {
                 <div className="relative">
                   <input
                     type={showConfirm ? 'text' : 'password'}
-                    className={`${inputClass} pr-10`}
+                    className={inputWithActionClass}
                     placeholder="Repeat password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -454,7 +459,7 @@ export default function Auth() {
                   <button
                     type="button"
                     onClick={() => setShowConfirm(!showConfirm)}
-                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
