@@ -215,29 +215,6 @@ export default function AdminUsers() {
         <p className="text-muted-foreground mt-1 text-sm sm:text-base">Manage and verify registered users.</p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
-        <GlassCard className="!p-4 text-center">
-          <p className="text-2xl font-bold font-display text-foreground">{profiles.length}</p>
-          <p className="text-xs text-muted-foreground">Total</p>
-        </GlassCard>
-        <GlassCard className="!p-4 text-center">
-          <p className="text-2xl font-bold font-display text-yellow-400">{profiles.filter(p => p.verification_status === 'pending').length}</p>
-          <p className="text-xs text-muted-foreground">Pending</p>
-        </GlassCard>
-        <GlassCard className="!p-4 text-center">
-          <p className="text-2xl font-bold font-display text-green-400">{profiles.filter(p => p.verification_status === 'verified').length}</p>
-          <p className="text-xs text-muted-foreground">Verified</p>
-        </GlassCard>
-        <GlassCard className="!p-4 text-center">
-          <p className="text-2xl font-bold font-display text-red-400">{profiles.filter(p => p.verification_status === 'rejected').length}</p>
-          <p className="text-xs text-muted-foreground">Rejected</p>
-        </GlassCard>
-        <GlassCard className="!p-4 text-center">
-          <p className="text-2xl font-bold font-display text-orange-400">{profiles.filter(p => p.verification_status === 'suspended').length}</p>
-          <p className="text-xs text-muted-foreground">Suspended</p>
-        </GlassCard>
-      </div>
-
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
