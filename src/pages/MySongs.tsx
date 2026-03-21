@@ -61,9 +61,9 @@ export default function MySongs() {
 
   return (
     <DashboardLayout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold text-foreground">My Songs</h1>
-        <p className="text-muted-foreground mt-1">View and manage your submissions.</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">My Songs</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">View and manage your submissions.</p>
       </div>
 
       <GlassCard className="animate-fade-in overflow-x-auto">
