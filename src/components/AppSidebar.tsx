@@ -41,7 +41,7 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 p-4 space-y-1">
-        {role === 'admin' && (
+        {role === 'admin' && !isImpersonating && (
           <div className="flex items-center gap-2 px-3 py-2 mb-3">
             <Shield className="h-4 w-4 text-primary" />
             <span className="text-xs font-semibold uppercase tracking-wider text-primary">Admin Panel</span>
