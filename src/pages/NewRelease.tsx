@@ -31,6 +31,7 @@ export default function NewRelease() {
   const [submitStep, setSubmitStep] = useState('');
   const [loadingEdit, setLoadingEdit] = useState(!!editReleaseId);
 
+  const [releaseOwnerId, setReleaseOwnerId] = useState<string | null>(null);
   // Release-level state
   const [releaseType, setReleaseType] = useState<'new_release' | 'transfer'>('new_release');
   const [contentType, setContentType] = useState('single');
