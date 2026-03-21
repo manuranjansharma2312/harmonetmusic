@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          address: string
+          artist_name: string | null
+          country: string
+          created_at: string
+          email: string
+          facebook_link: string | null
+          id: string
+          id_proof_back_url: string | null
+          id_proof_front_url: string | null
+          instagram_link: string | null
+          legal_name: string
+          record_label_name: string | null
+          spotify_link: string | null
+          state: string
+          updated_at: string
+          user_id: string
+          user_type: string
+          verification_status: string
+          whatsapp_country_code: string
+          whatsapp_number: string
+          youtube_link: string | null
+        }
+        Insert: {
+          address: string
+          artist_name?: string | null
+          country: string
+          created_at?: string
+          email: string
+          facebook_link?: string | null
+          id?: string
+          id_proof_back_url?: string | null
+          id_proof_front_url?: string | null
+          instagram_link?: string | null
+          legal_name: string
+          record_label_name?: string | null
+          spotify_link?: string | null
+          state: string
+          updated_at?: string
+          user_id: string
+          user_type: string
+          verification_status?: string
+          whatsapp_country_code?: string
+          whatsapp_number: string
+          youtube_link?: string | null
+        }
+        Update: {
+          address?: string
+          artist_name?: string | null
+          country?: string
+          created_at?: string
+          email?: string
+          facebook_link?: string | null
+          id?: string
+          id_proof_back_url?: string | null
+          id_proof_front_url?: string | null
+          instagram_link?: string | null
+          legal_name?: string
+          record_label_name?: string | null
+          spotify_link?: string | null
+          state?: string
+          updated_at?: string
+          user_id?: string
+          user_type?: string
+          verification_status?: string
+          whatsapp_country_code?: string
+          whatsapp_number?: string
+          youtube_link?: string | null
+        }
+        Relationships: []
+      }
       songs: {
         Row: {
           artist: string
@@ -96,6 +168,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       app_role: "user" | "admin"
