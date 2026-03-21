@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
+import { useImpersonate } from '@/hooks/useImpersonate';
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -27,7 +28,9 @@ const adminLinks = [
 
 export function AppSidebar() {
   const { role, signOut, user } = useAuth();
-  const links = role === 'admin' ? adminLinks : userLinks;
+  const { isImpersonating } = useImpersonate();
+  const showUserView = isImpersonating || role !== 'admin';
+  const links = showUserView ? userLinks : adminLinks;
 
   return (
     <aside className="glass-strong w-64 min-h-screen flex flex-col fixed left-0 top-0 z-30">
@@ -38,7 +41,7 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 p-4 space-y-1">
-        {role === 'admin' && (
+        {role === 'admin' && !isImpersonating && (
           <div className="flex items-center gap-2 px-3 py-2 mb-3">
             <Shield className="h-4 w-4 text-primary" />
             <span className="text-xs font-semibold uppercase tracking-wider text-primary">Admin Panel</span>
