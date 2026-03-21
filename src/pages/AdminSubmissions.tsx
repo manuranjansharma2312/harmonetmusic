@@ -115,6 +115,7 @@ export default function AdminSubmissions() {
         ...r,
         tracks: tracksByRelease[r.id] || [],
         user_email: emailMap[r.user_id] || r.user_id.slice(0, 8),
+        user_name: nameMap[r.user_id] || r.user_id.slice(0, 8),
         user_display_id: displayIdMap[r.user_id],
       }))
     );
