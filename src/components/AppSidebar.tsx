@@ -10,8 +10,20 @@ import {
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
-import { NavLink } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { NavLink } from '@/components/NavLink';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarFooter,
+  SidebarHeader,
+  useSidebar,
+} from '@/components/ui/sidebar';
 
 const userLinks = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -29,53 +41,67 @@ const adminLinks = [
 export function AppSidebar() {
   const { role, signOut, user } = useAuth();
   const { isImpersonating } = useImpersonate();
+  const { state } = useSidebar();
+  const collapsed = state === 'collapsed';
   const showUserView = isImpersonating || role !== 'admin';
   const links = showUserView ? userLinks : adminLinks;
 
   return (
-    <aside className="glass-strong w-64 min-h-screen flex flex-col fixed left-0 top-0 z-30">
-      <div className="p-6 border-b border-border/50">
+    <Sidebar collapsible="icon" className="border-r border-border/50">
+      <SidebarHeader className="p-4 border-b border-border/50">
         <div className="flex items-center gap-3">
-          <img src={logoWhite} alt="Harmonet Music" className="h-10 w-auto" />
+          <img src={logoWhite} alt="Harmonet Music" className={collapsed ? 'h-6 w-auto' : 'h-10 w-auto'} />
         </div>
-      </div>
+      </SidebarHeader>
 
-      <nav className="flex-1 p-4 space-y-1">
-        {role === 'admin' && !isImpersonating && (
-          <div className="flex items-center gap-2 px-3 py-2 mb-3">
-            <Shield className="h-4 w-4 text-primary" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-primary">Admin Panel</span>
-          </div>
+      <SidebarContent>
+        <SidebarGroup>
+          {role === 'admin' && !isImpersonating && !collapsed && (
+            <SidebarGroupLabel className="flex items-center gap-2 text-primary">
+              <Shield className="h-3.5 w-3.5" />
+              Admin Panel
+            </SidebarGroupLabel>
+          )}
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {links.map((link) => (
+                <SidebarMenuItem key={link.to}>
+                  <SidebarMenuButton asChild tooltip={link.label}>
+                    <NavLink
+                      to={link.to}
+                      end={link.to === '/admin'}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                      activeClassName="bg-primary/10 text-foreground font-semibold"
+                    >
+                      <link.icon className="h-5 w-5 flex-shrink-0" />
+                      {!collapsed && <span>{link.label}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+
+      <SidebarFooter className="p-3 border-t border-border/50">
+        {!collapsed && (
+          <p className="text-xs text-muted-foreground mb-2 truncate px-2">{user?.email}</p>
         )}
-        {links.map((link) => (
-          <NavLink
-            key={link.to}
-            to={link.to}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300',
-                isActive
-                  ? 'sidebar-active text-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              )
-            }
-          >
-            <link.icon className="h-5 w-5" />
-            <span>{link.label}</span>
-          </NavLink>
-        ))}
-      </nav>
-
-      <div className="p-4 border-t border-border/50">
-        <p className="text-xs text-muted-foreground mb-3 truncate px-2">{user?.email}</p>
-        <button
-          onClick={signOut}
-          className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-300 w-full"
-        >
-          <LogOut className="h-5 w-5" />
-          <span>Sign Out</span>
-        </button>
-      </div>
-    </aside>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="Sign Out">
+              <button
+                onClick={signOut}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all w-full"
+              >
+                <LogOut className="h-5 w-5 flex-shrink-0" />
+                {!collapsed && <span>Sign Out</span>}
+              </button>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
   );
 }
