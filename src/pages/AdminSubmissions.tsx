@@ -439,7 +439,8 @@ export default function AdminSubmissions() {
                 <Detail label="Store" value={viewRelease.store_selection} />
                 <Detail label="© Line" value={viewRelease.copyright_line || '—'} />
                 <Detail label="℗ Line" value={viewRelease.phonogram_line || '—'} />
-                <Detail label="Submitted By" value={viewRelease.user_email || '—'} />
+                <Detail label="Submitted By" value={viewRelease.user_name || '—'} />
+                <Detail label="Email" value={viewRelease.user_email || '—'} />
                 <Detail label="User ID" value={viewRelease.user_display_id ? `#${viewRelease.user_display_id}` : viewRelease.user_id.slice(0, 8)} />
                 <Detail label="Submitted" value={new Date(viewRelease.created_at).toLocaleString()} />
               </div>
