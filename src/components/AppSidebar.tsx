@@ -11,7 +11,6 @@ import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { NavLink } from '@/components/NavLink';
-import { useLocation } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
@@ -46,7 +45,6 @@ export function AppSidebar() {
   const collapsed = state === 'collapsed';
   const showUserView = isImpersonating || role !== 'admin';
   const links = showUserView ? userLinks : adminLinks;
-  const location = useLocation();
 
   const handleNavClick = () => {
     if (isMobile) {
