@@ -52,6 +52,7 @@ type Release = {
   updated_at: string;
   tracks?: Track[];
   user_email?: string;
+  user_name?: string;
   user_display_id?: number;
 };
 
