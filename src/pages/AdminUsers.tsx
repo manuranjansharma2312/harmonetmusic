@@ -4,7 +4,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import {
-  Loader2, Eye, CheckCircle, XCircle, Search, Shield, ShieldCheck, ShieldX,
+  Loader2, Eye, CheckCircle, XCircle, Search, Shield, ShieldCheck, ShieldX, KeyRound,
   ShieldAlert, Pencil, LogIn, Ban, Trash2, Download, FileX, CheckSquare,
 } from 'lucide-react';
 import { toast } from 'sonner';
