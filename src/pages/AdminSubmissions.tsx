@@ -94,7 +94,7 @@ export default function AdminSubmissions() {
     const userIds = [...new Set(releasesData.map((r) => r.user_id))];
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('user_id, email, artist_name, legal_name, display_id')
+      .select('user_id, email, artist_name, record_label_name, legal_name, display_id, user_type')
       .in('user_id', userIds);
 
     const emailMap: Record<string, string> = {};
@@ -102,7 +102,9 @@ export default function AdminSubmissions() {
     const displayIdMap: Record<string, number> = {};
     profiles?.forEach((p) => {
       emailMap[p.user_id] = p.email;
-      nameMap[p.user_id] = p.artist_name || p.legal_name || p.email;
+      nameMap[p.user_id] = p.user_type === 'label'
+        ? (p.record_label_name || p.legal_name || p.email)
+        : (p.artist_name || p.legal_name || p.email);
       displayIdMap[p.user_id] = p.display_id;
     });
 
