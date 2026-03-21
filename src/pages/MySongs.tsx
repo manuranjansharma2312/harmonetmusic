@@ -38,7 +38,7 @@ export default function MySongs() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchSongs(); }, [user]);
+  useEffect(() => { fetchSongs(); }, [effectiveUserId]);
 
   const handleDelete = async () => {
     if (!deleteSong) return;
