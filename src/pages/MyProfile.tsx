@@ -47,7 +47,7 @@ export default function MyProfile() {
         .from('profiles')
         .select('*')
         .eq('user_id', effectiveUserId)
-        .single();
+        .maybeSingle();
       setProfile(data as Profile | null);
       setLoading(false);
     })();
