@@ -86,6 +86,7 @@ export default function NewRelease() {
         return;
       }
 
+      setReleaseOwnerId(release.user_id);
       setReleaseType(release.release_type as 'new_release' | 'transfer');
       setContentType(release.content_type);
       setAlbumName(release.album_name || '');
