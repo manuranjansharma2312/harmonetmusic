@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import logoWhite from '@/assets/logo-white.png';
 import { supabase } from '@/integrations/supabase/client';
 import { countries } from '@/data/countries';
+import { statesByCountry } from '@/data/states';
 
 const SocialIcon = ({ type }: { type: string }) => {
   const icons: Record<string, string> = {
@@ -244,17 +245,22 @@ export default function Auth() {
             <div>
               <label className="block text-sm text-muted-foreground mb-1">WhatsApp Number *</label>
               <div className="flex gap-2">
-                <select
-                  value={whatsappCode}
-                  onChange={(e) => setWhatsappCode(e.target.value)}
-                  className={`${inputClass} w-32 flex-shrink-0`}
-                >
-                  {countries.map((c) => (
-                    <option key={c.code} value={c.dialCode}>
-                      {c.flag} {c.dialCode}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative flex-shrink-0">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-xl pointer-events-none">
+                    {countries.find(c => c.dialCode === whatsappCode)?.flag || '🏳️'}
+                  </div>
+                  <select
+                    value={whatsappCode}
+                    onChange={(e) => setWhatsappCode(e.target.value)}
+                    className={`${inputClass} w-[120px] pl-10 appearance-none`}
+                  >
+                    {countries.map((c) => (
+                      <option key={c.code} value={c.dialCode}>
+                        {c.flag} {c.dialCode}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <input
                   type="tel"
                   className={inputClass}
@@ -291,7 +297,7 @@ export default function Auth() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm text-muted-foreground mb-1">Country *</label>
-                <select className={inputClass} value={country} onChange={(e) => setCountry(e.target.value)} required>
+                <select className={inputClass} value={country} onChange={(e) => { setCountry(e.target.value); setState(''); }} required>
                   <option value="">Select Country</option>
                   {countries.map((c) => (
                     <option key={c.code} value={c.name}>{c.flag} {c.name}</option>
@@ -300,7 +306,16 @@ export default function Auth() {
               </div>
               <div>
                 <label className="block text-sm text-muted-foreground mb-1">State *</label>
-                <input className={inputClass} placeholder="State / Province" value={state} onChange={(e) => setState(e.target.value)} required />
+                {country && statesByCountry[country] ? (
+                  <select className={inputClass} value={state} onChange={(e) => setState(e.target.value)} required>
+                    <option value="">Select State</option>
+                    {statesByCountry[country].map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input className={inputClass} placeholder="State / Province" value={state} onChange={(e) => setState(e.target.value)} required />
+                )}
               </div>
             </div>
 
