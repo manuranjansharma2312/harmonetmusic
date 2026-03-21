@@ -35,9 +35,9 @@ export default function AdminDashboard() {
 
   return (
     <DashboardLayout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold text-foreground">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Overview of all music submissions.</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Admin Dashboard</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">Overview of all music submissions.</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="Total Songs" value={stats.total} icon={Music} />

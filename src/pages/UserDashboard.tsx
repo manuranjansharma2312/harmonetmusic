@@ -81,9 +81,9 @@ export default function UserDashboard() {
         </div>
       )}
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Welcome back! Here's your overview.</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Dashboard</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">Welcome back! Here's your overview.</p>
       </div>
 
       {displayId && (
