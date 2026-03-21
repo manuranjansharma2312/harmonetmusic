@@ -254,6 +254,32 @@ export default function NewRelease() {
   const inputClass =
     'w-full px-4 py-3 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
 
+  // Submitting progress screen
+  if (submitting) {
+    return (
+      <DashboardLayout>
+        <div className="mx-auto w-full max-w-md flex flex-col items-center justify-center min-h-[50vh]">
+          <GlassCard glow className="w-full text-center animate-fade-in">
+            <div className="space-y-6 py-4">
+              <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+              <div>
+                <h2 className="text-xl font-display font-bold text-foreground mb-1">Submitting Release</h2>
+                <p className="text-sm text-muted-foreground">{submitStep}</p>
+              </div>
+              <div className="w-full bg-muted/50 rounded-full h-3 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${submitProgress}%` }}
+                />
+              </div>
+              <p className="text-lg font-bold text-primary">{submitProgress}%</p>
+            </div>
+          </GlassCard>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   if (showTrackForm) {
     return (
       <DashboardLayout>
