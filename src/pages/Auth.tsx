@@ -211,7 +211,7 @@ export default function Auth() {
                       : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/50'
                   }`}
                 >
-                  🏢 Record Label
+                  Record Label
                 </button>
               </div>
             </div>
