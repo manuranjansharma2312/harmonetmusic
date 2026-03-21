@@ -61,16 +61,17 @@ export default function MySongs() {
 
   return (
     <DashboardLayout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold text-foreground">My Songs</h1>
-        <p className="text-muted-foreground mt-1">View and manage your submissions.</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">My Songs</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">View and manage your submissions.</p>
       </div>
 
-      <GlassCard className="animate-fade-in overflow-x-auto">
+      <GlassCard className="animate-fade-in overflow-hidden">
         {songs.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">No songs submitted yet.</p>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto -mx-5 px-5">
+          <table className="w-full text-sm min-w-[500px]">
             <thead>
               <tr className="border-b border-border/50 text-muted-foreground">
                 <th className="text-left py-3 px-4 font-medium">Title</th>
@@ -108,6 +109,7 @@ export default function MySongs() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </GlassCard>
 

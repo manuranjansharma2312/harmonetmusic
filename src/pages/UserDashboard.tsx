@@ -66,7 +66,7 @@ export default function UserDashboard() {
   return (
     <DashboardLayout>
       {isImpersonating && (
-        <div className="mb-6 p-4 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-between animate-fade-in">
+        <div className="mb-6 p-3 sm:p-4 rounded-xl bg-blue-500/15 border border-blue-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in">
           <div>
             <p className="text-sm font-medium text-blue-400">Viewing as user</p>
             <p className="text-xs text-blue-300/70">{impersonatedEmail}</p>
@@ -81,9 +81,9 @@ export default function UserDashboard() {
         </div>
       )}
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Welcome back! Here's your overview.</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Dashboard</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">Welcome back! Here's your overview.</p>
       </div>
 
       {displayId && (

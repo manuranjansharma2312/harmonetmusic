@@ -202,12 +202,12 @@ export default function AdminUsers() {
 
   return (
     <DashboardLayout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold text-foreground">Users</h1>
-        <p className="text-muted-foreground mt-1">Manage and verify registered users.</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Users</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">Manage and verify registered users.</p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
         <GlassCard className="!p-4 text-center">
           <p className="text-2xl font-bold font-display text-foreground">{profiles.length}</p>
           <p className="text-xs text-muted-foreground">Total</p>
@@ -245,7 +245,7 @@ export default function AdminUsers() {
       </div>
 
       {/* Bulk action bar */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex flex-wrap items-center gap-3 mb-4">
         <button
           onClick={handleExport}
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50 border border-border text-sm font-medium text-foreground hover:bg-muted transition-all"
@@ -277,7 +277,7 @@ export default function AdminUsers() {
           <p className="text-center text-muted-foreground py-8">No users found.</p>
         ) : (
           <div className="overflow-x-auto -mx-5 px-5">
-            <table className="w-full text-sm min-w-[800px]">
+            <table className="w-full text-sm min-w-[700px]">
               <thead>
                 <tr className="border-b border-border/50 text-muted-foreground">
                   <th className="py-3 px-3 w-10">
@@ -290,10 +290,10 @@ export default function AdminUsers() {
                   </th>
                   <th className="text-left py-3 px-3 font-medium w-16">ID</th>
                   <th className="text-left py-3 px-3 font-medium">Name</th>
-                  <th className="text-left py-3 px-3 font-medium">Type</th>
-                  <th className="text-left py-3 px-3 font-medium">Email</th>
+                  <th className="text-left py-3 px-3 font-medium hidden sm:table-cell">Type</th>
+                  <th className="text-left py-3 px-3 font-medium hidden md:table-cell">Email</th>
                   <th className="text-left py-3 px-3 font-medium">Status</th>
-                  <th className="text-left py-3 px-3 font-medium">Joined</th>
+                  <th className="text-left py-3 px-3 font-medium hidden lg:table-cell">Joined</th>
                   <th className="text-right py-3 px-3 font-medium">Actions</th>
                 </tr>
               </thead>
@@ -313,16 +313,16 @@ export default function AdminUsers() {
                       {profile.user_type === 'artist' ? profile.artist_name : profile.record_label_name}
                       <span className="block text-xs text-muted-foreground">{profile.legal_name}</span>
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-3 px-3 hidden sm:table-cell">
                       <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground capitalize whitespace-nowrap">
                         {profile.user_type === 'record_label' ? 'Label' : 'Artist'}
                       </span>
                     </td>
-                    <td className="py-3 px-3 text-muted-foreground">{profile.email}</td>
+                    <td className="py-3 px-3 text-muted-foreground hidden md:table-cell">{profile.email}</td>
                     <td className="py-3 px-3"><VerificationBadge status={profile.verification_status} /></td>
-                    <td className="py-3 px-3 text-muted-foreground whitespace-nowrap">{new Date(profile.created_at).toLocaleDateString()}</td>
+                    <td className="py-3 px-3 text-muted-foreground whitespace-nowrap hidden lg:table-cell">{new Date(profile.created_at).toLocaleDateString()}</td>
                     <td className="py-3 px-3">
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-end gap-0.5 flex-wrap">
                         <button onClick={() => setViewProfile(profile)} className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all" title="View">
                           <Eye className="h-4 w-4" />
                         </button>

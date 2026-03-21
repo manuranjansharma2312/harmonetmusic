@@ -133,8 +133,8 @@ export default function AdminSubmissions() {
     <DashboardLayout>
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">All Submissions</h1>
-          <p className="text-muted-foreground mt-1">Manage all music submissions.</p>
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">All Submissions</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">Manage all music submissions.</p>
         </div>
         <div className="flex gap-2">
           {selected.size > 0 && (
@@ -180,11 +180,12 @@ export default function AdminSubmissions() {
         </select>
       </div>
 
-      <GlassCard className="animate-fade-in overflow-x-auto">
+      <GlassCard className="animate-fade-in overflow-hidden">
         {filtered.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">No submissions found.</p>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto -mx-5 px-5">
+          <table className="w-full text-sm min-w-[600px]">
             <thead>
               <tr className="border-b border-border/50 text-muted-foreground">
                 <th className="py-3 px-4 text-left">
@@ -248,6 +249,7 @@ export default function AdminSubmissions() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </GlassCard>
 

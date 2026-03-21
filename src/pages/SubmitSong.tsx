@@ -72,9 +72,9 @@ export default function SubmitSong() {
 
   return (
     <DashboardLayout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold text-foreground">Submit a Song</h1>
-        <p className="text-muted-foreground mt-1">Fill in the details to distribute your music.</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Submit a Song</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">Fill in the details to distribute your music.</p>
       </div>
 
       <GlassCard glow className="max-w-2xl animate-fade-in">

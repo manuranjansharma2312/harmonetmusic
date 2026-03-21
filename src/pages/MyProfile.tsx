@@ -77,9 +77,9 @@ export default function MyProfile() {
 
   return (
     <DashboardLayout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold text-foreground">My Profile</h1>
-        <p className="text-muted-foreground mt-1">Your account details (read-only).</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">My Profile</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">Your account details (read-only).</p>
       </div>
 
       {/* Header Card */}
