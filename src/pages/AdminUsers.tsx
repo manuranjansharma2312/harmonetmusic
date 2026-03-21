@@ -53,6 +53,7 @@ export default function AdminUsers() {
   const [editProfile, setEditProfile] = useState<Profile | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'single' | 'bulk'; userId?: string; name?: string } | null>(null);
+  const [resetPasswordProfile, setResetPasswordProfile] = useState<Profile | null>(null);
   const [deleting, setDeleting] = useState(false);
   const { startImpersonating } = useImpersonate();
   const navigate = useNavigate();
