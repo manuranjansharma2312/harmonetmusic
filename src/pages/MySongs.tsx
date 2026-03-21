@@ -70,7 +70,8 @@ export default function MySongs() {
         {songs.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">No songs submitted yet.</p>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto -mx-5 px-5">
+          <table className="w-full text-sm min-w-[500px]">
             <thead>
               <tr className="border-b border-border/50 text-muted-foreground">
                 <th className="text-left py-3 px-4 font-medium">Title</th>
