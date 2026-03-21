@@ -363,19 +363,6 @@ export default function NewRelease() {
                 ))}
               </select>
             </div>
-
-            {/* Copyright & Phonogram */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">© Line</label>
-                <input className={inputClass} value={copyrightLine} onChange={(e) => setCopyrightLine(e.target.value)} placeholder="e.g. 2024 Artist Name" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">℗ Line</label>
-                <input className={inputClass} value={phonogramLine} onChange={(e) => setPhonogramLine(e.target.value)} placeholder="e.g. 2024 Label Name" />
-              </div>
-            </div>
-
             {/* Tracks Section */}
             <div className="border-t border-border pt-5">
               <h2 className="text-lg font-semibold text-foreground mb-3">
