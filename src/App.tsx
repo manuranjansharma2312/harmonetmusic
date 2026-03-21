@@ -12,7 +12,7 @@ import Auth from "./pages/Auth";
 import UserDashboard from "./pages/UserDashboard";
 import NewRelease from "./pages/NewRelease";
 import AdminGenresLanguages from "./pages/AdminGenresLanguages";
-import MySongs from "./pages/MySongs";
+import MyReleases from "./pages/MyReleases";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminSubmissions from "./pages/AdminSubmissions";
 import AdminUsers from "./pages/AdminUsers";
