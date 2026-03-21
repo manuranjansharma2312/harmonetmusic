@@ -124,8 +124,8 @@ export default function NewRelease() {
           producer: t.producer || '',
           instagramLink: t.instagram_link || '',
           callertuneTime: t.callertune_time || '',
-          copyrightLine: t.track_order === 1 ? (release.copyright_line || '') : '',
-          phonogramLine: t.track_order === 1 ? (release.phonogram_line || '') : '',
+          copyrightLine: t.copyright_line || release.copyright_line || '',
+          phonogramLine: t.phonogram_line || release.phonogram_line || '',
           _existingAudioUrl: t.audio_url,
           _trackId: t.id,
         } as TrackData & { _existingAudioUrl?: string; _trackId?: string })));
@@ -308,6 +308,8 @@ export default function NewRelease() {
             producer: track.producer || null,
             instagram_link: track.instagramLink || null,
             callertune_time: track.callertuneTime || null,
+            copyright_line: track.copyrightLine || null,
+            phonogram_line: track.phonogramLine || null,
             track_order: i + 1,
           });
 
@@ -373,6 +375,8 @@ export default function NewRelease() {
             producer: track.producer || null,
             instagram_link: track.instagramLink || null,
             callertune_time: track.callertuneTime || null,
+            copyright_line: track.copyrightLine || null,
+            phonogram_line: track.phonogramLine || null,
             track_order: i + 1,
           });
 

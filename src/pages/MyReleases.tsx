@@ -29,6 +29,8 @@ type Track = {
   producer: string | null;
   instagram_link: string | null;
   callertune_time: string | null;
+  copyright_line: string | null;
+  phonogram_line: string | null;
   track_order: number;
 };
 
@@ -262,6 +264,8 @@ export default function MyReleases() {
                         <Detail label="Composer" value={track.composer || '—'} />
                         <Detail label="Producer" value={track.producer || '—'} />
                         <Detail label="Callertune" value={track.callertune_time || '—'} />
+                        <Detail label="© Line" value={track.copyright_line || '—'} />
+                        <Detail label="℗ Line" value={track.phonogram_line || '—'} />
                       </div>
                       {track.audio_url && <audio controls src={track.audio_url} className="w-full h-8 mt-1" />}
                     </div>

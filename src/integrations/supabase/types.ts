@@ -234,6 +234,7 @@ export type Database = {
           audio_url: string | null
           callertune_time: string | null
           composer: string | null
+          copyright_line: string | null
           created_at: string
           genre: string | null
           id: string
@@ -242,6 +243,7 @@ export type Database = {
           isrc: string | null
           language: string | null
           lyricist: string | null
+          phonogram_line: string | null
           primary_artist: string | null
           producer: string | null
           release_id: string
@@ -256,6 +258,7 @@ export type Database = {
           audio_url?: string | null
           callertune_time?: string | null
           composer?: string | null
+          copyright_line?: string | null
           created_at?: string
           genre?: string | null
           id?: string
@@ -264,6 +267,7 @@ export type Database = {
           isrc?: string | null
           language?: string | null
           lyricist?: string | null
+          phonogram_line?: string | null
           primary_artist?: string | null
           producer?: string | null
           release_id: string
@@ -278,6 +282,7 @@ export type Database = {
           audio_url?: string | null
           callertune_time?: string | null
           composer?: string | null
+          copyright_line?: string | null
           created_at?: string
           genre?: string | null
           id?: string
@@ -286,6 +291,7 @@ export type Database = {
           isrc?: string | null
           language?: string | null
           lyricist?: string | null
+          phonogram_line?: string | null
           primary_artist?: string | null
           producer?: string | null
           release_id?: string

@@ -31,6 +31,8 @@ type Track = {
   producer: string | null;
   instagram_link: string | null;
   callertune_time: string | null;
+  copyright_line: string | null;
+  phonogram_line: string | null;
   track_order: number;
 };
 
@@ -283,7 +285,7 @@ export default function AdminSubmissions() {
                   <th className="text-left py-3 px-3 font-medium">Release</th>
                   <th className="text-left py-3 px-3 font-medium">Type</th>
                   <th className="text-left py-3 px-3 font-medium hidden md:table-cell">UPC</th>
-                  <th className="text-left py-3 px-3 font-medium hidden md:table-cell">User</th>
+                  <th className="text-left py-3 px-3 font-medium hidden md:table-cell">Submitted By</th>
                   <th className="text-left py-3 px-3 font-medium">Status</th>
                   <th className="text-left py-3 px-3 font-medium hidden lg:table-cell">Date</th>
                   <th className="text-right py-3 px-3 font-medium">Actions</th>
@@ -472,6 +474,8 @@ export default function AdminSubmissions() {
                           <Detail label="Composer" value={track.composer || '—'} />
                           <Detail label="Producer" value={track.producer || '—'} />
                           <Detail label="Callertune" value={track.callertune_time || '—'} />
+                          <Detail label="© Line" value={track.copyright_line || '—'} />
+                          <Detail label="℗ Line" value={track.phonogram_line || '—'} />
                           <Detail label="Instagram" value={track.instagram_link || '—'} />
                           {track.spotify_link && <Detail label="Spotify" value={track.spotify_link} />}
                           {track.apple_music_link && <Detail label="Apple Music" value={track.apple_music_link} />}
