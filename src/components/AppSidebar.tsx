@@ -4,6 +4,7 @@ import {
   ListMusic,
   LogOut,
   Shield,
+  Users,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,6 +19,7 @@ const userLinks = [
 
 const adminLinks = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/submissions', label: 'All Submissions', icon: ListMusic },
 ];
 
