@@ -155,9 +155,9 @@ export default function Auth() {
     'w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative px-3 sm:px-4 py-6 sm:py-8">
+    <div className="min-h-[100dvh] flex items-center justify-center relative px-3 sm:px-4 py-4 sm:py-8 overflow-auto">
       <BackgroundBlobs />
-      <div className="glass-card-glow w-full max-w-lg p-5 sm:p-8 animate-scale-in relative z-10 max-h-[95vh] overflow-y-auto">
+      <div className="glass-card-glow w-full max-w-lg p-5 sm:p-8 animate-scale-in relative z-10 my-auto">
         <div className="flex flex-col items-center mb-6">
           <img src={logoWhite} alt="Harmonet Music" className="h-12 sm:h-16 w-auto mb-4" />
           <p className="text-muted-foreground text-sm">
