@@ -6,6 +6,7 @@ import {
   Shield,
   Users,
   UserCircle,
+  Tags,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
