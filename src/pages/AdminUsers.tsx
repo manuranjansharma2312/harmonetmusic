@@ -285,7 +285,7 @@ export default function AdminUsers() {
           <p className="text-center text-muted-foreground py-8">No users found.</p>
         ) : (
           <div className="overflow-x-auto -mx-5 px-5">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[800px]">
               <thead>
                 <tr className="border-b border-border/50 text-muted-foreground">
                   <th className="py-3 px-3 w-10">
