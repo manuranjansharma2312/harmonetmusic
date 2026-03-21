@@ -131,7 +131,7 @@ export default function AdminSubmissions() {
         const q = search.toLowerCase();
         const name = r.album_name || r.ep_name || r.tracks?.[0]?.song_title || '';
         const artist = r.tracks?.[0]?.primary_artist || '';
-        return name.toLowerCase().includes(q) || artist.toLowerCase().includes(q) || (r.user_email || '').toLowerCase().includes(q);
+        return name.toLowerCase().includes(q) || artist.toLowerCase().includes(q) || (r.user_email || '').toLowerCase().includes(q) || (r.user_name || '').toLowerCase().includes(q) || String(r.user_display_id || '').includes(q);
       }
       return true;
     });
