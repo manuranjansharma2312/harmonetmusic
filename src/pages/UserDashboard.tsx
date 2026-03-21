@@ -1,19 +1,27 @@
 import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { StatCard } from '@/components/StatCard';
+import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Music, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { useImpersonate } from '@/hooks/useImpersonate';
+import { Music, Clock, CheckCircle, XCircle, Loader2, Copy, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 export default function UserDashboard() {
   const { user } = useAuth();
+  const { isImpersonating, impersonatedUserId, impersonatedEmail, stopImpersonating } = useImpersonate();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
   const [loading, setLoading] = useState(true);
 
+  const effectiveUserId = isImpersonating ? impersonatedUserId : user?.id;
+
   useEffect(() => {
-    if (!user) return;
+    if (!effectiveUserId) return;
     (async () => {
-      const { data } = await supabase.from('songs').select('status').eq('user_id', user.id);
+      const { data } = await supabase.from('songs').select('status').eq('user_id', effectiveUserId);
       if (data) {
         setStats({
           total: data.length,
@@ -24,7 +32,19 @@ export default function UserDashboard() {
       }
       setLoading(false);
     })();
-  }, [user]);
+  }, [effectiveUserId]);
+
+  const copyUserId = () => {
+    if (effectiveUserId) {
+      navigator.clipboard.writeText(effectiveUserId);
+      toast.success('User ID copied!');
+    }
+  };
+
+  const handleStopImpersonating = () => {
+    stopImpersonating();
+    navigate('/admin/users');
+  };
 
   if (loading) {
     return (
@@ -38,10 +58,45 @@ export default function UserDashboard() {
 
   return (
     <DashboardLayout>
+      {/* Impersonation Banner */}
+      {isImpersonating && (
+        <div className="mb-6 p-4 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-between animate-fade-in">
+          <div>
+            <p className="text-sm font-medium text-blue-400">Viewing as user</p>
+            <p className="text-xs text-blue-300/70">{impersonatedEmail}</p>
+          </div>
+          <button
+            onClick={handleStopImpersonating}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/20 text-blue-400 text-sm font-medium hover:bg-blue-500/30 transition-all"
+          >
+            <X className="h-4 w-4" />
+            Back to Admin
+          </button>
+        </div>
+      )}
+
       <div className="mb-8">
         <h1 className="text-3xl font-display font-bold text-foreground">Dashboard</h1>
         <p className="text-muted-foreground mt-1">Welcome back! Here's your overview.</p>
       </div>
+
+      {/* User ID Card */}
+      <GlassCard className="mb-6 !p-4 animate-fade-in">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-muted-foreground">Your User ID</p>
+            <p className="font-mono text-sm text-foreground mt-0.5">{effectiveUserId}</p>
+          </div>
+          <button
+            onClick={copyUserId}
+            className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"
+            title="Copy ID"
+          >
+            <Copy className="h-4 w-4" />
+          </button>
+        </div>
+      </GlassCard>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="Total Songs" value={stats.total} icon={Music} />
         <StatCard title="Pending" value={stats.pending} icon={Clock} color="hsla(45, 80%, 40%, 0.3)" />
