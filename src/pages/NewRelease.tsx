@@ -339,7 +339,7 @@ export default function NewRelease() {
                 Upload Poster * <span className="text-xs text-muted-foreground">(3000×3000 px, JPG only)</span>
               </label>
               <div className="relative">
-                <input type="file" accept=".jpg,.jpeg,image/jpeg" onChange={handlePosterChange} className="hidden" id="poster-upload" />
+                <input type="file" accept="image/*" onChange={handlePosterChange} className="hidden" id="poster-upload" />
                 <label htmlFor="poster-upload" className={`${inputClass} flex min-w-0 cursor-pointer items-center gap-2`}>
                   <Upload className="h-4 w-4 shrink-0" />
                   <span className="truncate">{posterFile?.name || 'Choose poster image'}</span>
