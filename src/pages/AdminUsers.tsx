@@ -245,7 +245,7 @@ export default function AdminUsers() {
       </div>
 
       {/* Bulk action bar */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex flex-wrap items-center gap-3 mb-4">
         <button
           onClick={handleExport}
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50 border border-border text-sm font-medium text-foreground hover:bg-muted transition-all"
