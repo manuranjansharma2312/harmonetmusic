@@ -180,7 +180,7 @@ export default function AdminSubmissions() {
         </select>
       </div>
 
-      <GlassCard className="animate-fade-in overflow-x-auto">
+      <GlassCard className="animate-fade-in overflow-hidden">
         {filtered.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">No submissions found.</p>
         ) : (
