@@ -4,8 +4,9 @@ import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { StatusBadge } from '@/components/StatusBadge';
-import { Loader2, Music, ChevronDown, ChevronRight, Trash2, Eye } from 'lucide-react';
+import { Loader2, Music, ChevronDown, ChevronRight, Trash2, Eye, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -49,6 +50,7 @@ type Release = {
 };
 
 export default function MyReleases() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [releases, setReleases] = useState<Release[]>([]);
   const [loading, setLoading] = useState(true);
@@ -170,6 +172,11 @@ export default function MyReleases() {
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewRelease(release)}>
                       <Eye className="h-4 w-4" />
                     </Button>
+                    {release.status === 'pending' && (
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/submit?edit=${release.id}`)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    )}
                     {release.status === 'pending' && (
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteRelease(release)}>
                         <Trash2 className="h-4 w-4 text-destructive" />

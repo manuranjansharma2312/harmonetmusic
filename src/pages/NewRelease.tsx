@@ -3,7 +3,7 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Loader2, Upload, Plus, Trash2, Music, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -24,9 +24,12 @@ const STORE_OPTIONS = [
 export default function NewRelease() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editReleaseId = searchParams.get('edit');
   const [submitting, setSubmitting] = useState(false);
   const [submitProgress, setSubmitProgress] = useState(0);
   const [submitStep, setSubmitStep] = useState('');
+  const [loadingEdit, setLoadingEdit] = useState(!!editReleaseId);
 
   // Release-level state
   const [releaseType, setReleaseType] = useState<'new_release' | 'transfer'>('new_release');
@@ -36,6 +39,7 @@ export default function NewRelease() {
   const [upc, setUpc] = useState('');
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
+  const [existingPosterUrl, setExistingPosterUrl] = useState<string | null>(null);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [showCropModal, setShowCropModal] = useState(false);
   const [releaseDate, setReleaseDate] = useState('');
@@ -62,6 +66,73 @@ export default function NewRelease() {
     };
     fetchData();
   }, []);
+
+  // Load existing release for edit mode
+  useEffect(() => {
+    if (!editReleaseId || !user) return;
+    const loadRelease = async () => {
+      setLoadingEdit(true);
+      const { data: release } = await supabase
+        .from('releases')
+        .select('*')
+        .eq('id', editReleaseId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (!release || release.status !== 'pending') {
+        toast.error('Release not found or cannot be edited.');
+        navigate('/my-releases');
+        return;
+      }
+
+      setReleaseType(release.release_type as 'new_release' | 'transfer');
+      setContentType(release.content_type);
+      setAlbumName(release.album_name || '');
+      setEpName(release.ep_name || '');
+      setUpc(release.upc || '');
+      setReleaseDate(release.release_date);
+      setStoreSelection(release.store_selection);
+      if (release.poster_url) {
+        setExistingPosterUrl(release.poster_url);
+        setPosterPreview(release.poster_url);
+      }
+
+      const { data: tracksData } = await supabase
+        .from('tracks')
+        .select('*')
+        .eq('release_id', editReleaseId)
+        .order('track_order');
+
+      if (tracksData) {
+        setTracks(tracksData.map(t => ({
+          songTitle: t.song_title,
+          isrc: t.isrc || '',
+          audioFile: null,
+          audioType: t.audio_type as 'with_vocal' | 'instrumental',
+          language: t.language || '',
+          genre: t.genre || '',
+          primaryArtists: [{
+            name: t.primary_artist || '',
+            spotifyLink: t.spotify_link || '',
+            appleMusicLink: t.apple_music_link || '',
+            isNewProfile: t.is_new_artist_profile || false,
+          }],
+          lyricist: t.lyricist || '',
+          composer: t.composer || '',
+          producer: t.producer || '',
+          instagramLink: t.instagram_link || '',
+          callertuneTime: t.callertune_time || '',
+          copyrightLine: '',
+          phonogramLine: '',
+          _existingAudioUrl: t.audio_url,
+          _trackId: t.id,
+        } as TrackData & { _existingAudioUrl?: string; _trackId?: string })));
+      }
+
+      setLoadingEdit(false);
+    };
+    loadRelease();
+  }, [editReleaseId, user]);
 
   useEffect(() => {
     if (posterFile) {
@@ -170,7 +241,7 @@ export default function NewRelease() {
 
     try {
       // Upload poster
-      let poster_url = null;
+      let poster_url = existingPosterUrl;
       if (posterFile) {
         const path = `${user.id}/${Date.now()}-${posterFile.name}`;
         const { error } = await supabase.storage.from('posters').upload(path, posterFile);
@@ -178,71 +249,136 @@ export default function NewRelease() {
         const { data: urlData } = supabase.storage.from('posters').getPublicUrl(path);
         poster_url = urlData.publicUrl;
       }
-      advance('Creating release...');
+      advance(editReleaseId ? 'Updating release...' : 'Creating release...');
 
-      // Create release
-      const { data: release, error: releaseError } = await supabase
-        .from('releases')
-        .insert({
-          user_id: user.id,
-          release_type: releaseType,
-          content_type: contentType,
-          album_name: contentType === 'album' ? albumName : null,
-          ep_name: contentType === 'ep' ? epName : null,
-          upc: upc || null,
-          poster_url,
-          release_date: releaseDate,
-          store_selection: storeSelection,
-        })
-        .select('id')
-        .single();
+      if (editReleaseId) {
+        // UPDATE existing release
+        const { error: releaseError } = await supabase
+          .from('releases')
+          .update({
+            release_type: releaseType,
+            content_type: contentType,
+            album_name: contentType === 'album' ? albumName : null,
+            ep_name: contentType === 'ep' ? epName : null,
+            upc: upc || null,
+            poster_url,
+            release_date: releaseDate,
+            store_selection: storeSelection,
+          })
+          .eq('id', editReleaseId);
 
-      if (releaseError) throw releaseError;
-      advance(`Uploading track 1 of ${tracks.length}...`);
+        if (releaseError) throw releaseError;
+        advance(`Updating tracks...`);
 
-      // Upload audio files and create tracks
-      for (let i = 0; i < tracks.length; i++) {
-        const track = tracks[i];
-        let audio_url = null;
+        // Delete existing tracks and re-insert
+        await supabase.from('tracks').delete().eq('release_id', editReleaseId);
 
-        if (track.audioFile) {
-          setSubmitStep(`Uploading audio for track ${i + 1} of ${tracks.length}...`);
-          const path = `${user.id}/${Date.now()}-${track.audioFile.name}`;
-          const { error } = await supabase.storage.from('audio').upload(path, track.audioFile);
-          if (error) throw error;
-          const { data: urlData } = supabase.storage.from('audio').getPublicUrl(path);
-          audio_url = urlData.publicUrl;
+        for (let i = 0; i < tracks.length; i++) {
+          const track = tracks[i] as TrackData & { _existingAudioUrl?: string; _trackId?: string };
+          let audio_url = track._existingAudioUrl || null;
+
+          if (track.audioFile) {
+            setSubmitStep(`Uploading audio for track ${i + 1} of ${tracks.length}...`);
+            const path = `${user.id}/${Date.now()}-${track.audioFile.name}`;
+            const { error } = await supabase.storage.from('audio').upload(path, track.audioFile);
+            if (error) throw error;
+            const { data: urlData } = supabase.storage.from('audio').getPublicUrl(path);
+            audio_url = urlData.publicUrl;
+          }
+
+          const { error: trackError } = await supabase.from('tracks').insert({
+            release_id: editReleaseId,
+            user_id: user.id,
+            song_title: track.songTitle,
+            isrc: track.isrc || null,
+            audio_url,
+            audio_type: track.audioType,
+            language: track.language || null,
+            genre: track.genre || null,
+            primary_artist: track.primaryArtists.map(a => a.name).filter(Boolean).join(', ') || null,
+            spotify_link: track.primaryArtists[0]?.spotifyLink || null,
+            apple_music_link: track.primaryArtists[0]?.appleMusicLink || null,
+            is_new_artist_profile: track.primaryArtists.some(a => a.isNewProfile),
+            lyricist: track.lyricist || null,
+            composer: track.composer || null,
+            producer: track.producer || null,
+            instagram_link: track.instagramLink || null,
+            callertune_time: track.callertuneTime || null,
+            track_order: i + 1,
+          });
+
+          if (trackError) throw trackError;
+          if (i < tracks.length - 1) advance(`Updating track ${i + 2} of ${tracks.length}...`);
         }
 
-        const { error: trackError } = await supabase.from('tracks').insert({
-          release_id: release.id,
-          user_id: user.id,
-          song_title: track.songTitle,
-          isrc: track.isrc || null,
-          audio_url,
-          audio_type: track.audioType,
-          language: track.language || null,
-          genre: track.genre || null,
-          primary_artist: track.primaryArtists.map(a => a.name).filter(Boolean).join(', ') || null,
-          spotify_link: track.primaryArtists[0]?.spotifyLink || null,
-          apple_music_link: track.primaryArtists[0]?.appleMusicLink || null,
-          is_new_artist_profile: track.primaryArtists.some(a => a.isNewProfile),
-          lyricist: track.lyricist || null,
-          composer: track.composer || null,
-          producer: track.producer || null,
-          instagram_link: track.instagramLink || null,
-          callertune_time: track.callertuneTime || null,
-          track_order: i + 1,
-        });
+        setSubmitProgress(100);
+        setSubmitStep('Done!');
+        toast.success('Release updated successfully!');
+        setTimeout(() => navigate('/my-releases'), 800);
+      } else {
+        // CREATE new release
+        const { data: release, error: releaseError } = await supabase
+          .from('releases')
+          .insert({
+            user_id: user.id,
+            release_type: releaseType,
+            content_type: contentType,
+            album_name: contentType === 'album' ? albumName : null,
+            ep_name: contentType === 'ep' ? epName : null,
+            upc: upc || null,
+            poster_url,
+            release_date: releaseDate,
+            store_selection: storeSelection,
+          })
+          .select('id')
+          .single();
 
-        if (trackError) throw trackError;
-        if (i < tracks.length - 1) advance(`Uploading track ${i + 2} of ${tracks.length}...`);
+        if (releaseError) throw releaseError;
+        advance(`Uploading track 1 of ${tracks.length}...`);
+
+        for (let i = 0; i < tracks.length; i++) {
+          const track = tracks[i];
+          let audio_url = null;
+
+          if (track.audioFile) {
+            setSubmitStep(`Uploading audio for track ${i + 1} of ${tracks.length}...`);
+            const path = `${user.id}/${Date.now()}-${track.audioFile.name}`;
+            const { error } = await supabase.storage.from('audio').upload(path, track.audioFile);
+            if (error) throw error;
+            const { data: urlData } = supabase.storage.from('audio').getPublicUrl(path);
+            audio_url = urlData.publicUrl;
+          }
+
+          const { error: trackError } = await supabase.from('tracks').insert({
+            release_id: release.id,
+            user_id: user.id,
+            song_title: track.songTitle,
+            isrc: track.isrc || null,
+            audio_url,
+            audio_type: track.audioType,
+            language: track.language || null,
+            genre: track.genre || null,
+            primary_artist: track.primaryArtists.map(a => a.name).filter(Boolean).join(', ') || null,
+            spotify_link: track.primaryArtists[0]?.spotifyLink || null,
+            apple_music_link: track.primaryArtists[0]?.appleMusicLink || null,
+            is_new_artist_profile: track.primaryArtists.some(a => a.isNewProfile),
+            lyricist: track.lyricist || null,
+            composer: track.composer || null,
+            producer: track.producer || null,
+            instagram_link: track.instagramLink || null,
+            callertune_time: track.callertuneTime || null,
+            track_order: i + 1,
+          });
+
+          if (trackError) throw trackError;
+          if (i < tracks.length - 1) advance(`Uploading track ${i + 2} of ${tracks.length}...`);
+        }
+
+        setSubmitProgress(100);
+        setSubmitStep('Done!');
+        toast.success('Release submitted successfully!');
+        setTimeout(() => navigate('/my-releases'), 800);
       }
-
-      setSubmitProgress(100);
-      setSubmitStep('Done!');
-      toast.success('Release submitted successfully!');
-      setTimeout(() => navigate('/my-releases'), 800);
     } catch (err: any) {
       toast.error(err.message || 'Submission failed');
       setSubmitting(false);
@@ -263,7 +399,7 @@ export default function NewRelease() {
             <div className="space-y-6 py-4">
               <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
               <div>
-                <h2 className="text-xl font-display font-bold text-foreground mb-1">Submitting Release</h2>
+                <h2 className="text-xl font-display font-bold text-foreground mb-1">{editReleaseId ? 'Updating Release' : 'Submitting Release'}</h2>
                 <p className="text-sm text-muted-foreground">{submitStep}</p>
               </div>
               <div className="w-full bg-muted/50 rounded-full h-3 overflow-hidden">
@@ -310,13 +446,25 @@ export default function NewRelease() {
     );
   }
 
+  if (loadingEdit) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="mx-auto w-full max-w-2xl">
         <div className="mb-6 text-left sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">New Release</h1>
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">
+            {editReleaseId ? 'Edit Release' : 'New Release'}
+          </h1>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            Fill in the details to distribute your music.
+            {editReleaseId ? 'Update the details of your pending release.' : 'Fill in the details to distribute your music.'}
           </p>
         </div>
 
@@ -475,7 +623,7 @@ export default function NewRelease() {
                   className="w-full btn-primary-gradient py-3 font-semibold text-primary-foreground"
                 >
                   {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Submit Release
+                  {editReleaseId ? 'Update Release' : 'Submit Release'}
                 </Button>
               </>
             )}
