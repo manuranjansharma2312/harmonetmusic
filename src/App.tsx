@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 import { AuthProvider } from "@/hooks/useAuth";
 import { ImpersonateProvider } from "@/hooks/useImpersonate";
@@ -18,30 +20,40 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <ImpersonateProvider>
-              <Routes>
-                <Route path="/" element={<Navigate to="/auth" replace />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
-                <Route path="/submit" element={<ProtectedRoute><SubmitSong /></ProtectedRoute>} />
-                <Route path="/my-songs" element={<ProtectedRoute><MySongs /></ProtectedRoute>} />
-                <Route path="/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
-                <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
-                <Route path="/admin/submissions" element={<ProtectedRoute requiredRole="admin"><AdminSubmissions /></ProtectedRoute>} />
-                <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-          </ImpersonateProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof document === "undefined") return true;
+    const stored = document.cookie.match(/(?:^|; )sidebar:state=([^;]+)/)?.[1];
+    return stored !== "false";
+  });
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Sonner />
+        <BrowserRouter>
+          <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
+            <AuthProvider>
+              <ImpersonateProvider>
+                <Routes>
+                  <Route path="/" element={<Navigate to="/auth" replace />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+                  <Route path="/submit" element={<ProtectedRoute><SubmitSong /></ProtectedRoute>} />
+                  <Route path="/my-songs" element={<ProtectedRoute><MySongs /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
+                  <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+                  <Route path="/admin/submissions" element={<ProtectedRoute requiredRole="admin"><AdminSubmissions /></ProtectedRoute>} />
+                  <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </ImpersonateProvider>
+            </AuthProvider>
+          </SidebarProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
