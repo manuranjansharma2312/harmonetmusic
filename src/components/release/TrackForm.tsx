@@ -15,6 +15,13 @@ const AppleMusicIcon = () => (
   </svg>
 );
 
+export interface ArtistEntry {
+  name: string;
+  spotifyLink: string;
+  appleMusicLink: string;
+  isNewProfile: boolean;
+}
+
 export interface TrackData {
   songTitle: string;
   isrc: string;
@@ -22,10 +29,7 @@ export interface TrackData {
   audioType: 'with_vocal' | 'instrumental';
   language: string;
   genre: string;
-  primaryArtist: string;
-  spotifyLink: string;
-  appleMusicLink: string;
-  isNewArtistProfile: boolean;
+  primaryArtists: ArtistEntry[];
   lyricist: string;
   composer: string;
   producer: string;
