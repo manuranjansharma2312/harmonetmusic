@@ -72,16 +72,16 @@ export default function NewRelease() {
     if (!editReleaseId || !user) return;
     const loadRelease = async () => {
       setLoadingEdit(true);
-      const { data: release } = await supabase
-        .from('releases')
-        .select('*')
-        .eq('id', editReleaseId)
-        .eq('user_id', user.id)
-        .single();
+      const isAdmin = role === 'admin';
+      
+      // Admin can edit any release; user can only edit own
+      let query = supabase.from('releases').select('*').eq('id', editReleaseId);
+      if (!isAdmin) query = query.eq('user_id', user.id);
+      const { data: release } = await query.single();
 
-      if (!release || release.status !== 'pending') {
+      if (!release || (!isAdmin && release.status !== 'pending')) {
         toast.error('Release not found or cannot be edited.');
-        navigate('/my-releases');
+        navigate(isAdmin ? '/admin/submissions' : '/my-releases');
         return;
       }
 
