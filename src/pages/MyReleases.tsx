@@ -50,6 +50,7 @@ type Release = {
 };
 
 export default function MyReleases() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [releases, setReleases] = useState<Release[]>([]);
   const [loading, setLoading] = useState(true);
