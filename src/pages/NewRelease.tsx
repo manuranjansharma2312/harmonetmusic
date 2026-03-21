@@ -178,8 +178,6 @@ export default function NewRelease() {
           upc: upc || null,
           poster_url,
           release_date: releaseDate,
-          copyright_line: copyrightLine || null,
-          phonogram_line: phonogramLine || null,
           store_selection: storeSelection,
         })
         .select('id')
