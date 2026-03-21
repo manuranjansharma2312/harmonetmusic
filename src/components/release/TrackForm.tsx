@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, Music2 } from 'lucide-react';
+import { Upload, Music2, Plus } from 'lucide-react';
 
 // Spotify & Apple Music SVG logos inline
 const SpotifyIcon = () => (
