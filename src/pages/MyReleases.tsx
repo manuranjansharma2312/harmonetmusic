@@ -149,9 +149,18 @@ export default function MyReleases() {
                     <p className="font-semibold text-foreground truncate">{getReleaseName(release)}</p>
                     <div className="flex flex-wrap items-center gap-2 mt-1">
                       <span className="text-xs px-2 py-0.5 rounded bg-muted/50 text-muted-foreground capitalize">{release.content_type}</span>
+                      {release.release_type === 'transfer' && (
+                        <span className="text-xs px-2 py-0.5 rounded bg-accent/50 text-accent-foreground">Transfer</span>
+                      )}
                       <span className="text-xs text-muted-foreground">{release.tracks.length} track(s)</span>
                       <span className="text-xs text-muted-foreground">•</span>
                       <span className="text-xs text-muted-foreground">{new Date(release.release_date).toLocaleDateString()}</span>
+                      {release.upc && (
+                        <>
+                          <span className="text-xs text-muted-foreground">•</span>
+                          <span className="text-xs text-muted-foreground">UPC: <span className="font-mono text-foreground">{release.upc}</span></span>
+                        </>
+                      )}
                     </div>
                   </div>
 

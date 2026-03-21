@@ -188,11 +188,14 @@ export function TrackForm({ genres, languages, isTransfer, initialData, onSubmit
                 variant={artist.isNewProfile ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => {
-                  updateArtist('isNewProfile', !artist.isNewProfile);
-                  if (!artist.isNewProfile) {
-                    updateArtist('spotifyLink', '');
-                    updateArtist('appleMusicLink', '');
-                  }
+                  const updated = [...form.primaryArtists];
+                  const newIsNew = !artist.isNewProfile;
+                  updated[idx] = {
+                    ...updated[idx],
+                    isNewProfile: newIsNew,
+                    ...(newIsNew ? { spotifyLink: '', appleMusicLink: '' } : {}),
+                  };
+                  update('primaryArtists', updated);
                 }}
               >
                 {artist.isNewProfile ? '✓ Creating new profile for this artist' : 'Create new profile for this artist'}
