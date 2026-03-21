@@ -286,13 +286,13 @@ export default function Auth() {
               <label className="block text-sm text-muted-foreground mb-1">WhatsApp Number *</label>
               <div className="flex gap-2">
                 <div className="relative flex-shrink-0">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-xl pointer-events-none">
+                  <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-lg sm:text-xl pointer-events-none">
                     {selectedWhatsAppCountry?.flag || '🏳️'}
                   </div>
                   <select
                     value={whatsappCode}
                     onChange={(e) => setWhatsappCode(e.target.value)}
-                    className={`${inputClass} w-[120px] pl-10 appearance-none`}
+                    className={`${inputClass} w-[100px] sm:w-[120px] pl-9 sm:pl-10 appearance-none`}
                   >
                     {countries.map((item) => (
                       <option key={item.code} value={item.dialCode}>
