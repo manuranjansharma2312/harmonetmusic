@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
+import { useImpersonate } from '@/hooks/useImpersonate';
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
