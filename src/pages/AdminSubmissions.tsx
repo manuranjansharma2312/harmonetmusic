@@ -352,11 +352,11 @@ export default function AdminSubmissions() {
                         </td>
                         <td className="py-3 px-3 hidden md:table-cell">
                           <div className="text-xs">
-                            <p className="text-foreground font-medium">{release.user_name}</p>
-                            <p className="text-muted-foreground">{release.user_email}</p>
-                            {release.user_display_id && (
-                              <p className="text-muted-foreground">ID: #{release.user_display_id}</p>
-                            )}
+                            <p className="text-foreground font-medium">{release.user_name || 'Unknown'}</p>
+                            <p className="text-muted-foreground">{release.user_email || '—'}</p>
+                            <p className="text-muted-foreground font-mono">
+                              {release.user_display_id ? `#${release.user_display_id}` : 'No profile'}
+                            </p>
                           </div>
                         </td>
                         <td className="py-3 px-3">
