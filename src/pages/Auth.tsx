@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import logoWhite from '@/assets/logo-white.png';
 import { supabase } from '@/integrations/supabase/client';
 import { countries } from '@/data/countries';
+import { statesByCountry } from '@/data/states';
 
 const SocialIcon = ({ type }: { type: string }) => {
   const icons: Record<string, string> = {
