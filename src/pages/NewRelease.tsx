@@ -24,9 +24,12 @@ const STORE_OPTIONS = [
 export default function NewRelease() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editReleaseId = searchParams.get('edit');
   const [submitting, setSubmitting] = useState(false);
   const [submitProgress, setSubmitProgress] = useState(0);
   const [submitStep, setSubmitStep] = useState('');
+  const [loadingEdit, setLoadingEdit] = useState(!!editReleaseId);
 
   // Release-level state
   const [releaseType, setReleaseType] = useState<'new_release' | 'transfer'>('new_release');
@@ -36,6 +39,7 @@ export default function NewRelease() {
   const [upc, setUpc] = useState('');
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
+  const [existingPosterUrl, setExistingPosterUrl] = useState<string | null>(null);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [showCropModal, setShowCropModal] = useState(false);
   const [releaseDate, setReleaseDate] = useState('');
