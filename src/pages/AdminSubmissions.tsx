@@ -90,7 +90,7 @@ export default function AdminSubmissions() {
       .in('release_id', releaseIds)
       .order('track_order');
 
-    // Fetch user emails from profiles
+    // Fetch user info from profiles
     const userIds = [...new Set(releasesData.map((r) => r.user_id))];
     const { data: profiles } = await supabase
       .from('profiles')
@@ -105,6 +105,16 @@ export default function AdminSubmissions() {
       nameMap[p.user_id] = p.artist_name || p.legal_name || p.email;
       displayIdMap[p.user_id] = p.display_id;
     });
+
+    // Fallback: fetch auth emails for users without profiles
+    const missingUserIds = userIds.filter((uid) => !emailMap[uid]);
+    if (missingUserIds.length > 0) {
+      const { data: authEmails } = await supabase.rpc('get_auth_emails', { _user_ids: missingUserIds });
+      authEmails?.forEach((ae: { user_id: string; email: string }) => {
+        emailMap[ae.user_id] = ae.email;
+        nameMap[ae.user_id] = ae.email;
+      });
+    }
 
     const tracksByRelease: Record<string, Track[]> = {};
     tracksData?.forEach((t) => {
@@ -342,11 +352,11 @@ export default function AdminSubmissions() {
                         </td>
                         <td className="py-3 px-3 hidden md:table-cell">
                           <div className="text-xs">
-                            <p className="text-foreground font-medium">{release.user_name}</p>
-                            <p className="text-muted-foreground">{release.user_email}</p>
-                            {release.user_display_id && (
-                              <p className="text-muted-foreground">ID: #{release.user_display_id}</p>
-                            )}
+                            <p className="text-foreground font-medium">{release.user_name || 'Unknown'}</p>
+                            <p className="text-muted-foreground">{release.user_email || '—'}</p>
+                            <p className="text-muted-foreground font-mono">
+                              {release.user_display_id ? `#${release.user_display_id}` : 'No profile'}
+                            </p>
                           </div>
                         </td>
                         <td className="py-3 px-3">
