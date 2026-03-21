@@ -200,7 +200,7 @@ export default function Auth() {
                       : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/50'
                   }`}
                 >
-                  🎤 Artist
+                  Artist
                 </button>
                 <button
                   type="button"
