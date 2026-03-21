@@ -266,6 +266,8 @@ export default function NewRelease() {
             poster_url,
             release_date: releaseDate,
             store_selection: storeSelection,
+            copyright_line: tracks[0]?.copyrightLine || null,
+            phonogram_line: tracks[0]?.phonogramLine || null,
           })
           .eq('id', editReleaseId);
 
