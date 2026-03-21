@@ -450,6 +450,14 @@ export default function AdminUsers() {
               </button>
             </div>
             <div className="flex gap-3 mt-3">
+              <button
+                onClick={() => { setViewProfile(null); setResetPasswordProfile(viewProfile); }}
+                className="flex-1 py-2.5 rounded-lg bg-primary/20 text-primary font-medium hover:bg-primary/30 transition-all flex items-center justify-center gap-2"
+              >
+                <KeyRound className="h-4 w-4" /> Reset Password
+              </button>
+            </div>
+            <div className="flex gap-3 mt-3">
               {viewProfile.verification_status !== 'verified' && (
                 <button onClick={() => handleVerification(viewProfile.user_id, 'verified')} className="flex-1 py-2.5 rounded-lg bg-green-500/20 text-green-400 font-medium hover:bg-green-500/30 transition-all flex items-center justify-center gap-2">
                   <CheckCircle className="h-4 w-4" /> Verify
