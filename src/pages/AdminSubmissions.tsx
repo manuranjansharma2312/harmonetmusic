@@ -95,8 +95,10 @@ export default function AdminSubmissions() {
       .in('user_id', userIds);
 
     const emailMap: Record<string, string> = {};
+    const displayIdMap: Record<string, number> = {};
     profiles?.forEach((p) => {
       emailMap[p.user_id] = p.email || p.artist_name || p.user_id.slice(0, 8);
+      displayIdMap[p.user_id] = p.display_id;
     });
 
     const tracksByRelease: Record<string, Track[]> = {};
