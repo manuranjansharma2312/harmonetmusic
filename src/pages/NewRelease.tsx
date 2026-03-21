@@ -290,7 +290,7 @@ export default function NewRelease() {
 
           const { error: trackError } = await supabase.from('tracks').insert({
             release_id: editReleaseId,
-            user_id: user.id,
+            user_id: releaseOwnerId || user.id,
             song_title: track.songTitle,
             isrc: track.isrc || null,
             audio_url,
