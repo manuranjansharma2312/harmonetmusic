@@ -34,6 +34,8 @@ export default function NewRelease() {
   const [upc, setUpc] = useState('');
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [showCropModal, setShowCropModal] = useState(false);
   const [releaseDate, setReleaseDate] = useState('');
   const [copyrightLine, setCopyrightLine] = useState('');
   const [phonogramLine, setPhonogramLine] = useState('');
