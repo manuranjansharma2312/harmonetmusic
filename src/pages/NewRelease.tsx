@@ -124,8 +124,8 @@ export default function NewRelease() {
           producer: t.producer || '',
           instagramLink: t.instagram_link || '',
           callertuneTime: t.callertune_time || '',
-          copyrightLine: '',
-          phonogramLine: '',
+          copyrightLine: t.track_order === 1 ? (release.copyright_line || '') : '',
+          phonogramLine: t.track_order === 1 ? (release.phonogram_line || '') : '',
           _existingAudioUrl: t.audio_url,
           _trackId: t.id,
         } as TrackData & { _existingAudioUrl?: string; _trackId?: string })));
@@ -266,6 +266,8 @@ export default function NewRelease() {
             poster_url,
             release_date: releaseDate,
             store_selection: storeSelection,
+            copyright_line: tracks[0]?.copyrightLine || null,
+            phonogram_line: tracks[0]?.phonogramLine || null,
           })
           .eq('id', editReleaseId);
 
@@ -331,6 +333,8 @@ export default function NewRelease() {
             poster_url,
             release_date: releaseDate,
             store_selection: storeSelection,
+            copyright_line: tracks[0]?.copyrightLine || null,
+            phonogram_line: tracks[0]?.phonogramLine || null,
           })
           .select('id')
           .single();

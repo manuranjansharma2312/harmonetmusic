@@ -52,6 +52,7 @@ type Release = {
   updated_at: string;
   tracks?: Track[];
   user_email?: string;
+  user_name?: string;
   user_display_id?: number;
 };
 
@@ -91,13 +92,15 @@ export default function AdminSubmissions() {
     const userIds = [...new Set(releasesData.map((r) => r.user_id))];
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('user_id, email, artist_name, display_id')
+      .select('user_id, email, artist_name, legal_name, display_id')
       .in('user_id', userIds);
 
     const emailMap: Record<string, string> = {};
+    const nameMap: Record<string, string> = {};
     const displayIdMap: Record<string, number> = {};
     profiles?.forEach((p) => {
-      emailMap[p.user_id] = p.email || p.artist_name || p.user_id.slice(0, 8);
+      emailMap[p.user_id] = p.email;
+      nameMap[p.user_id] = p.artist_name || p.legal_name || p.email;
       displayIdMap[p.user_id] = p.display_id;
     });
 
@@ -112,6 +115,7 @@ export default function AdminSubmissions() {
         ...r,
         tracks: tracksByRelease[r.id] || [],
         user_email: emailMap[r.user_id] || r.user_id.slice(0, 8),
+        user_name: nameMap[r.user_id] || r.user_id.slice(0, 8),
         user_display_id: displayIdMap[r.user_id],
       }))
     );
@@ -127,7 +131,7 @@ export default function AdminSubmissions() {
         const q = search.toLowerCase();
         const name = r.album_name || r.ep_name || r.tracks?.[0]?.song_title || '';
         const artist = r.tracks?.[0]?.primary_artist || '';
-        return name.toLowerCase().includes(q) || artist.toLowerCase().includes(q) || (r.user_email || '').toLowerCase().includes(q);
+        return name.toLowerCase().includes(q) || artist.toLowerCase().includes(q) || (r.user_email || '').toLowerCase().includes(q) || (r.user_name || '').toLowerCase().includes(q) || String(r.user_display_id || '').includes(q);
       }
       return true;
     });
@@ -336,9 +340,10 @@ export default function AdminSubmissions() {
                         </td>
                         <td className="py-3 px-3 hidden md:table-cell">
                           <div className="text-xs">
-                            <p className="text-foreground">{release.user_email}</p>
+                            <p className="text-foreground font-medium">{release.user_name}</p>
+                            <p className="text-muted-foreground">{release.user_email}</p>
                             {release.user_display_id && (
-                              <p className="text-muted-foreground">ID: {release.user_display_id}</p>
+                              <p className="text-muted-foreground">ID: #{release.user_display_id}</p>
                             )}
                           </div>
                         </td>
@@ -434,7 +439,8 @@ export default function AdminSubmissions() {
                 <Detail label="Store" value={viewRelease.store_selection} />
                 <Detail label="© Line" value={viewRelease.copyright_line || '—'} />
                 <Detail label="℗ Line" value={viewRelease.phonogram_line || '—'} />
-                <Detail label="Submitted By" value={viewRelease.user_email || '—'} />
+                <Detail label="Submitted By" value={viewRelease.user_name || '—'} />
+                <Detail label="Email" value={viewRelease.user_email || '—'} />
                 <Detail label="User ID" value={viewRelease.user_display_id ? `#${viewRelease.user_display_id}` : viewRelease.user_id.slice(0, 8)} />
                 <Detail label="Submitted" value={new Date(viewRelease.created_at).toLocaleString()} />
               </div>
