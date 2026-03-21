@@ -19,6 +19,8 @@ type Song = {
 
 export default function MySongs() {
   const { user } = useAuth();
+  const { isImpersonating, impersonatedUserId } = useImpersonate();
+  const effectiveUserId = isImpersonating ? impersonatedUserId : user?.id;
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewSong, setViewSong] = useState<Song | null>(null);
@@ -26,11 +28,11 @@ export default function MySongs() {
   const [deleteSong, setDeleteSong] = useState<Song | null>(null);
 
   const fetchSongs = async () => {
-    if (!user) return;
+    if (!effectiveUserId) return;
     const { data } = await supabase
       .from('songs')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', effectiveUserId)
       .order('created_at', { ascending: false });
     setSongs((data as Song[]) || []);
     setLoading(false);
