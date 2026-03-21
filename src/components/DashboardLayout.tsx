@@ -2,6 +2,7 @@ import { ReactNode, useState } from 'react';
 import { AppSidebar } from './AppSidebar';
 import { BackgroundBlobs } from './BackgroundBlobs';
 import { Menu, X } from 'lucide-react';
+import logoWhite from '@/assets/logo-white.png';
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -12,7 +13,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
       
       {/* Mobile header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 glass-strong px-4 py-3 flex items-center justify-between">
-        <h1 className="font-display font-bold text-foreground">MusicDist</h1>
+        <img src={logoWhite} alt="Harmonet Music" className="h-8 w-auto" />
         <button onClick={() => setMobileOpen(!mobileOpen)} className="text-foreground">
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
