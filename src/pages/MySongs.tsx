@@ -110,6 +110,7 @@ export default function MySongs() {
             </tbody>
           </table>
           </div>
+        )}
       </GlassCard>
 
       {viewSong && <SongDetailModal song={viewSong} onClose={() => setViewSong(null)} />}
