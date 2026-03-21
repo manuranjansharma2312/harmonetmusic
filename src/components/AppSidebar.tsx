@@ -11,6 +11,7 @@ import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { NavLink } from '@/components/NavLink';
+import { useLocation } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
@@ -41,10 +42,17 @@ const adminLinks = [
 export function AppSidebar() {
   const { role, signOut, user } = useAuth();
   const { isImpersonating } = useImpersonate();
-  const { state } = useSidebar();
+  const { state, setOpenMobile, isMobile } = useSidebar();
   const collapsed = state === 'collapsed';
   const showUserView = isImpersonating || role !== 'admin';
   const links = showUserView ? userLinks : adminLinks;
+  const location = useLocation();
+
+  const handleNavClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border/50">
@@ -70,6 +78,7 @@ export function AppSidebar() {
                     <NavLink
                       to={link.to}
                       end={link.to === '/admin'}
+                      onClick={handleNavClick}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
                       activeClassName="bg-primary/10 text-foreground font-semibold"
                     >
@@ -92,7 +101,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="Sign Out">
               <button
-                onClick={signOut}
+                onClick={() => { handleNavClick(); signOut(); }}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all w-full"
               >
                 <LogOut className="h-5 w-5 flex-shrink-0" />
