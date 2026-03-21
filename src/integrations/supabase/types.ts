@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      genres: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      languages: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string
@@ -89,6 +125,60 @@ export type Database = {
         }
         Relationships: []
       }
+      releases: {
+        Row: {
+          album_name: string | null
+          content_type: string
+          copyright_line: string | null
+          created_at: string
+          ep_name: string | null
+          id: string
+          phonogram_line: string | null
+          poster_url: string | null
+          release_date: string
+          release_type: string
+          status: string
+          store_selection: string
+          upc: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          album_name?: string | null
+          content_type?: string
+          copyright_line?: string | null
+          created_at?: string
+          ep_name?: string | null
+          id?: string
+          phonogram_line?: string | null
+          poster_url?: string | null
+          release_date: string
+          release_type?: string
+          status?: string
+          store_selection?: string
+          upc?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          album_name?: string | null
+          content_type?: string
+          copyright_line?: string | null
+          created_at?: string
+          ep_name?: string | null
+          id?: string
+          phonogram_line?: string | null
+          poster_url?: string | null
+          release_date?: string
+          release_type?: string
+          status?: string
+          store_selection?: string
+          upc?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       songs: {
         Row: {
           artist: string
@@ -136,6 +226,83 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      tracks: {
+        Row: {
+          apple_music_link: string | null
+          audio_type: string
+          audio_url: string | null
+          callertune_time: string | null
+          composer: string | null
+          created_at: string
+          genre: string | null
+          id: string
+          instagram_link: string | null
+          is_new_artist_profile: boolean | null
+          isrc: string | null
+          language: string | null
+          lyricist: string | null
+          primary_artist: string | null
+          producer: string | null
+          release_id: string
+          song_title: string
+          spotify_link: string | null
+          track_order: number
+          user_id: string
+        }
+        Insert: {
+          apple_music_link?: string | null
+          audio_type?: string
+          audio_url?: string | null
+          callertune_time?: string | null
+          composer?: string | null
+          created_at?: string
+          genre?: string | null
+          id?: string
+          instagram_link?: string | null
+          is_new_artist_profile?: boolean | null
+          isrc?: string | null
+          language?: string | null
+          lyricist?: string | null
+          primary_artist?: string | null
+          producer?: string | null
+          release_id: string
+          song_title: string
+          spotify_link?: string | null
+          track_order?: number
+          user_id: string
+        }
+        Update: {
+          apple_music_link?: string | null
+          audio_type?: string
+          audio_url?: string | null
+          callertune_time?: string | null
+          composer?: string | null
+          created_at?: string
+          genre?: string | null
+          id?: string
+          instagram_link?: string | null
+          is_new_artist_profile?: boolean | null
+          isrc?: string | null
+          language?: string | null
+          lyricist?: string | null
+          primary_artist?: string | null
+          producer?: string | null
+          release_id?: string
+          song_title?: string
+          spotify_link?: string | null
+          track_order?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracks_release_id_fkey"
+            columns: ["release_id"]
+            isOneToOne: false
+            referencedRelation: "releases"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
