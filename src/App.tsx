@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ImpersonateProvider } from "@/hooks/useImpersonate";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -24,18 +25,20 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <ImpersonateProvider>
-            <Routes>
-              <Route path="/" element={<Navigate to="/auth" replace />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
-              <Route path="/submit" element={<ProtectedRoute><SubmitSong /></ProtectedRoute>} />
-              <Route path="/my-songs" element={<ProtectedRoute><MySongs /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
-              <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
-              <Route path="/admin/submissions" element={<ProtectedRoute requiredRole="admin"><AdminSubmissions /></ProtectedRoute>} />
-              <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <SidebarProvider>
+              <Routes>
+                <Route path="/" element={<Navigate to="/auth" replace />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+                <Route path="/submit" element={<ProtectedRoute><SubmitSong /></ProtectedRoute>} />
+                <Route path="/my-songs" element={<ProtectedRoute><MySongs /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
+                <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+                <Route path="/admin/submissions" element={<ProtectedRoute requiredRole="admin"><AdminSubmissions /></ProtectedRoute>} />
+                <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </SidebarProvider>
           </ImpersonateProvider>
         </AuthProvider>
       </BrowserRouter>
