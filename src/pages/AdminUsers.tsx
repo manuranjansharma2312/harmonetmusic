@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Eye, CheckCircle, XCircle, Search, Shield, ShieldCheck, ShieldX, ShieldAlert, Pencil, LogIn, Ban } from 'lucide-react';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import {
+  Loader2, Eye, CheckCircle, XCircle, Search, Shield, ShieldCheck, ShieldX,
+  ShieldAlert, Pencil, LogIn, Ban, Trash2, Download, FileX, CheckSquare,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { EditProfileModal } from '@/components/EditProfileModal';
 import { useImpersonate } from '@/hooks/useImpersonate';
@@ -46,6 +50,9 @@ export default function AdminUsers() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [viewProfile, setViewProfile] = useState<Profile | null>(null);
   const [editProfile, setEditProfile] = useState<Profile | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'single' | 'bulk'; userId?: string; name?: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const { startImpersonating } = useImpersonate();
   const navigate = useNavigate();
 
@@ -86,6 +93,105 @@ export default function AdminUsers() {
     navigate('/dashboard');
   };
 
+  // Toggle selection
+  const toggleSelect = (userId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(userId)) next.delete(userId);
+      else next.add(userId);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filtered.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map((p) => p.user_id)));
+    }
+  };
+
+  // Delete users via edge function
+  const handleDeleteUsers = async (userIds: string[]) => {
+    setDeleting(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const { error } = await supabase.functions.invoke('delete-users', {
+        body: { user_ids: userIds },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (error) throw error;
+      toast.success(`${userIds.length} user(s) deleted`);
+      setSelectedIds(new Set());
+      setDeleteConfirm(null);
+      setViewProfile(null);
+      fetchProfiles();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Delete ID proof files
+  const handleDeleteIdProof = async (profile: Profile, side: 'front' | 'back') => {
+    const url = side === 'front' ? profile.id_proof_front_url : profile.id_proof_back_url;
+    if (!url) return;
+
+    // Extract file path from URL
+    const pathMatch = url.match(/id-proofs\/(.+)$/);
+    if (pathMatch) {
+      await supabase.storage.from('id-proofs').remove([pathMatch[1]]);
+    }
+
+    const updateField = side === 'front' ? { id_proof_front_url: null } : { id_proof_back_url: null };
+    const { error } = await supabase.from('profiles').update(updateField).eq('user_id', profile.user_id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`ID proof (${side}) deleted`);
+    fetchProfiles();
+    // Update view modal
+    if (viewProfile?.user_id === profile.user_id) {
+      setViewProfile({ ...viewProfile, ...(side === 'front' ? { id_proof_front_url: null } : { id_proof_back_url: null }) });
+    }
+  };
+
+  // Export CSV
+  const handleExport = () => {
+    const dataToExport = selectedIds.size > 0
+      ? profiles.filter((p) => selectedIds.has(p.user_id))
+      : filtered;
+
+    const headers = ['ID', 'Name', 'Legal Name', 'Type', 'Email', 'WhatsApp', 'Instagram', 'Facebook', 'Spotify', 'YouTube', 'Country', 'State', 'Address', 'Status', 'Joined'];
+    const rows = dataToExport.map((p) => [
+      `#${p.display_id}`,
+      p.user_type === 'artist' ? p.artist_name || '' : p.record_label_name || '',
+      p.legal_name,
+      p.user_type === 'record_label' ? 'Label' : 'Artist',
+      p.email,
+      `${p.whatsapp_country_code} ${p.whatsapp_number}`,
+      p.instagram_link || '',
+      p.facebook_link || '',
+      p.spotify_link || '',
+      p.youtube_link || '',
+      p.country,
+      p.state,
+      p.address,
+      p.verification_status,
+      new Date(p.created_at).toLocaleDateString(),
+    ]);
+
+    const csv = [headers.join(','), ...rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `users-export-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${dataToExport.length} users`);
+  };
+
   const inputClass = "px-4 py-2.5 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm";
 
   if (loading) {
@@ -122,7 +228,7 @@ export default function AdminUsers() {
         </GlassCard>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <input className={`${inputClass} w-full pl-10`} placeholder="Search by ID, name or email..." value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -136,14 +242,50 @@ export default function AdminUsers() {
         </select>
       </div>
 
+      {/* Bulk action bar */}
+      <div className="flex items-center gap-3 mb-4">
+        <button
+          onClick={handleExport}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50 border border-border text-sm font-medium text-foreground hover:bg-muted transition-all"
+        >
+          <Download className="h-4 w-4" />
+          Export {selectedIds.size > 0 ? `(${selectedIds.size})` : 'All'}
+        </button>
+        {selectedIds.size > 0 && (
+          <button
+            onClick={() => setDeleteConfirm({ type: 'bulk' })}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-destructive/20 border border-destructive/30 text-sm font-medium text-destructive hover:bg-destructive/30 transition-all"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete Selected ({selectedIds.size})
+          </button>
+        )}
+        {selectedIds.size > 0 && (
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="text-xs text-muted-foreground hover:text-foreground transition-all"
+          >
+            Clear selection
+          </button>
+        )}
+      </div>
+
       <GlassCard className="animate-fade-in">
         {filtered.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">No users found.</p>
         ) : (
           <div className="overflow-x-auto -mx-5 px-5">
-            <table className="w-full text-sm min-w-[700px]">
+            <table className="w-full text-sm min-w-[800px]">
               <thead>
                 <tr className="border-b border-border/50 text-muted-foreground">
+                  <th className="py-3 px-3 w-10">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.size === filtered.length && filtered.length > 0}
+                      onChange={toggleSelectAll}
+                      className="rounded border-border accent-primary h-4 w-4"
+                    />
+                  </th>
                   <th className="text-left py-3 px-3 font-medium w-16">ID</th>
                   <th className="text-left py-3 px-3 font-medium">Name</th>
                   <th className="text-left py-3 px-3 font-medium">Type</th>
@@ -155,7 +297,15 @@ export default function AdminUsers() {
               </thead>
               <tbody>
                 {filtered.map((profile) => (
-                  <tr key={profile.id} className="border-b border-border/30 table-row-hover">
+                  <tr key={profile.id} className={`border-b border-border/30 table-row-hover ${selectedIds.has(profile.user_id) ? 'bg-primary/5' : ''}`}>
+                    <td className="py-3 px-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(profile.user_id)}
+                        onChange={() => toggleSelect(profile.user_id)}
+                        className="rounded border-border accent-primary h-4 w-4"
+                      />
+                    </td>
                     <td className="py-3 px-3 text-foreground font-mono font-bold">#{profile.display_id}</td>
                     <td className="py-3 px-3 text-foreground font-medium whitespace-nowrap">
                       {profile.user_type === 'artist' ? profile.artist_name : profile.record_label_name}
@@ -179,6 +329,13 @@ export default function AdminUsers() {
                         </button>
                         <button onClick={() => handleLoginAs(profile)} className="p-2 rounded-lg hover:bg-blue-500/20 text-muted-foreground hover:text-blue-400 transition-all" title="Login as user">
                           <LogIn className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirm({ type: 'single', userId: profile.user_id, name: profile.legal_name })}
+                          className="p-2 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all"
+                          title="Delete user"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </button>
                         {profile.verification_status !== 'verified' && (
                           <button onClick={() => handleVerification(profile.user_id, 'verified')} className="p-2 rounded-lg hover:bg-green-500/20 text-muted-foreground hover:text-green-400 transition-all" title="Verify">
@@ -237,20 +394,35 @@ export default function AdminUsers() {
               </div>
               <Row label="Joined" value={new Date(viewProfile.created_at).toLocaleDateString()} />
 
+              {/* ID Proof section with delete buttons */}
               {(viewProfile.id_proof_front_url || viewProfile.id_proof_back_url) && (
                 <div className="pt-3 border-t border-border/50">
                   <p className="text-muted-foreground mb-2 font-medium">ID Proof</p>
                   <div className="grid grid-cols-2 gap-3">
                     {viewProfile.id_proof_front_url && (
-                      <div>
+                      <div className="relative group">
                         <p className="text-xs text-muted-foreground mb-1">Front</p>
                         <img src={viewProfile.id_proof_front_url} alt="ID Front" className="w-full rounded-lg border border-border" />
+                        <button
+                          onClick={() => handleDeleteIdProof(viewProfile, 'front')}
+                          className="absolute top-6 right-1 p-1.5 rounded-lg bg-destructive/80 text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Delete front ID proof"
+                        >
+                          <FileX className="h-3.5 w-3.5" />
+                        </button>
                       </div>
                     )}
                     {viewProfile.id_proof_back_url && (
-                      <div>
+                      <div className="relative group">
                         <p className="text-xs text-muted-foreground mb-1">Back</p>
                         <img src={viewProfile.id_proof_back_url} alt="ID Back" className="w-full rounded-lg border border-border" />
+                        <button
+                          onClick={() => handleDeleteIdProof(viewProfile, 'back')}
+                          className="absolute top-6 right-1 p-1.5 rounded-lg bg-destructive/80 text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Delete back ID proof"
+                        >
+                          <FileX className="h-3.5 w-3.5" />
+                        </button>
                       </div>
                     )}
                   </div>
@@ -289,6 +461,12 @@ export default function AdminUsers() {
                 </button>
               )}
             </div>
+            <button
+              onClick={() => setDeleteConfirm({ type: 'single', userId: viewProfile.user_id, name: viewProfile.legal_name })}
+              className="w-full mt-3 py-2.5 rounded-lg bg-destructive/20 text-destructive font-medium hover:bg-destructive/30 transition-all flex items-center justify-center gap-2"
+            >
+              <Trash2 className="h-4 w-4" /> Delete User
+            </button>
           </div>
         </div>
       )}
@@ -299,6 +477,26 @@ export default function AdminUsers() {
           profile={editProfile}
           onClose={() => setEditProfile(null)}
           onSaved={() => { setEditProfile(null); fetchProfiles(); }}
+        />
+      )}
+
+      {/* Delete Confirmation */}
+      {deleteConfirm && (
+        <ConfirmDialog
+          title={deleteConfirm.type === 'bulk' ? `Delete ${selectedIds.size} Users` : 'Delete User'}
+          message={
+            deleteConfirm.type === 'bulk'
+              ? `Are you sure you want to permanently delete ${selectedIds.size} selected user(s)? This will remove all their data, songs, and files. This action cannot be undone.`
+              : `Are you sure you want to permanently delete "${deleteConfirm.name}"? This will remove all their data, songs, and files. This action cannot be undone.`
+          }
+          onConfirm={() => {
+            if (deleteConfirm.type === 'bulk') {
+              handleDeleteUsers(Array.from(selectedIds));
+            } else if (deleteConfirm.userId) {
+              handleDeleteUsers([deleteConfirm.userId]);
+            }
+          }}
+          onCancel={() => setDeleteConfirm(null)}
         />
       )}
     </DashboardLayout>
