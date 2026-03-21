@@ -245,17 +245,22 @@ export default function Auth() {
             <div>
               <label className="block text-sm text-muted-foreground mb-1">WhatsApp Number *</label>
               <div className="flex gap-2">
-                <select
-                  value={whatsappCode}
-                  onChange={(e) => setWhatsappCode(e.target.value)}
-                  className={`${inputClass} w-32 flex-shrink-0`}
-                >
-                  {countries.map((c) => (
-                    <option key={c.code} value={c.dialCode}>
-                      {c.flag} {c.dialCode}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative flex-shrink-0">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-xl pointer-events-none">
+                    {countries.find(c => c.dialCode === whatsappCode)?.flag || '🏳️'}
+                  </div>
+                  <select
+                    value={whatsappCode}
+                    onChange={(e) => setWhatsappCode(e.target.value)}
+                    className={`${inputClass} w-[120px] pl-10 appearance-none`}
+                  >
+                    {countries.map((c) => (
+                      <option key={c.code} value={c.dialCode}>
+                        {c.flag} {c.dialCode}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <input
                   type="tel"
                   className={inputClass}
