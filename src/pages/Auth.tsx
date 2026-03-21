@@ -297,7 +297,7 @@ export default function Auth() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm text-muted-foreground mb-1">Country *</label>
-                <select className={inputClass} value={country} onChange={(e) => setCountry(e.target.value)} required>
+                <select className={inputClass} value={country} onChange={(e) => { setCountry(e.target.value); setState(''); }} required>
                   <option value="">Select Country</option>
                   {countries.map((c) => (
                     <option key={c.code} value={c.name}>{c.flag} {c.name}</option>
@@ -306,7 +306,16 @@ export default function Auth() {
               </div>
               <div>
                 <label className="block text-sm text-muted-foreground mb-1">State *</label>
-                <input className={inputClass} placeholder="State / Province" value={state} onChange={(e) => setState(e.target.value)} required />
+                {country && statesByCountry[country] ? (
+                  <select className={inputClass} value={state} onChange={(e) => setState(e.target.value)} required>
+                    <option value="">Select State</option>
+                    {statesByCountry[country].map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input className={inputClass} placeholder="State / Province" value={state} onChange={(e) => setState(e.target.value)} required />
+                )}
               </div>
             </div>
 
