@@ -70,8 +70,8 @@ export default function MySongs() {
         {songs.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">No songs submitted yet.</p>
         ) : (
-          <div className="overflow-x-auto -mx-5 px-5">
-          <table className="w-full text-sm min-w-[500px]">
+          <div className="overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6 pb-1">
+          <table className="w-full text-sm min-w-[560px]">
             <thead>
               <tr className="border-b border-border/50 text-muted-foreground">
                 <th className="text-left py-3 px-4 font-medium">Title</th>
@@ -84,23 +84,23 @@ export default function MySongs() {
             <tbody>
               {songs.map((song) => (
                 <tr key={song.id} className="border-b border-border/30 table-row-hover">
-                  <td className="py-3 px-4 text-foreground font-medium">{song.title}</td>
+                  <td className="py-3 px-4 text-foreground font-medium min-w-[11rem]">{song.title}</td>
                   <td className="py-3 px-4 text-muted-foreground hidden sm:table-cell">{song.artist}</td>
                   <td className="py-3 px-4"><StatusBadge status={song.status} /></td>
                   <td className="py-3 px-4 text-muted-foreground hidden md:table-cell">
                     {new Date(song.created_at).toLocaleDateString()}
                   </td>
                   <td className="py-3 px-4">
-                    <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => setViewSong(song)} className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all">
+                    <div className="flex items-center justify-end gap-1 sm:gap-2 whitespace-nowrap">
+                      <button onClick={() => setViewSong(song)} className="p-1.5 sm:p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all">
                         <Eye className="h-4 w-4" />
                       </button>
                       {song.status === 'pending' && (
-                        <button onClick={() => setEditSong(song)} className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all">
+                        <button onClick={() => setEditSong(song)} className="p-1.5 sm:p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all">
                           <Pencil className="h-4 w-4" />
                         </button>
                       )}
-                      <button onClick={() => setDeleteSong(song)} className="p-2 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all">
+                      <button onClick={() => setDeleteSong(song)} className="p-1.5 sm:p-2 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>

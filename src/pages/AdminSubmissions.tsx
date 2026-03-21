@@ -131,17 +131,17 @@ export default function AdminSubmissions() {
 
   return (
     <DashboardLayout>
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="mb-6 sm:mb-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">All Submissions</h1>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">Manage all music submissions.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
           {selected.size > 0 && (
             <button
               onClick={handleBulkDelete}
               disabled={bulkDeleting}
-              className="px-4 py-2 rounded-lg bg-destructive/20 text-destructive text-sm font-medium hover:bg-destructive/30 transition-all flex items-center gap-2"
+              className="px-4 py-2 rounded-lg bg-destructive/20 text-destructive text-sm font-medium hover:bg-destructive/30 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
             >
               {bulkDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
               Delete ({selected.size})
@@ -149,7 +149,7 @@ export default function AdminSubmissions() {
           )}
           <button
             onClick={exportCSV}
-            className="px-4 py-2 rounded-lg btn-primary-gradient text-primary-foreground text-sm font-medium flex items-center gap-2"
+            className="px-4 py-2 rounded-lg btn-primary-gradient text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 w-full sm:w-auto"
           >
             <Download className="h-4 w-4" />
             Export CSV
@@ -160,7 +160,7 @@ export default function AdminSubmissions() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             className={`${inputClass} w-full pl-10`}
             placeholder="Search by title or artist..."
@@ -169,7 +169,7 @@ export default function AdminSubmissions() {
           />
         </div>
         <select
-          className={inputClass}
+          className={`${inputClass} w-full sm:w-[180px]`}
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
@@ -184,8 +184,8 @@ export default function AdminSubmissions() {
         {filtered.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">No submissions found.</p>
         ) : (
-          <div className="overflow-x-auto -mx-5 px-5">
-          <table className="w-full text-sm min-w-[600px]">
+          <div className="overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6 pb-1">
+          <table className="w-full min-w-[680px] text-sm">
             <thead>
               <tr className="border-b border-border/50 text-muted-foreground">
                 <th className="py-3 px-4 text-left">
@@ -215,7 +215,7 @@ export default function AdminSubmissions() {
                       className="accent-primary"
                     />
                   </td>
-                  <td className="py-3 px-4 text-foreground font-medium">{song.title}</td>
+                  <td className="py-3 px-4 text-foreground font-medium min-w-[11rem]">{song.title}</td>
                   <td className="py-3 px-4 text-muted-foreground hidden sm:table-cell">{song.artist}</td>
                   <td className="py-3 px-4 text-muted-foreground hidden md:table-cell text-xs">{song.user_email}</td>
                   <td className="py-3 px-4"><StatusBadge status={song.status} /></td>
@@ -223,24 +223,24 @@ export default function AdminSubmissions() {
                     {new Date(song.created_at).toLocaleDateString()}
                   </td>
                   <td className="py-3 px-4">
-                    <div className="flex items-center justify-end gap-1">
-                      <button onClick={() => setViewSong(song)} className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all">
+                    <div className="flex items-center justify-end gap-0.5 sm:gap-1 whitespace-nowrap">
+                      <button onClick={() => setViewSong(song)} className="p-1.5 sm:p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all">
                         <Eye className="h-4 w-4" />
                       </button>
-                      <button onClick={() => setEditSong(song)} className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all">
+                      <button onClick={() => setEditSong(song)} className="p-1.5 sm:p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all">
                         <Pencil className="h-4 w-4" />
                       </button>
                       {song.status !== 'approved' && (
-                        <button onClick={() => handleStatusChange(song.id, 'approved')} className="p-2 rounded-lg hover:bg-green-500/20 text-muted-foreground hover:text-green-400 transition-all">
+                        <button onClick={() => handleStatusChange(song.id, 'approved')} className="p-1.5 sm:p-2 rounded-lg hover:bg-green-500/20 text-muted-foreground hover:text-green-400 transition-all">
                           <CheckCircle className="h-4 w-4" />
                         </button>
                       )}
                       {song.status !== 'rejected' && (
-                        <button onClick={() => handleStatusChange(song.id, 'rejected')} className="p-2 rounded-lg hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-all">
+                        <button onClick={() => handleStatusChange(song.id, 'rejected')} className="p-1.5 sm:p-2 rounded-lg hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-all">
                           <XCircle className="h-4 w-4" />
                         </button>
                       )}
-                      <button onClick={() => setDeleteSong(song)} className="p-2 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all">
+                      <button onClick={() => setDeleteSong(song)} className="p-1.5 sm:p-2 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>

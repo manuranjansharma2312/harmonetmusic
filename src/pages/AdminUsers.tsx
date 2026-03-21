@@ -217,10 +217,10 @@ export default function AdminUsers() {
 
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input className={`${inputClass} w-full pl-10`} placeholder="Search by ID, name or email..." value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
-        <select className={inputClass} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+        <select className={`${inputClass} w-full sm:w-[180px]`} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
           <option value="all">All Status</option>
           <option value="pending">Pending</option>
           <option value="verified">Verified</option>
@@ -230,10 +230,10 @@ export default function AdminUsers() {
       </div>
 
       {/* Bulk action bar */}
-      <div className="flex flex-wrap items-center gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 mb-4">
         <button
           onClick={handleExport}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50 border border-border text-sm font-medium text-foreground hover:bg-muted transition-all"
+          className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 rounded-lg bg-muted/50 border border-border text-sm font-medium text-foreground hover:bg-muted transition-all"
         >
           <Download className="h-4 w-4" />
           Export {selectedIds.size > 0 ? `(${selectedIds.size})` : 'All'}
@@ -241,7 +241,7 @@ export default function AdminUsers() {
         {selectedIds.size > 0 && (
           <button
             onClick={() => setDeleteConfirm({ type: 'bulk' })}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-destructive/20 border border-destructive/30 text-sm font-medium text-destructive hover:bg-destructive/30 transition-all"
+            className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 rounded-lg bg-destructive/20 border border-destructive/30 text-sm font-medium text-destructive hover:bg-destructive/30 transition-all"
           >
             <Trash2 className="h-4 w-4" />
             Delete Selected ({selectedIds.size})
@@ -250,7 +250,7 @@ export default function AdminUsers() {
         {selectedIds.size > 0 && (
           <button
             onClick={() => setSelectedIds(new Set())}
-            className="text-xs text-muted-foreground hover:text-foreground transition-all"
+            className="text-xs text-muted-foreground hover:text-foreground transition-all text-left sm:text-center"
           >
             Clear selection
           </button>
@@ -261,8 +261,8 @@ export default function AdminUsers() {
         {filtered.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">No users found.</p>
         ) : (
-          <div className="overflow-x-auto -mx-5 px-5">
-            <table className="w-full text-sm min-w-[800px]">
+          <div className="overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6 pb-1">
+            <table className="w-full text-sm min-w-[720px]">
               <thead>
                 <tr className="border-b border-border/50 text-muted-foreground">
                   <th className="py-3 px-3 w-10">
@@ -294,7 +294,7 @@ export default function AdminUsers() {
                       />
                     </td>
                     <td className="py-3 px-3 text-foreground font-mono font-bold">#{profile.display_id}</td>
-                    <td className="py-3 px-3 text-foreground font-medium whitespace-nowrap">
+                    <td className="py-3 px-3 text-foreground font-medium min-w-[12rem]">
                       {profile.user_type === 'artist' ? profile.artist_name : profile.record_label_name}
                       <span className="block text-xs text-muted-foreground">{profile.legal_name}</span>
                     </td>
