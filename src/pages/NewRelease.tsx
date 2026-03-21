@@ -379,7 +379,7 @@ export default function NewRelease() {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-foreground">{track.songTitle}</p>
-                          <p className="text-xs text-muted-foreground">{track.primaryArtist} • {track.genre}</p>
+                          <p className="text-xs text-muted-foreground">{track.primaryArtists.map(a => a.name).filter(Boolean).join(', ')} • {track.genre}</p>
                         </div>
                       </div>
                       <div className="flex gap-2">
