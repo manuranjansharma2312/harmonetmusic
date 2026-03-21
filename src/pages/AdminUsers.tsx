@@ -202,9 +202,9 @@ export default function AdminUsers() {
 
   return (
     <DashboardLayout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold text-foreground">Users</h1>
-        <p className="text-muted-foreground mt-1">Manage and verify registered users.</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Users</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">Manage and verify registered users.</p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
