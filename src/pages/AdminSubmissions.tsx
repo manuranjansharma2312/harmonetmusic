@@ -133,8 +133,8 @@ export default function AdminSubmissions() {
     <DashboardLayout>
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">All Submissions</h1>
-          <p className="text-muted-foreground mt-1">Manage all music submissions.</p>
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">All Submissions</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">Manage all music submissions.</p>
         </div>
         <div className="flex gap-2">
           {selected.size > 0 && (
