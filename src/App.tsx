@@ -25,7 +25,6 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <ImpersonateProvider>
-            <SidebarProvider>
               <Routes>
                 <Route path="/" element={<Navigate to="/auth" replace />} />
                 <Route path="/auth" element={<Auth />} />
@@ -38,7 +37,6 @@ const App = () => (
                 <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </SidebarProvider>
           </ImpersonateProvider>
         </AuthProvider>
       </BrowserRouter>
