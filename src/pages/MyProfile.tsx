@@ -1,0 +1,170 @@
+import { useEffect, useState } from 'react';
+import { DashboardLayout } from '@/components/DashboardLayout';
+import { GlassCard } from '@/components/GlassCard';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useImpersonate } from '@/hooks/useImpersonate';
+import { Loader2, User, Mail, Phone, MapPin, Globe, Shield, ShieldCheck, ShieldX, ShieldAlert, Instagram, Facebook, Music, Youtube } from 'lucide-react';
+
+function VerificationBadge({ status }: { status: string }) {
+  if (status === 'verified') return <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400"><ShieldCheck className="h-3.5 w-3.5" />Verified</span>;
+  if (status === 'rejected') return <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-red-500/20 text-red-400"><ShieldX className="h-3.5 w-3.5" />Rejected</span>;
+  if (status === 'suspended') return <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-orange-500/20 text-orange-400"><ShieldAlert className="h-3.5 w-3.5" />Suspended</span>;
+  return <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400"><Shield className="h-3.5 w-3.5" />Pending</span>;
+}
+
+type Profile = {
+  display_id: number;
+  user_type: string;
+  artist_name: string | null;
+  record_label_name: string | null;
+  legal_name: string;
+  email: string;
+  whatsapp_country_code: string;
+  whatsapp_number: string;
+  instagram_link: string | null;
+  facebook_link: string | null;
+  spotify_link: string | null;
+  youtube_link: string | null;
+  country: string;
+  state: string;
+  address: string;
+  verification_status: string;
+  created_at: string;
+};
+
+export default function MyProfile() {
+  const { user } = useAuth();
+  const { isImpersonating, impersonatedUserId } = useImpersonate();
+  const effectiveUserId = isImpersonating ? impersonatedUserId : user?.id;
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!effectiveUserId) return;
+    (async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', effectiveUserId)
+        .single();
+      setProfile(data as Profile | null);
+      setLoading(false);
+    })();
+  }, [effectiveUserId]);
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">Profile not found.</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const displayName = profile.user_type === 'artist' ? profile.artist_name : profile.record_label_name;
+
+  return (
+    <DashboardLayout>
+      <div className="mb-8">
+        <h1 className="text-3xl font-display font-bold text-foreground">My Profile</h1>
+        <p className="text-muted-foreground mt-1">Your account details (read-only).</p>
+      </div>
+
+      {/* Header Card */}
+      <GlassCard className="mb-6 animate-fade-in">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center">
+              <User className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono font-bold bg-primary/20 text-primary px-2 py-0.5 rounded">#{profile.display_id}</span>
+                <h2 className="text-xl font-display font-bold text-foreground">{displayName}</h2>
+              </div>
+              <p className="text-sm text-muted-foreground capitalize mt-0.5">
+                {profile.user_type === 'record_label' ? 'Record Label' : 'Artist'}
+              </p>
+            </div>
+          </div>
+          <VerificationBadge status={profile.verification_status} />
+        </div>
+      </GlassCard>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Personal Details */}
+        <GlassCard className="animate-fade-in">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Personal Details</h3>
+          <div className="space-y-4">
+            <ProfileRow icon={User} label="Legal Name" value={profile.legal_name} />
+            <ProfileRow icon={Mail} label="Email" value={profile.email} />
+            <ProfileRow icon={Phone} label="WhatsApp" value={`${profile.whatsapp_country_code} ${profile.whatsapp_number}`} />
+            <ProfileRow icon={MapPin} label="Address" value={profile.address} />
+            <ProfileRow icon={Globe} label="Location" value={`${profile.state}, ${profile.country}`} />
+          </div>
+        </GlassCard>
+
+        {/* Social Links */}
+        <GlassCard className="animate-fade-in">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Social Links</h3>
+          <div className="space-y-4">
+            {profile.instagram_link ? (
+              <ProfileRow icon={Instagram} label="Instagram" value={profile.instagram_link} link />
+            ) : (
+              <ProfileRow icon={Instagram} label="Instagram" value="Not provided" muted />
+            )}
+            {profile.facebook_link ? (
+              <ProfileRow icon={Facebook} label="Facebook" value={profile.facebook_link} link />
+            ) : (
+              <ProfileRow icon={Facebook} label="Facebook" value="Not provided" muted />
+            )}
+            {profile.spotify_link ? (
+              <ProfileRow icon={Music} label="Spotify" value={profile.spotify_link} link />
+            ) : (
+              <ProfileRow icon={Music} label="Spotify" value="Not provided" muted />
+            )}
+            {profile.youtube_link ? (
+              <ProfileRow icon={Youtube} label="YouTube" value={profile.youtube_link} link />
+            ) : (
+              <ProfileRow icon={Youtube} label="YouTube" value="Not provided" muted />
+            )}
+          </div>
+        </GlassCard>
+      </div>
+
+      <GlassCard className="mt-6 animate-fade-in">
+        <p className="text-xs text-muted-foreground text-center">
+          To update your profile details, please contact the admin.
+        </p>
+      </GlassCard>
+    </DashboardLayout>
+  );
+}
+
+function ProfileRow({ icon: Icon, label, value, link, muted }: { icon: any; label: string; value: string; link?: boolean; muted?: boolean }) {
+  return (
+    <div className="flex items-start gap-3">
+      <Icon className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+      <div className="min-w-0">
+        <p className="text-xs text-muted-foreground">{label}</p>
+        {link ? (
+          <a href={value} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate block">{value}</a>
+        ) : (
+          <p className={`text-sm font-medium ${muted ? 'text-muted-foreground/50' : 'text-foreground'}`}>{value}</p>
+        )}
+      </div>
+    </div>
+  );
+}

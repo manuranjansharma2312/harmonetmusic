@@ -16,6 +16,7 @@ const userLinks = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/submit', label: 'Submit Song', icon: Upload },
   { to: '/my-songs', label: 'My Songs', icon: ListMusic },
+  { to: '/profile', label: 'My Profile', icon: UserCircle },
 ];
 
 const adminLinks = [

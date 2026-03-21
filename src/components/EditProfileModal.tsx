@@ -105,7 +105,6 @@ export function EditProfileModal({
         <p className="text-xs text-muted-foreground mb-4">User ID: {profile.user_id}</p>
 
         <form onSubmit={handleSave} className="space-y-3">
-          {/* User Type */}
           <div>
             <label className="block text-xs text-muted-foreground mb-1">User Type</label>
             <select className={inputClass} value={form.user_type} onChange={(e) => update('user_type', e.target.value)}>
@@ -200,6 +199,7 @@ export function EditProfileModal({
               <option value="pending">Pending</option>
               <option value="verified">Verified</option>
               <option value="rejected">Rejected</option>
+              <option value="suspended">Suspended</option>
             </select>
           </div>
 
