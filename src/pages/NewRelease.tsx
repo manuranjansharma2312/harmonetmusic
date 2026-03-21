@@ -22,7 +22,7 @@ const STORE_OPTIONS = [
 ];
 
 export default function NewRelease() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editReleaseId = searchParams.get('edit');
