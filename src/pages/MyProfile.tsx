@@ -85,21 +85,23 @@ export default function MyProfile() {
       {/* Header Card */}
       <GlassCard className="mb-6 animate-fade-in">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center">
+          <div className="flex items-start sm:items-center gap-4 min-w-0">
+            <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
               <User className="h-8 w-8 text-primary" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-mono font-bold bg-primary/20 text-primary px-2 py-0.5 rounded">#{profile.display_id}</span>
-                <h2 className="text-xl font-display font-bold text-foreground">{displayName}</h2>
+                <h2 className="text-lg sm:text-xl font-display font-bold text-foreground break-words">{displayName}</h2>
               </div>
               <p className="text-sm text-muted-foreground capitalize mt-0.5">
                 {profile.user_type === 'record_label' ? 'Record Label' : 'Artist'}
               </p>
             </div>
           </div>
-          <VerificationBadge status={profile.verification_status} />
+          <div className="self-start sm:self-auto">
+            <VerificationBadge status={profile.verification_status} />
+          </div>
         </div>
       </GlassCard>
 
@@ -160,9 +162,9 @@ function ProfileRow({ icon: Icon, label, value, link, muted }: { icon: any; labe
       <div className="min-w-0">
         <p className="text-xs text-muted-foreground">{label}</p>
         {link ? (
-          <a href={value} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate block">{value}</a>
+          <a href={value} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline break-all block">{value}</a>
         ) : (
-          <p className={`text-sm font-medium ${muted ? 'text-muted-foreground/50' : 'text-foreground'}`}>{value}</p>
+          <p className={`text-sm font-medium break-words ${muted ? 'text-muted-foreground/50' : 'text-foreground'}`}>{value}</p>
         )}
       </div>
     </div>

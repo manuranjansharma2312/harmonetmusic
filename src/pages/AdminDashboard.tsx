@@ -39,7 +39,7 @@ export default function AdminDashboard() {
         <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Admin Dashboard</h1>
         <p className="text-muted-foreground mt-1 text-sm sm:text-base">Overview of all music submissions.</p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
         <StatCard title="Total Songs" value={stats.total} icon={Music} />
         <StatCard title="Pending" value={stats.pending} icon={Clock} color="hsla(45, 80%, 40%, 0.3)" />
         <StatCard title="Approved" value={stats.approved} icon={CheckCircle} color="hsla(140, 60%, 30%, 0.3)" />

@@ -67,13 +67,13 @@ export default function UserDashboard() {
     <DashboardLayout>
       {isImpersonating && (
         <div className="mb-6 p-3 sm:p-4 rounded-xl bg-blue-500/15 border border-blue-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in">
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-medium text-blue-400">Viewing as user</p>
-            <p className="text-xs text-blue-300/70">{impersonatedEmail}</p>
+            <p className="text-xs text-blue-300/70 break-all">{impersonatedEmail}</p>
           </div>
           <button
             onClick={handleStopImpersonating}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/20 text-blue-400 text-sm font-medium hover:bg-blue-500/30 transition-all"
+            className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-500/20 text-blue-400 text-sm font-medium hover:bg-blue-500/30 transition-all"
           >
             <X className="h-4 w-4" />
             Back to Admin
@@ -88,14 +88,14 @@ export default function UserDashboard() {
 
       {displayId && (
         <GlassCard className="mb-6 !p-4 animate-fade-in">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <p className="text-xs text-muted-foreground">Your User ID</p>
               <p className="font-mono text-lg font-bold text-foreground mt-0.5">#{displayId}</p>
             </div>
             <button
               onClick={copyUserId}
-              className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"
+              className="self-start sm:self-auto p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"
               title="Copy ID"
             >
               <Copy className="h-4 w-4" />
@@ -104,7 +104,7 @@ export default function UserDashboard() {
         </GlassCard>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
         <StatCard title="Total Songs" value={stats.total} icon={Music} />
         <StatCard title="Pending" value={stats.pending} icon={Clock} color="hsla(45, 80%, 40%, 0.3)" />
         <StatCard title="Approved" value={stats.approved} icon={CheckCircle} color="hsla(140, 60%, 30%, 0.3)" />
