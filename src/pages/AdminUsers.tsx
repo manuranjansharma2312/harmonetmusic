@@ -4,11 +4,12 @@ import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import {
-  Loader2, Eye, CheckCircle, XCircle, Search, Shield, ShieldCheck, ShieldX,
+  Loader2, Eye, CheckCircle, XCircle, Search, Shield, ShieldCheck, ShieldX, KeyRound,
   ShieldAlert, Pencil, LogIn, Ban, Trash2, Download, FileX, CheckSquare,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { EditProfileModal } from '@/components/EditProfileModal';
+import { ResetPasswordModal } from '@/components/ResetPasswordModal';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { useNavigate } from 'react-router-dom';
 
@@ -52,6 +53,7 @@ export default function AdminUsers() {
   const [editProfile, setEditProfile] = useState<Profile | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'single' | 'bulk'; userId?: string; name?: string } | null>(null);
+  const [resetPasswordProfile, setResetPasswordProfile] = useState<Profile | null>(null);
   const [deleting, setDeleting] = useState(false);
   const { startImpersonating } = useImpersonate();
   const navigate = useNavigate();
@@ -330,6 +332,9 @@ export default function AdminUsers() {
                         <button onClick={() => handleLoginAs(profile)} className="p-2 rounded-lg hover:bg-blue-500/20 text-muted-foreground hover:text-blue-400 transition-all" title="Login as user">
                           <LogIn className="h-4 w-4" />
                         </button>
+                        <button onClick={() => setResetPasswordProfile(profile)} className="p-2 rounded-lg hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all" title="Reset password">
+                          <KeyRound className="h-4 w-4" />
+                        </button>
                         <button
                           onClick={() => setDeleteConfirm({ type: 'single', userId: profile.user_id, name: profile.legal_name })}
                           className="p-2 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all"
@@ -445,6 +450,14 @@ export default function AdminUsers() {
               </button>
             </div>
             <div className="flex gap-3 mt-3">
+              <button
+                onClick={() => { setViewProfile(null); setResetPasswordProfile(viewProfile); }}
+                className="flex-1 py-2.5 rounded-lg bg-primary/20 text-primary font-medium hover:bg-primary/30 transition-all flex items-center justify-center gap-2"
+              >
+                <KeyRound className="h-4 w-4" /> Reset Password
+              </button>
+            </div>
+            <div className="flex gap-3 mt-3">
               {viewProfile.verification_status !== 'verified' && (
                 <button onClick={() => handleVerification(viewProfile.user_id, 'verified')} className="flex-1 py-2.5 rounded-lg bg-green-500/20 text-green-400 font-medium hover:bg-green-500/30 transition-all flex items-center justify-center gap-2">
                   <CheckCircle className="h-4 w-4" /> Verify
@@ -497,6 +510,16 @@ export default function AdminUsers() {
             }
           }}
           onCancel={() => setDeleteConfirm(null)}
+        />
+      )}
+
+      {/* Reset Password Modal */}
+      {resetPasswordProfile && (
+        <ResetPasswordModal
+          userId={resetPasswordProfile.user_id}
+          email={resetPasswordProfile.email}
+          name={resetPasswordProfile.legal_name}
+          onClose={() => setResetPasswordProfile(null)}
         />
       )}
     </DashboardLayout>
