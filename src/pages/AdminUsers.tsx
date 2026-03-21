@@ -290,10 +290,10 @@ export default function AdminUsers() {
                   </th>
                   <th className="text-left py-3 px-3 font-medium w-16">ID</th>
                   <th className="text-left py-3 px-3 font-medium">Name</th>
-                  <th className="text-left py-3 px-3 font-medium">Type</th>
-                  <th className="text-left py-3 px-3 font-medium">Email</th>
+                  <th className="text-left py-3 px-3 font-medium hidden sm:table-cell">Type</th>
+                  <th className="text-left py-3 px-3 font-medium hidden md:table-cell">Email</th>
                   <th className="text-left py-3 px-3 font-medium">Status</th>
-                  <th className="text-left py-3 px-3 font-medium">Joined</th>
+                  <th className="text-left py-3 px-3 font-medium hidden lg:table-cell">Joined</th>
                   <th className="text-right py-3 px-3 font-medium">Actions</th>
                 </tr>
               </thead>
