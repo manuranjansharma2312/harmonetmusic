@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, Music2 } from 'lucide-react';
+import { Upload, Music2, Plus } from 'lucide-react';
 
 // Spotify & Apple Music SVG logos inline
 const SpotifyIcon = () => (
@@ -15,6 +15,13 @@ const AppleMusicIcon = () => (
   </svg>
 );
 
+export interface ArtistEntry {
+  name: string;
+  spotifyLink: string;
+  appleMusicLink: string;
+  isNewProfile: boolean;
+}
+
 export interface TrackData {
   songTitle: string;
   isrc: string;
@@ -22,10 +29,7 @@ export interface TrackData {
   audioType: 'with_vocal' | 'instrumental';
   language: string;
   genre: string;
-  primaryArtist: string;
-  spotifyLink: string;
-  appleMusicLink: string;
-  isNewArtistProfile: boolean;
+  primaryArtists: ArtistEntry[];
   lyricist: string;
   composer: string;
   producer: string;
@@ -53,10 +57,7 @@ export function TrackForm({ genres, languages, isTransfer, initialData, onSubmit
       audioType: 'with_vocal',
       language: '',
       genre: '',
-      primaryArtist: '',
-      spotifyLink: '',
-      appleMusicLink: '',
-      isNewArtistProfile: false,
+      primaryArtists: [{ name: '', spotifyLink: '', appleMusicLink: '', isNewProfile: false }],
       lyricist: '',
       composer: '',
       producer: '',
@@ -148,38 +149,65 @@ export function TrackForm({ genres, languages, isTransfer, initialData, onSubmit
         </select>
       </div>
 
-      {/* Primary Artist */}
-      <div className="space-y-3">
-        <label className="block text-sm font-medium text-muted-foreground">Primary Artist *</label>
-        <input className={inputClass} value={form.primaryArtist} onChange={(e) => update('primaryArtist', e.target.value)} required placeholder="Artist name" />
+      {/* Primary Artists (up to 4) */}
+      <div className="space-y-4">
+        <label className="block text-sm font-medium text-muted-foreground">Primary Artist(s) *</label>
+        {form.primaryArtists.map((artist, idx) => {
+          const updateArtist = (field: keyof ArtistEntry, value: any) => {
+            const updated = [...form.primaryArtists];
+            updated[idx] = { ...updated[idx], [field]: value };
+            update('primaryArtists', updated);
+          };
+          return (
+            <div key={idx} className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Artist {idx + 1}</span>
+                {idx > 0 && (
+                  <Button type="button" variant="ghost" size="sm" className="h-7 text-destructive text-xs" onClick={() => {
+                    update('primaryArtists', form.primaryArtists.filter((_, i) => i !== idx));
+                  }}>Remove</Button>
+                )}
+              </div>
+              <input className={inputClass} value={artist.name} onChange={(e) => updateArtist('name', e.target.value)} required={idx === 0} placeholder="Artist name" />
 
-        {!form.isNewArtistProfile && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <SpotifyIcon />
-              <input className={inputClass} value={form.spotifyLink} onChange={(e) => update('spotifyLink', e.target.value)} placeholder="Spotify Artist Profile URL" />
+              {!artist.isNewProfile && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <SpotifyIcon />
+                    <input className={inputClass} value={artist.spotifyLink} onChange={(e) => updateArtist('spotifyLink', e.target.value)} placeholder="Spotify Artist Profile URL" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <AppleMusicIcon />
+                    <input className={inputClass} value={artist.appleMusicLink} onChange={(e) => updateArtist('appleMusicLink', e.target.value)} placeholder="Apple Music Artist Profile URL" />
+                  </div>
+                </div>
+              )}
+
+              <Button
+                type="button"
+                variant={artist.isNewProfile ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  updateArtist('isNewProfile', !artist.isNewProfile);
+                  if (!artist.isNewProfile) {
+                    updateArtist('spotifyLink', '');
+                    updateArtist('appleMusicLink', '');
+                  }
+                }}
+              >
+                {artist.isNewProfile ? '✓ Creating new profile for this artist' : 'Create new profile for this artist'}
+              </Button>
             </div>
-            <div className="flex items-center gap-2">
-              <AppleMusicIcon />
-              <input className={inputClass} value={form.appleMusicLink} onChange={(e) => update('appleMusicLink', e.target.value)} placeholder="Apple Music Artist Profile URL" />
-            </div>
-          </div>
+          );
+        })}
+
+        {form.primaryArtists.length < 4 && (
+          <Button type="button" variant="outline" size="sm" className="w-full gap-1" onClick={() => {
+            update('primaryArtists', [...form.primaryArtists, { name: '', spotifyLink: '', appleMusicLink: '', isNewProfile: false }]);
+          }}>
+            <Plus className="h-3.5 w-3.5" /> Add Another Primary Artist
+          </Button>
         )}
-
-        <Button
-          type="button"
-          variant={form.isNewArtistProfile ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => {
-            update('isNewArtistProfile', !form.isNewArtistProfile);
-            if (!form.isNewArtistProfile) {
-              update('spotifyLink', '');
-              update('appleMusicLink', '');
-            }
-          }}
-        >
-          {form.isNewArtistProfile ? '✓ Creating new profile for this artist' : 'Create new profile for this artist'}
-        </Button>
       </div>
 
       {/* Lyricist, Composer, Producer */}

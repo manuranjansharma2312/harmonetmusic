@@ -207,10 +207,10 @@ export default function NewRelease() {
           audio_type: track.audioType,
           language: track.language || null,
           genre: track.genre || null,
-          primary_artist: track.primaryArtist || null,
-          spotify_link: track.spotifyLink || null,
-          apple_music_link: track.appleMusicLink || null,
-          is_new_artist_profile: track.isNewArtistProfile,
+          primary_artist: track.primaryArtists.map(a => a.name).filter(Boolean).join(', ') || null,
+          spotify_link: track.primaryArtists[0]?.spotifyLink || null,
+          apple_music_link: track.primaryArtists[0]?.appleMusicLink || null,
+          is_new_artist_profile: track.primaryArtists.some(a => a.isNewProfile),
           lyricist: track.lyricist || null,
           composer: track.composer || null,
           producer: track.producer || null,
@@ -379,7 +379,7 @@ export default function NewRelease() {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-foreground">{track.songTitle}</p>
-                          <p className="text-xs text-muted-foreground">{track.primaryArtist} • {track.genre}</p>
+                          <p className="text-xs text-muted-foreground">{track.primaryArtists.map(a => a.name).filter(Boolean).join(', ')} • {track.genre}</p>
                         </div>
                       </div>
                       <div className="flex gap-2">
