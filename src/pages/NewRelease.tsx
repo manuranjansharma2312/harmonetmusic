@@ -25,6 +25,8 @@ export default function NewRelease() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+  const [submitProgress, setSubmitProgress] = useState(0);
+  const [submitStep, setSubmitStep] = useState('');
 
   // Release-level state
   const [releaseType, setReleaseType] = useState<'new_release' | 'transfer'>('new_release');
@@ -155,6 +157,17 @@ export default function NewRelease() {
     }
 
     setSubmitting(true);
+    setSubmitProgress(0);
+    setSubmitStep('Uploading poster...');
+
+    const totalSteps = 2 + tracks.length; // poster + release record + each track
+    let completed = 0;
+    const advance = (step: string) => {
+      completed++;
+      setSubmitProgress(Math.round((completed / totalSteps) * 100));
+      setSubmitStep(step);
+    };
+
     try {
       // Upload poster
       let poster_url = null;
@@ -165,6 +178,7 @@ export default function NewRelease() {
         const { data: urlData } = supabase.storage.from('posters').getPublicUrl(path);
         poster_url = urlData.publicUrl;
       }
+      advance('Creating release...');
 
       // Create release
       const { data: release, error: releaseError } = await supabase
@@ -184,6 +198,7 @@ export default function NewRelease() {
         .single();
 
       if (releaseError) throw releaseError;
+      advance(`Uploading track 1 of ${tracks.length}...`);
 
       // Upload audio files and create tracks
       for (let i = 0; i < tracks.length; i++) {
@@ -191,6 +206,7 @@ export default function NewRelease() {
         let audio_url = null;
 
         if (track.audioFile) {
+          setSubmitStep(`Uploading audio for track ${i + 1} of ${tracks.length}...`);
           const path = `${user.id}/${Date.now()}-${track.audioFile.name}`;
           const { error } = await supabase.storage.from('audio').upload(path, track.audioFile);
           if (error) throw error;
@@ -220,19 +236,49 @@ export default function NewRelease() {
         });
 
         if (trackError) throw trackError;
+        if (i < tracks.length - 1) advance(`Uploading track ${i + 2} of ${tracks.length}...`);
       }
 
+      setSubmitProgress(100);
+      setSubmitStep('Done!');
       toast.success('Release submitted successfully!');
-      navigate('/my-songs');
+      setTimeout(() => navigate('/my-releases'), 800);
     } catch (err: any) {
       toast.error(err.message || 'Submission failed');
-    } finally {
       setSubmitting(false);
+      setSubmitProgress(0);
+      setSubmitStep('');
     }
   };
 
   const inputClass =
     'w-full px-4 py-3 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
+
+  // Submitting progress screen
+  if (submitting) {
+    return (
+      <DashboardLayout>
+        <div className="mx-auto w-full max-w-md flex flex-col items-center justify-center min-h-[50vh]">
+          <GlassCard glow className="w-full text-center animate-fade-in">
+            <div className="space-y-6 py-4">
+              <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+              <div>
+                <h2 className="text-xl font-display font-bold text-foreground mb-1">Submitting Release</h2>
+                <p className="text-sm text-muted-foreground">{submitStep}</p>
+              </div>
+              <div className="w-full bg-muted/50 rounded-full h-3 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${submitProgress}%` }}
+                />
+              </div>
+              <p className="text-lg font-bold text-primary">{submitProgress}%</p>
+            </div>
+          </GlassCard>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   if (showTrackForm) {
     return (

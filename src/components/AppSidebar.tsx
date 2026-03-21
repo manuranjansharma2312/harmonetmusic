@@ -29,7 +29,7 @@ import {
 const userLinks = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/submit', label: 'New Release', icon: Upload },
-  { to: '/my-songs', label: 'My Songs', icon: ListMusic },
+  { to: '/my-releases', label: 'My Releases', icon: ListMusic },
   { to: '/profile', label: 'My Profile', icon: UserCircle },
 ];
 
