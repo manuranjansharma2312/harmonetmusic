@@ -31,6 +31,8 @@ export interface TrackData {
   producer: string;
   instagramLink: string;
   callertuneTime: string;
+  copyrightLine: string;
+  phonogramLine: string;
 }
 
 interface TrackFormProps {
