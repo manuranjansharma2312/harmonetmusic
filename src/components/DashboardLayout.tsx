@@ -2,6 +2,8 @@ import { ReactNode, useState } from 'react';
 import { AppSidebar } from './AppSidebar';
 import { BackgroundBlobs } from './BackgroundBlobs';
 import { Menu, X } from 'lucide-react';
+import logoWhite from '@/assets/logo-white.png';
+import { Menu, X } from 'lucide-react';
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
