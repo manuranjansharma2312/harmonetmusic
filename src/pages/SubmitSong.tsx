@@ -72,93 +72,95 @@ export default function SubmitSong() {
 
   return (
     <DashboardLayout>
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Submit a Song</h1>
-        <p className="text-muted-foreground mt-1 text-sm sm:text-base">Fill in the details to distribute your music.</p>
+      <div className="mx-auto w-full max-w-2xl">
+        <div className="mb-6 text-left sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Submit a Song</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">Fill in the details to distribute your music.</p>
+        </div>
+
+        <GlassCard glow className="w-full animate-fade-in">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Song Title *</label>
+                <input className={inputClass} value={form.title} onChange={(e) => updateField('title', e.target.value)} required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Artist Name *</label>
+                <input className={inputClass} value={form.artist} onChange={(e) => updateField('artist', e.target.value)} required />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Genre *</label>
+                <select className={inputClass} value={form.genre} onChange={(e) => updateField('genre', e.target.value)}>
+                  {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Language *</label>
+                <input className={inputClass} value={form.language} onChange={(e) => updateField('language', e.target.value)} required />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Release Date *</label>
+                <input type="date" className={inputClass} value={form.release_date} onChange={(e) => updateField('release_date', e.target.value)} required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">ISRC (optional)</label>
+                <input className={inputClass} value={form.isrc} onChange={(e) => updateField('isrc', e.target.value)} placeholder="e.g. USRC17607839" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Audio File (MP3/WAV)</label>
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept=".mp3,.wav,audio/mpeg,audio/wav"
+                    onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
+                    className="hidden"
+                    id="audio-upload"
+                  />
+                  <label htmlFor="audio-upload" className={`${inputClass} flex min-w-0 cursor-pointer items-center gap-2`}>
+                    <Upload className="h-4 w-4" />
+                    <span className="truncate">{audioFile?.name || 'Choose audio file'}</span>
+                  </label>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Cover Art (Image)</label>
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
+                    className="hidden"
+                    id="cover-upload"
+                  />
+                  <label htmlFor="cover-upload" className={`${inputClass} flex min-w-0 cursor-pointer items-center gap-2`}>
+                    <Upload className="h-4 w-4" />
+                    <span className="truncate">{coverFile?.name || 'Choose cover image'}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex w-full items-center justify-center gap-2 rounded-lg btn-primary-gradient py-3 font-semibold text-primary-foreground disabled:opacity-50"
+            >
+              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              Submit Song
+            </button>
+          </form>
+        </GlassCard>
       </div>
-
-      <GlassCard glow className="max-w-2xl animate-fade-in">
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Song Title *</label>
-              <input className={inputClass} value={form.title} onChange={(e) => updateField('title', e.target.value)} required />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Artist Name *</label>
-              <input className={inputClass} value={form.artist} onChange={(e) => updateField('artist', e.target.value)} required />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Genre *</label>
-              <select className={inputClass} value={form.genre} onChange={(e) => updateField('genre', e.target.value)}>
-                {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Language *</label>
-              <input className={inputClass} value={form.language} onChange={(e) => updateField('language', e.target.value)} required />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Release Date *</label>
-              <input type="date" className={inputClass} value={form.release_date} onChange={(e) => updateField('release_date', e.target.value)} required />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">ISRC (optional)</label>
-              <input className={inputClass} value={form.isrc} onChange={(e) => updateField('isrc', e.target.value)} placeholder="e.g. USRC17607839" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Audio File (MP3/WAV)</label>
-              <div className="relative">
-                <input
-                  type="file"
-                  accept=".mp3,.wav,audio/mpeg,audio/wav"
-                  onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
-                  className="hidden"
-                  id="audio-upload"
-                />
-                  <label htmlFor="audio-upload" className={`${inputClass} cursor-pointer flex items-center gap-2 min-w-0`}>
-                  <Upload className="h-4 w-4" />
-                  <span className="truncate">{audioFile?.name || 'Choose audio file'}</span>
-                </label>
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Cover Art (Image)</label>
-              <div className="relative">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
-                  className="hidden"
-                  id="cover-upload"
-                />
-                  <label htmlFor="cover-upload" className={`${inputClass} cursor-pointer flex items-center gap-2 min-w-0`}>
-                  <Upload className="h-4 w-4" />
-                  <span className="truncate">{coverFile?.name || 'Choose cover image'}</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full py-3 rounded-lg btn-primary-gradient text-primary-foreground font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-            Submit Song
-          </button>
-        </form>
-      </GlassCard>
     </DashboardLayout>
   );
 }

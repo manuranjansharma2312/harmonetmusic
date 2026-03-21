@@ -77,80 +77,79 @@ export default function MyProfile() {
 
   return (
     <DashboardLayout>
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">My Profile</h1>
-        <p className="text-muted-foreground mt-1 text-sm sm:text-base">Your account details (read-only).</p>
-      </div>
-
-      {/* Header Card */}
-      <GlassCard className="mb-6 animate-fade-in">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start sm:items-center gap-4 min-w-0">
-            <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-              <User className="h-8 w-8 text-primary" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-mono font-bold bg-primary/20 text-primary px-2 py-0.5 rounded">#{profile.display_id}</span>
-                <h2 className="text-lg sm:text-xl font-display font-bold text-foreground break-words">{displayName}</h2>
-              </div>
-              <p className="text-sm text-muted-foreground capitalize mt-0.5">
-                {profile.user_type === 'record_label' ? 'Record Label' : 'Artist'}
-              </p>
-            </div>
-          </div>
-          <div className="self-start sm:self-auto">
-            <VerificationBadge status={profile.verification_status} />
-          </div>
+      <div className="mx-auto w-full max-w-5xl">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">My Profile</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">Your account details (read-only).</p>
         </div>
-      </GlassCard>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Personal Details */}
-        <GlassCard className="animate-fade-in">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Personal Details</h3>
-          <div className="space-y-4">
-            <ProfileRow icon={User} label="Legal Name" value={profile.legal_name} />
-            <ProfileRow icon={Mail} label="Email" value={profile.email} />
-            <ProfileRow icon={Phone} label="WhatsApp" value={`${profile.whatsapp_country_code} ${profile.whatsapp_number}`} />
-            <ProfileRow icon={MapPin} label="Address" value={profile.address} />
-            <ProfileRow icon={Globe} label="Location" value={`${profile.state}, ${profile.country}`} />
+        <GlassCard className="mb-6 animate-fade-in">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-start gap-4 sm:items-center">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/20 sm:h-16 sm:w-16">
+                <User className="h-8 w-8 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded bg-primary/20 px-2 py-0.5 text-xs font-mono font-bold text-primary">#{profile.display_id}</span>
+                  <h2 className="text-lg sm:text-xl font-display font-bold text-foreground break-words">{displayName}</h2>
+                </div>
+                <p className="mt-0.5 text-sm capitalize text-muted-foreground">
+                  {profile.user_type === 'record_label' ? 'Record Label' : 'Artist'}
+                </p>
+              </div>
+            </div>
+            <div className="self-start sm:self-auto">
+              <VerificationBadge status={profile.verification_status} />
+            </div>
           </div>
         </GlassCard>
 
-        {/* Social Links */}
-        <GlassCard className="animate-fade-in">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Social Links</h3>
-          <div className="space-y-4">
-            {profile.instagram_link ? (
-              <ProfileRow icon={Instagram} label="Instagram" value={profile.instagram_link} link />
-            ) : (
-              <ProfileRow icon={Instagram} label="Instagram" value="Not provided" muted />
-            )}
-            {profile.facebook_link ? (
-              <ProfileRow icon={Facebook} label="Facebook" value={profile.facebook_link} link />
-            ) : (
-              <ProfileRow icon={Facebook} label="Facebook" value="Not provided" muted />
-            )}
-            {profile.spotify_link ? (
-              <ProfileRow icon={Music} label="Spotify" value={profile.spotify_link} link />
-            ) : (
-              <ProfileRow icon={Music} label="Spotify" value="Not provided" muted />
-            )}
-            {profile.youtube_link ? (
-              <ProfileRow icon={Youtube} label="YouTube" value={profile.youtube_link} link />
-            ) : (
-              <ProfileRow icon={Youtube} label="YouTube" value="Not provided" muted />
-            )}
-          </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <GlassCard className="animate-fade-in">
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Personal Details</h3>
+            <div className="space-y-4">
+              <ProfileRow icon={User} label="Legal Name" value={profile.legal_name} />
+              <ProfileRow icon={Mail} label="Email" value={profile.email} />
+              <ProfileRow icon={Phone} label="WhatsApp" value={`${profile.whatsapp_country_code} ${profile.whatsapp_number}`} />
+              <ProfileRow icon={MapPin} label="Address" value={profile.address} />
+              <ProfileRow icon={Globe} label="Location" value={`${profile.state}, ${profile.country}`} />
+            </div>
+          </GlassCard>
+
+          <GlassCard className="animate-fade-in">
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Social Links</h3>
+            <div className="space-y-4">
+              {profile.instagram_link ? (
+                <ProfileRow icon={Instagram} label="Instagram" value={profile.instagram_link} link />
+              ) : (
+                <ProfileRow icon={Instagram} label="Instagram" value="Not provided" muted />
+              )}
+              {profile.facebook_link ? (
+                <ProfileRow icon={Facebook} label="Facebook" value={profile.facebook_link} link />
+              ) : (
+                <ProfileRow icon={Facebook} label="Facebook" value="Not provided" muted />
+              )}
+              {profile.spotify_link ? (
+                <ProfileRow icon={Music} label="Spotify" value={profile.spotify_link} link />
+              ) : (
+                <ProfileRow icon={Music} label="Spotify" value="Not provided" muted />
+              )}
+              {profile.youtube_link ? (
+                <ProfileRow icon={Youtube} label="YouTube" value={profile.youtube_link} link />
+              ) : (
+                <ProfileRow icon={Youtube} label="YouTube" value="Not provided" muted />
+              )}
+            </div>
+          </GlassCard>
+        </div>
+
+        <GlassCard className="mt-6 animate-fade-in">
+          <p className="text-center text-xs text-muted-foreground">
+            To update your profile details, please contact the admin.
+          </p>
         </GlassCard>
       </div>
-
-      <GlassCard className="mt-6 animate-fade-in">
-        <p className="text-xs text-muted-foreground text-center">
-          To update your profile details, please contact the admin.
-        </p>
-      </GlassCard>
     </DashboardLayout>
   );
 }
