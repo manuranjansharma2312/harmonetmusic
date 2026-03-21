@@ -512,6 +512,16 @@ export default function AdminUsers() {
           onCancel={() => setDeleteConfirm(null)}
         />
       )}
+
+      {/* Reset Password Modal */}
+      {resetPasswordProfile && (
+        <ResetPasswordModal
+          userId={resetPasswordProfile.user_id}
+          email={resetPasswordProfile.email}
+          name={resetPasswordProfile.legal_name}
+          onClose={() => setResetPasswordProfile(null)}
+        />
+      )}
     </DashboardLayout>
   );
 }
