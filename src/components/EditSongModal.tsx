@@ -18,7 +18,7 @@ export function EditSongModal({ song, onClose, onSaved }: { song: Song; onClose:
   const [saving, setSaving] = useState(false);
 
   const updateField = (field: string, value: string) => setForm((p) => ({ ...p, [field]: value }));
-  const inputClass = "w-full px-4 py-3 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm";
+  const inputClass = "w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm";
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +36,7 @@ export function EditSongModal({ song, onClose, onSaved }: { song: Song; onClose:
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
-      <div className="glass-strong rounded-2xl p-6 max-w-lg w-full relative animate-scale-in" onClick={(e) => e.stopPropagation()}>
+      <div className="glass-strong rounded-2xl p-4 sm:p-6 max-w-lg w-full relative animate-scale-in max-h-[90vh] overflow-y-auto overflow-x-hidden" onClick={(e) => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors">
           <X className="h-5 w-5" />
         </button>

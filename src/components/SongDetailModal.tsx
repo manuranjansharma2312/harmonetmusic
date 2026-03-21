@@ -12,7 +12,7 @@ export function SongDetailModal({ song, onClose, email }: { song: Song; onClose:
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
       <div
-        className="glass-strong rounded-2xl p-6 max-w-lg w-full relative animate-scale-in max-h-[90vh] overflow-y-auto"
+        className="glass-strong rounded-2xl p-4 sm:p-6 max-w-lg w-full relative animate-scale-in max-h-[90vh] overflow-y-auto overflow-x-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors">
@@ -22,7 +22,7 @@ export function SongDetailModal({ song, onClose, email }: { song: Song; onClose:
         <h2 className="font-display text-xl font-bold text-foreground mb-4">Song Details</h2>
 
         {song.cover_url && (
-          <img src={song.cover_url} alt={song.title} className="w-full h-48 object-cover rounded-xl mb-4" />
+          <img src={song.cover_url} alt={song.title} className="w-full h-40 sm:h-48 object-cover rounded-xl mb-4" />
         )}
 
         <div className="space-y-3 text-sm">
@@ -33,7 +33,7 @@ export function SongDetailModal({ song, onClose, email }: { song: Song; onClose:
           <Row label="Release Date" value={song.release_date} />
           {song.isrc && <Row label="ISRC" value={song.isrc} />}
           {email && <Row label="User Email" value={email} />}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-muted-foreground">Status</span>
             <StatusBadge status={song.status} />
           </div>
@@ -52,9 +52,9 @@ export function SongDetailModal({ song, onClose, email }: { song: Song; onClose:
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
       <span className="text-muted-foreground">{label}</span>
-      <span className="text-foreground font-medium">{value}</span>
+      <span className="text-foreground font-medium break-words sm:text-right">{value}</span>
     </div>
   );
 }

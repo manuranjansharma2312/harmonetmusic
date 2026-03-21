@@ -57,7 +57,7 @@ export function EditProfileModal({
   const availableStates = form.country ? getStatesForCountry(form.country) : [];
 
   const inputClass =
-    'w-full px-4 py-2.5 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
+    'w-full px-3 sm:px-4 py-2.5 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,14 +95,14 @@ export function EditProfileModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
       <div
-        className="glass-strong rounded-2xl p-6 max-w-lg w-full relative animate-scale-in max-h-[90vh] overflow-y-auto"
+        className="glass-strong rounded-2xl p-4 sm:p-6 max-w-2xl w-full relative animate-scale-in max-h-[90vh] overflow-y-auto overflow-x-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors">
           <X className="h-5 w-5" />
         </button>
         <h2 className="font-display text-xl font-bold text-foreground mb-4">Edit User Profile</h2>
-        <p className="text-xs text-muted-foreground mb-4">User ID: {profile.user_id}</p>
+        <p className="text-xs text-muted-foreground mb-4 break-all">User ID: {profile.user_id}</p>
 
         <form onSubmit={handleSave} className="space-y-3">
           <div>
@@ -135,7 +135,7 @@ export function EditProfileModal({
             <input type="email" className={inputClass} value={form.email} onChange={(e) => update('email', e.target.value)} required />
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div>
               <label className="block text-xs text-muted-foreground mb-1">Code</label>
               <select className={inputClass} value={form.whatsapp_country_code} onChange={(e) => update('whatsapp_country_code', e.target.value)}>
@@ -167,7 +167,7 @@ export function EditProfileModal({
             <input className={inputClass} value={form.youtube_link} onChange={(e) => update('youtube_link', e.target.value)} />
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <label className="block text-xs text-muted-foreground mb-1">Country</label>
               <select className={inputClass} value={form.country} onChange={(e) => { update('country', e.target.value); update('state', ''); }} required>
