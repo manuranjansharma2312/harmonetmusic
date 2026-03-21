@@ -1,0 +1,421 @@
+import { useState, useEffect } from 'react';
+import { DashboardLayout } from '@/components/DashboardLayout';
+import { GlassCard } from '@/components/GlassCard';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import { Loader2, Upload, Plus, Trash2, Music, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { TrackForm, type TrackData } from '@/components/release/TrackForm';
+
+const CONTENT_TYPES = [
+  { value: 'single', label: 'Single' },
+  { value: 'album', label: 'Album' },
+  { value: 'ep', label: 'EP' },
+];
+
+const STORE_OPTIONS = [
+  { value: 'worldwide', label: 'Worldwide - All Platforms' },
+  { value: 'instagram_facebook', label: 'Instagram & Facebook Only' },
+];
+
+export default function NewRelease() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
+
+  // Release-level state
+  const [releaseType, setReleaseType] = useState<'new_release' | 'transfer'>('new_release');
+  const [contentType, setContentType] = useState('single');
+  const [albumName, setAlbumName] = useState('');
+  const [epName, setEpName] = useState('');
+  const [upc, setUpc] = useState('');
+  const [posterFile, setPosterFile] = useState<File | null>(null);
+  const [posterPreview, setPosterPreview] = useState<string | null>(null);
+  const [releaseDate, setReleaseDate] = useState('');
+  const [copyrightLine, setCopyrightLine] = useState('');
+  const [phonogramLine, setPhonogramLine] = useState('');
+  const [storeSelection, setStoreSelection] = useState('worldwide');
+  const [agreePolicy, setAgreePolicy] = useState(false);
+
+  // Track state
+  const [tracks, setTracks] = useState<TrackData[]>([]);
+  const [showTrackForm, setShowTrackForm] = useState(false);
+  const [editingTrackIndex, setEditingTrackIndex] = useState<number | null>(null);
+
+  // Genres & Languages from DB
+  const [genres, setGenres] = useState<{ id: string; name: string }[]>([]);
+  const [languages, setLanguages] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const [genresRes, langsRes] = await Promise.all([
+        supabase.from('genres').select('id, name').order('name'),
+        supabase.from('languages').select('id, name').order('name'),
+      ]);
+      if (genresRes.data) setGenres(genresRes.data);
+      if (langsRes.data) setLanguages(langsRes.data);
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (posterFile) {
+      const url = URL.createObjectURL(posterFile);
+      setPosterPreview(url);
+      return () => URL.revokeObjectURL(url);
+    }
+    setPosterPreview(null);
+  }, [posterFile]);
+
+  const handlePosterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.type !== 'image/jpeg') {
+      toast.error('Only JPG files are allowed for the poster.');
+      return;
+    }
+    const img = new Image();
+    img.onload = () => {
+      if (img.width !== 3000 || img.height !== 3000) {
+        toast.error('Poster must be exactly 3000x3000 pixels.');
+        return;
+      }
+      setPosterFile(file);
+    };
+    img.src = URL.createObjectURL(file);
+  };
+
+  const maxTracks = contentType === 'single' ? 1 : Infinity;
+  const canAddTrack = tracks.length < maxTracks;
+
+  const handleAddTrack = (track: TrackData) => {
+    if (editingTrackIndex !== null) {
+      setTracks((prev) => prev.map((t, i) => (i === editingTrackIndex ? track : t)));
+      setEditingTrackIndex(null);
+    } else {
+      setTracks((prev) => [...prev, track]);
+    }
+    setShowTrackForm(false);
+  };
+
+  const handleRemoveTrack = (index: number) => {
+    setTracks((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async () => {
+    if (!user) return;
+    if (tracks.length === 0) {
+      toast.error('Please add at least one track.');
+      return;
+    }
+    if (!agreePolicy) {
+      toast.error('Please agree to the policy.');
+      return;
+    }
+    if (!releaseDate) {
+      toast.error('Please select a release date.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      // Upload poster
+      let poster_url = null;
+      if (posterFile) {
+        const path = `${user.id}/${Date.now()}-${posterFile.name}`;
+        const { error } = await supabase.storage.from('posters').upload(path, posterFile);
+        if (error) throw error;
+        const { data: urlData } = supabase.storage.from('posters').getPublicUrl(path);
+        poster_url = urlData.publicUrl;
+      }
+
+      // Create release
+      const { data: release, error: releaseError } = await supabase
+        .from('releases')
+        .insert({
+          user_id: user.id,
+          release_type: releaseType,
+          content_type: contentType,
+          album_name: contentType === 'album' ? albumName : null,
+          ep_name: contentType === 'ep' ? epName : null,
+          upc: upc || null,
+          poster_url,
+          release_date: releaseDate,
+          copyright_line: copyrightLine || null,
+          phonogram_line: phonogramLine || null,
+          store_selection: storeSelection,
+        })
+        .select('id')
+        .single();
+
+      if (releaseError) throw releaseError;
+
+      // Upload audio files and create tracks
+      for (let i = 0; i < tracks.length; i++) {
+        const track = tracks[i];
+        let audio_url = null;
+
+        if (track.audioFile) {
+          const path = `${user.id}/${Date.now()}-${track.audioFile.name}`;
+          const { error } = await supabase.storage.from('audio').upload(path, track.audioFile);
+          if (error) throw error;
+          const { data: urlData } = supabase.storage.from('audio').getPublicUrl(path);
+          audio_url = urlData.publicUrl;
+        }
+
+        const { error: trackError } = await supabase.from('tracks').insert({
+          release_id: release.id,
+          user_id: user.id,
+          song_title: track.songTitle,
+          isrc: track.isrc || null,
+          audio_url,
+          audio_type: track.audioType,
+          language: track.language || null,
+          genre: track.genre || null,
+          primary_artist: track.primaryArtist || null,
+          spotify_link: track.spotifyLink || null,
+          apple_music_link: track.appleMusicLink || null,
+          is_new_artist_profile: track.isNewArtistProfile,
+          lyricist: track.lyricist || null,
+          composer: track.composer || null,
+          producer: track.producer || null,
+          instagram_link: track.instagramLink || null,
+          callertune_time: track.callertuneTime || null,
+          track_order: i + 1,
+        });
+
+        if (trackError) throw trackError;
+      }
+
+      toast.success('Release submitted successfully!');
+      navigate('/my-songs');
+    } catch (err: any) {
+      toast.error(err.message || 'Submission failed');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const inputClass =
+    'w-full px-4 py-3 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
+
+  if (showTrackForm) {
+    return (
+      <DashboardLayout>
+        <div className="mx-auto w-full max-w-2xl">
+          <div className="mb-6 text-left">
+            <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">
+              {editingTrackIndex !== null ? 'Edit Track' : 'Add Track'}
+            </h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Fill in the track details below.
+            </p>
+          </div>
+          <GlassCard glow className="w-full animate-fade-in">
+            <TrackForm
+              genres={genres}
+              languages={languages}
+              isTransfer={releaseType === 'transfer'}
+              initialData={editingTrackIndex !== null ? tracks[editingTrackIndex] : undefined}
+              onSubmit={handleAddTrack}
+              onCancel={() => {
+                setShowTrackForm(false);
+                setEditingTrackIndex(null);
+              }}
+            />
+          </GlassCard>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout>
+      <div className="mx-auto w-full max-w-2xl">
+        <div className="mb-6 text-left sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">New Release</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+            Fill in the details to distribute your music.
+          </p>
+        </div>
+
+        <GlassCard glow className="w-full animate-fade-in">
+          <div className="space-y-6">
+            {/* Release Type */}
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-3">Release Type *</label>
+              <div className="flex gap-4">
+                <label className={`flex items-center gap-2 cursor-pointer rounded-lg border px-4 py-3 text-sm transition-all ${releaseType === 'new_release' ? 'border-primary bg-primary/10 text-foreground' : 'border-border text-muted-foreground hover:border-primary/50'}`}>
+                  <input type="radio" name="releaseType" value="new_release" checked={releaseType === 'new_release'} onChange={() => setReleaseType('new_release')} className="sr-only" />
+                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${releaseType === 'new_release' ? 'border-primary' : 'border-muted-foreground'}`}>
+                    {releaseType === 'new_release' && <div className="h-2 w-2 rounded-full bg-primary" />}
+                  </div>
+                  New Release
+                </label>
+                <label className={`flex items-center gap-2 cursor-pointer rounded-lg border px-4 py-3 text-sm transition-all ${releaseType === 'transfer' ? 'border-primary bg-primary/10 text-foreground' : 'border-border text-muted-foreground hover:border-primary/50'}`}>
+                  <input type="radio" name="releaseType" value="transfer" checked={releaseType === 'transfer'} onChange={() => setReleaseType('transfer')} className="sr-only" />
+                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${releaseType === 'transfer' ? 'border-primary' : 'border-muted-foreground'}`}>
+                    {releaseType === 'transfer' && <div className="h-2 w-2 rounded-full bg-primary" />}
+                  </div>
+                  Transfer from Another Distributor
+                </label>
+              </div>
+            </div>
+
+            {/* Content Type */}
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Content Type *</label>
+              <select className={inputClass} value={contentType} onChange={(e) => { setContentType(e.target.value); setTracks([]); }}>
+                {CONTENT_TYPES.map((ct) => (
+                  <option key={ct.value} value={ct.value}>{ct.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Album Name */}
+            {contentType === 'album' && (
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Album Name *</label>
+                <input className={inputClass} value={albumName} onChange={(e) => setAlbumName(e.target.value)} required placeholder="Enter album name" />
+              </div>
+            )}
+
+            {/* EP Name */}
+            {contentType === 'ep' && (
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">EP Name *</label>
+                <input className={inputClass} value={epName} onChange={(e) => setEpName(e.target.value)} required placeholder="Enter EP name" />
+              </div>
+            )}
+
+            {/* UPC */}
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">UPC</label>
+              <input className={inputClass} value={upc} onChange={(e) => setUpc(e.target.value)} placeholder="Enter UPC code" />
+            </div>
+
+            {/* Poster Upload */}
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
+                Upload Poster * <span className="text-xs text-muted-foreground">(3000×3000 px, JPG only)</span>
+              </label>
+              <div className="relative">
+                <input type="file" accept=".jpg,.jpeg,image/jpeg" onChange={handlePosterChange} className="hidden" id="poster-upload" />
+                <label htmlFor="poster-upload" className={`${inputClass} flex min-w-0 cursor-pointer items-center gap-2`}>
+                  <Upload className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{posterFile?.name || 'Choose poster image'}</span>
+                </label>
+              </div>
+              {posterPreview && (
+                <div className="mt-3">
+                  <img src={posterPreview} alt="Poster preview" className="h-32 w-32 rounded-lg object-cover border border-border" />
+                </div>
+              )}
+            </div>
+
+            {/* Release Date */}
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Release Date *</label>
+              <input type="date" className={inputClass} value={releaseDate} onChange={(e) => setReleaseDate(e.target.value)} required />
+            </div>
+
+            {/* Store Selection */}
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Select Stores *</label>
+              <select className={inputClass} value={storeSelection} onChange={(e) => setStoreSelection(e.target.value)}>
+                {STORE_OPTIONS.map((s) => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Copyright & Phonogram */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">© Line</label>
+                <input className={inputClass} value={copyrightLine} onChange={(e) => setCopyrightLine(e.target.value)} placeholder="e.g. 2024 Artist Name" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">℗ Line</label>
+                <input className={inputClass} value={phonogramLine} onChange={(e) => setPhonogramLine(e.target.value)} placeholder="e.g. 2024 Label Name" />
+              </div>
+            </div>
+
+            {/* Tracks Section */}
+            <div className="border-t border-border pt-5">
+              <h2 className="text-lg font-semibold text-foreground mb-3">
+                Tracks {tracks.length > 0 && <span className="text-sm font-normal text-muted-foreground">({tracks.length} added)</span>}
+              </h2>
+
+              {tracks.length > 0 && (
+                <div className="space-y-2 mb-4">
+                  {tracks.map((track, i) => (
+                    <div key={i} className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold">
+                          {i + 1}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{track.songTitle}</p>
+                          <p className="text-xs text-muted-foreground">{track.primaryArtist} • {track.genre}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => { setEditingTrackIndex(i); setShowTrackForm(true); }}>
+                          <Music className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleRemoveTrack(i)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {canAddTrack && (
+                <Button variant="outline" className="w-full gap-2" onClick={() => setShowTrackForm(true)}>
+                  <Plus className="h-4 w-4" />
+                  Add Track
+                </Button>
+              )}
+
+              {!canAddTrack && contentType === 'single' && tracks.length >= 1 && (
+                <p className="text-xs text-muted-foreground text-center">Single releases can only have one track.</p>
+              )}
+            </div>
+
+            {/* Agree Policy */}
+            {tracks.length > 0 && (
+              <>
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="agree-policy"
+                    checked={agreePolicy}
+                    onChange={(e) => setAgreePolicy(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                  />
+                  <label htmlFor="agree-policy" className="text-sm text-muted-foreground">
+                    I agree to the terms and conditions and confirm that I have the rights to distribute this content.
+                  </label>
+                </div>
+
+                <Button
+                  onClick={handleSubmit}
+                  disabled={submitting || !agreePolicy}
+                  className="w-full btn-primary-gradient py-3 font-semibold text-primary-foreground"
+                >
+                  {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Submit Release
+                </Button>
+              </>
+            )}
+          </div>
+        </GlassCard>
+      </div>
+    </DashboardLayout>
+  );
+}
