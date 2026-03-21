@@ -453,6 +453,13 @@ export default function NewRelease() {
           </div>
         </GlassCard>
       </div>
+
+      <PosterCropModal
+        open={showCropModal}
+        imageSrc={cropImageSrc || ''}
+        onCropComplete={handleCropComplete}
+        onCancel={handleCropCancel}
+      />
     </DashboardLayout>
   );
 }
