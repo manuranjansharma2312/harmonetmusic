@@ -207,7 +207,7 @@ export default function AdminUsers() {
         <p className="text-muted-foreground mt-1 text-sm sm:text-base">Manage and verify registered users.</p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
         <GlassCard className="!p-4 text-center">
           <p className="text-2xl font-bold font-display text-foreground">{profiles.length}</p>
           <p className="text-xs text-muted-foreground">Total</p>
