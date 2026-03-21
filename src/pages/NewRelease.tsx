@@ -22,7 +22,7 @@ const STORE_OPTIONS = [
 ];
 
 export default function NewRelease() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editReleaseId = searchParams.get('edit');
@@ -31,6 +31,7 @@ export default function NewRelease() {
   const [submitStep, setSubmitStep] = useState('');
   const [loadingEdit, setLoadingEdit] = useState(!!editReleaseId);
 
+  const [releaseOwnerId, setReleaseOwnerId] = useState<string | null>(null);
   // Release-level state
   const [releaseType, setReleaseType] = useState<'new_release' | 'transfer'>('new_release');
   const [contentType, setContentType] = useState('single');
@@ -72,19 +73,20 @@ export default function NewRelease() {
     if (!editReleaseId || !user) return;
     const loadRelease = async () => {
       setLoadingEdit(true);
-      const { data: release } = await supabase
-        .from('releases')
-        .select('*')
-        .eq('id', editReleaseId)
-        .eq('user_id', user.id)
-        .single();
+      const isAdmin = role === 'admin';
+      
+      // Admin can edit any release; user can only edit own
+      let query = supabase.from('releases').select('*').eq('id', editReleaseId);
+      if (!isAdmin) query = query.eq('user_id', user.id);
+      const { data: release } = await query.single();
 
-      if (!release || release.status !== 'pending') {
+      if (!release || (!isAdmin && release.status !== 'pending')) {
         toast.error('Release not found or cannot be edited.');
-        navigate('/my-releases');
+        navigate(isAdmin ? '/admin/submissions' : '/my-releases');
         return;
       }
 
+      setReleaseOwnerId(release.user_id);
       setReleaseType(release.release_type as 'new_release' | 'transfer');
       setContentType(release.content_type);
       setAlbumName(release.album_name || '');
@@ -288,7 +290,7 @@ export default function NewRelease() {
 
           const { error: trackError } = await supabase.from('tracks').insert({
             release_id: editReleaseId,
-            user_id: user.id,
+            user_id: releaseOwnerId || user.id,
             song_title: track.songTitle,
             isrc: track.isrc || null,
             audio_url,
@@ -314,7 +316,7 @@ export default function NewRelease() {
         setSubmitProgress(100);
         setSubmitStep('Done!');
         toast.success('Release updated successfully!');
-        setTimeout(() => navigate('/my-releases'), 800);
+        setTimeout(() => navigate(role === 'admin' ? '/admin/submissions' : '/my-releases'), 800);
       } else {
         // CREATE new release
         const { data: release, error: releaseError } = await supabase

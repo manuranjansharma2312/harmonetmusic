@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
@@ -51,9 +52,11 @@ type Release = {
   updated_at: string;
   tracks?: Track[];
   user_email?: string;
+  user_display_id?: number;
 };
 
 export default function AdminSubmissions() {
+  const navigate = useNavigate();
   const [releases, setReleases] = useState<Release[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -88,12 +91,14 @@ export default function AdminSubmissions() {
     const userIds = [...new Set(releasesData.map((r) => r.user_id))];
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('user_id, email, artist_name')
+      .select('user_id, email, artist_name, display_id')
       .in('user_id', userIds);
 
     const emailMap: Record<string, string> = {};
+    const displayIdMap: Record<string, number> = {};
     profiles?.forEach((p) => {
       emailMap[p.user_id] = p.email || p.artist_name || p.user_id.slice(0, 8);
+      displayIdMap[p.user_id] = p.display_id;
     });
 
     const tracksByRelease: Record<string, Track[]> = {};
@@ -107,6 +112,7 @@ export default function AdminSubmissions() {
         ...r,
         tracks: tracksByRelease[r.id] || [],
         user_email: emailMap[r.user_id] || r.user_id.slice(0, 8),
+        user_display_id: displayIdMap[r.user_id],
       }))
     );
     setLoading(false);
@@ -328,7 +334,14 @@ export default function AdminSubmissions() {
                             )}
                           </div>
                         </td>
-                        <td className="py-3 px-3 hidden md:table-cell text-xs text-muted-foreground">{release.user_email}</td>
+                        <td className="py-3 px-3 hidden md:table-cell">
+                          <div className="text-xs">
+                            <p className="text-foreground">{release.user_email}</p>
+                            {release.user_display_id && (
+                              <p className="text-muted-foreground">ID: {release.user_display_id}</p>
+                            )}
+                          </div>
+                        </td>
                         <td className="py-3 px-3">
                           <select
                             className="bg-transparent border-none text-xs cursor-pointer focus:outline-none"
@@ -345,6 +358,7 @@ export default function AdminSubmissions() {
                         </td>
                         <td className="py-3 px-3">
                           <div className="flex items-center justify-end gap-0.5">
+                            <button onClick={() => navigate(`/submit?edit=${release.id}`)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"><Pencil className="h-4 w-4" /></button>
                             <button onClick={() => setViewRelease(release)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"><Eye className="h-4 w-4" /></button>
                             <button onClick={() => setDeleteRelease(release)} className="p-1.5 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all"><Trash2 className="h-4 w-4" /></button>
                           </div>
@@ -420,7 +434,8 @@ export default function AdminSubmissions() {
                 <Detail label="Store" value={viewRelease.store_selection} />
                 <Detail label="© Line" value={viewRelease.copyright_line || '—'} />
                 <Detail label="℗ Line" value={viewRelease.phonogram_line || '—'} />
-                <Detail label="User" value={viewRelease.user_email || '—'} />
+                <Detail label="Submitted By" value={viewRelease.user_email || '—'} />
+                <Detail label="User ID" value={viewRelease.user_display_id ? `#${viewRelease.user_display_id}` : viewRelease.user_id.slice(0, 8)} />
                 <Detail label="Submitted" value={new Date(viewRelease.created_at).toLocaleString()} />
               </div>
 
