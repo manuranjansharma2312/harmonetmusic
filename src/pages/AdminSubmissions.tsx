@@ -96,9 +96,11 @@ export default function AdminSubmissions() {
       .in('user_id', userIds);
 
     const emailMap: Record<string, string> = {};
+    const nameMap: Record<string, string> = {};
     const displayIdMap: Record<string, number> = {};
     profiles?.forEach((p) => {
-      emailMap[p.user_id] = p.email || p.artist_name || p.user_id.slice(0, 8);
+      emailMap[p.user_id] = p.email;
+      nameMap[p.user_id] = p.artist_name || p.legal_name || p.email;
       displayIdMap[p.user_id] = p.display_id;
     });
 
