@@ -31,6 +31,8 @@ export interface TrackData {
   producer: string;
   instagramLink: string;
   callertuneTime: string;
+  copyrightLine: string;
+  phonogramLine: string;
 }
 
 interface TrackFormProps {
@@ -60,6 +62,8 @@ export function TrackForm({ genres, languages, isTransfer, initialData, onSubmit
       producer: '',
       instagramLink: '',
       callertuneTime: '',
+      copyrightLine: '',
+      phonogramLine: '',
     }
   );
 
@@ -204,6 +208,18 @@ export function TrackForm({ genres, languages, isTransfer, initialData, onSubmit
       <div>
         <label className="block text-sm font-medium text-muted-foreground mb-1">Callertune Time (MM:SS)</label>
         <input className={inputClass} value={form.callertuneTime} onChange={handleCallertuneChange} placeholder="00:00" maxLength={5} />
+      </div>
+
+      {/* © Line & ℗ Line */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">© Line</label>
+          <input className={inputClass} value={form.copyrightLine} onChange={(e) => update('copyrightLine', e.target.value)} placeholder="e.g. 2024 Artist Name" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">℗ Line</label>
+          <input className={inputClass} value={form.phonogramLine} onChange={(e) => update('phonogramLine', e.target.value)} placeholder="e.g. 2024 Label Name" />
+        </div>
       </div>
 
       {/* Actions */}

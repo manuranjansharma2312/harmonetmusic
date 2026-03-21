@@ -37,8 +37,6 @@ export default function NewRelease() {
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [showCropModal, setShowCropModal] = useState(false);
   const [releaseDate, setReleaseDate] = useState('');
-  const [copyrightLine, setCopyrightLine] = useState('');
-  const [phonogramLine, setPhonogramLine] = useState('');
   const [storeSelection, setStoreSelection] = useState('worldwide');
   const [agreePolicy, setAgreePolicy] = useState(false);
 
@@ -180,8 +178,6 @@ export default function NewRelease() {
           upc: upc || null,
           poster_url,
           release_date: releaseDate,
-          copyright_line: copyrightLine || null,
-          phonogram_line: phonogramLine || null,
           store_selection: storeSelection,
         })
         .select('id')
@@ -367,19 +363,6 @@ export default function NewRelease() {
                 ))}
               </select>
             </div>
-
-            {/* Copyright & Phonogram */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">© Line</label>
-                <input className={inputClass} value={copyrightLine} onChange={(e) => setCopyrightLine(e.target.value)} placeholder="e.g. 2024 Artist Name" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">℗ Line</label>
-                <input className={inputClass} value={phonogramLine} onChange={(e) => setPhonogramLine(e.target.value)} placeholder="e.g. 2024 Label Name" />
-              </div>
-            </div>
-
             {/* Tracks Section */}
             <div className="border-t border-border pt-5">
               <h2 className="text-lg font-semibold text-foreground mb-3">
