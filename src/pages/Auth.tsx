@@ -160,9 +160,9 @@ export default function Auth() {
   const compactSelectClass = `${inputBaseClass} w-[100px] sm:w-[120px] pl-8 sm:pl-10 pr-7 sm:pr-8 appearance-none`;
 
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center relative px-3 sm:px-4 py-4 sm:py-8 overflow-auto">
+    <div className="relative flex min-h-[100dvh] w-full items-center justify-center overflow-x-hidden overflow-y-auto px-3 py-6 sm:px-4 sm:py-8">
       <BackgroundBlobs />
-      <div className="glass-card-glow w-full max-w-lg p-4 sm:p-8 animate-scale-in relative z-10 my-auto">
+      <div className="glass-card-glow relative z-10 mx-auto my-auto w-full max-w-lg animate-scale-in p-4 sm:p-8">
         <div className="flex flex-col items-center mb-6">
           <img src={logoWhite} alt="Harmonet Music" className="h-12 sm:h-16 w-auto mb-4" />
           <p className="text-muted-foreground text-sm">
