@@ -474,6 +474,8 @@ export default function AdminSubmissions() {
                           <Detail label="Composer" value={track.composer || '—'} />
                           <Detail label="Producer" value={track.producer || '—'} />
                           <Detail label="Callertune" value={track.callertune_time || '—'} />
+                          <Detail label="© Line" value={track.copyright_line || '—'} />
+                          <Detail label="℗ Line" value={track.phonogram_line || '—'} />
                           <Detail label="Instagram" value={track.instagram_link || '—'} />
                           {track.spotify_link && <Detail label="Spotify" value={track.spotify_link} />}
                           {track.apple_music_link && <Detail label="Apple Music" value={track.apple_music_link} />}
