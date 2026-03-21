@@ -241,7 +241,7 @@ export default function NewRelease() {
 
     try {
       // Upload poster
-      let poster_url = null;
+      let poster_url = existingPosterUrl;
       if (posterFile) {
         const path = `${user.id}/${Date.now()}-${posterFile.name}`;
         const { error } = await supabase.storage.from('posters').upload(path, posterFile);
@@ -249,71 +249,136 @@ export default function NewRelease() {
         const { data: urlData } = supabase.storage.from('posters').getPublicUrl(path);
         poster_url = urlData.publicUrl;
       }
-      advance('Creating release...');
+      advance(editReleaseId ? 'Updating release...' : 'Creating release...');
 
-      // Create release
-      const { data: release, error: releaseError } = await supabase
-        .from('releases')
-        .insert({
-          user_id: user.id,
-          release_type: releaseType,
-          content_type: contentType,
-          album_name: contentType === 'album' ? albumName : null,
-          ep_name: contentType === 'ep' ? epName : null,
-          upc: upc || null,
-          poster_url,
-          release_date: releaseDate,
-          store_selection: storeSelection,
-        })
-        .select('id')
-        .single();
+      if (editReleaseId) {
+        // UPDATE existing release
+        const { error: releaseError } = await supabase
+          .from('releases')
+          .update({
+            release_type: releaseType,
+            content_type: contentType,
+            album_name: contentType === 'album' ? albumName : null,
+            ep_name: contentType === 'ep' ? epName : null,
+            upc: upc || null,
+            poster_url,
+            release_date: releaseDate,
+            store_selection: storeSelection,
+          })
+          .eq('id', editReleaseId);
 
-      if (releaseError) throw releaseError;
-      advance(`Uploading track 1 of ${tracks.length}...`);
+        if (releaseError) throw releaseError;
+        advance(`Updating tracks...`);
 
-      // Upload audio files and create tracks
-      for (let i = 0; i < tracks.length; i++) {
-        const track = tracks[i];
-        let audio_url = null;
+        // Delete existing tracks and re-insert
+        await supabase.from('tracks').delete().eq('release_id', editReleaseId);
 
-        if (track.audioFile) {
-          setSubmitStep(`Uploading audio for track ${i + 1} of ${tracks.length}...`);
-          const path = `${user.id}/${Date.now()}-${track.audioFile.name}`;
-          const { error } = await supabase.storage.from('audio').upload(path, track.audioFile);
-          if (error) throw error;
-          const { data: urlData } = supabase.storage.from('audio').getPublicUrl(path);
-          audio_url = urlData.publicUrl;
+        for (let i = 0; i < tracks.length; i++) {
+          const track = tracks[i] as TrackData & { _existingAudioUrl?: string; _trackId?: string };
+          let audio_url = track._existingAudioUrl || null;
+
+          if (track.audioFile) {
+            setSubmitStep(`Uploading audio for track ${i + 1} of ${tracks.length}...`);
+            const path = `${user.id}/${Date.now()}-${track.audioFile.name}`;
+            const { error } = await supabase.storage.from('audio').upload(path, track.audioFile);
+            if (error) throw error;
+            const { data: urlData } = supabase.storage.from('audio').getPublicUrl(path);
+            audio_url = urlData.publicUrl;
+          }
+
+          const { error: trackError } = await supabase.from('tracks').insert({
+            release_id: editReleaseId,
+            user_id: user.id,
+            song_title: track.songTitle,
+            isrc: track.isrc || null,
+            audio_url,
+            audio_type: track.audioType,
+            language: track.language || null,
+            genre: track.genre || null,
+            primary_artist: track.primaryArtists.map(a => a.name).filter(Boolean).join(', ') || null,
+            spotify_link: track.primaryArtists[0]?.spotifyLink || null,
+            apple_music_link: track.primaryArtists[0]?.appleMusicLink || null,
+            is_new_artist_profile: track.primaryArtists.some(a => a.isNewProfile),
+            lyricist: track.lyricist || null,
+            composer: track.composer || null,
+            producer: track.producer || null,
+            instagram_link: track.instagramLink || null,
+            callertune_time: track.callertuneTime || null,
+            track_order: i + 1,
+          });
+
+          if (trackError) throw trackError;
+          if (i < tracks.length - 1) advance(`Updating track ${i + 2} of ${tracks.length}...`);
         }
 
-        const { error: trackError } = await supabase.from('tracks').insert({
-          release_id: release.id,
-          user_id: user.id,
-          song_title: track.songTitle,
-          isrc: track.isrc || null,
-          audio_url,
-          audio_type: track.audioType,
-          language: track.language || null,
-          genre: track.genre || null,
-          primary_artist: track.primaryArtists.map(a => a.name).filter(Boolean).join(', ') || null,
-          spotify_link: track.primaryArtists[0]?.spotifyLink || null,
-          apple_music_link: track.primaryArtists[0]?.appleMusicLink || null,
-          is_new_artist_profile: track.primaryArtists.some(a => a.isNewProfile),
-          lyricist: track.lyricist || null,
-          composer: track.composer || null,
-          producer: track.producer || null,
-          instagram_link: track.instagramLink || null,
-          callertune_time: track.callertuneTime || null,
-          track_order: i + 1,
-        });
+        setSubmitProgress(100);
+        setSubmitStep('Done!');
+        toast.success('Release updated successfully!');
+        setTimeout(() => navigate('/my-releases'), 800);
+      } else {
+        // CREATE new release
+        const { data: release, error: releaseError } = await supabase
+          .from('releases')
+          .insert({
+            user_id: user.id,
+            release_type: releaseType,
+            content_type: contentType,
+            album_name: contentType === 'album' ? albumName : null,
+            ep_name: contentType === 'ep' ? epName : null,
+            upc: upc || null,
+            poster_url,
+            release_date: releaseDate,
+            store_selection: storeSelection,
+          })
+          .select('id')
+          .single();
 
-        if (trackError) throw trackError;
-        if (i < tracks.length - 1) advance(`Uploading track ${i + 2} of ${tracks.length}...`);
+        if (releaseError) throw releaseError;
+        advance(`Uploading track 1 of ${tracks.length}...`);
+
+        for (let i = 0; i < tracks.length; i++) {
+          const track = tracks[i];
+          let audio_url = null;
+
+          if (track.audioFile) {
+            setSubmitStep(`Uploading audio for track ${i + 1} of ${tracks.length}...`);
+            const path = `${user.id}/${Date.now()}-${track.audioFile.name}`;
+            const { error } = await supabase.storage.from('audio').upload(path, track.audioFile);
+            if (error) throw error;
+            const { data: urlData } = supabase.storage.from('audio').getPublicUrl(path);
+            audio_url = urlData.publicUrl;
+          }
+
+          const { error: trackError } = await supabase.from('tracks').insert({
+            release_id: release.id,
+            user_id: user.id,
+            song_title: track.songTitle,
+            isrc: track.isrc || null,
+            audio_url,
+            audio_type: track.audioType,
+            language: track.language || null,
+            genre: track.genre || null,
+            primary_artist: track.primaryArtists.map(a => a.name).filter(Boolean).join(', ') || null,
+            spotify_link: track.primaryArtists[0]?.spotifyLink || null,
+            apple_music_link: track.primaryArtists[0]?.appleMusicLink || null,
+            is_new_artist_profile: track.primaryArtists.some(a => a.isNewProfile),
+            lyricist: track.lyricist || null,
+            composer: track.composer || null,
+            producer: track.producer || null,
+            instagram_link: track.instagramLink || null,
+            callertune_time: track.callertuneTime || null,
+            track_order: i + 1,
+          });
+
+          if (trackError) throw trackError;
+          if (i < tracks.length - 1) advance(`Uploading track ${i + 2} of ${tracks.length}...`);
+        }
+
+        setSubmitProgress(100);
+        setSubmitStep('Done!');
+        toast.success('Release submitted successfully!');
+        setTimeout(() => navigate('/my-releases'), 800);
       }
-
-      setSubmitProgress(100);
-      setSubmitStep('Done!');
-      toast.success('Release submitted successfully!');
-      setTimeout(() => navigate('/my-releases'), 800);
     } catch (err: any) {
       toast.error(err.message || 'Submission failed');
       setSubmitting(false);
