@@ -3,6 +3,7 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useImpersonate } from '@/hooks/useImpersonate';
 import { Loader2, Eye, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SongDetailModal } from '@/components/SongDetailModal';
