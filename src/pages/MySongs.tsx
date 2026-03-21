@@ -3,6 +3,7 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useImpersonate } from '@/hooks/useImpersonate';
 import { Loader2, Eye, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SongDetailModal } from '@/components/SongDetailModal';
@@ -18,6 +19,8 @@ type Song = {
 
 export default function MySongs() {
   const { user } = useAuth();
+  const { isImpersonating, impersonatedUserId } = useImpersonate();
+  const effectiveUserId = isImpersonating ? impersonatedUserId : user?.id;
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewSong, setViewSong] = useState<Song | null>(null);
@@ -25,17 +28,17 @@ export default function MySongs() {
   const [deleteSong, setDeleteSong] = useState<Song | null>(null);
 
   const fetchSongs = async () => {
-    if (!user) return;
+    if (!effectiveUserId) return;
     const { data } = await supabase
       .from('songs')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', effectiveUserId)
       .order('created_at', { ascending: false });
     setSongs((data as Song[]) || []);
     setLoading(false);
   };
 
-  useEffect(() => { fetchSongs(); }, [user]);
+  useEffect(() => { fetchSongs(); }, [effectiveUserId]);
 
   const handleDelete = async () => {
     if (!deleteSong) return;

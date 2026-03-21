@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Eye, CheckCircle, XCircle, Search, Shield, ShieldCheck, ShieldX } from 'lucide-react';
+import { Loader2, Eye, CheckCircle, XCircle, Search, Shield, ShieldCheck, ShieldX, Pencil, LogIn } from 'lucide-react';
 import { toast } from 'sonner';
-import { StatusBadge } from '@/components/StatusBadge';
+import { EditProfileModal } from '@/components/EditProfileModal';
+import { useImpersonate } from '@/hooks/useImpersonate';
+import { useNavigate } from 'react-router-dom';
 
 type Profile = {
   id: string;
@@ -41,6 +43,9 @@ export default function AdminUsers() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [viewProfile, setViewProfile] = useState<Profile | null>(null);
+  const [editProfile, setEditProfile] = useState<Profile | null>(null);
+  const { startImpersonating } = useImpersonate();
+  const navigate = useNavigate();
 
   const fetchProfiles = async () => {
     const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
@@ -72,6 +77,12 @@ export default function AdminUsers() {
     if (viewProfile?.user_id === userId) setViewProfile(null);
   };
 
+  const handleLoginAs = (profile: Profile) => {
+    startImpersonating(profile.user_id, profile.email);
+    toast.success(`Now viewing as ${profile.email}`);
+    navigate('/dashboard');
+  };
+
   const inputClass = "px-4 py-2.5 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm";
 
   if (loading) {
@@ -85,7 +96,6 @@ export default function AdminUsers() {
         <p className="text-muted-foreground mt-1">Manage and verify registered users.</p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <GlassCard className="!p-4 text-center">
           <p className="text-2xl font-bold font-display text-foreground">{profiles.length}</p>
@@ -105,7 +115,6 @@ export default function AdminUsers() {
         </GlassCard>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -151,16 +160,22 @@ export default function AdminUsers() {
                   <td className="py-3 px-4 text-muted-foreground hidden lg:table-cell">{new Date(profile.created_at).toLocaleDateString()}</td>
                   <td className="py-3 px-4">
                     <div className="flex items-center justify-end gap-1">
-                      <button onClick={() => setViewProfile(profile)} className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all">
+                      <button onClick={() => setViewProfile(profile)} className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all" title="View">
                         <Eye className="h-4 w-4" />
                       </button>
+                      <button onClick={() => setEditProfile(profile)} className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all" title="Edit">
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => handleLoginAs(profile)} className="p-2 rounded-lg hover:bg-blue-500/20 text-muted-foreground hover:text-blue-400 transition-all" title="Login as user">
+                        <LogIn className="h-4 w-4" />
+                      </button>
                       {profile.verification_status !== 'verified' && (
-                        <button onClick={() => handleVerification(profile.user_id, 'verified')} className="p-2 rounded-lg hover:bg-green-500/20 text-muted-foreground hover:text-green-400 transition-all">
+                        <button onClick={() => handleVerification(profile.user_id, 'verified')} className="p-2 rounded-lg hover:bg-green-500/20 text-muted-foreground hover:text-green-400 transition-all" title="Verify">
                           <CheckCircle className="h-4 w-4" />
                         </button>
                       )}
                       {profile.verification_status !== 'rejected' && (
-                        <button onClick={() => handleVerification(profile.user_id, 'rejected')} className="p-2 rounded-lg hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-all">
+                        <button onClick={() => handleVerification(profile.user_id, 'rejected')} className="p-2 rounded-lg hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-all" title="Reject">
                           <XCircle className="h-4 w-4" />
                         </button>
                       )}
@@ -173,7 +188,7 @@ export default function AdminUsers() {
         )}
       </GlassCard>
 
-      {/* Profile Detail Modal */}
+      {/* View Profile Modal */}
       {viewProfile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setViewProfile(null)}>
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
@@ -183,7 +198,8 @@ export default function AdminUsers() {
             <h2 className="font-display text-xl font-bold text-foreground mb-1">
               {viewProfile.user_type === 'artist' ? viewProfile.artist_name : viewProfile.record_label_name}
             </h2>
-            <p className="text-xs text-muted-foreground capitalize mb-4">{viewProfile.user_type === 'record_label' ? 'Record Label' : 'Artist'}</p>
+            <p className="text-xs text-muted-foreground capitalize mb-1">{viewProfile.user_type === 'record_label' ? 'Record Label' : 'Artist'}</p>
+            <p className="text-xs text-muted-foreground mb-4 font-mono">ID: {viewProfile.user_id}</p>
 
             <div className="space-y-3 text-sm">
               <Row label="Legal Name" value={viewProfile.legal_name} />
@@ -202,7 +218,6 @@ export default function AdminUsers() {
               </div>
               <Row label="Joined" value={new Date(viewProfile.created_at).toLocaleDateString()} />
 
-              {/* ID Proofs */}
               {(viewProfile.id_proof_front_url || viewProfile.id_proof_back_url) && (
                 <div className="pt-3 border-t border-border/50">
                   <p className="text-muted-foreground mb-2 font-medium">ID Proof</p>
@@ -224,8 +239,21 @@ export default function AdminUsers() {
               )}
             </div>
 
-            {/* Action buttons */}
             <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => { setViewProfile(null); setEditProfile(viewProfile); }}
+                className="flex-1 py-2.5 rounded-lg btn-primary-gradient text-primary-foreground font-medium flex items-center justify-center gap-2"
+              >
+                <Pencil className="h-4 w-4" /> Edit
+              </button>
+              <button
+                onClick={() => { setViewProfile(null); handleLoginAs(viewProfile); }}
+                className="flex-1 py-2.5 rounded-lg bg-blue-500/20 text-blue-400 font-medium hover:bg-blue-500/30 transition-all flex items-center justify-center gap-2"
+              >
+                <LogIn className="h-4 w-4" /> Login As
+              </button>
+            </div>
+            <div className="flex gap-3 mt-3">
               {viewProfile.verification_status !== 'verified' && (
                 <button
                   onClick={() => handleVerification(viewProfile.user_id, 'verified')}
@@ -245,6 +273,15 @@ export default function AdminUsers() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Edit Profile Modal */}
+      {editProfile && (
+        <EditProfileModal
+          profile={editProfile}
+          onClose={() => setEditProfile(null)}
+          onSaved={() => { setEditProfile(null); fetchProfiles(); }}
+        />
       )}
     </DashboardLayout>
   );
