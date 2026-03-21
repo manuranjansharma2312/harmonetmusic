@@ -85,6 +85,10 @@ export default function Auth() {
       toast.error('Password must be at least 6 characters');
       return;
     }
+    if (!idFront || !idBack) {
+      toast.error('Please upload both front and back of your ID proof');
+      return;
+    }
     setSubmitting(true);
 
     try {
