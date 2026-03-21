@@ -39,7 +39,7 @@ export default function Auth() {
     if (error) {
       toast.error(error.message);
     } else if (!isLogin) {
-      toast.success('Account created! Check your email to confirm.');
+      toast.success('Account created successfully! You are now logged in.');
     }
   };
 
@@ -52,7 +52,9 @@ export default function Auth() {
             <Music className="h-8 w-8 text-primary-foreground" />
           </div>
           <h1 className="font-display text-2xl font-bold text-foreground">MusicDist</h1>
-          <p className="text-muted-foreground text-sm mt-1">Music Distribution Platform</p>
+          <p className="text-muted-foreground text-sm mt-1">
+            {isLogin ? 'Sign in to your account' : 'Create your artist account'}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -85,7 +87,7 @@ export default function Auth() {
             className="w-full py-3 rounded-lg btn-primary-gradient text-primary-foreground font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-            {isLogin ? 'Sign In' : 'Create Account'}
+            {isLogin ? 'Sign In' : 'Create Artist Account'}
           </button>
         </form>
 
@@ -95,7 +97,7 @@ export default function Auth() {
             onClick={() => setIsLogin(!isLogin)}
             className="text-primary hover:underline font-medium"
           >
-            {isLogin ? 'Sign Up' : 'Sign In'}
+            {isLogin ? 'Sign Up as Artist' : 'Sign In'}
           </button>
         </p>
       </div>
