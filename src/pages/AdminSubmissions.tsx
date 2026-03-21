@@ -249,6 +249,7 @@ export default function AdminSubmissions() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </GlassCard>
 

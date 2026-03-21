@@ -322,7 +322,7 @@ export default function AdminUsers() {
                     <td className="py-3 px-3"><VerificationBadge status={profile.verification_status} /></td>
                     <td className="py-3 px-3 text-muted-foreground whitespace-nowrap hidden lg:table-cell">{new Date(profile.created_at).toLocaleDateString()}</td>
                     <td className="py-3 px-3">
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-end gap-0.5 flex-wrap">
                         <button onClick={() => setViewProfile(profile)} className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all" title="View">
                           <Eye className="h-4 w-4" />
                         </button>

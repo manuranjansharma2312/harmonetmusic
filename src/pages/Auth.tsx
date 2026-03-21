@@ -464,7 +464,7 @@ export default function Auth() {
 
             <div>
               <label className="block text-sm text-muted-foreground mb-2">ID Proof Upload *</label>
-              <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <input
                     type="file"
