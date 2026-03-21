@@ -10,6 +10,7 @@ import SubmitSong from "./pages/SubmitSong";
 import MySongs from "./pages/MySongs";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminSubmissions from "./pages/AdminSubmissions";
+import AdminUsers from "./pages/AdminUsers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
