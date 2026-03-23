@@ -177,6 +177,11 @@ export default function MyLabels() {
                   </div>
                 </div>
                 <StatusBadge status={label.status} />
+                {label.status === 'rejected' && label.rejection_reason && (
+                  <p className="text-xs text-destructive max-w-[200px]" title={label.rejection_reason}>
+                    Reason: {label.rejection_reason}
+                  </p>
+                )}
                 {label.status === 'pending' && (
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteLabel(label)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
