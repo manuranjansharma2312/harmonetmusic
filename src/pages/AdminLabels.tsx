@@ -217,6 +217,13 @@ export default function AdminLabels() {
           onCancel={() => setDeleteTarget(null)}
         />
       )}
+
+      <RejectReasonModal
+        open={!!rejectTarget}
+        title="Reject Label"
+        onConfirm={handleRejectConfirm}
+        onCancel={() => setRejectTarget(null)}
+      />
     </DashboardLayout>
   );
 }
