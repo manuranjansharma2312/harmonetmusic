@@ -62,17 +62,20 @@ export default function NewRelease() {
   const [genres, setGenres] = useState<{ id: string; name: string }[]>([]);
   const [languages, setLanguages] = useState<{ id: string; name: string }[]>([]);
   const [approvedLabels, setApprovedLabels] = useState<string[]>([]);
+  const [hasAnyLabels, setHasAnyLabels] = useState<boolean | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      const [genresRes, langsRes, labelsRes] = await Promise.all([
+      const [genresRes, langsRes, labelsRes, allLabelsRes] = await Promise.all([
         supabase.from('genres').select('id, name').order('name'),
         supabase.from('languages').select('id, name').order('name'),
         supabase.from('labels').select('label_name').eq('status', 'approved').order('label_name'),
+        supabase.from('labels').select('id', { count: 'exact', head: true }),
       ]);
       if (genresRes.data) setGenres(genresRes.data);
       if (langsRes.data) setLanguages(langsRes.data);
       if (labelsRes.data) setApprovedLabels((labelsRes.data as any[]).map(l => l.label_name));
+      setHasAnyLabels((allLabelsRes.count ?? 0) > 0);
     };
     fetchData();
   }, []);
