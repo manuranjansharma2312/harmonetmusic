@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
+import { normalizeIsrc } from '@/lib/isrc';
 import { ArrowLeft, Download, Eye, BarChart3, ChevronLeft, ChevronRight, Filter, X } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -71,29 +72,62 @@ function parseMonthKey(m: string): number {
 }
 
 export default function Reports() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [entries, setEntries] = useState<ReportEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [monthPage, setMonthPage] = useState(0);
   const [filters, setFilters] = useState<Record<string, string>>({});
 
-  const { impersonatedUserId } = useImpersonate();
+  const { impersonatedUserId, isImpersonating } = useImpersonate();
 
   useEffect(() => {
     if (!user) return;
+
     const fetchReports = async () => {
       setLoading(true);
-      // RLS handles filtering: users see only reports matching their tracks' ISRCs
+
+      if (role === 'admin' && isImpersonating && impersonatedUserId) {
+        const [{ data: trackRows }, { data: songRows }] = await Promise.all([
+          supabase.from('tracks').select('isrc').eq('user_id', impersonatedUserId),
+          supabase.from('songs').select('isrc').eq('user_id', impersonatedUserId),
+        ]);
+
+        const ownedIsrcs = [...new Set(
+          [...(trackRows ?? []), ...(songRows ?? [])]
+            .map((row) => normalizeIsrc(row.isrc))
+            .filter((value): value is string => Boolean(value))
+        )];
+
+        if (ownedIsrcs.length === 0) {
+          setEntries([]);
+          setLoading(false);
+          return;
+        }
+
+        const { data } = await supabase
+          .from('report_entries')
+          .select('*')
+          .in('isrc', ownedIsrcs)
+          .order('reporting_month', { ascending: false });
+
+        setEntries((data as ReportEntry[]) || []);
+        setLoading(false);
+        return;
+      }
+
+      // RLS handles filtering for normal users; admins still see everything outside impersonation mode.
       const { data } = await supabase
         .from('report_entries')
         .select('*')
         .order('reporting_month', { ascending: false });
+
       setEntries((data as ReportEntry[]) || []);
       setLoading(false);
     };
+
     fetchReports();
-  }, [user, impersonatedUserId]);
+  }, [user, role, isImpersonating, impersonatedUserId]);
 
   const monthlyGroups = useMemo(() => {
     const groups: Record<string, { entries: ReportEntry[]; latestImport: string }> = {};
