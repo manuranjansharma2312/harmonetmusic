@@ -479,7 +479,7 @@ export default function AdminSubmissions() {
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           <Detail label="ISRC" value={track.isrc || '—'} />
                           <Detail label="Audio Type" value={track.audio_type === 'with_vocal' ? 'With Vocal' : 'Instrumental'} />
-                          {track.audio_type === 'with_vocal' && <Detail label="Language" value={track.language || '—'} />}
+                          <Detail label="Language" value={track.language || '—'} />
                           <Detail label="Genre" value={track.genre || '—'} />
                         </div>
 
@@ -513,8 +513,8 @@ export default function AdminSubmissions() {
 
                         {/* Additional info */}
                         <div className="grid grid-cols-2 gap-2 text-xs">
-                          {track.instagram_link && <Detail label="Instagram" value={track.instagram_link} />}
-                          {track.callertune_time && <Detail label="Callertune" value={track.callertune_time} />}
+                          <Detail label="Instagram" value={track.instagram_link || '—'} />
+                          <Detail label="Callertune" value={track.callertune_time || '—'} />
                         </div>
 
                         {track.audio_url && (
