@@ -110,11 +110,14 @@ export default function AdminReports() {
   const [loading, setLoading] = useState(true);
   const [deleteMonth, setDeleteMonth] = useState<string | null>(null);
   const [monthPage, setMonthPage] = useState(0);
+  const [monthPageSize, setMonthPageSize] = useState<number | 'all'>(10);
 
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [detailEntries, setDetailEntries] = useState<ReportEntry[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [entryPage, setEntryPage] = useState(0);
+  const [entryPageSize, setEntryPageSize] = useState<number | 'all'>(10);
 
   const fetchMonths = async () => {
     setLoading(true);
