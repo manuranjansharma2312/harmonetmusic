@@ -277,81 +277,6 @@ export default function Analytics() {
     ].filter((d) => d.value > 0);
   }, [filtered]);
 
-  /* ── SVG Gradient Defs (shared across charts) ── */
-  const SharedDefs = () => (
-    <defs>
-      {/* Area chart gradients */}
-      <linearGradient id="gradOttArea" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#f97316" stopOpacity={0.5} />
-        <stop offset="40%" stopColor="#f97316" stopOpacity={0.2} />
-        <stop offset="100%" stopColor="#f97316" stopOpacity={0} />
-      </linearGradient>
-      <linearGradient id="gradYtArea" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#ef4444" stopOpacity={0.5} />
-        <stop offset="40%" stopColor="#ef4444" stopOpacity={0.2} />
-        <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
-      </linearGradient>
-      <linearGradient id="gradOttLine" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#fb923c" />
-        <stop offset="100%" stopColor="#f97316" />
-      </linearGradient>
-      <linearGradient id="gradYtLine" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#f87171" />
-        <stop offset="100%" stopColor="#dc2626" />
-      </linearGradient>
-      {/* Streams area */}
-      <linearGradient id="gradOttSArea" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#38bdf8" stopOpacity={0.5} />
-        <stop offset="40%" stopColor="#3b82f6" stopOpacity={0.18} />
-        <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
-      </linearGradient>
-      <linearGradient id="gradYtSArea" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#34d399" stopOpacity={0.5} />
-        <stop offset="40%" stopColor="#10b981" stopOpacity={0.18} />
-        <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
-      </linearGradient>
-      <linearGradient id="gradOttSLine" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#7dd3fc" />
-        <stop offset="100%" stopColor="#3b82f6" />
-      </linearGradient>
-      <linearGradient id="gradYtSLine" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#6ee7b7" />
-        <stop offset="100%" stopColor="#10b981" />
-      </linearGradient>
-      {/* Country bar gradients */}
-      <linearGradient id="barRevCountry" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#fbbf24" stopOpacity={1} />
-        <stop offset="50%" stopColor="#f97316" stopOpacity={0.95} />
-        <stop offset="100%" stopColor="#ef4444" stopOpacity={0.9} />
-      </linearGradient>
-      <linearGradient id="barStrCountry" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#67e8f9" stopOpacity={1} />
-        <stop offset="50%" stopColor="#3b82f6" stopOpacity={0.95} />
-        <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.9} />
-      </linearGradient>
-      {/* Pie gradients */}
-      <linearGradient id="pieOtt" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stopColor="#fb923c" />
-        <stop offset="100%" stopColor="#f97316" />
-      </linearGradient>
-      <linearGradient id="pieYt" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stopColor="#f87171" />
-        <stop offset="100%" stopColor="#dc2626" />
-      </linearGradient>
-      {/* Per-item bar gradients */}
-      {PALETTE.map((p, i) => (
-        <linearGradient key={`hbar${i}`} id={`hbarGrad${i}`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor={p.from} stopOpacity={0.85} />
-          <stop offset="100%" stopColor={p.to} stopOpacity={1} />
-        </linearGradient>
-      ))}
-      {/* Glow filters */}
-      <filter id="glow">
-        <feGaussianBlur stdDeviation="4" result="blur" />
-        <feComposite in="SourceGraphic" in2="blur" />
-      </filter>
-    </defs>
-  );
 
   return (
     <DashboardLayout>
@@ -414,7 +339,26 @@ export default function Analytics() {
                 <div className="h-[320px] px-2 pb-4 mt-2">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={revenueTrend} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
-                      <SharedDefs />
+                      <defs>
+                        <linearGradient id="gradOttArea" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#f97316" stopOpacity={0.5} />
+                          <stop offset="40%" stopColor="#f97316" stopOpacity={0.2} />
+                          <stop offset="100%" stopColor="#f97316" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="gradYtArea" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#ef4444" stopOpacity={0.5} />
+                          <stop offset="40%" stopColor="#ef4444" stopOpacity={0.2} />
+                          <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="gradOttLine" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#fb923c" />
+                          <stop offset="100%" stopColor="#f97316" />
+                        </linearGradient>
+                        <linearGradient id="gradYtLine" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#f87171" />
+                          <stop offset="100%" stopColor="#dc2626" />
+                        </linearGradient>
+                      </defs>
                       <CartesianGrid strokeDasharray="4 4" stroke={GRID_STROKE} vertical={false} />
                       <XAxis dataKey="month" tick={AXIS_TICK} axisLine={false} tickLine={false} dy={8} />
                       <YAxis tick={AXIS_TICK_Y} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${formatCompact(v)}`} width={55} />
@@ -437,7 +381,16 @@ export default function Analytics() {
                   {sourceSplit.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
-                        <SharedDefs />
+                        <defs>
+                          <linearGradient id="pieOtt" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stopColor="#fb923c" />
+                            <stop offset="100%" stopColor="#f97316" />
+                          </linearGradient>
+                          <linearGradient id="pieYt" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stopColor="#f87171" />
+                            <stop offset="100%" stopColor="#dc2626" />
+                          </linearGradient>
+                        </defs>
                         <Pie data={sourceSplit} cx="50%" cy="48%" innerRadius={55} outerRadius={90} paddingAngle={4}
                           dataKey="value" stroke="none" labelLine={false} label={renderPieLabel}
                           style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }}>
@@ -475,7 +428,26 @@ export default function Analytics() {
               <div className="h-[300px] px-2 pb-4 mt-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={streamsTrend} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
-                    <SharedDefs />
+                    <defs>
+                      <linearGradient id="gradOttSArea" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#38bdf8" stopOpacity={0.5} />
+                        <stop offset="40%" stopColor="#3b82f6" stopOpacity={0.18} />
+                        <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="gradYtSArea" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#34d399" stopOpacity={0.5} />
+                        <stop offset="40%" stopColor="#10b981" stopOpacity={0.18} />
+                        <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="gradOttSLine" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#7dd3fc" />
+                        <stop offset="100%" stopColor="#3b82f6" />
+                      </linearGradient>
+                      <linearGradient id="gradYtSLine" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#6ee7b7" />
+                        <stop offset="100%" stopColor="#10b981" />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="4 4" stroke={GRID_STROKE} vertical={false} />
                     <XAxis dataKey="month" tick={AXIS_TICK} axisLine={false} tickLine={false} dy={8} />
                     <YAxis tick={AXIS_TICK_Y} axisLine={false} tickLine={false} tickFormatter={(v) => formatCompact(v)} width={55} />
@@ -499,7 +471,14 @@ export default function Analytics() {
                 <div className="h-[300px] px-2 pb-4 mt-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={revenueByPlatform} layout="vertical" margin={{ top: 0, right: 24, left: 0, bottom: 0 }}>
-                      <SharedDefs />
+                      <defs>
+                        {PALETTE.map((p, i) => (
+                          <linearGradient key={`hbar${i}`} id={`hbarGrad${i}`} x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor={p.from} stopOpacity={0.85} />
+                            <stop offset="100%" stopColor={p.to} stopOpacity={1} />
+                          </linearGradient>
+                        ))}
+                      </defs>
                       <CartesianGrid strokeDasharray="4 4" stroke={GRID_STROKE} horizontal={false} />
                       <XAxis type="number" tick={AXIS_TICK_Y} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${formatCompact(v)}`} />
                       <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0 0% 65%)', fontSize: 11, fontWeight: 600 }} width={95} axisLine={false} tickLine={false} />
@@ -519,7 +498,14 @@ export default function Analytics() {
                 <div className="h-[300px] px-2 pb-4 mt-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={streamsByPlatform} layout="vertical" margin={{ top: 0, right: 24, left: 0, bottom: 0 }}>
-                      <SharedDefs />
+                      <defs>
+                        {PALETTE.map((p, i) => (
+                          <linearGradient key={`hbar${i}`} id={`hbarGrad${i}`} x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor={p.from} stopOpacity={0.85} />
+                            <stop offset="100%" stopColor={p.to} stopOpacity={1} />
+                          </linearGradient>
+                        ))}
+                      </defs>
                       <CartesianGrid strokeDasharray="4 4" stroke={GRID_STROKE} horizontal={false} />
                       <XAxis type="number" tick={AXIS_TICK_Y} axisLine={false} tickLine={false} tickFormatter={(v) => formatCompact(v)} />
                       <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0 0% 65%)', fontSize: 11, fontWeight: 600 }} width={95} axisLine={false} tickLine={false} />
@@ -653,7 +639,13 @@ export default function Analytics() {
                 <div className="h-[340px] px-2 pb-4 mt-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={revenueByCountry} margin={{ top: 5, right: 16, left: 0, bottom: 35 }}>
-                      <SharedDefs />
+                      <defs>
+                        <linearGradient id="barRevCountry" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#fbbf24" stopOpacity={1} />
+                          <stop offset="50%" stopColor="#f97316" stopOpacity={0.95} />
+                          <stop offset="100%" stopColor="#ef4444" stopOpacity={0.9} />
+                        </linearGradient>
+                      </defs>
                       <CartesianGrid strokeDasharray="4 4" stroke={GRID_STROKE} horizontal vertical={false} />
                       <XAxis dataKey="name" tick={{ fill: 'hsl(0 0% 50%)', fontSize: 9, fontWeight: 600 }} axisLine={false} tickLine={false} angle={-45} textAnchor="end" interval={0} />
                       <YAxis tick={AXIS_TICK_Y} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${formatCompact(v)}`} />
@@ -669,7 +661,13 @@ export default function Analytics() {
                 <div className="h-[340px] px-2 pb-4 mt-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={streamsByCountry} margin={{ top: 5, right: 16, left: 0, bottom: 35 }}>
-                      <SharedDefs />
+                      <defs>
+                        <linearGradient id="barStrCountry" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#67e8f9" stopOpacity={1} />
+                          <stop offset="50%" stopColor="#3b82f6" stopOpacity={0.95} />
+                          <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.9} />
+                        </linearGradient>
+                      </defs>
                       <CartesianGrid strokeDasharray="4 4" stroke={GRID_STROKE} horizontal vertical={false} />
                       <XAxis dataKey="name" tick={{ fill: 'hsl(0 0% 50%)', fontSize: 9, fontWeight: 600 }} axisLine={false} tickLine={false} angle={-45} textAnchor="end" interval={0} />
                       <YAxis tick={AXIS_TICK_Y} axisLine={false} tickLine={false} tickFormatter={(v) => formatCompact(v)} />
