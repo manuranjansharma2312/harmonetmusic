@@ -46,6 +46,7 @@ const userLinksTop = [
 ];
 
 const userLinksBottom = [
+  { to: '/reports', label: 'Reports & Analytics', icon: BarChart3 },
   { to: '/profile', label: 'My Profile', icon: UserCircle },
 ];
 
