@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
@@ -15,6 +15,9 @@ import {
   Download,
   Users,
   Disc3,
+  ArrowUpRight,
+  ArrowDownRight,
+  Minus,
 } from 'lucide-react';
 import {
   BarChart,
@@ -30,6 +33,8 @@ import {
   AreaChart,
   Area,
   Legend,
+  RadialBarChart,
+  RadialBar,
 } from 'recharts';
 
 type TimePeriod = '30d' | '6m' | '12m' | 'all';
@@ -61,14 +66,9 @@ const TIME_PERIODS: { key: TimePeriod; label: string }[] = [
 ];
 
 const CHART_COLORS = [
-  'hsl(0, 67%, 45%)',
-  'hsl(25, 80%, 50%)',
-  'hsl(45, 85%, 55%)',
-  'hsl(170, 60%, 45%)',
-  'hsl(210, 65%, 50%)',
-  'hsl(280, 55%, 55%)',
-  'hsl(330, 60%, 50%)',
-  'hsl(140, 50%, 45%)',
+  '#dc2626', '#f97316', '#eab308', '#22c55e',
+  '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6',
+  '#f43f5e', '#6366f1', '#84cc16', '#06b6d4',
 ];
 
 const MONTHS_MAP: Record<string, number> = {
@@ -89,13 +89,9 @@ function filterByPeriod(entries: ReportEntry[], period: TimePeriod): ReportEntry
   if (period === 'all') return entries;
   const now = new Date();
   let cutoff: Date;
-  if (period === '30d') {
-    cutoff = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-  } else if (period === '6m') {
-    cutoff = new Date(now.getFullYear(), now.getMonth() - 6, 1);
-  } else {
-    cutoff = new Date(now.getFullYear() - 1, now.getMonth(), 1);
-  }
+  if (period === '30d') cutoff = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+  else if (period === '6m') cutoff = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+  else cutoff = new Date(now.getFullYear() - 1, now.getMonth(), 1);
   return entries.filter((e) => {
     const d = parseMonthToDate(e.reporting_month);
     return d && d >= cutoff;
@@ -103,10 +99,7 @@ function filterByPeriod(entries: ReportEntry[], period: TimePeriod): ReportEntry
 }
 
 function aggregateByKey<T extends ReportEntry>(
-  data: T[],
-  key: keyof T,
-  metric: 'revenue' | 'streams',
-  limit = 8
+  data: T[], key: keyof T, metric: 'revenue' | 'streams', limit = 8
 ): { name: string; value: number }[] {
   const map: Record<string, number> = {};
   data.forEach((e) => {
@@ -119,29 +112,81 @@ function aggregateByKey<T extends ReportEntry>(
     .map(([name, value]) => ({ name, value: Math.round(value * 100) / 100 }));
 }
 
+function formatCompact(n: number): string {
+  if (n >= 10000000) return `${(n / 10000000).toFixed(2)}Cr`;
+  if (n >= 100000) return `${(n / 100000).toFixed(2)}L`;
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
+  return n.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+}
+
+/* ── Tooltip Components ── */
+
+function ChartTooltipBox({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-border/60 bg-card/95 backdrop-blur-xl px-4 py-3 shadow-2xl shadow-black/40">
+      {children}
+    </div>
+  );
+}
+
 function CustomTooltip({ active, payload, label, prefix = '' }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg border border-border/50 bg-card px-3 py-2 text-xs shadow-xl">
-      <p className="font-medium text-foreground mb-1">{label}</p>
-      {payload.map((p: any, i: number) => (
-        <p key={i} style={{ color: p.color }} className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full inline-block" style={{ background: p.color }} />
-          {p.name}: {prefix}{p.value?.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
-        </p>
-      ))}
-    </div>
+    <ChartTooltipBox>
+      <p className="font-semibold text-foreground text-xs mb-2 border-b border-border/40 pb-1.5">{label}</p>
+      <div className="space-y-1">
+        {payload.map((p: any, i: number) => (
+          <div key={i} className="flex items-center justify-between gap-4 text-xs">
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-sm inline-block" style={{ background: p.color }} />
+              <span className="text-muted-foreground">{p.name}</span>
+            </span>
+            <span className="font-mono font-semibold text-foreground">{prefix}{p.value?.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
+          </div>
+        ))}
+      </div>
+    </ChartTooltipBox>
   );
 }
 
 function PieTooltip({ active, payload, prefix = '' }: any) {
   if (!active || !payload?.length) return null;
   const d = payload[0];
+  const total = d.payload?.total || 0;
+  const pct = total > 0 ? ((d.value / total) * 100).toFixed(1) : '0';
   return (
-    <div className="rounded-lg border border-border/50 bg-card px-3 py-2 text-xs shadow-xl">
-      <p className="font-medium text-foreground">{d.name}</p>
-      <p className="text-muted-foreground">{prefix}{d.value?.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</p>
+    <ChartTooltipBox>
+      <p className="font-semibold text-foreground text-xs mb-1">{d.name}</p>
+      <p className="text-sm font-mono font-bold text-foreground">{prefix}{d.value?.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</p>
+      <p className="text-[10px] text-muted-foreground mt-0.5">{pct}% of total</p>
+    </ChartTooltipBox>
+  );
+}
+
+function CustomLegend({ payload }: any) {
+  if (!payload?.length) return null;
+  return (
+    <div className="flex items-center justify-center gap-5 mt-2">
+      {payload.map((entry: any, i: number) => (
+        <div key={i} className="flex items-center gap-1.5">
+          <span className="h-2 w-6 rounded-full" style={{ background: entry.color }} />
+          <span className="text-[11px] text-muted-foreground font-medium">{entry.value}</span>
+        </div>
+      ))}
     </div>
+  );
+}
+
+/* ── Custom Pie Label ── */
+function renderPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) {
+  const RADIAN = Math.PI / 180;
+  const radius = outerRadius + 20;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  return (
+    <text x={x} y={y} fill="hsl(0,0%,75%)" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-[10px] font-medium">
+      {name} ({(percent * 100).toFixed(0)}%)
+    </text>
   );
 }
 
@@ -157,6 +202,8 @@ export default function Analytics() {
     if (!user) return;
     const fetchData = async () => {
       setLoading(true);
+      const mapEntries = (arr: any[], source: 'ott' | 'youtube') =>
+        (arr || []).map((e: any) => ({ ...e, source, streams: e.streams || 0, downloads: e.downloads || 0, net_generated_revenue: e.net_generated_revenue || 0 }));
 
       if (role === 'admin' && isImpersonating && impersonatedUserId) {
         const [{ data: trackRows }, { data: songRows }] = await Promise.all([
@@ -173,15 +220,15 @@ export default function Analytics() {
           supabase.from('report_entries').select('*').in('isrc', ownedIsrcs),
           supabase.from('youtube_report_entries').select('*').in('isrc', ownedIsrcs),
         ]);
-        setOttEntries((ott || []).map((e: any) => ({ ...e, source: 'ott' as const, streams: e.streams || 0, downloads: e.downloads || 0, net_generated_revenue: e.net_generated_revenue || 0 })));
-        setYtEntries((yt || []).map((e: any) => ({ ...e, source: 'youtube' as const, streams: e.streams || 0, downloads: e.downloads || 0, net_generated_revenue: e.net_generated_revenue || 0 })));
+        setOttEntries(mapEntries(ott || [], 'ott'));
+        setYtEntries(mapEntries(yt || [], 'youtube'));
       } else {
         const [{ data: ott }, { data: yt }] = await Promise.all([
           supabase.from('report_entries').select('*'),
           supabase.from('youtube_report_entries').select('*'),
         ]);
-        setOttEntries((ott || []).map((e: any) => ({ ...e, source: 'ott' as const, streams: e.streams || 0, downloads: e.downloads || 0, net_generated_revenue: e.net_generated_revenue || 0 })));
-        setYtEntries((yt || []).map((e: any) => ({ ...e, source: 'youtube' as const, streams: e.streams || 0, downloads: e.downloads || 0, net_generated_revenue: e.net_generated_revenue || 0 })));
+        setOttEntries(mapEntries(ott || [], 'ott'));
+        setYtEntries(mapEntries(yt || [], 'youtube'));
       }
       setLoading(false);
     };
@@ -198,7 +245,9 @@ export default function Analytics() {
   const uniqueArtists = useMemo(() => new Set(filtered.map((e) => e.artist).filter(Boolean)).size, [filtered]);
   const uniqueCountries = useMemo(() => new Set(filtered.map((e) => e.country).filter(Boolean)).size, [filtered]);
 
-  // Revenue trend by month
+  const formatMonth = useCallback((month: string) =>
+    month.split(' ').map((w, i) => i === 0 ? w.slice(0, 3) : `'${w.slice(2)}`).join(' '), []);
+
   const revenueTrend = useMemo(() => {
     const map: Record<string, { ott: number; youtube: number }> = {};
     filtered.forEach((e) => {
@@ -206,19 +255,10 @@ export default function Analytics() {
       map[e.reporting_month][e.source] += Number(e.net_generated_revenue) || 0;
     });
     return Object.entries(map)
-      .sort(([a], [b]) => {
-        const da = parseMonthToDate(a);
-        const db = parseMonthToDate(b);
-        return (da?.getTime() || 0) - (db?.getTime() || 0);
-      })
-      .map(([month, vals]) => ({
-        month: month.split(' ').map((w, i) => i === 0 ? w.slice(0, 3) : `'${w.slice(2)}`).join(' '),
-        OTT: Math.round(vals.ott * 100) / 100,
-        YouTube: Math.round(vals.youtube * 100) / 100,
-      }));
-  }, [filtered]);
+      .sort(([a], [b]) => (parseMonthToDate(a)?.getTime() || 0) - (parseMonthToDate(b)?.getTime() || 0))
+      .map(([month, vals]) => ({ month: formatMonth(month), OTT: Math.round(vals.ott * 100) / 100, YouTube: Math.round(vals.youtube * 100) / 100 }));
+  }, [filtered, formatMonth]);
 
-  // Streams trend by month
   const streamsTrend = useMemo(() => {
     const map: Record<string, { ott: number; youtube: number }> = {};
     filtered.forEach((e) => {
@@ -226,17 +266,9 @@ export default function Analytics() {
       map[e.reporting_month][e.source] += Number(e.streams) || 0;
     });
     return Object.entries(map)
-      .sort(([a], [b]) => {
-        const da = parseMonthToDate(a);
-        const db = parseMonthToDate(b);
-        return (da?.getTime() || 0) - (db?.getTime() || 0);
-      })
-      .map(([month, vals]) => ({
-        month: month.split(' ').map((w, i) => i === 0 ? w.slice(0, 3) : `'${w.slice(2)}`).join(' '),
-        OTT: vals.ott,
-        YouTube: vals.youtube,
-      }));
-  }, [filtered]);
+      .sort(([a], [b]) => (parseMonthToDate(a)?.getTime() || 0) - (parseMonthToDate(b)?.getTime() || 0))
+      .map(([month, vals]) => ({ month: formatMonth(month), OTT: vals.ott, YouTube: vals.youtube }));
+  }, [filtered, formatMonth]);
 
   const revenueByPlatform = useMemo(() => aggregateByKey(filtered, 'store', 'revenue'), [filtered]);
   const streamsByPlatform = useMemo(() => aggregateByKey(filtered, 'store', 'streams'), [filtered]);
@@ -247,40 +279,48 @@ export default function Analytics() {
   const revenueByCountry = useMemo(() => aggregateByKey(filtered, 'country', 'revenue', 12), [filtered]);
   const streamsByCountry = useMemo(() => aggregateByKey(filtered, 'country', 'streams', 12), [filtered]);
 
-  // Source split (OTT vs YouTube)
   const sourceSplit = useMemo(() => {
     let ott = 0, yt = 0;
     filtered.forEach((e) => {
       if (e.source === 'ott') ott += Number(e.net_generated_revenue) || 0;
       else yt += Number(e.net_generated_revenue) || 0;
     });
+    const total = ott + yt;
     return [
-      { name: 'OTT Platforms', value: Math.round(ott * 100) / 100 },
-      { name: 'YouTube', value: Math.round(yt * 100) / 100 },
+      { name: 'OTT', value: Math.round(ott * 100) / 100, total },
+      { name: 'YouTube', value: Math.round(yt * 100) / 100, total },
     ].filter((d) => d.value > 0);
   }, [filtered]);
+
+  const platformRadial = useMemo(() => {
+    const max = revenueByPlatform[0]?.value || 1;
+    return revenueByPlatform.slice(0, 5).map((p, i) => ({
+      name: p.name,
+      value: Math.round((p.value / max) * 100),
+      revenue: p.value,
+      fill: CHART_COLORS[i],
+    }));
+  }, [revenueByPlatform]);
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold font-display">Analytics</h1>
-            <p className="text-muted-foreground text-sm">Combined YouTube + OTT performance overview · All amounts in ₹ (INR)</p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold font-display tracking-tight">Analytics Overview</h1>
+          <p className="text-muted-foreground text-sm mt-0.5">Combined YouTube + OTT performance · All amounts in ₹ (INR)</p>
         </div>
 
-        {/* Time Period Tabs */}
-        <div className="flex gap-1.5 p-1 rounded-xl bg-secondary/50 w-fit">
+        {/* Time Period Selector */}
+        <div className="flex gap-1 p-1 rounded-xl bg-muted/40 border border-border/30 w-fit backdrop-blur-sm">
           {TIME_PERIODS.map((tp) => (
             <button
               key={tp.key}
               onClick={() => setPeriod(tp.key)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all duration-200 ${
                 period === tp.key
-                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
               }`}
             >
               {tp.label}
@@ -289,129 +329,156 @@ export default function Analytics() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <GlassCard key={i} className="h-28 animate-pulse"><div /></GlassCard>
+              <GlassCard key={i} className="h-[120px] animate-pulse"><div /></GlassCard>
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <GlassCard className="py-16 text-center">
-            <BarChart3 className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
-            <p className="text-muted-foreground text-lg font-medium">No analytics data available</p>
-            <p className="text-muted-foreground/60 text-sm mt-1">Report data will appear here once available.</p>
+          <GlassCard className="py-20 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-muted/50 mb-4">
+              <BarChart3 className="h-8 w-8 text-muted-foreground/50" />
+            </div>
+            <p className="text-foreground text-lg font-semibold">No Analytics Data</p>
+            <p className="text-muted-foreground text-sm mt-1 max-w-sm mx-auto">Report data will appear here once your OTT and YouTube reports are imported.</p>
           </GlassCard>
         ) : (
           <>
-            {/* Summary Cards */}
+            {/* ── KPI Cards ── */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              <SummaryCard icon={IndianRupee} label="Total Revenue" value={`₹${totalRevenue.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`} color="hsl(0, 67%, 25%)" />
-              <SummaryCard icon={Play} label="Total Streams" value={totalStreams.toLocaleString('en-IN')} color="hsl(210, 65%, 40%)" />
-              <SummaryCard icon={Download} label="Downloads" value={totalDownloads.toLocaleString('en-IN')} color="hsl(170, 60%, 35%)" />
-              <SummaryCard icon={Music2} label="Tracks" value={String(uniqueTracks)} color="hsl(25, 80%, 40%)" />
-              <SummaryCard icon={Users} label="Artists" value={String(uniqueArtists)} color="hsl(280, 55%, 40%)" />
-              <SummaryCard icon={Globe} label="Countries" value={String(uniqueCountries)} color="hsl(140, 50%, 35%)" />
+              <KpiCard icon={IndianRupee} label="Total Revenue" value={`₹${formatCompact(totalRevenue)}`} accent="#dc2626" />
+              <KpiCard icon={Play} label="Total Streams" value={formatCompact(totalStreams)} accent="#3b82f6" />
+              <KpiCard icon={Download} label="Downloads" value={formatCompact(totalDownloads)} accent="#14b8a6" />
+              <KpiCard icon={Music2} label="Tracks" value={String(uniqueTracks)} accent="#f97316" />
+              <KpiCard icon={Users} label="Artists" value={String(uniqueArtists)} accent="#8b5cf6" />
+              <KpiCard icon={Globe} label="Countries" value={String(uniqueCountries)} accent="#22c55e" />
             </div>
 
-            {/* Revenue Trend + Source Split */}
+            {/* ── Revenue Trend + Revenue Split ── */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <GlassCard className="lg:col-span-2">
-                <ChartHeader icon={TrendingUp} title="Revenue Trend" subtitle="Monthly revenue by source" />
-                <div className="h-72 mt-4">
+              <GlassCard className="lg:col-span-2 !p-5">
+                <SectionHeader icon={TrendingUp} title="Revenue Trend" subtitle="Monthly revenue breakdown by source" />
+                <div className="h-[300px] mt-5">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={revenueTrend}>
+                    <AreaChart data={revenueTrend} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
                       <defs>
-                        <linearGradient id="gradOtt" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(25, 80%, 50%)" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="hsl(25, 80%, 50%)" stopOpacity={0} />
+                        <linearGradient id="areaOtt" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#f97316" stopOpacity={0.25} />
+                          <stop offset="100%" stopColor="#f97316" stopOpacity={0} />
                         </linearGradient>
-                        <linearGradient id="gradYt" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(0, 67%, 45%)" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="hsl(0, 67%, 45%)" stopOpacity={0} />
+                        <linearGradient id="areaYt" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#dc2626" stopOpacity={0.25} />
+                          <stop offset="100%" stopColor="#dc2626" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,20%)" />
-                      <XAxis dataKey="month" tick={{ fill: 'hsl(0,0%,55%)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: 'hsl(0,0%,55%)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,18%)" vertical={false} />
+                      <XAxis dataKey="month" tick={{ fill: 'hsl(0,0%,50%)', fontSize: 10, fontWeight: 500 }} axisLine={false} tickLine={false} dy={8} />
+                      <YAxis tick={{ fill: 'hsl(0,0%,50%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatCompact(v)} />
                       <Tooltip content={<CustomTooltip prefix="₹" />} />
-                      <Legend wrapperStyle={{ fontSize: 12 }} />
-                      <Area type="monotone" dataKey="OTT" stroke="hsl(25, 80%, 50%)" fill="url(#gradOtt)" strokeWidth={2} />
-                      <Area type="monotone" dataKey="YouTube" stroke="hsl(0, 67%, 45%)" fill="url(#gradYt)" strokeWidth={2} />
+                      <Legend content={<CustomLegend />} />
+                      <Area type="monotone" dataKey="OTT" stroke="#f97316" fill="url(#areaOtt)" strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 2, stroke: '#f97316', fill: 'hsl(0,0%,8%)' }} />
+                      <Area type="monotone" dataKey="YouTube" stroke="#dc2626" fill="url(#areaYt)" strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 2, stroke: '#dc2626', fill: 'hsl(0,0%,8%)' }} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
               </GlassCard>
 
-              <GlassCard>
-                <ChartHeader icon={Disc3} title="Revenue Split" subtitle="OTT vs YouTube" />
-                <div className="h-72 mt-4 flex items-center justify-center">
+              <GlassCard className="!p-5">
+                <SectionHeader icon={Disc3} title="Revenue Split" subtitle="OTT vs YouTube share" />
+                <div className="h-[300px] mt-2 flex items-center justify-center">
                   {sourceSplit.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
+                        <defs>
+                          <filter id="pieShadow">
+                            <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#000" floodOpacity="0.4" />
+                          </filter>
+                        </defs>
                         <Pie
                           data={sourceSplit}
                           cx="50%"
-                          cy="50%"
-                          innerRadius={55}
-                          outerRadius={90}
-                          paddingAngle={4}
+                          cy="45%"
+                          innerRadius={50}
+                          outerRadius={85}
+                          paddingAngle={5}
                           dataKey="value"
                           stroke="none"
+                          labelLine={false}
+                          label={renderPieLabel}
+                          style={{ filter: 'url(#pieShadow)' }}
                         >
-                          {sourceSplit.map((_, i) => (
-                            <Cell key={i} fill={i === 0 ? 'hsl(25, 80%, 50%)' : 'hsl(0, 67%, 45%)'} />
-                          ))}
+                          <Cell fill="#f97316" />
+                          <Cell fill="#dc2626" />
                         </Pie>
                         <Tooltip content={<PieTooltip prefix="₹" />} />
-                        <Legend wrapperStyle={{ fontSize: 12 }} />
                       </PieChart>
                     </ResponsiveContainer>
                   ) : (
-                    <p className="text-muted-foreground text-sm">No data</p>
+                    <p className="text-muted-foreground text-sm">No data available</p>
                   )}
+                  {/* Center label */}
+                  {sourceSplit.length > 0 && (
+                    <div className="absolute flex flex-col items-center pointer-events-none" style={{ display: 'none' }}>
+                      <span className="text-[10px] text-muted-foreground">Total</span>
+                      <span className="text-sm font-bold text-foreground">₹{formatCompact(totalRevenue)}</span>
+                    </div>
+                  )}
+                </div>
+                {/* Legend below pie */}
+                <div className="flex items-center justify-center gap-6 mt-1">
+                  {sourceSplit.map((s, i) => (
+                    <div key={s.name} className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-sm" style={{ background: i === 0 ? '#f97316' : '#dc2626' }} />
+                      <div>
+                        <p className="text-[11px] text-muted-foreground">{s.name}</p>
+                        <p className="text-xs font-semibold text-foreground">₹{formatCompact(s.value)}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </GlassCard>
             </div>
 
-            {/* Streams Trend */}
-            <GlassCard>
-              <ChartHeader icon={Play} title="Streams Trend" subtitle="Monthly streams by source" />
-              <div className="h-72 mt-4">
+            {/* ── Streams Trend ── */}
+            <GlassCard className="!p-5">
+              <SectionHeader icon={Play} title="Streams Trend" subtitle="Monthly stream counts by source" />
+              <div className="h-[280px] mt-5">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={streamsTrend}>
+                  <AreaChart data={streamsTrend} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
                     <defs>
-                      <linearGradient id="gradOttS" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(210, 65%, 50%)" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(210, 65%, 50%)" stopOpacity={0} />
+                      <linearGradient id="areaOttS" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.2} />
+                        <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
                       </linearGradient>
-                      <linearGradient id="gradYtS" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(170, 60%, 45%)" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(170, 60%, 45%)" stopOpacity={0} />
+                      <linearGradient id="areaYtS" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#14b8a6" stopOpacity={0.2} />
+                        <stop offset="100%" stopColor="#14b8a6" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,20%)" />
-                    <XAxis dataKey="month" tick={{ fill: 'hsl(0,0%,55%)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: 'hsl(0,0%,55%)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,18%)" vertical={false} />
+                    <XAxis dataKey="month" tick={{ fill: 'hsl(0,0%,50%)', fontSize: 10, fontWeight: 500 }} axisLine={false} tickLine={false} dy={8} />
+                    <YAxis tick={{ fill: 'hsl(0,0%,50%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatCompact(v)} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Legend wrapperStyle={{ fontSize: 12 }} />
-                    <Area type="monotone" dataKey="OTT" stroke="hsl(210, 65%, 50%)" fill="url(#gradOttS)" strokeWidth={2} />
-                    <Area type="monotone" dataKey="YouTube" stroke="hsl(170, 60%, 45%)" fill="url(#gradYtS)" strokeWidth={2} />
+                    <Legend content={<CustomLegend />} />
+                    <Area type="monotone" dataKey="OTT" stroke="#3b82f6" fill="url(#areaOttS)" strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 2, stroke: '#3b82f6', fill: 'hsl(0,0%,8%)' }} />
+                    <Area type="monotone" dataKey="YouTube" stroke="#14b8a6" fill="url(#areaYtS)" strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 2, stroke: '#14b8a6', fill: 'hsl(0,0%,8%)' }} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </GlassCard>
 
-            {/* Revenue by Platform + Streams by Platform */}
+            {/* ── Revenue & Streams by Platform ── */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <GlassCard>
-                <ChartHeader icon={BarChart3} title="Revenue by Platform" subtitle="Top performing stores" />
-                <div className="h-72 mt-4">
+              <GlassCard className="!p-5">
+                <SectionHeader icon={BarChart3} title="Revenue by Platform" subtitle="Top performing stores" />
+                <div className="h-[300px] mt-4">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={revenueByPlatform} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,20%)" horizontal={false} />
-                      <XAxis type="number" tick={{ fill: 'hsl(0,0%,55%)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0,0%,75%)', fontSize: 11 }} width={100} axisLine={false} tickLine={false} />
-                      <Tooltip content={<CustomTooltip prefix="₹" />} />
-                      <Bar dataKey="value" name="Revenue" radius={[0, 6, 6, 0]} maxBarSize={28}>
+                    <BarChart data={revenueByPlatform} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,16%)" horizontal={false} />
+                      <XAxis type="number" tick={{ fill: 'hsl(0,0%,50%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${formatCompact(v)}`} />
+                      <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0,0%,70%)', fontSize: 11, fontWeight: 500 }} width={90} axisLine={false} tickLine={false} />
+                      <Tooltip content={<CustomTooltip prefix="₹" />} cursor={{ fill: 'hsl(0,0%,12%)' }} />
+                      <Bar dataKey="value" name="Revenue" radius={[0, 8, 8, 0]} maxBarSize={24} animationDuration={800}>
                         {revenueByPlatform.map((_, i) => (
                           <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                         ))}
@@ -421,16 +488,16 @@ export default function Analytics() {
                 </div>
               </GlassCard>
 
-              <GlassCard>
-                <ChartHeader icon={Play} title="Streams by Platform" subtitle="Top streaming stores" />
-                <div className="h-72 mt-4">
+              <GlassCard className="!p-5">
+                <SectionHeader icon={Play} title="Streams by Platform" subtitle="Top streaming stores" />
+                <div className="h-[300px] mt-4">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={streamsByPlatform} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,20%)" horizontal={false} />
-                      <XAxis type="number" tick={{ fill: 'hsl(0,0%,55%)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0,0%,75%)', fontSize: 11 }} width={100} axisLine={false} tickLine={false} />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="value" name="Streams" radius={[0, 6, 6, 0]} maxBarSize={28}>
+                    <BarChart data={streamsByPlatform} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,16%)" horizontal={false} />
+                      <XAxis type="number" tick={{ fill: 'hsl(0,0%,50%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatCompact(v)} />
+                      <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0,0%,70%)', fontSize: 11, fontWeight: 500 }} width={90} axisLine={false} tickLine={false} />
+                      <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(0,0%,12%)' }} />
+                      <Bar dataKey="value" name="Streams" radius={[0, 8, 8, 0]} maxBarSize={24} animationDuration={800}>
                         {streamsByPlatform.map((_, i) => (
                           <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                         ))}
@@ -441,87 +508,91 @@ export default function Analytics() {
               </GlassCard>
             </div>
 
-            {/* Top Tracks */}
+            {/* ── Top Tracks ── */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <GlassCard>
-                <ChartHeader icon={Music2} title="Top Tracks by Revenue" subtitle="Highest earning tracks" />
-                <div className="mt-4 space-y-2.5">
+              <GlassCard className="!p-5">
+                <SectionHeader icon={Music2} title="Top Tracks · Revenue" subtitle="Highest earning tracks" />
+                <div className="mt-4 space-y-3">
+                  {revenueByTrack.length === 0 && <EmptyState text="No track data" />}
                   {revenueByTrack.map((t, i) => (
-                    <TopItemRow key={t.name} rank={i + 1} name={t.name} value={`₹${t.value.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`} percentage={revenueByTrack[0] ? (t.value / revenueByTrack[0].value) * 100 : 0} color={CHART_COLORS[i % CHART_COLORS.length]} />
+                    <RankRow key={t.name} rank={i + 1} name={t.name} value={`₹${formatCompact(t.value)}`} pct={revenueByTrack[0] ? (t.value / revenueByTrack[0].value) * 100 : 0} color={CHART_COLORS[i % CHART_COLORS.length]} />
                   ))}
-                  {revenueByTrack.length === 0 && <p className="text-muted-foreground text-sm text-center py-4">No track data</p>}
                 </div>
               </GlassCard>
 
-              <GlassCard>
-                <ChartHeader icon={Music2} title="Top Tracks by Streams" subtitle="Most streamed tracks" />
-                <div className="mt-4 space-y-2.5">
+              <GlassCard className="!p-5">
+                <SectionHeader icon={Music2} title="Top Tracks · Streams" subtitle="Most streamed tracks" />
+                <div className="mt-4 space-y-3">
+                  {streamsByTrack.length === 0 && <EmptyState text="No track data" />}
                   {streamsByTrack.map((t, i) => (
-                    <TopItemRow key={t.name} rank={i + 1} name={t.name} value={t.value.toLocaleString('en-IN')} percentage={streamsByTrack[0] ? (t.value / streamsByTrack[0].value) * 100 : 0} color={CHART_COLORS[i % CHART_COLORS.length]} />
+                    <RankRow key={t.name} rank={i + 1} name={t.name} value={formatCompact(t.value)} pct={streamsByTrack[0] ? (t.value / streamsByTrack[0].value) * 100 : 0} color={CHART_COLORS[i % CHART_COLORS.length]} />
                   ))}
-                  {streamsByTrack.length === 0 && <p className="text-muted-foreground text-sm text-center py-4">No track data</p>}
                 </div>
               </GlassCard>
             </div>
 
-            {/* Top Artists */}
+            {/* ── Top Artists ── */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <GlassCard>
-                <ChartHeader icon={Users} title="Top Artists by Revenue" subtitle="Highest earning artists" />
-                <div className="mt-4 space-y-2.5">
+              <GlassCard className="!p-5">
+                <SectionHeader icon={Users} title="Top Artists · Revenue" subtitle="Highest earning artists" />
+                <div className="mt-4 space-y-3">
+                  {revenueByArtist.length === 0 && <EmptyState text="No artist data" />}
                   {revenueByArtist.map((a, i) => (
-                    <TopItemRow key={a.name} rank={i + 1} name={a.name} value={`₹${a.value.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`} percentage={revenueByArtist[0] ? (a.value / revenueByArtist[0].value) * 100 : 0} color={CHART_COLORS[i % CHART_COLORS.length]} />
+                    <RankRow key={a.name} rank={i + 1} name={a.name} value={`₹${formatCompact(a.value)}`} pct={revenueByArtist[0] ? (a.value / revenueByArtist[0].value) * 100 : 0} color={CHART_COLORS[i % CHART_COLORS.length]} />
                   ))}
-                  {revenueByArtist.length === 0 && <p className="text-muted-foreground text-sm text-center py-4">No artist data</p>}
                 </div>
               </GlassCard>
 
-              <GlassCard>
-                <ChartHeader icon={Users} title="Top Artists by Streams" subtitle="Most streamed artists" />
-                <div className="mt-4 space-y-2.5">
+              <GlassCard className="!p-5">
+                <SectionHeader icon={Users} title="Top Artists · Streams" subtitle="Most streamed artists" />
+                <div className="mt-4 space-y-3">
+                  {streamsByArtist.length === 0 && <EmptyState text="No artist data" />}
                   {streamsByArtist.map((a, i) => (
-                    <TopItemRow key={a.name} rank={i + 1} name={a.name} value={a.value.toLocaleString('en-IN')} percentage={streamsByArtist[0] ? (a.value / streamsByArtist[0].value) * 100 : 0} color={CHART_COLORS[i % CHART_COLORS.length]} />
+                    <RankRow key={a.name} rank={i + 1} name={a.name} value={formatCompact(a.value)} pct={streamsByArtist[0] ? (a.value / streamsByArtist[0].value) * 100 : 0} color={CHART_COLORS[i % CHART_COLORS.length]} />
                   ))}
-                  {streamsByArtist.length === 0 && <p className="text-muted-foreground text-sm text-center py-4">No artist data</p>}
                 </div>
               </GlassCard>
             </div>
 
-            {/* Countries */}
+            {/* ── Countries ── */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <GlassCard>
-                <ChartHeader icon={Globe} title="Revenue by Country" subtitle="Geographic revenue distribution" />
-                <div className="h-80 mt-4">
+              <GlassCard className="!p-5">
+                <SectionHeader icon={Globe} title="Revenue by Country" subtitle="Geographic revenue distribution" />
+                <div className="h-[320px] mt-4">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={revenueByCountry}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,20%)" />
-                      <XAxis dataKey="name" tick={{ fill: 'hsl(0,0%,55%)', fontSize: 10 }} axisLine={false} tickLine={false} angle={-45} textAnchor="end" height={60} />
-                      <YAxis tick={{ fill: 'hsl(0,0%,55%)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <Tooltip content={<CustomTooltip prefix="₹" />} />
-                      <Bar dataKey="value" name="Revenue" radius={[6, 6, 0, 0]} maxBarSize={32}>
-                        {revenueByCountry.map((_, i) => (
-                          <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                        ))}
-                      </Bar>
+                    <BarChart data={revenueByCountry} margin={{ top: 5, right: 10, left: -10, bottom: 30 }}>
+                      <defs>
+                        <linearGradient id="barRevGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#f97316" stopOpacity={0.9} />
+                          <stop offset="100%" stopColor="#dc2626" stopOpacity={0.9} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,16%)" horizontal vertical={false} />
+                      <XAxis dataKey="name" tick={{ fill: 'hsl(0,0%,55%)', fontSize: 9, fontWeight: 500 }} axisLine={false} tickLine={false} angle={-40} textAnchor="end" interval={0} />
+                      <YAxis tick={{ fill: 'hsl(0,0%,50%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${formatCompact(v)}`} />
+                      <Tooltip content={<CustomTooltip prefix="₹" />} cursor={{ fill: 'hsl(0,0%,12%)' }} />
+                      <Bar dataKey="value" name="Revenue" fill="url(#barRevGrad)" radius={[6, 6, 0, 0]} maxBarSize={36} animationDuration={800} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               </GlassCard>
 
-              <GlassCard>
-                <ChartHeader icon={Globe} title="Streams by Country" subtitle="Geographic streams distribution" />
-                <div className="h-80 mt-4">
+              <GlassCard className="!p-5">
+                <SectionHeader icon={Globe} title="Streams by Country" subtitle="Geographic streams distribution" />
+                <div className="h-[320px] mt-4">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={streamsByCountry}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,20%)" />
-                      <XAxis dataKey="name" tick={{ fill: 'hsl(0,0%,55%)', fontSize: 10 }} axisLine={false} tickLine={false} angle={-45} textAnchor="end" height={60} />
-                      <YAxis tick={{ fill: 'hsl(0,0%,55%)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="value" name="Streams" radius={[6, 6, 0, 0]} maxBarSize={32}>
-                        {streamsByCountry.map((_, i) => (
-                          <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                        ))}
-                      </Bar>
+                    <BarChart data={streamsByCountry} margin={{ top: 5, right: 10, left: -10, bottom: 30 }}>
+                      <defs>
+                        <linearGradient id="barStrGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9} />
+                          <stop offset="100%" stopColor="#6366f1" stopOpacity={0.9} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,16%)" horizontal vertical={false} />
+                      <XAxis dataKey="name" tick={{ fill: 'hsl(0,0%,55%)', fontSize: 9, fontWeight: 500 }} axisLine={false} tickLine={false} angle={-40} textAnchor="end" interval={0} />
+                      <YAxis tick={{ fill: 'hsl(0,0%,50%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatCompact(v)} />
+                      <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(0,0%,12%)' }} />
+                      <Bar dataKey="value" name="Streams" fill="url(#barStrGrad)" radius={[6, 6, 0, 0]} maxBarSize={36} animationDuration={800} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -534,52 +605,64 @@ export default function Analytics() {
   );
 }
 
-/* ── Sub-components ── */
+/* ════════════════════════════════════════════
+   Sub-components
+   ════════════════════════════════════════════ */
 
-function SummaryCard({ icon: Icon, label, value, color }: { icon: any; label: string; value: string; color: string }) {
+function KpiCard({ icon: Icon, label, value, accent }: { icon: any; label: string; value: string; accent: string }) {
   return (
-    <GlassCard glow className="animate-fade-in">
-      <div className="flex flex-col gap-2">
-        <div className="rounded-lg p-2 w-fit" style={{ background: `${color.replace(')', ', 0.2)').replace('hsl', 'hsla')}` }}>
-          <Icon className="h-4 w-4" style={{ color }} />
+    <GlassCard glow className="animate-fade-in !p-4 relative overflow-hidden group">
+      {/* Subtle glow orb */}
+      <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-10 group-hover:opacity-20 transition-opacity duration-500" style={{ background: `radial-gradient(circle, ${accent}, transparent)` }} />
+      <div className="relative flex flex-col gap-2.5">
+        <div className="rounded-lg p-2 w-fit" style={{ background: `${accent}15` }}>
+          <Icon className="h-4 w-4" style={{ color: accent }} />
         </div>
-        <p className="text-lg sm:text-xl font-bold font-display leading-tight break-all">{value}</p>
-        <p className="text-xs text-muted-foreground">{label}</p>
+        <div>
+          <p className="text-lg sm:text-xl font-bold font-display leading-tight tracking-tight">{value}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5 font-medium uppercase tracking-wider">{label}</p>
+        </div>
       </div>
     </GlassCard>
   );
 }
 
-function ChartHeader({ icon: Icon, title, subtitle }: { icon: any; title: string; subtitle: string }) {
+function SectionHeader({ icon: Icon, title, subtitle }: { icon: any; title: string; subtitle: string }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="rounded-lg p-2 bg-primary/10">
+      <div className="rounded-xl p-2.5 bg-primary/10 border border-primary/10">
         <Icon className="h-4 w-4 text-primary" />
       </div>
       <div>
-        <h3 className="font-semibold text-sm text-foreground">{title}</h3>
-        <p className="text-xs text-muted-foreground">{subtitle}</p>
+        <h3 className="font-semibold text-sm text-foreground tracking-tight">{title}</h3>
+        <p className="text-[11px] text-muted-foreground">{subtitle}</p>
       </div>
     </div>
   );
 }
 
-function TopItemRow({ rank, name, value, percentage, color }: { rank: number; name: string; value: string; percentage: number; color: string }) {
+function RankRow({ rank, name, value, pct, color }: { rank: number; name: string; value: string; pct: number; color: string }) {
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-xs font-bold text-muted-foreground w-5 text-right">{rank}</span>
+    <div className="flex items-center gap-3 group">
+      <div className="w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0" style={{ background: `${color}20`, color }}>
+        {rank}
+      </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-sm font-medium text-foreground truncate mr-2">{name}</span>
-          <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">{value}</span>
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-sm font-medium text-foreground truncate mr-2 group-hover:text-primary transition-colors">{name}</span>
+          <span className="text-xs font-mono font-semibold text-muted-foreground whitespace-nowrap">{value}</span>
         </div>
-        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+        <div className="h-1.5 rounded-full bg-muted/60 overflow-hidden">
           <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{ width: `${Math.max(percentage, 2)}%`, background: color }}
+            className="h-full rounded-full transition-all duration-700 ease-out"
+            style={{ width: `${Math.max(pct, 3)}%`, background: `linear-gradient(90deg, ${color}, ${color}aa)` }}
           />
         </div>
       </div>
     </div>
   );
+}
+
+function EmptyState({ text }: { text: string }) {
+  return <p className="text-muted-foreground text-sm text-center py-6">{text}</p>;
 }
