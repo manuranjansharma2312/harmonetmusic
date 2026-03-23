@@ -36,11 +36,14 @@ import {
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-const userLinks = [
+const userLinksTop = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/submit', label: 'New Release', icon: Upload },
   { to: '/my-releases', label: 'My Releases', icon: ListMusic },
   { to: '/my-labels', label: 'My Labels', icon: Tag },
+];
+
+const userLinksBottom = [
   { to: '/profile', label: 'My Profile', icon: UserCircle },
 ];
 
