@@ -480,21 +480,14 @@ export default function AdminYouTubeReports() {
                   ))}
                 </TableBody>
               </Table>
-              {totalMonthPages > 1 && (
-                <div className="flex items-center justify-between px-4 py-3 border-t border-border/50">
-                  <p className="text-sm text-muted-foreground">
-                    Page {monthPage + 1} of {totalMonthPages} ({monthGroups.length} months)
-                  </p>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" disabled={monthPage === 0} onClick={() => setMonthPage((p) => p - 1)}>
-                      <ChevronLeft className="h-4 w-4 mr-1" /> Previous
-                    </Button>
-                    <Button size="sm" variant="outline" disabled={monthPage >= totalMonthPages - 1} onClick={() => setMonthPage((p) => p + 1)}>
-                      Next <ChevronRight className="h-4 w-4 ml-1" />
-                    </Button>
-                  </div>
-                </div>
-              )}
+              <TablePagination
+                totalItems={monthGroups.length}
+                currentPage={monthPage}
+                pageSize={monthPageSize}
+                onPageChange={setMonthPage}
+                onPageSizeChange={setMonthPageSize}
+                itemLabel="months"
+              />
             </>
           )}
         </GlassCard>
