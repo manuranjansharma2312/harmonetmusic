@@ -333,7 +333,6 @@ export default function Reports() {
                 pageSize={entryPageSize}
                 onPageChange={setEntryPage}
                 onPageSizeChange={setEntryPageSize}
-                onExport={exportCSV}
               />
             </GlassCard>
           </>
