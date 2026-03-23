@@ -392,21 +392,25 @@ export default function Analytics() {
                     <AreaChart data={revenueTrend} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
                       <defs>
                         <linearGradient id="areaOtt" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#f97316" stopOpacity={0.25} />
+                          <stop offset="0%" stopColor="#fb923c" stopOpacity={0.4} />
+                          <stop offset="50%" stopColor="#f97316" stopOpacity={0.15} />
                           <stop offset="100%" stopColor="#f97316" stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="areaYt" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#dc2626" stopOpacity={0.25} />
+                          <stop offset="0%" stopColor="#f87171" stopOpacity={0.4} />
+                          <stop offset="50%" stopColor="#dc2626" stopOpacity={0.15} />
                           <stop offset="100%" stopColor="#dc2626" stopOpacity={0} />
                         </linearGradient>
+                        <filter id="glowOtt"><feGaussianBlur stdDeviation="3" result="blur" /><feComposite in="SourceGraphic" in2="blur" /></filter>
+                        <filter id="glowYt"><feGaussianBlur stdDeviation="3" result="blur" /><feComposite in="SourceGraphic" in2="blur" /></filter>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,18%)" vertical={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,15%)" vertical={false} />
                       <XAxis dataKey="month" tick={{ fill: 'hsl(0,0%,50%)', fontSize: 10, fontWeight: 500 }} axisLine={false} tickLine={false} dy={8} />
-                      <YAxis tick={{ fill: 'hsl(0,0%,50%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatCompact(v)} />
+                      <YAxis tick={{ fill: 'hsl(0,0%,45%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatCompact(v)} width={50} />
                       <Tooltip content={<CustomTooltip prefix="₹" />} />
                       <Legend content={<CustomLegend />} />
-                      <Area type="monotone" dataKey="OTT" stroke="#f97316" fill="url(#areaOtt)" strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 2, stroke: '#f97316', fill: 'hsl(0,0%,8%)' }} />
-                      <Area type="monotone" dataKey="YouTube" stroke="#dc2626" fill="url(#areaYt)" strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 2, stroke: '#dc2626', fill: 'hsl(0,0%,8%)' }} />
+                      <Area type="monotone" dataKey="OTT" stroke="#fb923c" fill="url(#areaOtt)" strokeWidth={2.5} dot={false} activeDot={{ r: 6, strokeWidth: 2, stroke: '#fb923c', fill: '#0f0f0f' }} />
+                      <Area type="monotone" dataKey="YouTube" stroke="#f87171" fill="url(#areaYt)" strokeWidth={2.5} dot={false} activeDot={{ r: 6, strokeWidth: 2, stroke: '#f87171', fill: '#0f0f0f' }} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
