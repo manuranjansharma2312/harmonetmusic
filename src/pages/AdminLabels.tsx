@@ -65,9 +65,22 @@ export default function AdminLabels() {
   useEffect(() => { fetchLabels(); }, []);
 
   const handleStatusChange = async (label: Label, newStatus: string) => {
-    const { error } = await supabase.from('labels').update({ status: newStatus }).eq('id', label.id);
+    if (newStatus === 'rejected') {
+      setRejectTarget(label);
+      return;
+    }
+    const { error } = await supabase.from('labels').update({ status: newStatus, rejection_reason: null }).eq('id', label.id);
     if (error) { toast.error(error.message); return; }
     toast.success(`Label status updated to ${newStatus}`);
+    fetchLabels();
+  };
+
+  const handleRejectConfirm = async (reason: string) => {
+    if (!rejectTarget) return;
+    const { error } = await supabase.from('labels').update({ status: 'rejected', rejection_reason: reason }).eq('id', rejectTarget.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success('Label rejected');
+    setRejectTarget(null);
     fetchLabels();
   };
 
