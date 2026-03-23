@@ -307,7 +307,7 @@ export default function NewRelease() {
             release_id: editReleaseId,
             user_id: releaseOwnerId || user.id,
             song_title: track.songTitle,
-            isrc: track.isrc || null,
+            isrc: normalizeIsrc(track.isrc),
             audio_url,
             audio_type: track.audioType,
             language: track.language || null,
