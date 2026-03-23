@@ -198,7 +198,7 @@ export default function YouTubeReports() {
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-bold">YouTube Reports</h1>
             <p className="text-muted-foreground text-sm">
-              {selectedMonth ? `Viewing report for ${selectedMonth}` : 'Monthly YouTube revenue reports'}
+              {selectedMonth ? `Viewing report for ${selectedMonth}` : 'Monthly YouTube revenue reports'} · All amounts in ₹ (INR)
             </p>
           </div>
           {selectedMonth && (
