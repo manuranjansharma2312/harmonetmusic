@@ -322,7 +322,7 @@ export default function AdminYouTubeReports() {
                 <Select
                   key={key}
                   value={filters[key] || '_all'}
-                  onValueChange={(v) => setFilters((f) => ({ ...f, [key]: v === '_all' ? '' : v }))}
+                  onValueChange={(v) => { setFilters((f) => ({ ...f, [key]: v === '_all' ? '' : v })); setEntryPage(0); }}
                 >
                   <SelectTrigger className="h-9 text-xs">
                     <SelectValue placeholder={label} />
