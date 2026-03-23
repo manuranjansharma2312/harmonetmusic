@@ -316,14 +316,14 @@ export default function YouTubeReports() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {selectedEntries.length === 0 ? (
+                    {pagedEntries.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={COLUMNS.length} className="text-center text-muted-foreground py-8">
                           No records match the current filters.
                         </TableCell>
                       </TableRow>
                     ) : (
-                      selectedEntries.map((entry) => (
+                      pagedEntries.map((entry) => (
                         <TableRow key={entry.id}>
                           {COLUMNS.map((col) => (
                             <TableCell key={col.key} className="whitespace-nowrap">
@@ -338,6 +338,21 @@ export default function YouTubeReports() {
                   </TableBody>
                 </Table>
               </div>
+              {totalEntryPages > 1 && (
+                <div className="flex items-center justify-between px-4 py-3 border-t border-border/50">
+                  <p className="text-sm text-muted-foreground">
+                    Page {entryPage + 1} of {totalEntryPages} ({selectedEntries.length} records)
+                  </p>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" disabled={entryPage === 0} onClick={() => setEntryPage((p) => p - 1)}>
+                      <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                    </Button>
+                    <Button size="sm" variant="outline" disabled={entryPage >= totalEntryPages - 1} onClick={() => setEntryPage((p) => p + 1)}>
+                      Next <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </GlassCard>
           </>
         )}
