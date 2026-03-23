@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Eye, Pencil, Trash2, Download, Search, ChevronDown, ChevronRight, Music, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { RejectReasonModal } from '@/components/RejectReasonModal';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -67,6 +68,7 @@ export default function AdminSubmissions() {
   const [viewRelease, setViewRelease] = useState<Release | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [rejectTarget, setRejectTarget] = useState<string | null>(null);
 
   // ISRC/UPC inline editing
   const [editingIsrc, setEditingIsrc] = useState<Record<string, string>>({});
@@ -156,9 +158,22 @@ export default function AdminSubmissions() {
   };
 
   const handleStatusChange = async (id: string, status: string) => {
-    const { error } = await supabase.from('releases').update({ status }).eq('id', id);
+    if (status === 'rejected') {
+      setRejectTarget(id);
+      return;
+    }
+    const { error } = await supabase.from('releases').update({ status, rejection_reason: null }).eq('id', id);
     if (error) { toast.error(error.message); return; }
     toast.success(`Status changed to ${status}`);
+    fetchReleases();
+  };
+
+  const handleRejectConfirm = async (reason: string) => {
+    if (!rejectTarget) return;
+    const { error } = await supabase.from('releases').update({ status: 'rejected', rejection_reason: reason }).eq('id', rejectTarget);
+    if (error) { toast.error(error.message); return; }
+    toast.success('Release rejected');
+    setRejectTarget(null);
     fetchReleases();
   };
 
@@ -541,6 +556,13 @@ export default function AdminSubmissions() {
           onCancel={() => setDeleteRelease(null)}
         />
       )}
+
+      <RejectReasonModal
+        open={!!rejectTarget}
+        title="Reject Release"
+        onConfirm={handleRejectConfirm}
+        onCancel={() => setRejectTarget(null)}
+      />
     </DashboardLayout>
   );
 }

@@ -46,6 +46,7 @@ type Release = {
   phonogram_line: string | null;
   store_selection: string;
   status: string;
+  rejection_reason: string | null;
   created_at: string;
   tracks: Track[];
 };
@@ -168,6 +169,11 @@ export default function MyReleases() {
                   </div>
 
                   <StatusBadge status={release.status} />
+                  {release.status === 'rejected' && release.rejection_reason && (
+                    <p className="text-xs text-destructive max-w-[200px] truncate" title={release.rejection_reason}>
+                      {release.rejection_reason}
+                    </p>
+                  )}
 
                   <div className="flex gap-1">
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewRelease(release)}>

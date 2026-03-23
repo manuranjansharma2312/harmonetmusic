@@ -38,6 +38,7 @@ export type Database = {
           created_at: string
           id: string
           label_name: string
+          rejection_reason: string | null
           status: string
           updated_at: string
           user_id: string
@@ -47,6 +48,7 @@ export type Database = {
           created_at?: string
           id?: string
           label_name: string
+          rejection_reason?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -56,6 +58,7 @@ export type Database = {
           created_at?: string
           id?: string
           label_name?: string
+          rejection_reason?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -165,6 +168,7 @@ export type Database = {
           id: string
           phonogram_line: string | null
           poster_url: string | null
+          rejection_reason: string | null
           release_date: string
           release_type: string
           status: string
@@ -182,6 +186,7 @@ export type Database = {
           id?: string
           phonogram_line?: string | null
           poster_url?: string | null
+          rejection_reason?: string | null
           release_date: string
           release_type?: string
           status?: string
@@ -199,6 +204,7 @@ export type Database = {
           id?: string
           phonogram_line?: string | null
           poster_url?: string | null
+          rejection_reason?: string | null
           release_date?: string
           release_type?: string
           status?: string

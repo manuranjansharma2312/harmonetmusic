@@ -6,6 +6,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { Loader2, Tag, FileText, Trash2, Pencil, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { RejectReasonModal } from '@/components/RejectReasonModal';
 import { toast } from 'sonner';
 
 type Label = {
@@ -14,6 +15,7 @@ type Label = {
   label_name: string;
   b2b_url: string | null;
   status: string;
+  rejection_reason: string | null;
   created_at: string;
 };
 
@@ -26,6 +28,7 @@ export default function AdminLabels() {
   const [editName, setEditName] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'label' | 'b2b'; label: Label } | null>(null);
   const [userEmails, setUserEmails] = useState<Record<string, string>>({});
+  const [rejectTarget, setRejectTarget] = useState<Label | null>(null);
 
   const inputClass =
     'w-full px-3 py-2 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
@@ -62,9 +65,22 @@ export default function AdminLabels() {
   useEffect(() => { fetchLabels(); }, []);
 
   const handleStatusChange = async (label: Label, newStatus: string) => {
-    const { error } = await supabase.from('labels').update({ status: newStatus }).eq('id', label.id);
+    if (newStatus === 'rejected') {
+      setRejectTarget(label);
+      return;
+    }
+    const { error } = await supabase.from('labels').update({ status: newStatus, rejection_reason: null }).eq('id', label.id);
     if (error) { toast.error(error.message); return; }
     toast.success(`Label status updated to ${newStatus}`);
+    fetchLabels();
+  };
+
+  const handleRejectConfirm = async (reason: string) => {
+    if (!rejectTarget) return;
+    const { error } = await supabase.from('labels').update({ status: 'rejected', rejection_reason: reason }).eq('id', rejectTarget.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success('Label rejected');
+    setRejectTarget(null);
     fetchLabels();
   };
 
@@ -157,6 +173,9 @@ export default function AdminLabels() {
                   <p className="text-xs text-muted-foreground">
                     By: {userEmails[label.user_id] || label.user_id.slice(0, 8)} • {new Date(label.created_at).toLocaleDateString()}
                   </p>
+                  {label.status === 'rejected' && label.rejection_reason && (
+                    <p className="text-xs text-destructive mt-1">Reason: {label.rejection_reason}</p>
+                  )}
                   {label.b2b_url && (
                     <div className="flex items-center gap-2">
                       <button onClick={() => handleDownloadB2b(label.b2b_url!)} className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors">
@@ -198,6 +217,13 @@ export default function AdminLabels() {
           onCancel={() => setDeleteTarget(null)}
         />
       )}
+
+      <RejectReasonModal
+        open={!!rejectTarget}
+        title="Reject Label"
+        onConfirm={handleRejectConfirm}
+        onCancel={() => setRejectTarget(null)}
+      />
     </DashboardLayout>
   );
 }
