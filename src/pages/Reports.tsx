@@ -5,6 +5,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/hooks/useAuth';
+import { useImpersonate } from '@/hooks/useImpersonate';
 import { ArrowLeft, Download, Eye, BarChart3 } from 'lucide-react';
 import { format } from 'date-fns';
 
