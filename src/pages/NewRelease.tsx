@@ -603,24 +603,22 @@ export default function NewRelease() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">© Line</label>
-                {approvedLabels.length > 0 ? (
-                  <select className={inputClass} value={copyrightLine} onChange={(e) => setCopyrightLine(e.target.value)}>
-                    <option value="">Select label</option>
-                    {approvedLabels.map(name => <option key={name} value={name}>{name}</option>)}
-                  </select>
-                ) : (
-                  <input className={inputClass} value={copyrightLine} onChange={(e) => setCopyrightLine(e.target.value)} placeholder="e.g. 2024 Artist Name" />
+                <select className={inputClass} value={copyrightLine} onChange={(e) => setCopyrightLine(e.target.value)}>
+                  <option value="">Select label</option>
+                  {approvedLabels.map(name => <option key={name} value={name}>{name}</option>)}
+                </select>
+                {approvedLabels.length === 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">No approved labels yet. <button type="button" className="text-primary hover:underline" onClick={() => navigate('/my-labels')}>Add labels</button></p>
                 )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">℗ Line</label>
-                {approvedLabels.length > 0 ? (
-                  <select className={inputClass} value={phonogramLine} onChange={(e) => setPhonogramLine(e.target.value)}>
-                    <option value="">Select label</option>
-                    {approvedLabels.map(name => <option key={name} value={name}>{name}</option>)}
-                  </select>
-                ) : (
-                  <input className={inputClass} value={phonogramLine} onChange={(e) => setPhonogramLine(e.target.value)} placeholder="e.g. 2024 Label Name" />
+                <select className={inputClass} value={phonogramLine} onChange={(e) => setPhonogramLine(e.target.value)}>
+                  <option value="">Select label</option>
+                  {approvedLabels.map(name => <option key={name} value={name}>{name}</option>)}
+                </select>
+                {approvedLabels.length === 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">No approved labels yet. <button type="button" className="text-primary hover:underline" onClick={() => navigate('/my-labels')}>Add labels</button></p>
                 )}
               </div>
             </div>
