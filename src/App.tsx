@@ -30,6 +30,7 @@ import Reports from "./pages/Reports";
 import YouTubeReports from "./pages/YouTubeReports";
 import AdminReports from "./pages/AdminReports";
 import AdminYouTubeReports from "./pages/AdminYouTubeReports";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
