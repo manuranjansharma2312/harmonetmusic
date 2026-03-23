@@ -22,8 +22,8 @@ interface WithdrawalRequest {
 
 export default function Revenue() {
   const { user, role } = useAuth();
-  const { effectiveUserId } = useImpersonate();
-  const activeUserId = effectiveUserId || user?.id;
+  const { impersonatedUserId } = useImpersonate();
+  const activeUserId = impersonatedUserId || user?.id;
 
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [paidWithdrawals, setPaidWithdrawals] = useState(0);

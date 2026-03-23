@@ -81,6 +81,7 @@ const adminLinksTop = [
   { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
   { to: '/admin/labels', label: 'Labels', icon: Tag },
   { to: '/admin/content-requests', label: 'Content Requests', icon: Headset },
+  { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
 ];
 
 export function AppSidebar() {

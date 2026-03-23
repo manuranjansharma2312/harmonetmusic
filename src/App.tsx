@@ -71,6 +71,8 @@ function App() {
                   <Route path="/admin/reports/youtube" element={<ProtectedRoute requiredRole="admin"><AdminYouTubeReports /></ProtectedRoute>} />
                   {/* Legacy redirect */}
                   <Route path="/admin/reports" element={<Navigate to="/admin/reports/ott" replace />} />
+                  <Route path="/revenue" element={<ProtectedRoute><Revenue /></ProtectedRoute>} />
+                  <Route path="/admin/revenue" element={<ProtectedRoute requiredRole="admin"><AdminRevenue /></ProtectedRoute>} />
                   <Route path="/tools/copyright-claim" element={<ProtectedRoute><CopyrightClaimRemoval /></ProtectedRoute>} />
                   <Route path="/tools/instagram-link" element={<ProtectedRoute><InstagramLinkToSong /></ProtectedRoute>} />
                   <Route path="/tools/content-id-merge" element={<ProtectedRoute><ContentIdMerge /></ProtectedRoute>} />
