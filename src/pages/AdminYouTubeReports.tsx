@@ -450,8 +450,17 @@ export default function AdminYouTubeReports() {
         </GlassCard>
 
         <GlassCard className="p-0 overflow-hidden">
-          <div className="p-4 border-b border-border/50">
+          <div className="p-4 border-b border-border/50 flex items-center justify-between gap-3 flex-wrap">
             <h2 className="text-lg font-semibold">Imported YouTube Reports</h2>
+            <div className="relative max-w-xs w-full sm:w-auto">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search months..."
+                value={monthSearch}
+                onChange={(e) => { setMonthSearch(e.target.value); setMonthPage(0); }}
+                className="pl-9 h-9"
+              />
+            </div>
           </div>
           {loading ? (
             <p className="p-6 text-center text-muted-foreground">Loading...</p>
