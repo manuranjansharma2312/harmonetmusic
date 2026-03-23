@@ -356,6 +356,27 @@ export type Database = {
         }
         Relationships: []
       }
+      revenue_settings: {
+        Row: {
+          id: string
+          updated_at: string
+          updated_by: string | null
+          withdrawal_threshold: number
+        }
+        Insert: {
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+          withdrawal_threshold?: number
+        }
+        Update: {
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+          withdrawal_threshold?: number
+        }
+        Relationships: []
+      }
       songs: {
         Row: {
           artist: string
@@ -501,6 +522,33 @@ export type Database = {
         Update: {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      withdrawal_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
