@@ -385,6 +385,11 @@ export default function AdminSubmissions() {
                               <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
                             ))}
                           </select>
+                          {release.status === 'rejected' && release.rejection_reason && (
+                            <p className="text-xs text-destructive mt-1 max-w-[180px] truncate" title={release.rejection_reason}>
+                              {release.rejection_reason}
+                            </p>
+                          )}
                         </td>
                         <td className="py-3 px-3 text-muted-foreground hidden lg:table-cell text-xs">
                           {new Date(release.created_at).toLocaleDateString()}
