@@ -54,6 +54,7 @@ const contentToolLinks = [
   { to: '/tools/content-id-merge', label: 'Content ID Merge', icon: Merge },
   { to: '/tools/oac-apply', label: 'Official Artist Channel', icon: Youtube },
   { to: '/tools/takedown', label: 'Takedown', icon: Trash2 },
+  { to: '/tools/custom-support', label: 'Custom Support', icon: MessageSquare },
 ];
 
 const adminLinks = [
