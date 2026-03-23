@@ -62,7 +62,7 @@ export function ContentRequestPage({ title, requestType, fields }: ContentReques
       insertData[f.name] = formData[f.name] || null;
     });
 
-    const { error } = await supabase.from('content_requests').insert(insertData);
+    const { error } = await supabase.from('content_requests').insert(insertData as any);
     if (error) {
       toast.error('Failed to submit request');
     } else {
