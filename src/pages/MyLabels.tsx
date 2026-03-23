@@ -14,6 +14,7 @@ type Label = {
   label_name: string;
   b2b_url: string | null;
   status: string;
+  rejection_reason: string | null;
   created_at: string;
 };
 
