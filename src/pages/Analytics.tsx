@@ -339,7 +339,26 @@ export default function Analytics() {
                 <div className="h-[320px] px-2 pb-4 mt-2">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={revenueTrend} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
-                      <SharedDefs />
+                      <defs>
+                        <linearGradient id="gradOttArea" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#f97316" stopOpacity={0.5} />
+                          <stop offset="40%" stopColor="#f97316" stopOpacity={0.2} />
+                          <stop offset="100%" stopColor="#f97316" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="gradYtArea" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#ef4444" stopOpacity={0.5} />
+                          <stop offset="40%" stopColor="#ef4444" stopOpacity={0.2} />
+                          <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="gradOttLine" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#fb923c" />
+                          <stop offset="100%" stopColor="#f97316" />
+                        </linearGradient>
+                        <linearGradient id="gradYtLine" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#f87171" />
+                          <stop offset="100%" stopColor="#dc2626" />
+                        </linearGradient>
+                      </defs>
                       <CartesianGrid strokeDasharray="4 4" stroke={GRID_STROKE} vertical={false} />
                       <XAxis dataKey="month" tick={AXIS_TICK} axisLine={false} tickLine={false} dy={8} />
                       <YAxis tick={AXIS_TICK_Y} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${formatCompact(v)}`} width={55} />
