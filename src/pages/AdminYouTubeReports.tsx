@@ -305,9 +305,6 @@ export default function AdminYouTubeReports() {
               <h1 className="text-2xl font-bold">YouTube Reports</h1>
               <p className="text-muted-foreground text-sm">Viewing report for {selectedMonth}</p>
             </div>
-            <Button variant="outline" size="sm" onClick={exportCSV}>
-              <Download className="h-4 w-4 mr-2" /> Export CSV
-            </Button>
           </div>
 
           <GlassCard className="p-4">
