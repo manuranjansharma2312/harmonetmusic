@@ -70,6 +70,7 @@ export default function MyReleases() {
   const [viewRelease, setViewRelease] = useState<Release | null>(null);
   const [deleteRelease, setDeleteRelease] = useState<Release | null>(null);
   const [releasePage, setReleasePage] = useState(0);
+  const [releasePageSize, setReleasePageSize] = useState<number | 'all'>(10);
 
   const fetchReleases = async () => {
     if (!user) return;
