@@ -19,6 +19,12 @@ import AdminUsers from "./pages/AdminUsers";
 import MyProfile from "./pages/MyProfile";
 import MyLabels from "./pages/MyLabels";
 import AdminLabels from "./pages/AdminLabels";
+import AdminContentRequests from "./pages/AdminContentRequests";
+import CopyrightClaimRemoval from "./pages/CopyrightClaimRemoval";
+import InstagramLinkToSong from "./pages/InstagramLinkToSong";
+import ContentIdMerge from "./pages/ContentIdMerge";
+import OacApply from "./pages/OacApply";
+import Takedown from "./pages/Takedown";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +58,12 @@ function App() {
                   <Route path="/admin/submissions" element={<ProtectedRoute requiredRole="admin"><AdminSubmissions /></ProtectedRoute>} />
                   <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
                   <Route path="/admin/labels" element={<ProtectedRoute requiredRole="admin"><AdminLabels /></ProtectedRoute>} />
+                  <Route path="/admin/content-requests" element={<ProtectedRoute requiredRole="admin"><AdminContentRequests /></ProtectedRoute>} />
+                  <Route path="/tools/copyright-claim" element={<ProtectedRoute><CopyrightClaimRemoval /></ProtectedRoute>} />
+                  <Route path="/tools/instagram-link" element={<ProtectedRoute><InstagramLinkToSong /></ProtectedRoute>} />
+                  <Route path="/tools/content-id-merge" element={<ProtectedRoute><ContentIdMerge /></ProtectedRoute>} />
+                  <Route path="/tools/oac-apply" element={<ProtectedRoute><OacApply /></ProtectedRoute>} />
+                  <Route path="/tools/takedown" element={<ProtectedRoute><Takedown /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </ImpersonateProvider>

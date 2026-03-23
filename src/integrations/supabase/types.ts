@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      content_requests: {
+        Row: {
+          artist_name: string | null
+          channel_link: string | null
+          copyright_company: string | null
+          created_at: string
+          id: string
+          instagram_audio_link: string | null
+          instagram_profile_link: string | null
+          isrc: string | null
+          official_artist_channel_link: string | null
+          reason_for_takedown: string | null
+          rejection_reason: string | null
+          release_link_1: string | null
+          release_link_2: string | null
+          release_link_3: string | null
+          release_topic_video_link: string | null
+          request_type: string
+          song_title: string | null
+          status: string
+          topic_channel_link: string | null
+          updated_at: string
+          user_id: string
+          video_link: string | null
+        }
+        Insert: {
+          artist_name?: string | null
+          channel_link?: string | null
+          copyright_company?: string | null
+          created_at?: string
+          id?: string
+          instagram_audio_link?: string | null
+          instagram_profile_link?: string | null
+          isrc?: string | null
+          official_artist_channel_link?: string | null
+          reason_for_takedown?: string | null
+          rejection_reason?: string | null
+          release_link_1?: string | null
+          release_link_2?: string | null
+          release_link_3?: string | null
+          release_topic_video_link?: string | null
+          request_type: string
+          song_title?: string | null
+          status?: string
+          topic_channel_link?: string | null
+          updated_at?: string
+          user_id: string
+          video_link?: string | null
+        }
+        Update: {
+          artist_name?: string | null
+          channel_link?: string | null
+          copyright_company?: string | null
+          created_at?: string
+          id?: string
+          instagram_audio_link?: string | null
+          instagram_profile_link?: string | null
+          isrc?: string | null
+          official_artist_channel_link?: string | null
+          reason_for_takedown?: string | null
+          rejection_reason?: string | null
+          release_link_1?: string | null
+          release_link_2?: string | null
+          release_link_3?: string | null
+          release_topic_video_link?: string | null
+          request_type?: string
+          song_title?: string | null
+          status?: string
+          topic_channel_link?: string | null
+          updated_at?: string
+          user_id?: string
+          video_link?: string | null
+        }
+        Relationships: []
+      }
       genres: {
         Row: {
           created_at: string
