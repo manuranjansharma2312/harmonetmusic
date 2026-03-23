@@ -639,7 +639,13 @@ export default function Analytics() {
                 <div className="h-[340px] px-2 pb-4 mt-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={revenueByCountry} margin={{ top: 5, right: 16, left: 0, bottom: 35 }}>
-                      <SharedDefs />
+                      <defs>
+                        <linearGradient id="barRevCountry" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#fbbf24" stopOpacity={1} />
+                          <stop offset="50%" stopColor="#f97316" stopOpacity={0.95} />
+                          <stop offset="100%" stopColor="#ef4444" stopOpacity={0.9} />
+                        </linearGradient>
+                      </defs>
                       <CartesianGrid strokeDasharray="4 4" stroke={GRID_STROKE} horizontal vertical={false} />
                       <XAxis dataKey="name" tick={{ fill: 'hsl(0 0% 50%)', fontSize: 9, fontWeight: 600 }} axisLine={false} tickLine={false} angle={-45} textAnchor="end" interval={0} />
                       <YAxis tick={AXIS_TICK_Y} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${formatCompact(v)}`} />
