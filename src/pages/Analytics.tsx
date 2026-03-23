@@ -428,7 +428,26 @@ export default function Analytics() {
               <div className="h-[300px] px-2 pb-4 mt-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={streamsTrend} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
-                    <SharedDefs />
+                    <defs>
+                      <linearGradient id="gradOttSArea" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#38bdf8" stopOpacity={0.5} />
+                        <stop offset="40%" stopColor="#3b82f6" stopOpacity={0.18} />
+                        <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="gradYtSArea" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#34d399" stopOpacity={0.5} />
+                        <stop offset="40%" stopColor="#10b981" stopOpacity={0.18} />
+                        <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="gradOttSLine" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#7dd3fc" />
+                        <stop offset="100%" stopColor="#3b82f6" />
+                      </linearGradient>
+                      <linearGradient id="gradYtSLine" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#6ee7b7" />
+                        <stop offset="100%" stopColor="#10b981" />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="4 4" stroke={GRID_STROKE} vertical={false} />
                     <XAxis dataKey="month" tick={AXIS_TICK} axisLine={false} tickLine={false} dy={8} />
                     <YAxis tick={AXIS_TICK_Y} axisLine={false} tickLine={false} tickFormatter={(v) => formatCompact(v)} width={55} />
