@@ -25,6 +25,7 @@ import InstagramLinkToSong from "./pages/InstagramLinkToSong";
 import ContentIdMerge from "./pages/ContentIdMerge";
 import OacApply from "./pages/OacApply";
 import Takedown from "./pages/Takedown";
+import CustomSupport from "./pages/CustomSupport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
