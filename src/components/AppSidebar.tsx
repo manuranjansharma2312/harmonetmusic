@@ -7,6 +7,7 @@ import {
   Users,
   UserCircle,
   Tags,
+  Tag,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
@@ -30,6 +31,7 @@ const userLinks = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/submit', label: 'New Release', icon: Upload },
   { to: '/my-releases', label: 'My Releases', icon: ListMusic },
+  { to: '/my-labels', label: 'My Labels', icon: Tag },
   { to: '/profile', label: 'My Profile', icon: UserCircle },
 ];
 
@@ -38,6 +40,7 @@ const adminLinks = [
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/submissions', label: 'All Submissions', icon: ListMusic },
   { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
+  { to: '/admin/labels', label: 'Labels', icon: Tag },
 ];
 
 export function AppSidebar() {
