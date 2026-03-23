@@ -144,7 +144,12 @@ export default function Reports() {
     return Object.entries(groups).sort(([a], [b]) => parseMonthKey(b) - parseMonthKey(a));
   }, [entries]);
 
-  const pagedMonths = paginateItems(monthlyGroups, monthPage, monthPageSize);
+  const filteredMonthlyGroups = useMemo(() => {
+    if (!monthSearch.trim()) return monthlyGroups;
+    return monthlyGroups.filter(([month]) => month.toLowerCase().includes(monthSearch.toLowerCase()));
+  }, [monthlyGroups, monthSearch]);
+
+  const pagedMonths = paginateItems(filteredMonthlyGroups, monthPage, monthPageSize);
 
   const selectedEntries = useMemo(() => {
     if (!selectedMonth) return [];
