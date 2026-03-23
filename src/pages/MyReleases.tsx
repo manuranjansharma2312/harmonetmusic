@@ -29,8 +29,6 @@ type Track = {
   producer: string | null;
   instagram_link: string | null;
   callertune_time: string | null;
-  copyright_line: string | null;
-  phonogram_line: string | null;
   track_order: number;
 };
 
@@ -249,22 +247,54 @@ export default function MyReleases() {
                 <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Tracks ({viewRelease.tracks.length})</p>
                 <div className="space-y-3">
                   {viewRelease.tracks.map((track) => (
-                    <div key={track.id} className="rounded-lg border border-border/50 bg-muted/20 p-3 space-y-2">
+                    <div key={track.id} className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3">
                       <div className="flex items-center gap-2">
                         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">{track.track_order}</span>
                         <span className="font-medium text-foreground">{track.song_title}</span>
                       </div>
+
+                      {/* Primary Artist with profile links */}
+                      <div className="rounded-lg border border-border/30 bg-muted/10 p-3 space-y-2">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Primary Artist</p>
+                        <p className="text-sm font-medium text-foreground">{track.primary_artist || '—'}</p>
+                        {track.spotify_link && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                            <a href={track.spotify_link} target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary truncate break-all">{track.spotify_link}</a>
+                          </div>
+                        )}
+                        {track.apple_music_link && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="#FA243C"><path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043A5.022 5.022 0 0019.7.28C18.96.142 18.21.08 17.46.04 16.95.01 16.44 0 15.93 0H8.07C7.56 0 7.05.01 6.54.04 5.79.08 5.04.142 4.3.28a5.022 5.022 0 00-1.874.61C1.308 1.622.563 2.622.246 3.932a9.23 9.23 0 00-.24 2.19C.003 6.636 0 7.146 0 7.658v8.684c0 .51.003 1.022.006 1.534.007.483.047.966.12 1.444a6.7 6.7 0 00.12.748c.317 1.31 1.062 2.31 2.18 3.043A5.022 5.022 0 004.3 23.72c.74.138 1.49.2 2.24.24.51.03 1.02.04 1.53.04h7.86c.51 0 1.02-.01 1.53-.04.75-.04 1.5-.102 2.24-.24a5.022 5.022 0 001.874-.61c1.118-.734 1.863-1.734 2.18-3.043.073-.245.12-.498.12-.748.073-.478.113-.961.12-1.444.003-.512.006-1.024.006-1.534V7.658c0-.512-.003-1.022-.006-1.534zM17.46 12.15v4.764c0 .317-.01.634-.046.95a2.244 2.244 0 01-.504 1.166 1.632 1.632 0 01-.822.542c-.37.11-.75.143-1.13.143-.38 0-.76-.033-1.13-.143a1.632 1.632 0 01-.822-.542 2.244 2.244 0 01-.504-1.166 4.16 4.16 0 01-.046-.95c0-.316.01-.634.046-.95a2.244 2.244 0 01.504-1.166 1.632 1.632 0 01.822-.542c.37-.11.75-.143 1.13-.143.32 0 .636.024.95.082V9.96l-5.578 1.745v5.96c0 .316-.01.634-.046.95a2.244 2.244 0 01-.504 1.165 1.632 1.632 0 01-.822.542c-.37.11-.75.143-1.13.143-.38 0-.76-.033-1.13-.143a1.632 1.632 0 01-.822-.542 2.244 2.244 0 01-.504-1.166 4.16 4.16 0 01-.046-.95c0-.316.01-.634.046-.95a2.244 2.244 0 01.504-1.165 1.632 1.632 0 01.822-.542c.37-.11.75-.143 1.13-.143.32 0 .636.024.95.082V8.254c0-.36.105-.676.306-.95a1.49 1.49 0 01.798-.53l5.94-1.86c.14-.044.29-.066.44-.066.47 0 .862.34.932.802.01.06.016.12.016.182v6.318z"/></svg>
+                            <a href={track.apple_music_link} target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary truncate break-all">{track.apple_music_link}</a>
+                          </div>
+                        )}
+                        {track.is_new_artist_profile && (
+                          <span className="inline-block text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">✓ New profile requested</span>
+                        )}
+                      </div>
+
+                      {/* Track metadata grid */}
                       <div className="grid grid-cols-2 gap-2 text-xs">
-                        <Detail label="Artist" value={track.primary_artist || '—'} />
-                        <Detail label="ISRC" value={track.isrc || '—'} />
+                        {track.isrc && <Detail label="ISRC" value={track.isrc} />}
                         <Detail label="Genre" value={track.genre || '—'} />
-                        <Detail label="Language" value={track.language || '—'} />
+                        {track.audio_type === 'with_vocal' && <Detail label="Language" value={track.language || '—'} />}
                         <Detail label="Audio Type" value={track.audio_type === 'with_vocal' ? 'With Vocal' : 'Instrumental'} />
+                      </div>
+
+                      {/* Credits */}
+                      <div className="grid grid-cols-3 gap-2 text-xs">
                         <Detail label="Lyricist" value={track.lyricist || '—'} />
                         <Detail label="Composer" value={track.composer || '—'} />
                         <Detail label="Producer" value={track.producer || '—'} />
-                        <Detail label="Callertune" value={track.callertune_time || '—'} />
                       </div>
+
+                      {/* Additional info */}
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        {track.instagram_link && <Detail label="Instagram" value={track.instagram_link} />}
+                        {track.callertune_time && <Detail label="Callertune" value={track.callertune_time} />}
+                      </div>
+
                       {track.audio_url && <audio controls src={track.audio_url} className="w-full h-8 mt-1" />}
                     </div>
                   ))}
