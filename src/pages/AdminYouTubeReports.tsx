@@ -194,7 +194,8 @@ export default function AdminYouTubeReports() {
   }, [detailEntries]);
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
-  const clearFilters = () => setFilters({});
+  const clearFilters = () => { setFilters({}); setEntryPage(0); };
+  const pagedEntries = paginateItems(filteredEntries, entryPage, entryPageSize);
 
   const exportCSV = () => {
     const headers = ['Reporting Month', ...COLUMNS.map((c) => c.label)];
