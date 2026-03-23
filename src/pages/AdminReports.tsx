@@ -297,7 +297,7 @@ export default function AdminReports() {
     return (
       <DashboardLayout>
         <div className="space-y-6">
-          <div className="flex items-center gap-3 flex-wrap">
+           <div className="flex items-center gap-3 flex-wrap">
             <Button variant="ghost" size="icon" onClick={handleBackToList}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -305,6 +305,9 @@ export default function AdminReports() {
               <h1 className="text-2xl font-bold">Reports & Analytics</h1>
               <p className="text-muted-foreground text-sm">Viewing report for {selectedMonth}</p>
             </div>
+            <Button size="sm" variant="outline" onClick={exportCSV}>
+              <Download className="h-4 w-4 mr-1" /> Export CSV
+            </Button>
           </div>
 
           <GlassCard className="p-4">
