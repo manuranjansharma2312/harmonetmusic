@@ -72,6 +72,22 @@ const CHART_COLORS = [
   '#f43f5e', '#6366f1', '#84cc16', '#06b6d4',
 ];
 
+/* Country name → ISO alpha-2 mapping for the world map */
+const COUNTRY_ISO: Record<string, string> = {
+  india: 'IN', 'united states': 'US', usa: 'US', 'united kingdom': 'GB', uk: 'GB',
+  germany: 'DE', france: 'FR', canada: 'CA', australia: 'AU', brazil: 'BR',
+  japan: 'JP', 'south korea': 'KR', mexico: 'MX', spain: 'ES', italy: 'IT',
+  russia: 'RU', china: 'CN', indonesia: 'ID', turkey: 'TR', 'saudi arabia': 'SA',
+  netherlands: 'NL', sweden: 'SE', norway: 'NO', denmark: 'DK', finland: 'FI',
+  poland: 'PL', switzerland: 'CH', austria: 'AT', belgium: 'BE', portugal: 'PT',
+  argentina: 'AR', colombia: 'CO', chile: 'CL', peru: 'PE', egypt: 'EG',
+  'south africa': 'ZA', nigeria: 'NG', kenya: 'KE', pakistan: 'PK', bangladesh: 'BD',
+  'sri lanka': 'LK', nepal: 'NP', philippines: 'PH', thailand: 'TH', vietnam: 'VN',
+  malaysia: 'MY', singapore: 'SG', 'new zealand': 'NZ', ireland: 'IE', israel: 'IL',
+  'united arab emirates': 'AE', uae: 'AE', taiwan: 'TW', 'hong kong': 'HK',
+  greece: 'GR', romania: 'RO', czech: 'CZ', hungary: 'HU', ukraine: 'UA',
+};
+
 const MONTHS_MAP: Record<string, number> = {
   january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
   july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
