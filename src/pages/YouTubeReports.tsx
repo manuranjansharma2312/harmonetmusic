@@ -9,7 +9,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { normalizeIsrc } from '@/lib/isrc';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
-import { ArrowLeft, Eye, BarChart3, Filter, X, Download } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, Eye, BarChart3, Filter, X, Download, Search } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface ReportEntry {
@@ -73,6 +74,7 @@ export default function YouTubeReports() {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [monthPage, setMonthPage] = useState(0);
   const [monthPageSize, setMonthPageSize] = useState<number | 'all'>(10);
+  const [monthSearch, setMonthSearch] = useState('');
   const [entryPage, setEntryPage] = useState(0);
   const [entryPageSize, setEntryPageSize] = useState<number | 'all'>(10);
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -114,7 +116,12 @@ export default function YouTubeReports() {
     return Object.entries(groups).sort(([a], [b]) => parseMonthKey(b) - parseMonthKey(a));
   }, [entries]);
 
-  const pagedMonths = paginateItems(monthlyGroups, monthPage, monthPageSize);
+  const filteredMonthlyGroups = useMemo(() => {
+    if (!monthSearch.trim()) return monthlyGroups;
+    return monthlyGroups.filter(([month]) => month.toLowerCase().includes(monthSearch.toLowerCase()));
+  }, [monthlyGroups, monthSearch]);
+
+  const pagedMonths = paginateItems(filteredMonthlyGroups, monthPage, monthPageSize);
 
   const selectedEntries = useMemo(() => {
     if (!selectedMonth) return [];
@@ -180,6 +187,17 @@ export default function YouTubeReports() {
               </div>
             ) : (
               <>
+                <div className="p-4 border-b border-border/50">
+                  <div className="relative max-w-xs">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search months..."
+                      value={monthSearch}
+                      onChange={(e) => { setMonthSearch(e.target.value); setMonthPage(0); }}
+                      className="pl-9 h-9"
+                    />
+                  </div>
+                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -206,7 +224,7 @@ export default function YouTubeReports() {
                     ))}
                   </TableBody>
                 </Table>
-                <TablePagination totalItems={monthlyGroups.length} currentPage={monthPage} pageSize={monthPageSize} onPageChange={setMonthPage} onPageSizeChange={setMonthPageSize} itemLabel="months" />
+                <TablePagination totalItems={filteredMonthlyGroups.length} currentPage={monthPage} pageSize={monthPageSize} onPageChange={setMonthPage} onPageSizeChange={setMonthPageSize} itemLabel="months" />
               </>
             )}
           </GlassCard>

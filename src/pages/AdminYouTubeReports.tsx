@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Upload, Trash2, FileSpreadsheet, Eye, ArrowLeft, Filter, X, Download } from 'lucide-react';
+import { Upload, Trash2, FileSpreadsheet, Eye, ArrowLeft, Filter, X, Download, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { normalizeIsrc } from '@/lib/isrc';
@@ -111,6 +111,7 @@ export default function AdminYouTubeReports() {
   const [deleteMonth, setDeleteMonth] = useState<string | null>(null);
   const [monthPage, setMonthPage] = useState(0);
   const [monthPageSize, setMonthPageSize] = useState<number | 'all'>(10);
+  const [monthSearch, setMonthSearch] = useState('');
 
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [detailEntries, setDetailEntries] = useState<ReportEntry[]>([]);
@@ -169,7 +170,12 @@ export default function AdminYouTubeReports() {
     setEntryPage(0);
   };
 
-  const pagedMonths = paginateItems(monthGroups, monthPage, monthPageSize);
+  const filteredMonthGroups = useMemo(() => {
+    if (!monthSearch.trim()) return monthGroups;
+    return monthGroups.filter((g) => g.month.toLowerCase().includes(monthSearch.toLowerCase()));
+  }, [monthGroups, monthSearch]);
+
+  const pagedMonths = paginateItems(filteredMonthGroups, monthPage, monthPageSize);
 
   const filteredEntries = useMemo(() => {
     let filtered = detailEntries;
@@ -444,8 +450,17 @@ export default function AdminYouTubeReports() {
         </GlassCard>
 
         <GlassCard className="p-0 overflow-hidden">
-          <div className="p-4 border-b border-border/50">
+          <div className="p-4 border-b border-border/50 flex items-center justify-between gap-3 flex-wrap">
             <h2 className="text-lg font-semibold">Imported YouTube Reports</h2>
+            <div className="relative max-w-xs w-full sm:w-auto">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search months..."
+                value={monthSearch}
+                onChange={(e) => { setMonthSearch(e.target.value); setMonthPage(0); }}
+                className="pl-9 h-9"
+              />
+            </div>
           </div>
           {loading ? (
             <p className="p-6 text-center text-muted-foreground">Loading...</p>
@@ -483,7 +498,7 @@ export default function AdminYouTubeReports() {
                 </TableBody>
               </Table>
               <TablePagination
-                totalItems={monthGroups.length}
+                totalItems={filteredMonthGroups.length}
                 currentPage={monthPage}
                 pageSize={monthPageSize}
                 onPageChange={setMonthPage}
