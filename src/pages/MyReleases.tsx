@@ -144,8 +144,7 @@ export default function MyReleases() {
       ) : (
         <div className="space-y-4">
           {(() => {
-            const totalReleasePages = Math.ceil(releases.length / RELEASES_PER_PAGE);
-            const pagedReleases = releases.slice(releasePage * RELEASES_PER_PAGE, (releasePage + 1) * RELEASES_PER_PAGE);
+            const pagedReleases = paginateItems(releases, releasePage, releasePageSize);
             return (
               <>
           {pagedReleases.map((release) => {
@@ -237,21 +236,16 @@ export default function MyReleases() {
               </GlassCard>
             );
           })}
-          {totalReleasePages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-card/50 border border-border/50">
-              <p className="text-sm text-muted-foreground">
-                Page {releasePage + 1} of {totalReleasePages} ({releases.length} releases)
-              </p>
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" disabled={releasePage === 0} onClick={() => setReleasePage((p) => p - 1)}>
-                  <ChevronLeft className="h-4 w-4 mr-1" /> Previous
-                </Button>
-                <Button size="sm" variant="outline" disabled={releasePage >= totalReleasePages - 1} onClick={() => setReleasePage((p) => p + 1)}>
-                  Next <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </div>
-            </div>
-          )}
+          <div className="rounded-lg bg-card/50 border border-border/50 overflow-hidden">
+            <TablePagination
+              totalItems={releases.length}
+              currentPage={releasePage}
+              pageSize={releasePageSize}
+              onPageChange={setReleasePage}
+              onPageSizeChange={setReleasePageSize}
+              itemLabel="releases"
+            />
+          </div>
               </>
             );
           })()}
