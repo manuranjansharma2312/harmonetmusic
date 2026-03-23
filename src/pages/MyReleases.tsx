@@ -254,6 +254,14 @@ export default function MyReleases() {
                         <span className="font-medium text-foreground">{track.song_title}</span>
                       </div>
 
+                      {/* ISRC, Audio Type, Language, Genre — before artist */}
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <Detail label="ISRC" value={track.isrc || '—'} />
+                        <Detail label="Audio Type" value={track.audio_type === 'with_vocal' ? 'With Vocal' : 'Instrumental'} />
+                        {track.audio_type === 'with_vocal' && <Detail label="Language" value={track.language || '—'} />}
+                        <Detail label="Genre" value={track.genre || '—'} />
+                      </div>
+
                       {/* Primary Artist with profile links */}
                       <div className="rounded-lg border border-border/30 bg-muted/10 p-3 space-y-2">
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Primary Artist</p>
@@ -273,14 +281,6 @@ export default function MyReleases() {
                         {track.is_new_artist_profile && (
                           <span className="inline-block text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">✓ New profile requested</span>
                         )}
-                      </div>
-
-                      {/* Track metadata grid */}
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        {track.isrc && <Detail label="ISRC" value={track.isrc} />}
-                        <Detail label="Genre" value={track.genre || '—'} />
-                        {track.audio_type === 'with_vocal' && <Detail label="Language" value={track.language || '—'} />}
-                        <Detail label="Audio Type" value={track.audio_type === 'with_vocal' ? 'With Vocal' : 'Instrumental'} />
                       </div>
 
                       {/* Credits */}
