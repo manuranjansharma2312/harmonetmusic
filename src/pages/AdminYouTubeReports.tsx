@@ -158,6 +158,7 @@ export default function AdminYouTubeReports() {
   const handleViewMonth = (month: string) => {
     setSelectedMonth(month);
     setFilters({});
+    setEntryPage(0);
     fetchDetailEntries(month);
   };
 
