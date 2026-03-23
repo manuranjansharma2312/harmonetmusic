@@ -166,6 +166,7 @@ export default function AdminYouTubeReports() {
     setSelectedMonth(null);
     setDetailEntries([]);
     setFilters({});
+    setEntryPage(0);
   };
 
   const totalMonthPages = Math.ceil(monthGroups.length / MONTHS_PER_PAGE);
