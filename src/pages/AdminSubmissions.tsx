@@ -556,6 +556,13 @@ export default function AdminSubmissions() {
           onCancel={() => setDeleteRelease(null)}
         />
       )}
+
+      <RejectReasonModal
+        open={!!rejectTarget}
+        title="Reject Release"
+        onConfirm={handleRejectConfirm}
+        onCancel={() => setRejectTarget(null)}
+      />
     </DashboardLayout>
   );
 }
