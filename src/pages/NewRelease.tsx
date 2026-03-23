@@ -408,6 +408,29 @@ export default function NewRelease() {
   const inputClass =
     'w-full px-4 py-3 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
 
+  // Block access if user has no labels
+  if (hasAnyLabels === false) {
+    return (
+      <DashboardLayout>
+        <Dialog open onOpenChange={() => navigate('/my-labels')}>
+          <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
+            <DialogHeader>
+              <DialogTitle>Add a Label First</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">
+              You need to add at least one label before creating a release. Your approved labels will appear in the © Line and ℗ Line fields.
+            </p>
+            <DialogFooter>
+              <Button onClick={() => navigate('/my-labels')} className="btn-primary-gradient text-primary-foreground font-semibold">
+                Go to My Labels
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </DashboardLayout>
+    );
+  }
+
   // Submitting progress screen
   if (submitting) {
     return (
