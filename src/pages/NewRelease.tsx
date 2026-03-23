@@ -58,15 +58,18 @@ export default function NewRelease() {
   // Genres & Languages from DB
   const [genres, setGenres] = useState<{ id: string; name: string }[]>([]);
   const [languages, setLanguages] = useState<{ id: string; name: string }[]>([]);
+  const [approvedLabels, setApprovedLabels] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const [genresRes, langsRes] = await Promise.all([
+      const [genresRes, langsRes, labelsRes] = await Promise.all([
         supabase.from('genres').select('id, name').order('name'),
         supabase.from('languages').select('id, name').order('name'),
+        supabase.from('labels').select('label_name').eq('status', 'approved').order('label_name'),
       ]);
       if (genresRes.data) setGenres(genresRes.data);
       if (langsRes.data) setLanguages(langsRes.data);
+      if (labelsRes.data) setApprovedLabels((labelsRes.data as any[]).map(l => l.label_name));
     };
     fetchData();
   }, []);
@@ -571,11 +574,25 @@ export default function NewRelease() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">© Line</label>
-                <input className={inputClass} value={copyrightLine} onChange={(e) => setCopyrightLine(e.target.value)} placeholder="e.g. 2024 Artist Name" />
+                {approvedLabels.length > 0 ? (
+                  <select className={inputClass} value={copyrightLine} onChange={(e) => setCopyrightLine(e.target.value)}>
+                    <option value="">Select label</option>
+                    {approvedLabels.map(name => <option key={name} value={name}>{name}</option>)}
+                  </select>
+                ) : (
+                  <input className={inputClass} value={copyrightLine} onChange={(e) => setCopyrightLine(e.target.value)} placeholder="e.g. 2024 Artist Name" />
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">℗ Line</label>
-                <input className={inputClass} value={phonogramLine} onChange={(e) => setPhonogramLine(e.target.value)} placeholder="e.g. 2024 Label Name" />
+                {approvedLabels.length > 0 ? (
+                  <select className={inputClass} value={phonogramLine} onChange={(e) => setPhonogramLine(e.target.value)}>
+                    <option value="">Select label</option>
+                    {approvedLabels.map(name => <option key={name} value={name}>{name}</option>)}
+                  </select>
+                ) : (
+                  <input className={inputClass} value={phonogramLine} onChange={(e) => setPhonogramLine(e.target.value)} placeholder="e.g. 2024 Label Name" />
+                )}
               </div>
             </div>
 
