@@ -111,6 +111,7 @@ export default function AdminReports() {
   const [deleteMonth, setDeleteMonth] = useState<string | null>(null);
   const [monthPage, setMonthPage] = useState(0);
   const [monthPageSize, setMonthPageSize] = useState<number | 'all'>(10);
+  const [monthSearch, setMonthSearch] = useState('');
 
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [detailEntries, setDetailEntries] = useState<ReportEntry[]>([]);
