@@ -480,21 +480,23 @@ export default function Analytics() {
                   <AreaChart data={streamsTrend} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
                     <defs>
                       <linearGradient id="areaOttS" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.2} />
+                        <stop offset="0%" stopColor="#60a5fa" stopOpacity={0.35} />
+                        <stop offset="50%" stopColor="#3b82f6" stopOpacity={0.12} />
                         <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="areaYtS" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#14b8a6" stopOpacity={0.2} />
+                        <stop offset="0%" stopColor="#2dd4bf" stopOpacity={0.35} />
+                        <stop offset="50%" stopColor="#14b8a6" stopOpacity={0.12} />
                         <stop offset="100%" stopColor="#14b8a6" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,18%)" vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,15%)" vertical={false} />
                     <XAxis dataKey="month" tick={{ fill: 'hsl(0,0%,50%)', fontSize: 10, fontWeight: 500 }} axisLine={false} tickLine={false} dy={8} />
-                    <YAxis tick={{ fill: 'hsl(0,0%,50%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatCompact(v)} />
+                    <YAxis tick={{ fill: 'hsl(0,0%,45%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatCompact(v)} width={50} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend content={<CustomLegend />} />
-                    <Area type="monotone" dataKey="OTT" stroke="#3b82f6" fill="url(#areaOttS)" strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 2, stroke: '#3b82f6', fill: 'hsl(0,0%,8%)' }} />
-                    <Area type="monotone" dataKey="YouTube" stroke="#14b8a6" fill="url(#areaYtS)" strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 2, stroke: '#14b8a6', fill: 'hsl(0,0%,8%)' }} />
+                    <Area type="monotone" dataKey="OTT" stroke="#60a5fa" fill="url(#areaOttS)" strokeWidth={2.5} dot={false} activeDot={{ r: 6, strokeWidth: 2, stroke: '#60a5fa', fill: '#0f0f0f' }} />
+                    <Area type="monotone" dataKey="YouTube" stroke="#2dd4bf" fill="url(#areaYtS)" strokeWidth={2.5} dot={false} activeDot={{ r: 6, strokeWidth: 2, stroke: '#2dd4bf', fill: '#0f0f0f' }} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
