@@ -30,6 +30,7 @@ import Reports from "./pages/Reports";
 import YouTubeReports from "./pages/YouTubeReports";
 import AdminReports from "./pages/AdminReports";
 import AdminYouTubeReports from "./pages/AdminYouTubeReports";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -76,6 +77,8 @@ function App() {
                   <Route path="/tools/custom-support" element={<ProtectedRoute><CustomSupport /></ProtectedRoute>} />
                   <Route path="/reports/ott" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
                   <Route path="/reports/youtube" element={<ProtectedRoute><YouTubeReports /></ProtectedRoute>} />
+                  <Route path="/reports/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+                  <Route path="/admin/reports/analytics" element={<ProtectedRoute requiredRole="admin"><Analytics /></ProtectedRoute>} />
                   {/* Legacy redirect */}
                   <Route path="/reports" element={<Navigate to="/reports/ott" replace />} />
                   <Route path="*" element={<NotFound />} />
