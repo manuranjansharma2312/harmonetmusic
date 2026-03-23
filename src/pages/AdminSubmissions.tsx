@@ -68,6 +68,7 @@ export default function AdminSubmissions() {
   const [viewRelease, setViewRelease] = useState<Release | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [rejectTarget, setRejectTarget] = useState<string | null>(null);
 
   // ISRC/UPC inline editing
   const [editingIsrc, setEditingIsrc] = useState<Record<string, string>>({});
