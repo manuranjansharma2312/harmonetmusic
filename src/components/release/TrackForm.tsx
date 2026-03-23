@@ -241,18 +241,6 @@ export function TrackForm({ genres, languages, isTransfer, initialData, onSubmit
         <input className={inputClass} value={form.callertuneTime} onChange={handleCallertuneChange} placeholder="00:00" maxLength={5} />
       </div>
 
-      {/* © Line & ℗ Line */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-1">© Line</label>
-          <input className={inputClass} value={form.copyrightLine} onChange={(e) => update('copyrightLine', e.target.value)} placeholder="e.g. 2024 Artist Name" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-1">℗ Line</label>
-          <input className={inputClass} value={form.phonogramLine} onChange={(e) => update('phonogramLine', e.target.value)} placeholder="e.g. 2024 Label Name" />
-        </div>
-      </div>
-
       {/* Actions */}
       <div className="flex gap-3 pt-2">
         <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
