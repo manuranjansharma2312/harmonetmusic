@@ -52,20 +52,23 @@ export default function Reports() {
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
+  const { impersonatedUserId } = useImpersonate();
+
   useEffect(() => {
     if (!user) return;
+    const targetUserId = impersonatedUserId || user.id;
     const fetchReports = async () => {
       setLoading(true);
       const { data } = await supabase
         .from('report_entries')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', targetUserId)
         .order('reporting_month', { ascending: false });
       setEntries((data as ReportEntry[]) || []);
       setLoading(false);
     };
     fetchReports();
-  }, [user]);
+  }, [user, impersonatedUserId]);
 
   const monthlyGroups = useMemo(() => {
     const groups: Record<string, { entries: ReportEntry[]; latestImport: string }> = {};
