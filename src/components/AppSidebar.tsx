@@ -118,7 +118,9 @@ export function AppSidebar() {
                   {userLinksTop.map(renderNavLink)}
 
                   {/* Content Management Tools - after My Labels */}
-                  {!collapsed && (
+                  {collapsed ? (
+                    contentToolLinks.map(renderNavLink)
+                  ) : (
                     <li>
                       <Collapsible open={toolsOpen} onOpenChange={setToolsOpen}>
                         <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all">
