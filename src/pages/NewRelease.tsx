@@ -4,6 +4,9 @@ import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog';
 import { Loader2, Upload, Plus, Trash2, Music, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -59,17 +62,20 @@ export default function NewRelease() {
   const [genres, setGenres] = useState<{ id: string; name: string }[]>([]);
   const [languages, setLanguages] = useState<{ id: string; name: string }[]>([]);
   const [approvedLabels, setApprovedLabels] = useState<string[]>([]);
+  const [hasAnyLabels, setHasAnyLabels] = useState<boolean | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      const [genresRes, langsRes, labelsRes] = await Promise.all([
+      const [genresRes, langsRes, labelsRes, allLabelsRes] = await Promise.all([
         supabase.from('genres').select('id, name').order('name'),
         supabase.from('languages').select('id, name').order('name'),
         supabase.from('labels').select('label_name').eq('status', 'approved').order('label_name'),
+        supabase.from('labels').select('id', { count: 'exact', head: true }),
       ]);
       if (genresRes.data) setGenres(genresRes.data);
       if (langsRes.data) setLanguages(langsRes.data);
       if (labelsRes.data) setApprovedLabels((labelsRes.data as any[]).map(l => l.label_name));
+      setHasAnyLabels((allLabelsRes.count ?? 0) > 0);
     };
     fetchData();
   }, []);
@@ -402,6 +408,29 @@ export default function NewRelease() {
   const inputClass =
     'w-full px-4 py-3 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
 
+  // Block access if user has no labels
+  if (hasAnyLabels === false) {
+    return (
+      <DashboardLayout>
+        <Dialog open onOpenChange={() => navigate('/my-labels')}>
+          <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
+            <DialogHeader>
+              <DialogTitle>Add a Label First</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">
+              You need to add at least one label before creating a release. Your approved labels will appear in the © Line and ℗ Line fields.
+            </p>
+            <DialogFooter>
+              <Button onClick={() => navigate('/my-labels')} className="btn-primary-gradient text-primary-foreground font-semibold">
+                Go to My Labels
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </DashboardLayout>
+    );
+  }
+
   // Submitting progress screen
   if (submitting) {
     return (
@@ -574,24 +603,22 @@ export default function NewRelease() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">© Line</label>
-                {approvedLabels.length > 0 ? (
-                  <select className={inputClass} value={copyrightLine} onChange={(e) => setCopyrightLine(e.target.value)}>
-                    <option value="">Select label</option>
-                    {approvedLabels.map(name => <option key={name} value={name}>{name}</option>)}
-                  </select>
-                ) : (
-                  <input className={inputClass} value={copyrightLine} onChange={(e) => setCopyrightLine(e.target.value)} placeholder="e.g. 2024 Artist Name" />
+                <select className={inputClass} value={copyrightLine} onChange={(e) => setCopyrightLine(e.target.value)}>
+                  <option value="">Select label</option>
+                  {approvedLabels.map(name => <option key={name} value={name}>{name}</option>)}
+                </select>
+                {approvedLabels.length === 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">No approved labels yet. <button type="button" className="text-primary hover:underline" onClick={() => navigate('/my-labels')}>Add labels</button></p>
                 )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">℗ Line</label>
-                {approvedLabels.length > 0 ? (
-                  <select className={inputClass} value={phonogramLine} onChange={(e) => setPhonogramLine(e.target.value)}>
-                    <option value="">Select label</option>
-                    {approvedLabels.map(name => <option key={name} value={name}>{name}</option>)}
-                  </select>
-                ) : (
-                  <input className={inputClass} value={phonogramLine} onChange={(e) => setPhonogramLine(e.target.value)} placeholder="e.g. 2024 Label Name" />
+                <select className={inputClass} value={phonogramLine} onChange={(e) => setPhonogramLine(e.target.value)}>
+                  <option value="">Select label</option>
+                  {approvedLabels.map(name => <option key={name} value={name}>{name}</option>)}
+                </select>
+                {approvedLabels.length === 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">No approved labels yet. <button type="button" className="text-primary hover:underline" onClick={() => navigate('/my-labels')}>Add labels</button></p>
                 )}
               </div>
             </div>
