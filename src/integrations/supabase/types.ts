@@ -32,6 +32,36 @@ export type Database = {
         }
         Relationships: []
       }
+      labels: {
+        Row: {
+          b2b_url: string | null
+          created_at: string
+          id: string
+          label_name: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          b2b_url?: string | null
+          created_at?: string
+          id?: string
+          label_name: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          b2b_url?: string | null
+          created_at?: string
+          id?: string
+          label_name?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       languages: {
         Row: {
           created_at: string
