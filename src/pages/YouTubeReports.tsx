@@ -171,7 +171,10 @@ export default function YouTubeReports() {
   }, [entries, selectedMonth]);
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
-  const clearFilters = () => setFilters({});
+  const clearFilters = () => { setFilters({}); setEntryPage(0); };
+
+  const totalEntryPages = Math.ceil(selectedEntries.length / ENTRIES_PER_PAGE);
+  const pagedEntries = selectedEntries.slice(entryPage * ENTRIES_PER_PAGE, (entryPage + 1) * ENTRIES_PER_PAGE);
 
   const exportCSV = () => {
     const headers = ['Reporting Month', ...COLUMNS.map((c) => c.label)];
