@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Upload, Trash2, FileSpreadsheet, Eye, ArrowLeft, Filter, X } from 'lucide-react';
+import { Upload, Trash2, FileSpreadsheet, Eye, ArrowLeft, Filter, X, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { normalizeIsrc } from '@/lib/isrc';
@@ -305,6 +305,9 @@ export default function AdminYouTubeReports() {
               <h1 className="text-2xl font-bold">YouTube Reports</h1>
               <p className="text-muted-foreground text-sm">Viewing report for {selectedMonth}</p>
             </div>
+            <Button size="sm" variant="outline" onClick={exportCSV}>
+              <Download className="h-4 w-4 mr-1" /> Export CSV
+            </Button>
           </div>
 
           <GlassCard className="p-4">
@@ -381,7 +384,6 @@ export default function AdminYouTubeReports() {
               pageSize={entryPageSize}
               onPageChange={setEntryPage}
               onPageSizeChange={setEntryPageSize}
-              onExport={exportCSV}
             />
           </GlassCard>
         </div>

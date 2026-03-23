@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { normalizeIsrc } from '@/lib/isrc';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
-import { ArrowLeft, Eye, BarChart3, Filter, X } from 'lucide-react';
+import { ArrowLeft, Eye, BarChart3, Filter, X, Download } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface ReportEntry {
@@ -162,6 +162,11 @@ export default function YouTubeReports() {
               {selectedMonth ? `Viewing report for ${selectedMonth}` : 'Monthly YouTube revenue reports'} · All amounts in ₹ (INR)
             </p>
           </div>
+          {selectedMonth && (
+            <Button size="sm" variant="outline" onClick={exportCSV}>
+              <Download className="h-4 w-4 mr-1" /> Export CSV
+            </Button>
+          )}
         </div>
 
         {loading ? (
@@ -255,7 +260,7 @@ export default function YouTubeReports() {
                   </TableBody>
                 </Table>
               </div>
-              <TablePagination totalItems={selectedEntries.length} currentPage={entryPage} pageSize={entryPageSize} onPageChange={setEntryPage} onPageSizeChange={setEntryPageSize} onExport={exportCSV} />
+              <TablePagination totalItems={selectedEntries.length} currentPage={entryPage} pageSize={entryPageSize} onPageChange={setEntryPage} onPageSizeChange={setEntryPageSize} />
             </GlassCard>
           </>
         )}
