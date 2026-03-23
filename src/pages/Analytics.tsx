@@ -503,13 +503,21 @@ export default function Analytics() {
                 <div className="h-[300px] mt-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={revenueByPlatform} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
+                      <defs>
+                        {revenueByPlatform.map((_, i) => (
+                          <linearGradient key={`rpg${i}`} id={`revPlatGrad${i}`} x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor={CHART_COLORS[i % CHART_COLORS.length]} stopOpacity={0.7} />
+                            <stop offset="100%" stopColor={CHART_COLORS[i % CHART_COLORS.length]} stopOpacity={1} />
+                          </linearGradient>
+                        ))}
+                      </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,16%)" horizontal={false} />
                       <XAxis type="number" tick={{ fill: 'hsl(0,0%,50%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${formatCompact(v)}`} />
                       <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0,0%,70%)', fontSize: 11, fontWeight: 500 }} width={90} axisLine={false} tickLine={false} />
                       <Tooltip content={<CustomTooltip prefix="₹" />} cursor={{ fill: 'hsl(0,0%,12%)' }} />
                       <Bar dataKey="value" name="Revenue" radius={[0, 8, 8, 0]} maxBarSize={24} animationDuration={800}>
                         {revenueByPlatform.map((_, i) => (
-                          <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                          <Cell key={i} fill={`url(#revPlatGrad${i})`} />
                         ))}
                       </Bar>
                     </BarChart>
