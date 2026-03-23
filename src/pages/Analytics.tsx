@@ -600,53 +600,82 @@ export default function Analytics() {
             </div>
 
             {/* ── World Map ── */}
-            <GlassCard className="!p-5">
-              <SectionHeader icon={Globe} title="Global Streams Distribution" subtitle="Streams by country on the world map" />
-              <div className="mt-4 flex justify-center overflow-hidden">
-                {worldMapData.length > 0 ? (
-                  <div className="w-full max-w-4xl [&_svg]:w-full [&_svg]:h-auto">
-                    <WorldMap
-                      color="#dc2626"
-                      valueSuffix=" streams"
-                      size="responsive"
-                      data={worldMapData}
-                      backgroundColor="transparent"
-                      borderColor="#333"
-                      styleFunction={(context: any) => {
-                        const opacityLevel = context.minValue && context.maxValue && context.countryValue
-                          ? 0.2 + 0.8 * ((context.countryValue - context.minValue) / (context.maxValue - context.minValue || 1))
-                          : 0.1;
-                        return {
-                          fill: context.countryValue ? `rgba(220, 38, 38, ${opacityLevel})` : 'hsl(0,0%,14%)',
-                          stroke: '#444',
-                          strokeWidth: 0.5,
-                          cursor: context.countryValue ? 'pointer' : 'default',
-                        };
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="py-12 text-center">
-                    <Globe className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
-                    <p className="text-muted-foreground text-sm">No geographic data available</p>
+            <GlassCard className="!p-6 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-blue-500/5 pointer-events-none" />
+              <div className="relative">
+                <SectionHeader icon={Globe} title="Global Streams Distribution" subtitle="Streams intensity by country" />
+                <div className="mt-5 flex justify-center overflow-hidden">
+                  {worldMapData.length > 0 ? (
+                    <div className="w-full max-w-4xl [&_svg]:w-full [&_svg]:h-auto">
+                      <WorldMap
+                        color="#22d3ee"
+                        valueSuffix=" streams"
+                        size="responsive"
+                        data={worldMapData}
+                        backgroundColor="transparent"
+                        borderColor="#2a2a2a"
+                        styleFunction={(context: any) => {
+                          if (!context.countryValue) {
+                            return {
+                              fill: '#1a1a1a',
+                              stroke: '#2a2a2a',
+                              strokeWidth: 0.4,
+                              cursor: 'default',
+                            };
+                          }
+                          const ratio = context.minValue !== undefined && context.maxValue !== undefined
+                            ? (context.countryValue - context.minValue) / (context.maxValue - context.minValue || 1)
+                            : 0.5;
+                          // Bright cyan → vivid green gradient based on intensity
+                          const r = Math.round(34 + ratio * (16 - 34));
+                          const g = Math.round(211 + ratio * (185 - 211));
+                          const b = Math.round(238 + ratio * (56 - 238));
+                          return {
+                            fill: `rgb(${r}, ${g}, ${b})`,
+                            stroke: '#333',
+                            strokeWidth: 0.5,
+                            cursor: 'pointer',
+                            filter: ratio > 0.6 ? 'drop-shadow(0 0 6px rgba(34,211,238,0.4))' : 'none',
+                          };
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="py-16 text-center">
+                      <Globe className="h-12 w-12 mx-auto text-muted-foreground/20 mb-3" />
+                      <p className="text-muted-foreground text-sm">No geographic data available</p>
+                    </div>
+                  )}
+                </div>
+                {/* Top countries legend */}
+                {worldMapData.length > 0 && (
+                  <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {worldMapData
+                      .sort((a, b) => b.value - a.value)
+                      .slice(0, 8)
+                      .map((d, i) => {
+                        const maxVal = worldMapData.reduce((m, x) => Math.max(m, x.value), 0);
+                        const pct = maxVal > 0 ? (d.value / maxVal) * 100 : 0;
+                        return (
+                          <div key={d.country} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/30 border border-border/20">
+                            <div className="w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold" style={{ background: `${CHART_COLORS[i]}20`, color: CHART_COLORS[i] }}>
+                              {i + 1}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[11px] font-semibold text-foreground truncate">{d.country}</p>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <div className="flex-1 h-1 rounded-full bg-muted/50 overflow-hidden">
+                                  <div className="h-full rounded-full" style={{ width: `${Math.max(pct, 5)}%`, background: CHART_COLORS[i] }} />
+                                </div>
+                                <span className="text-[9px] text-muted-foreground font-mono">{formatCompact(d.value)}</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                   </div>
                 )}
               </div>
-              {/* Top countries legend below map */}
-              {worldMapData.length > 0 && (
-                <div className="mt-4 flex flex-wrap justify-center gap-3">
-                  {worldMapData
-                    .sort((a, b) => b.value - a.value)
-                    .slice(0, 8)
-                    .map((d, i) => (
-                      <div key={d.country} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/40 border border-border/30">
-                        <span className="h-2 w-2 rounded-full" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
-                        <span className="text-[10px] font-semibold text-foreground">{d.country}</span>
-                        <span className="text-[10px] text-muted-foreground">{formatCompact(d.value)}</span>
-                      </div>
-                    ))}
-                </div>
-              )}
             </GlassCard>
 
             {/* ── Country Bar Charts ── */}
