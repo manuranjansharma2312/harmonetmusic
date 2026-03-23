@@ -130,12 +130,13 @@ export default function Reports() {
   }, [user, role, isImpersonating, impersonatedUserId]);
 
   const monthlyGroups = useMemo(() => {
-    const groups: Record<string, { entries: ReportEntry[]; latestImport: string }> = {};
+    const groups: Record<string, { entries: ReportEntry[]; latestImport: string; totalRevenue: number }> = {};
     entries.forEach((e) => {
       if (!groups[e.reporting_month]) {
-        groups[e.reporting_month] = { entries: [], latestImport: e.imported_at };
+        groups[e.reporting_month] = { entries: [], latestImport: e.imported_at, totalRevenue: 0 };
       }
       groups[e.reporting_month].entries.push(e);
+      groups[e.reporting_month].totalRevenue += Number(e.net_generated_revenue) || 0;
       if (e.imported_at > groups[e.reporting_month].latestImport) {
         groups[e.reporting_month].latestImport = e.imported_at;
       }
