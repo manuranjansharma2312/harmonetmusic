@@ -384,7 +384,6 @@ export default function AdminYouTubeReports() {
               pageSize={entryPageSize}
               onPageChange={setEntryPage}
               onPageSizeChange={setEntryPageSize}
-              onExport={exportCSV}
             />
           </GlassCard>
         </div>
