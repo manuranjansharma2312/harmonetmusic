@@ -63,7 +63,7 @@ const adminLinks = [
   { to: '/admin/submissions', label: 'All Submissions', icon: ListMusic },
   { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
   { to: '/admin/labels', label: 'Labels', icon: Tag },
-  { to: '/admin/content-requests', label: 'Content Requests', icon: Wrench },
+  { to: '/admin/content-requests', label: 'Content Requests', icon: Headset },
 ];
 
 export function AppSidebar() {
