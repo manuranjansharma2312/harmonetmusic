@@ -9,7 +9,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { normalizeIsrc } from '@/lib/isrc';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
-import { ArrowLeft, Eye, BarChart3, Filter, X, Download } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, Eye, BarChart3, Filter, X, Download, Search } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface ReportEntry {
