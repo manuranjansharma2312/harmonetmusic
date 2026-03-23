@@ -381,7 +381,16 @@ export default function Analytics() {
                   {sourceSplit.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
-                        <SharedDefs />
+                        <defs>
+                          <linearGradient id="pieOtt" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stopColor="#fb923c" />
+                            <stop offset="100%" stopColor="#f97316" />
+                          </linearGradient>
+                          <linearGradient id="pieYt" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stopColor="#f87171" />
+                            <stop offset="100%" stopColor="#dc2626" />
+                          </linearGradient>
+                        </defs>
                         <Pie data={sourceSplit} cx="50%" cy="48%" innerRadius={55} outerRadius={90} paddingAngle={4}
                           dataKey="value" stroke="none" labelLine={false} label={renderPieLabel}
                           style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }}>
