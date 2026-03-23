@@ -49,6 +49,7 @@ type Release = {
   phonogram_line: string | null;
   store_selection: string;
   status: string;
+  rejection_reason: string | null;
   created_at: string;
   updated_at: string;
   tracks?: Track[];
