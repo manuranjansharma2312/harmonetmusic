@@ -134,7 +134,12 @@ export default function MyReleases() {
         </GlassCard>
       ) : (
         <div className="space-y-4">
-          {releases.map((release) => {
+          {(() => {
+            const totalReleasePages = Math.ceil(releases.length / RELEASES_PER_PAGE);
+            const pagedReleases = releases.slice(releasePage * RELEASES_PER_PAGE, (releasePage + 1) * RELEASES_PER_PAGE);
+            return (
+              <>
+          {pagedReleases.map((release) => {
             const isExpanded = expandedId === release.id;
             return (
               <GlassCard key={release.id} className="animate-fade-in">
