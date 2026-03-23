@@ -69,6 +69,7 @@ function App() {
                   <Route path="/tools/oac-apply" element={<ProtectedRoute><OacApply /></ProtectedRoute>} />
                   <Route path="/tools/takedown" element={<ProtectedRoute><Takedown /></ProtectedRoute>} />
                   <Route path="/tools/custom-support" element={<ProtectedRoute><CustomSupport /></ProtectedRoute>} />
+                  <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </ImpersonateProvider>

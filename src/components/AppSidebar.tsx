@@ -66,6 +66,7 @@ const adminLinks = [
   { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
   { to: '/admin/labels', label: 'Labels', icon: Tag },
   { to: '/admin/content-requests', label: 'Content Requests', icon: Headset },
+  { to: '/admin/reports', label: 'Reports & Analytics', icon: BarChart3 },
 ];
 
 export function AppSidebar() {
