@@ -19,6 +19,12 @@ import AdminUsers from "./pages/AdminUsers";
 import MyProfile from "./pages/MyProfile";
 import MyLabels from "./pages/MyLabels";
 import AdminLabels from "./pages/AdminLabels";
+import AdminContentRequests from "./pages/AdminContentRequests";
+import CopyrightClaimRemoval from "./pages/CopyrightClaimRemoval";
+import InstagramLinkToSong from "./pages/InstagramLinkToSong";
+import ContentIdMerge from "./pages/ContentIdMerge";
+import OacApply from "./pages/OacApply";
+import Takedown from "./pages/Takedown";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
