@@ -57,13 +57,13 @@ const contentToolLinks = [
 ];
 
 const reportLinks = [
-  { to: '/reports/ott', label: 'OTT Reports', icon: MonitorPlay },
   { to: '/reports/youtube', label: 'YouTube Reports', icon: Youtube },
+  { to: '/reports/ott', label: 'OTT Reports', icon: MonitorPlay },
 ];
 
 const adminReportLinks = [
-  { to: '/admin/reports/ott', label: 'OTT Reports', icon: MonitorPlay },
   { to: '/admin/reports/youtube', label: 'YouTube Reports', icon: Youtube },
+  { to: '/admin/reports/ott', label: 'OTT Reports', icon: MonitorPlay },
 ];
 
 const userLinksBottom = [
