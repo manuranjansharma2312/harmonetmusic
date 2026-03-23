@@ -70,7 +70,6 @@ export function AppSidebar() {
   const { state, setOpenMobile, isMobile } = useSidebar();
   const collapsed = state === 'collapsed';
   const showUserView = isImpersonating || role !== 'admin';
-  const links = showUserView ? userLinks : adminLinks;
   const [toolsOpen, setToolsOpen] = useState(false);
 
   const handleNavClick = () => {
@@ -78,6 +77,23 @@ export function AppSidebar() {
       setOpenMobile(false);
     }
   };
+
+  const renderNavLink = (link: typeof adminLinks[0]) => (
+    <SidebarMenuItem key={link.to}>
+      <SidebarMenuButton asChild tooltip={link.label}>
+        <NavLink
+          to={link.to}
+          end={link.to === '/admin'}
+          onClick={handleNavClick}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+          activeClassName="bg-primary/10 text-foreground font-semibold"
+        >
+          <link.icon className="h-5 w-5 flex-shrink-0" />
+          {!collapsed && <span>{link.label}</span>}
+        </NavLink>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border/50">
@@ -97,60 +113,52 @@ export function AppSidebar() {
           )}
           <SidebarGroupContent>
             <SidebarMenu>
-              {links.map((link) => (
-                <SidebarMenuItem key={link.to}>
-                  <SidebarMenuButton asChild tooltip={link.label}>
-                    <NavLink
-                      to={link.to}
-                      end={link.to === '/admin'}
-                      onClick={handleNavClick}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
-                      activeClassName="bg-primary/10 text-foreground font-semibold"
-                    >
-                      <link.icon className="h-5 w-5 flex-shrink-0" />
-                      {!collapsed && <span>{link.label}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {showUserView ? (
+                <>
+                  {userLinksTop.map(renderNavLink)}
+
+                  {/* Content Management Tools - after My Labels */}
+                  {!collapsed && (
+                    <li>
+                      <Collapsible open={toolsOpen} onOpenChange={setToolsOpen}>
+                        <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all">
+                          <span className="flex items-center gap-3">
+                            <Wrench className="h-5 w-5 flex-shrink-0" />
+                            Content Management Tools
+                          </span>
+                          <ChevronDown className={`h-4 w-4 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <SidebarMenu>
+                            {contentToolLinks.map((link) => (
+                              <SidebarMenuItem key={link.to}>
+                                <SidebarMenuButton asChild tooltip={link.label}>
+                                  <NavLink
+                                    to={link.to}
+                                    onClick={handleNavClick}
+                                    className="flex items-center gap-3 px-3 py-2.5 pl-8 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                                    activeClassName="bg-primary/10 text-foreground font-semibold"
+                                  >
+                                    <link.icon className="h-4 w-4 flex-shrink-0" />
+                                    <span>{link.label}</span>
+                                  </NavLink>
+                                </SidebarMenuButton>
+                              </SidebarMenuItem>
+                            ))}
+                          </SidebarMenu>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </li>
+                  )}
+
+                  {userLinksBottom.map(renderNavLink)}
+                </>
+              ) : (
+                adminLinks.map(renderNavLink)
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        {showUserView && !collapsed && (
-          <SidebarGroup>
-            <Collapsible open={toolsOpen} onOpenChange={setToolsOpen}>
-              <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all">
-                <span className="flex items-center gap-3">
-                  <Wrench className="h-5 w-5 flex-shrink-0" />
-                  Content Management Tools
-                </span>
-                <ChevronDown className={`h-4 w-4 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {contentToolLinks.map((link) => (
-                      <SidebarMenuItem key={link.to}>
-                        <SidebarMenuButton asChild tooltip={link.label}>
-                          <NavLink
-                            to={link.to}
-                            onClick={handleNavClick}
-                            className="flex items-center gap-3 px-3 py-2.5 pl-8 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
-                            activeClassName="bg-primary/10 text-foreground font-semibold"
-                          >
-                            <link.icon className="h-4 w-4 flex-shrink-0" />
-                            <span>{link.label}</span>
-                          </NavLink>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </CollapsibleContent>
-            </Collapsible>
-          </SidebarGroup>
-        )}
       </SidebarContent>
 
       <SidebarFooter className="p-3 border-t border-border/50">
