@@ -28,6 +28,7 @@ export default function AdminLabels() {
   const [editName, setEditName] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'label' | 'b2b'; label: Label } | null>(null);
   const [userEmails, setUserEmails] = useState<Record<string, string>>({});
+  const [rejectTarget, setRejectTarget] = useState<Label | null>(null);
 
   const inputClass =
     'w-full px-3 py-2 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
