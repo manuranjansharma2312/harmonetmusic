@@ -661,7 +661,13 @@ export default function Analytics() {
                 <div className="h-[340px] px-2 pb-4 mt-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={streamsByCountry} margin={{ top: 5, right: 16, left: 0, bottom: 35 }}>
-                      <SharedDefs />
+                      <defs>
+                        <linearGradient id="barStrCountry" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#67e8f9" stopOpacity={1} />
+                          <stop offset="50%" stopColor="#3b82f6" stopOpacity={0.95} />
+                          <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.9} />
+                        </linearGradient>
+                      </defs>
                       <CartesianGrid strokeDasharray="4 4" stroke={GRID_STROKE} horizontal vertical={false} />
                       <XAxis dataKey="name" tick={{ fill: 'hsl(0 0% 50%)', fontSize: 9, fontWeight: 600 }} axisLine={false} tickLine={false} angle={-45} textAnchor="end" interval={0} />
                       <YAxis tick={AXIS_TICK_Y} axisLine={false} tickLine={false} tickFormatter={(v) => formatCompact(v)} />
