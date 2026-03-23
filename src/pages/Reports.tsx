@@ -231,6 +231,17 @@ export default function Reports() {
               </div>
             ) : (
               <>
+                <div className="p-4 border-b border-border/50">
+                  <div className="relative max-w-xs">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search months..."
+                      value={monthSearch}
+                      onChange={(e) => { setMonthSearch(e.target.value); setMonthPage(0); }}
+                      className="pl-9 h-9"
+                    />
+                  </div>
+                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
