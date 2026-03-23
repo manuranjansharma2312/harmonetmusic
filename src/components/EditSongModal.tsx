@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { normalizeIsrc } from '@/lib/isrc';
 
 const GENRES = ['Pop', 'Rock', 'Hip Hop', 'R&B', 'Electronic', 'Jazz', 'Classical', 'Country', 'Folk', 'Reggae', 'Latin', 'Metal', 'Blues', 'Indie', 'Other'];
 
@@ -25,7 +26,7 @@ export function EditSongModal({ song, onClose, onSaved }: { song: Song; onClose:
     setSaving(true);
     const { error } = await supabase.from('songs').update({
       title: form.title, artist: form.artist, genre: form.genre,
-      language: form.language, release_date: form.release_date, isrc: form.isrc || null,
+      language: form.language, release_date: form.release_date, isrc: normalizeIsrc(form.isrc),
     }).eq('id', song.id);
     setSaving(false);
     if (error) { toast.error(error.message); return; }
@@ -66,7 +67,7 @@ export function EditSongModal({ song, onClose, onSaved }: { song: Song; onClose:
           </div>
           <div>
             <label className="block text-sm text-muted-foreground mb-1">ISRC</label>
-            <input className={inputClass} value={form.isrc} onChange={(e) => updateField('isrc', e.target.value)} />
+            <input className={inputClass} value={form.isrc} onChange={(e) => updateField('isrc', e.target.value.toUpperCase())} />
           </div>
           <button type="submit" disabled={saving} className="w-full py-3 rounded-lg btn-primary-gradient text-primary-foreground font-semibold disabled:opacity-50 flex items-center justify-center gap-2">
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}

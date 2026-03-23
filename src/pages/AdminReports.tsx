@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Upload, Trash2, FileSpreadsheet, Eye, ArrowLeft, Download, Filter, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { normalizeIsrc } from '@/lib/isrc';
 
 const CSV_HEADERS = [
   'Reporting Month', 'Store', 'Sales Type', 'Country', 'Label',
@@ -109,7 +110,6 @@ export default function AdminReports() {
   const [deleteMonth, setDeleteMonth] = useState<string | null>(null);
   const [monthPage, setMonthPage] = useState(0);
 
-  // Detail view state
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [detailEntries, setDetailEntries] = useState<ReportEntry[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -233,8 +233,8 @@ export default function AdminReports() {
 
       const toInsert = preview
         .map((row) => {
-          const isrc = (row['ISRC'] || '').toUpperCase();
-          const userId = isrcMap[isrc];
+          const isrc = normalizeIsrc(row['ISRC']);
+          const userId = isrc ? isrcMap[isrc] : null;
           if (!userId) return null;
           return {
             user_id: userId,
@@ -247,7 +247,7 @@ export default function AdminReports() {
             p_line: row['P Line'] || null,
             track: row['Track'] || null,
             artist: row['Artist'] || null,
-            isrc: row['ISRC'] || null,
+            isrc,
             upc: row['UPC'] || null,
             currency: row['Currency'] || null,
             streams: parseInt(row['Streams'] || '0') || 0,
@@ -287,7 +287,6 @@ export default function AdminReports() {
     fetchMonths();
   };
 
-  // Detail view
   if (selectedMonth) {
     return (
       <DashboardLayout>
@@ -305,7 +304,6 @@ export default function AdminReports() {
             </Button>
           </div>
 
-          {/* Filters */}
           <GlassCard className="p-4">
             <div className="flex items-center gap-2 mb-3">
               <Filter className="h-4 w-4 text-muted-foreground" />
@@ -386,7 +384,6 @@ export default function AdminReports() {
     );
   }
 
-  // List view
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -395,7 +392,6 @@ export default function AdminReports() {
           <p className="text-muted-foreground text-sm">Import and manage user revenue reports</p>
         </div>
 
-        {/* Import Section */}
         <GlassCard className="p-5 space-y-4">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5" /> Import Report
@@ -440,7 +436,6 @@ export default function AdminReports() {
           )}
         </GlassCard>
 
-        {/* Imported Reports */}
         <GlassCard className="p-0 overflow-hidden">
           <div className="p-4 border-b border-border/50">
             <h2 className="text-lg font-semibold">Imported Reports</h2>

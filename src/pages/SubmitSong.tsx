@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
+import { normalizeIsrc } from '@/lib/isrc';
 
 const GENRES = ['Pop', 'Rock', 'Hip Hop', 'R&B', 'Electronic', 'Jazz', 'Classical', 'Country', 'Folk', 'Reggae', 'Latin', 'Metal', 'Blues', 'Indie', 'Other'];
 
@@ -53,7 +54,7 @@ export default function SubmitSong() {
         genre: form.genre,
         language: form.language,
         release_date: form.release_date,
-        isrc: form.isrc || null,
+        isrc: normalizeIsrc(form.isrc),
         audio_url,
         cover_url,
       });
@@ -111,7 +112,7 @@ export default function SubmitSong() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">ISRC (optional)</label>
-                <input className={inputClass} value={form.isrc} onChange={(e) => updateField('isrc', e.target.value)} placeholder="e.g. USRC17607839" />
+                <input className={inputClass} value={form.isrc} onChange={(e) => updateField('isrc', e.target.value.toUpperCase())} placeholder="e.g. USRC17607839" />
               </div>
             </div>
 

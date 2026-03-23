@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { TrackForm, type TrackData } from '@/components/release/TrackForm';
 import { PosterCropModal } from '@/components/release/PosterCropModal';
+import { normalizeIsrc } from '@/lib/isrc';
 
 const CONTENT_TYPES = [
   { value: 'single', label: 'Single' },
@@ -306,7 +307,7 @@ export default function NewRelease() {
             release_id: editReleaseId,
             user_id: releaseOwnerId || user.id,
             song_title: track.songTitle,
-            isrc: track.isrc || null,
+            isrc: normalizeIsrc(track.isrc),
             audio_url,
             audio_type: track.audioType,
             language: track.language || null,
@@ -371,7 +372,7 @@ export default function NewRelease() {
             release_id: release.id,
             user_id: user.id,
             song_title: track.songTitle,
-            isrc: track.isrc || null,
+            isrc: normalizeIsrc(track.isrc),
             audio_url,
             audio_type: track.audioType,
             language: track.language || null,
