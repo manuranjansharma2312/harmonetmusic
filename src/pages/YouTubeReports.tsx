@@ -125,12 +125,13 @@ export default function YouTubeReports() {
   }, [user, role, isImpersonating, impersonatedUserId]);
 
   const monthlyGroups = useMemo(() => {
-    const groups: Record<string, { entries: ReportEntry[]; latestImport: string }> = {};
+    const groups: Record<string, { entries: ReportEntry[]; latestImport: string; totalRevenue: number }> = {};
     entries.forEach((e) => {
       if (!groups[e.reporting_month]) {
-        groups[e.reporting_month] = { entries: [], latestImport: e.imported_at };
+        groups[e.reporting_month] = { entries: [], latestImport: e.imported_at, totalRevenue: 0 };
       }
       groups[e.reporting_month].entries.push(e);
+      groups[e.reporting_month].totalRevenue += Number(e.net_generated_revenue) || 0;
       if (e.imported_at > groups[e.reporting_month].latestImport) {
         groups[e.reporting_month].latestImport = e.imported_at;
       }
@@ -223,6 +224,7 @@ export default function YouTubeReports() {
                     <TableRow>
                       <TableHead>Reporting Month</TableHead>
                       <TableHead>Records</TableHead>
+                      <TableHead>Net Revenue</TableHead>
                       <TableHead>Last Updated</TableHead>
                       <TableHead className="text-right">Action</TableHead>
                     </TableRow>
@@ -232,6 +234,7 @@ export default function YouTubeReports() {
                       <TableRow key={month}>
                         <TableCell className="font-medium">{month}</TableCell>
                         <TableCell>{group.entries.length}</TableCell>
+                        <TableCell className="font-medium">{group.totalRevenue.toFixed(4)}</TableCell>
                         <TableCell>{format(new Date(group.latestImport), 'dd MMM yyyy, hh:mm a')}</TableCell>
                         <TableCell className="text-right">
                           <Button size="sm" variant="outline" onClick={() => setSelectedMonth(month)}>
