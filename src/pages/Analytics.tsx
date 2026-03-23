@@ -693,8 +693,9 @@ export default function Analytics() {
                     <BarChart data={revenueByCountry} margin={{ top: 5, right: 10, left: -10, bottom: 30 }}>
                       <defs>
                         <linearGradient id="barRevGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#f97316" stopOpacity={1} />
-                          <stop offset="100%" stopColor="#dc2626" stopOpacity={0.8} />
+                          <stop offset="0%" stopColor="#fbbf24" stopOpacity={1} />
+                          <stop offset="50%" stopColor="#f97316" stopOpacity={0.95} />
+                          <stop offset="100%" stopColor="#dc2626" stopOpacity={0.85} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,16%)" horizontal vertical={false} />
