@@ -17,6 +17,7 @@ import {
   Trash2,
   ChevronDown,
   MessageSquare,
+  BarChart3,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
