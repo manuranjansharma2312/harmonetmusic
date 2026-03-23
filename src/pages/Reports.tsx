@@ -206,6 +206,11 @@ export default function Reports() {
               {selectedMonth ? `Viewing report for ${selectedMonth}` : 'Monthly revenue reports'} · All amounts in ₹ (INR)
             </p>
           </div>
+          {selectedMonth && (
+            <Button size="sm" variant="outline" onClick={exportCSV}>
+              <Download className="h-4 w-4 mr-1" /> Export CSV
+            </Button>
+          )}
         </div>
 
         {loading ? (
