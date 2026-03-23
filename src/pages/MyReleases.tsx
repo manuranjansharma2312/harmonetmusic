@@ -51,6 +51,8 @@ type Release = {
   tracks: Track[];
 };
 
+const RELEASES_PER_PAGE = 10;
+
 export default function MyReleases() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -59,6 +61,7 @@ export default function MyReleases() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [viewRelease, setViewRelease] = useState<Release | null>(null);
   const [deleteRelease, setDeleteRelease] = useState<Release | null>(null);
+  const [releasePage, setReleasePage] = useState(0);
 
   const fetchReleases = async () => {
     if (!user) return;
