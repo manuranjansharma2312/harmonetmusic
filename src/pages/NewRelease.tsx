@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { TrackForm, type TrackData } from '@/components/release/TrackForm';
 import { PosterCropModal } from '@/components/release/PosterCropModal';
+import { normalizeIsrc } from '@/lib/isrc';
 
 const CONTENT_TYPES = [
   { value: 'single', label: 'Single' },
