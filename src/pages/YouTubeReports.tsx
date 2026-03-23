@@ -67,12 +67,15 @@ function parseMonthKey(m: string): number {
   return (parseInt(parts[1]) || 0) * 12 + (months[parts[0]] ?? 0);
 }
 
+const ENTRIES_PER_PAGE = 10;
+
 export default function YouTubeReports() {
   const { user, role } = useAuth();
   const [entries, setEntries] = useState<ReportEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [monthPage, setMonthPage] = useState(0);
+  const [entryPage, setEntryPage] = useState(0);
   const [filters, setFilters] = useState<Record<string, string>>({});
 
   const { impersonatedUserId, isImpersonating } = useImpersonate();
