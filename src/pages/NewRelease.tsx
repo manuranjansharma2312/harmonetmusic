@@ -47,6 +47,9 @@ export default function NewRelease() {
   const [storeSelection, setStoreSelection] = useState('worldwide');
   const [agreePolicy, setAgreePolicy] = useState(false);
 
+  const [copyrightLine, setCopyrightLine] = useState('');
+  const [phonogramLine, setPhonogramLine] = useState('');
+
   // Track state
   const [tracks, setTracks] = useState<TrackData[]>([]);
   const [showTrackForm, setShowTrackForm] = useState(false);
@@ -94,6 +97,8 @@ export default function NewRelease() {
       setUpc(release.upc || '');
       setReleaseDate(release.release_date);
       setStoreSelection(release.store_selection);
+      setCopyrightLine(release.copyright_line || '');
+      setPhonogramLine(release.phonogram_line || '');
       if (release.poster_url) {
         setExistingPosterUrl(release.poster_url);
         setPosterPreview(release.poster_url);
@@ -124,8 +129,8 @@ export default function NewRelease() {
           producer: t.producer || '',
           instagramLink: t.instagram_link || '',
           callertuneTime: t.callertune_time || '',
-          copyrightLine: t.copyright_line || release.copyright_line || '',
-          phonogramLine: t.phonogram_line || release.phonogram_line || '',
+          copyrightLine: '',
+          phonogramLine: '',
           _existingAudioUrl: t.audio_url,
           _trackId: t.id,
         } as TrackData & { _existingAudioUrl?: string; _trackId?: string })));
@@ -266,8 +271,8 @@ export default function NewRelease() {
             poster_url,
             release_date: releaseDate,
             store_selection: storeSelection,
-            copyright_line: tracks[0]?.copyrightLine || null,
-            phonogram_line: tracks[0]?.phonogramLine || null,
+            copyright_line: copyrightLine || null,
+            phonogram_line: phonogramLine || null,
           })
           .eq('id', editReleaseId);
 
@@ -308,8 +313,8 @@ export default function NewRelease() {
             producer: track.producer || null,
             instagram_link: track.instagramLink || null,
             callertune_time: track.callertuneTime || null,
-            copyright_line: track.copyrightLine || null,
-            phonogram_line: track.phonogramLine || null,
+            copyright_line: copyrightLine || null,
+            phonogram_line: phonogramLine || null,
             track_order: i + 1,
           });
 
@@ -335,8 +340,8 @@ export default function NewRelease() {
             poster_url,
             release_date: releaseDate,
             store_selection: storeSelection,
-            copyright_line: tracks[0]?.copyrightLine || null,
-            phonogram_line: tracks[0]?.phonogramLine || null,
+            copyright_line: copyrightLine || null,
+            phonogram_line: phonogramLine || null,
           })
           .select('id')
           .single();
@@ -375,8 +380,8 @@ export default function NewRelease() {
             producer: track.producer || null,
             instagram_link: track.instagramLink || null,
             callertune_time: track.callertuneTime || null,
-            copyright_line: track.copyrightLine || null,
-            phonogram_line: track.phonogramLine || null,
+            copyright_line: copyrightLine || null,
+            phonogram_line: phonogramLine || null,
             track_order: i + 1,
           });
 
@@ -567,6 +572,19 @@ export default function NewRelease() {
                 ))}
               </select>
             </div>
+
+            {/* © Line & ℗ Line */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">© Line</label>
+                <input className={inputClass} value={copyrightLine} onChange={(e) => setCopyrightLine(e.target.value)} placeholder="e.g. 2024 Artist Name" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">℗ Line</label>
+                <input className={inputClass} value={phonogramLine} onChange={(e) => setPhonogramLine(e.target.value)} placeholder="e.g. 2024 Label Name" />
+              </div>
+            </div>
+
             {/* Tracks Section */}
             <div className="border-t border-border pt-5">
               <h2 className="text-lg font-semibold text-foreground mb-3">
