@@ -7,10 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Upload, Trash2, FileSpreadsheet, Eye, ArrowLeft, Download, Filter, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Upload, Trash2, FileSpreadsheet, Eye, ArrowLeft, Filter, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { normalizeIsrc } from '@/lib/isrc';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 
 const CSV_HEADERS = [
   'Reporting Month', 'Store', 'Sales Type', 'Country', 'Label',
@@ -109,11 +110,14 @@ export default function AdminYouTubeReports() {
   const [loading, setLoading] = useState(true);
   const [deleteMonth, setDeleteMonth] = useState<string | null>(null);
   const [monthPage, setMonthPage] = useState(0);
+  const [monthPageSize, setMonthPageSize] = useState<number | 'all'>(10);
 
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [detailEntries, setDetailEntries] = useState<ReportEntry[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [entryPage, setEntryPage] = useState(0);
+  const [entryPageSize, setEntryPageSize] = useState<number | 'all'>(10);
 
   const fetchMonths = async () => {
     setLoading(true);
@@ -154,6 +158,7 @@ export default function AdminYouTubeReports() {
   const handleViewMonth = (month: string) => {
     setSelectedMonth(month);
     setFilters({});
+    setEntryPage(0);
     fetchDetailEntries(month);
   };
 
@@ -161,10 +166,10 @@ export default function AdminYouTubeReports() {
     setSelectedMonth(null);
     setDetailEntries([]);
     setFilters({});
+    setEntryPage(0);
   };
 
-  const totalMonthPages = Math.ceil(monthGroups.length / MONTHS_PER_PAGE);
-  const pagedMonths = monthGroups.slice(monthPage * MONTHS_PER_PAGE, (monthPage + 1) * MONTHS_PER_PAGE);
+  const pagedMonths = paginateItems(monthGroups, monthPage, monthPageSize);
 
   const filteredEntries = useMemo(() => {
     let filtered = detailEntries;
@@ -189,7 +194,8 @@ export default function AdminYouTubeReports() {
   }, [detailEntries]);
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
-  const clearFilters = () => setFilters({});
+  const clearFilters = () => { setFilters({}); setEntryPage(0); };
+  const pagedEntries = paginateItems(filteredEntries, entryPage, entryPageSize);
 
   const exportCSV = () => {
     const headers = ['Reporting Month', ...COLUMNS.map((c) => c.label)];
@@ -299,9 +305,6 @@ export default function AdminYouTubeReports() {
               <h1 className="text-2xl font-bold">YouTube Reports</h1>
               <p className="text-muted-foreground text-sm">Viewing report for {selectedMonth}</p>
             </div>
-            <Button variant="outline" size="sm" onClick={exportCSV}>
-              <Download className="h-4 w-4 mr-2" /> Export CSV
-            </Button>
           </div>
 
           <GlassCard className="p-4">
@@ -319,7 +322,7 @@ export default function AdminYouTubeReports() {
                 <Select
                   key={key}
                   value={filters[key] || '_all'}
-                  onValueChange={(v) => setFilters((f) => ({ ...f, [key]: v === '_all' ? '' : v }))}
+                  onValueChange={(v) => { setFilters((f) => ({ ...f, [key]: v === '_all' ? '' : v })); setEntryPage(0); }}
                 >
                   <SelectTrigger className="h-9 text-xs">
                     <SelectValue placeholder={label} />
@@ -336,12 +339,6 @@ export default function AdminYouTubeReports() {
           </GlassCard>
 
           <GlassCard className="p-0 overflow-hidden">
-            <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                {filteredEntries.length} record{filteredEntries.length !== 1 ? 's' : ''}
-                {activeFilterCount > 0 ? ' (filtered)' : ''}
-              </p>
-            </div>
             {detailLoading ? (
               <p className="p-6 text-center text-muted-foreground">Loading...</p>
             ) : (
@@ -355,14 +352,14 @@ export default function AdminYouTubeReports() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredEntries.length === 0 ? (
+                    {pagedEntries.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={COLUMNS.length} className="text-center text-muted-foreground py-8">
                           No records match the current filters.
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredEntries.map((entry) => (
+                      pagedEntries.map((entry) => (
                         <TableRow key={entry.id}>
                           {COLUMNS.map((col) => (
                             <TableCell key={col.key} className="whitespace-nowrap">
@@ -378,6 +375,14 @@ export default function AdminYouTubeReports() {
                 </Table>
               </div>
             )}
+            <TablePagination
+              totalItems={filteredEntries.length}
+              currentPage={entryPage}
+              pageSize={entryPageSize}
+              onPageChange={setEntryPage}
+              onPageSizeChange={setEntryPageSize}
+              onExport={exportCSV}
+            />
           </GlassCard>
         </div>
       </DashboardLayout>
@@ -475,21 +480,14 @@ export default function AdminYouTubeReports() {
                   ))}
                 </TableBody>
               </Table>
-              {totalMonthPages > 1 && (
-                <div className="flex items-center justify-between px-4 py-3 border-t border-border/50">
-                  <p className="text-sm text-muted-foreground">
-                    Page {monthPage + 1} of {totalMonthPages} ({monthGroups.length} months)
-                  </p>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" disabled={monthPage === 0} onClick={() => setMonthPage((p) => p - 1)}>
-                      <ChevronLeft className="h-4 w-4 mr-1" /> Previous
-                    </Button>
-                    <Button size="sm" variant="outline" disabled={monthPage >= totalMonthPages - 1} onClick={() => setMonthPage((p) => p + 1)}>
-                      Next <ChevronRight className="h-4 w-4 ml-1" />
-                    </Button>
-                  </div>
-                </div>
-              )}
+              <TablePagination
+                totalItems={monthGroups.length}
+                currentPage={monthPage}
+                pageSize={monthPageSize}
+                onPageChange={setMonthPage}
+                onPageSizeChange={setMonthPageSize}
+                itemLabel="months"
+              />
             </>
           )}
         </GlassCard>
