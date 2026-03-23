@@ -308,7 +308,7 @@ export default function Analytics() {
     return Object.entries(map).map(([country, value]) => ({ country, value }));
   }, [filtered]);
 
-
+  const sourceSplit = useMemo(() => {
     let ott = 0, yt = 0;
     filtered.forEach((e) => {
       if (e.source === 'ott') ott += Number(e.net_generated_revenue) || 0;
