@@ -384,7 +384,6 @@ export default function AdminReports() {
               pageSize={entryPageSize}
               onPageChange={setEntryPage}
               onPageSizeChange={setEntryPageSize}
-              onExport={exportCSV}
             />
           </GlassCard>
         </div>

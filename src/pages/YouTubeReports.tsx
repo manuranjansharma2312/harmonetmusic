@@ -260,7 +260,7 @@ export default function YouTubeReports() {
                   </TableBody>
                 </Table>
               </div>
-              <TablePagination totalItems={selectedEntries.length} currentPage={entryPage} pageSize={entryPageSize} onPageChange={setEntryPage} onPageSizeChange={setEntryPageSize} onExport={exportCSV} />
+              <TablePagination totalItems={selectedEntries.length} currentPage={entryPage} pageSize={entryPageSize} onPageChange={setEntryPage} onPageSizeChange={setEntryPageSize} />
             </GlassCard>
           </>
         )}
