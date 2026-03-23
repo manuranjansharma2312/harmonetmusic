@@ -18,6 +18,8 @@ import {
   ChevronDown,
   MessageSquare,
   BarChart3,
+  Music,
+  MonitorPlay,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
@@ -45,11 +47,6 @@ const userLinksTop = [
   { to: '/my-labels', label: 'My Labels', icon: Tag },
 ];
 
-const userLinksBottom = [
-  { to: '/reports', label: 'Reports & Analytics', icon: BarChart3 },
-  { to: '/profile', label: 'My Profile', icon: UserCircle },
-];
-
 const contentToolLinks = [
   { to: '/tools/copyright-claim', label: 'Copyright Claim Removal', icon: ShieldAlert },
   { to: '/tools/instagram-link', label: 'Instagram Link To Song', icon: Instagram },
@@ -59,14 +56,27 @@ const contentToolLinks = [
   { to: '/tools/custom-support', label: 'Custom Support', icon: MessageSquare },
 ];
 
-const adminLinks = [
+const reportLinks = [
+  { to: '/reports/ott', label: 'OTT Reports', icon: MonitorPlay },
+  { to: '/reports/youtube', label: 'YouTube Reports', icon: Youtube },
+];
+
+const adminReportLinks = [
+  { to: '/admin/reports/ott', label: 'OTT Reports', icon: MonitorPlay },
+  { to: '/admin/reports/youtube', label: 'YouTube Reports', icon: Youtube },
+];
+
+const userLinksBottom = [
+  { to: '/profile', label: 'My Profile', icon: UserCircle },
+];
+
+const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/submissions', label: 'All Submissions', icon: ListMusic },
   { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
   { to: '/admin/labels', label: 'Labels', icon: Tag },
   { to: '/admin/content-requests', label: 'Content Requests', icon: Headset },
-  { to: '/admin/reports', label: 'Reports & Analytics', icon: BarChart3 },
 ];
 
 export function AppSidebar() {
@@ -76,6 +86,7 @@ export function AppSidebar() {
   const collapsed = state === 'collapsed';
   const showUserView = isImpersonating || role !== 'admin';
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [reportsOpen, setReportsOpen] = useState(false);
 
   const handleNavClick = () => {
     if (isMobile) {
@@ -83,7 +94,7 @@ export function AppSidebar() {
     }
   };
 
-  const renderNavLink = (link: typeof adminLinks[0]) => (
+  const renderNavLink = (link: { to: string; label: string; icon: any }) => (
     <SidebarMenuItem key={link.to}>
       <SidebarMenuButton asChild tooltip={link.label}>
         <NavLink
@@ -99,6 +110,51 @@ export function AppSidebar() {
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
+
+  const renderCollapsibleGroup = (
+    label: string,
+    icon: any,
+    links: { to: string; label: string; icon: any }[],
+    open: boolean,
+    setOpen: (v: boolean) => void,
+  ) => {
+    const Icon = icon;
+    if (collapsed) {
+      return links.map(renderNavLink);
+    }
+    return (
+      <li>
+        <Collapsible open={open} onOpenChange={setOpen}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all">
+            <span className="flex items-center gap-3">
+              <Icon className="h-5 w-5 flex-shrink-0" />
+              {label}
+            </span>
+            <ChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <SidebarMenu>
+              {links.map((link) => (
+                <SidebarMenuItem key={link.to}>
+                  <SidebarMenuButton asChild tooltip={link.label}>
+                    <NavLink
+                      to={link.to}
+                      onClick={handleNavClick}
+                      className="flex items-center gap-3 px-3 py-2.5 pl-8 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                      activeClassName="bg-primary/10 text-foreground font-semibold"
+                    >
+                      <link.icon className="h-4 w-4 flex-shrink-0" />
+                      <span>{link.label}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </CollapsibleContent>
+        </Collapsible>
+      </li>
+    );
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border/50">
@@ -121,47 +177,15 @@ export function AppSidebar() {
               {showUserView ? (
                 <>
                   {userLinksTop.map(renderNavLink)}
-
-                  {/* Content Management Tools - after My Labels */}
-                  {collapsed ? (
-                    contentToolLinks.map(renderNavLink)
-                  ) : (
-                    <li>
-                      <Collapsible open={toolsOpen} onOpenChange={setToolsOpen}>
-                        <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all">
-                          <span className="flex items-center gap-3">
-                            <Headset className="h-5 w-5 flex-shrink-0" />
-                            Support
-                          </span>
-                          <ChevronDown className={`h-4 w-4 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <SidebarMenu>
-                            {contentToolLinks.map((link) => (
-                              <SidebarMenuItem key={link.to}>
-                                <SidebarMenuButton asChild tooltip={link.label}>
-                                  <NavLink
-                                    to={link.to}
-                                    onClick={handleNavClick}
-                                    className="flex items-center gap-3 px-3 py-2.5 pl-8 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
-                                    activeClassName="bg-primary/10 text-foreground font-semibold"
-                                  >
-                                    <link.icon className="h-4 w-4 flex-shrink-0" />
-                                    <span>{link.label}</span>
-                                  </NavLink>
-                                </SidebarMenuButton>
-                              </SidebarMenuItem>
-                            ))}
-                          </SidebarMenu>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    </li>
-                  )}
-
+                  {renderCollapsibleGroup('Support', Headset, contentToolLinks, toolsOpen, setToolsOpen)}
+                  {renderCollapsibleGroup('Reports & Analytics', BarChart3, reportLinks, reportsOpen, setReportsOpen)}
                   {userLinksBottom.map(renderNavLink)}
                 </>
               ) : (
-                adminLinks.map(renderNavLink)
+                <>
+                  {adminLinksTop.map(renderNavLink)}
+                  {renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}
+                </>
               )}
             </SidebarMenu>
           </SidebarGroupContent>
