@@ -471,7 +471,14 @@ export default function Analytics() {
                 <div className="h-[300px] px-2 pb-4 mt-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={revenueByPlatform} layout="vertical" margin={{ top: 0, right: 24, left: 0, bottom: 0 }}>
-                      <SharedDefs />
+                      <defs>
+                        {PALETTE.map((p, i) => (
+                          <linearGradient key={`hbar${i}`} id={`hbarGrad${i}`} x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor={p.from} stopOpacity={0.85} />
+                            <stop offset="100%" stopColor={p.to} stopOpacity={1} />
+                          </linearGradient>
+                        ))}
+                      </defs>
                       <CartesianGrid strokeDasharray="4 4" stroke={GRID_STROKE} horizontal={false} />
                       <XAxis type="number" tick={AXIS_TICK_Y} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${formatCompact(v)}`} />
                       <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0 0% 65%)', fontSize: 11, fontWeight: 600 }} width={95} axisLine={false} tickLine={false} />
