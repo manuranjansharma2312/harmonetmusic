@@ -52,7 +52,7 @@ type Release = {
   tracks: Track[];
 };
 
-const RELEASES_PER_PAGE = 10;
+
 
 export default function MyReleases() {
   const navigate = useNavigate();
