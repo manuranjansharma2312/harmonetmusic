@@ -9,13 +9,14 @@ import {
   UserCircle,
   Tags,
   Tag,
-  Wrench,
+  Headset,
   ShieldAlert,
   Instagram,
   Merge,
   Youtube,
   Trash2,
   ChevronDown,
+  MessageSquare,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
