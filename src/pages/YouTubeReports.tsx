@@ -73,6 +73,7 @@ export default function YouTubeReports() {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [monthPage, setMonthPage] = useState(0);
   const [monthPageSize, setMonthPageSize] = useState<number | 'all'>(10);
+  const [monthSearch, setMonthSearch] = useState('');
   const [entryPage, setEntryPage] = useState(0);
   const [entryPageSize, setEntryPageSize] = useState<number | 'all'>(10);
   const [filters, setFilters] = useState<Record<string, string>>({});
