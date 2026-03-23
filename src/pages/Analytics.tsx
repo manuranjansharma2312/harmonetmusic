@@ -583,7 +583,57 @@ export default function Analytics() {
               </GlassCard>
             </div>
 
-            {/* ── Countries ── */}
+            {/* ── World Map ── */}
+            <GlassCard className="!p-5">
+              <SectionHeader icon={Globe} title="Global Streams Distribution" subtitle="Streams by country on the world map" />
+              <div className="mt-4 flex justify-center overflow-hidden">
+                {worldMapData.length > 0 ? (
+                  <div className="w-full max-w-4xl [&_svg]:w-full [&_svg]:h-auto">
+                    <WorldMap
+                      color="#dc2626"
+                      valueSuffix=" streams"
+                      size="responsive"
+                      data={worldMapData}
+                      backgroundColor="transparent"
+                      borderColor="#333"
+                      styleFunction={(context: any) => {
+                        const opacityLevel = context.minValue && context.maxValue && context.countryValue
+                          ? 0.2 + 0.8 * ((context.countryValue - context.minValue) / (context.maxValue - context.minValue || 1))
+                          : 0.1;
+                        return {
+                          fill: context.countryValue ? `rgba(220, 38, 38, ${opacityLevel})` : 'hsl(0,0%,14%)',
+                          stroke: '#444',
+                          strokeWidth: 0.5,
+                          cursor: context.countryValue ? 'pointer' : 'default',
+                        };
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="py-12 text-center">
+                    <Globe className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
+                    <p className="text-muted-foreground text-sm">No geographic data available</p>
+                  </div>
+                )}
+              </div>
+              {/* Top countries legend below map */}
+              {worldMapData.length > 0 && (
+                <div className="mt-4 flex flex-wrap justify-center gap-3">
+                  {worldMapData
+                    .sort((a, b) => b.value - a.value)
+                    .slice(0, 8)
+                    .map((d, i) => (
+                      <div key={d.country} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/40 border border-border/30">
+                        <span className="h-2 w-2 rounded-full" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
+                        <span className="text-[10px] font-semibold text-foreground">{d.country}</span>
+                        <span className="text-[10px] text-muted-foreground">{formatCompact(d.value)}</span>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </GlassCard>
+
+            {/* ── Country Bar Charts ── */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <GlassCard className="!p-5">
                 <SectionHeader icon={Globe} title="Revenue by Country" subtitle="Geographic revenue distribution" />
@@ -592,8 +642,8 @@ export default function Analytics() {
                     <BarChart data={revenueByCountry} margin={{ top: 5, right: 10, left: -10, bottom: 30 }}>
                       <defs>
                         <linearGradient id="barRevGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#f97316" stopOpacity={0.9} />
-                          <stop offset="100%" stopColor="#dc2626" stopOpacity={0.9} />
+                          <stop offset="0%" stopColor="#f97316" stopOpacity={1} />
+                          <stop offset="100%" stopColor="#dc2626" stopOpacity={0.8} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,16%)" horizontal vertical={false} />
@@ -613,8 +663,8 @@ export default function Analytics() {
                     <BarChart data={streamsByCountry} margin={{ top: 5, right: 10, left: -10, bottom: 30 }}>
                       <defs>
                         <linearGradient id="barStrGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9} />
-                          <stop offset="100%" stopColor="#6366f1" stopOpacity={0.9} />
+                          <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
+                          <stop offset="100%" stopColor="#6366f1" stopOpacity={0.8} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,16%)" horizontal vertical={false} />
