@@ -246,13 +246,14 @@ export default function AdminReports() {
         </GlassCard>
       </div>
 
-      <ConfirmDialog
-        open={!!deleteMonth}
-        onOpenChange={(open) => !open && setDeleteMonth(null)}
-        title="Delete Report"
-        description={`Are you sure you want to delete all report entries for "${deleteMonth}"? This cannot be undone.`}
-        onConfirm={handleDeleteMonth}
-      />
+      {deleteMonth && (
+        <ConfirmDialog
+          title="Delete Report"
+          message={`Are you sure you want to delete all report entries for "${deleteMonth}"? This cannot be undone.`}
+          onConfirm={handleDeleteMonth}
+          onCancel={() => setDeleteMonth(null)}
+        />
+      )}
     </DashboardLayout>
   );
 }
