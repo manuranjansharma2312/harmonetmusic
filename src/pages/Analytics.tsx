@@ -296,7 +296,19 @@ export default function Analytics() {
   const revenueByCountry = useMemo(() => aggregateByKey(filtered, 'country', 'revenue', 12), [filtered]);
   const streamsByCountry = useMemo(() => aggregateByKey(filtered, 'country', 'streams', 12), [filtered]);
 
-  const sourceSplit = useMemo(() => {
+  // World map data (streams by country ISO)
+  const worldMapData = useMemo(() => {
+    const map: Record<string, number> = {};
+    filtered.forEach((e) => {
+      if (!e.country) return;
+      const iso = COUNTRY_ISO[e.country.toLowerCase().trim()];
+      if (!iso) return;
+      map[iso] = (map[iso] || 0) + (Number(e.streams) || 0);
+    });
+    return Object.entries(map).map(([country, value]) => ({ country, value }));
+  }, [filtered]);
+
+
     let ott = 0, yt = 0;
     filtered.forEach((e) => {
       if (e.source === 'ott') ott += Number(e.net_generated_revenue) || 0;
