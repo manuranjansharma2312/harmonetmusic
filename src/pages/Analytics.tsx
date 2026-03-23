@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import WorldMap from 'react-svg-worldmap';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
@@ -70,6 +71,22 @@ const CHART_COLORS = [
   '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6',
   '#f43f5e', '#6366f1', '#84cc16', '#06b6d4',
 ];
+
+/* Country name → ISO alpha-2 mapping for the world map */
+const COUNTRY_ISO: Record<string, string> = {
+  india: 'IN', 'united states': 'US', usa: 'US', 'united kingdom': 'GB', uk: 'GB',
+  germany: 'DE', france: 'FR', canada: 'CA', australia: 'AU', brazil: 'BR',
+  japan: 'JP', 'south korea': 'KR', mexico: 'MX', spain: 'ES', italy: 'IT',
+  russia: 'RU', china: 'CN', indonesia: 'ID', turkey: 'TR', 'saudi arabia': 'SA',
+  netherlands: 'NL', sweden: 'SE', norway: 'NO', denmark: 'DK', finland: 'FI',
+  poland: 'PL', switzerland: 'CH', austria: 'AT', belgium: 'BE', portugal: 'PT',
+  argentina: 'AR', colombia: 'CO', chile: 'CL', peru: 'PE', egypt: 'EG',
+  'south africa': 'ZA', nigeria: 'NG', kenya: 'KE', pakistan: 'PK', bangladesh: 'BD',
+  'sri lanka': 'LK', nepal: 'NP', philippines: 'PH', thailand: 'TH', vietnam: 'VN',
+  malaysia: 'MY', singapore: 'SG', 'new zealand': 'NZ', ireland: 'IE', israel: 'IL',
+  'united arab emirates': 'AE', uae: 'AE', taiwan: 'TW', 'hong kong': 'HK',
+  greece: 'GR', romania: 'RO', czech: 'CZ', hungary: 'HU', ukraine: 'UA',
+};
 
 const MONTHS_MAP: Record<string, number> = {
   january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
@@ -279,6 +296,18 @@ export default function Analytics() {
   const revenueByCountry = useMemo(() => aggregateByKey(filtered, 'country', 'revenue', 12), [filtered]);
   const streamsByCountry = useMemo(() => aggregateByKey(filtered, 'country', 'streams', 12), [filtered]);
 
+  // World map data (streams by country ISO)
+  const worldMapData = useMemo(() => {
+    const map: Record<string, number> = {};
+    filtered.forEach((e) => {
+      if (!e.country) return;
+      const iso = COUNTRY_ISO[e.country.toLowerCase().trim()];
+      if (!iso) return;
+      map[iso] = (map[iso] || 0) + (Number(e.streams) || 0);
+    });
+    return Object.entries(map).map(([country, value]) => ({ country: country as any, value }));
+  }, [filtered]);
+
   const sourceSplit = useMemo(() => {
     let ott = 0, yt = 0;
     filtered.forEach((e) => {
@@ -474,13 +503,21 @@ export default function Analytics() {
                 <div className="h-[300px] mt-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={revenueByPlatform} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
+                      <defs>
+                        {revenueByPlatform.map((_, i) => (
+                          <linearGradient key={`rpg${i}`} id={`revPlatGrad${i}`} x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor={CHART_COLORS[i % CHART_COLORS.length]} stopOpacity={0.7} />
+                            <stop offset="100%" stopColor={CHART_COLORS[i % CHART_COLORS.length]} stopOpacity={1} />
+                          </linearGradient>
+                        ))}
+                      </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,16%)" horizontal={false} />
                       <XAxis type="number" tick={{ fill: 'hsl(0,0%,50%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${formatCompact(v)}`} />
                       <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0,0%,70%)', fontSize: 11, fontWeight: 500 }} width={90} axisLine={false} tickLine={false} />
                       <Tooltip content={<CustomTooltip prefix="₹" />} cursor={{ fill: 'hsl(0,0%,12%)' }} />
                       <Bar dataKey="value" name="Revenue" radius={[0, 8, 8, 0]} maxBarSize={24} animationDuration={800}>
                         {revenueByPlatform.map((_, i) => (
-                          <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                          <Cell key={i} fill={`url(#revPlatGrad${i})`} />
                         ))}
                       </Bar>
                     </BarChart>
@@ -493,13 +530,21 @@ export default function Analytics() {
                 <div className="h-[300px] mt-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={streamsByPlatform} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
+                      <defs>
+                        {streamsByPlatform.map((_, i) => (
+                          <linearGradient key={`spg${i}`} id={`strPlatGrad${i}`} x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor={CHART_COLORS[i % CHART_COLORS.length]} stopOpacity={0.7} />
+                            <stop offset="100%" stopColor={CHART_COLORS[i % CHART_COLORS.length]} stopOpacity={1} />
+                          </linearGradient>
+                        ))}
+                      </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,16%)" horizontal={false} />
                       <XAxis type="number" tick={{ fill: 'hsl(0,0%,50%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatCompact(v)} />
                       <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0,0%,70%)', fontSize: 11, fontWeight: 500 }} width={90} axisLine={false} tickLine={false} />
                       <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(0,0%,12%)' }} />
                       <Bar dataKey="value" name="Streams" radius={[0, 8, 8, 0]} maxBarSize={24} animationDuration={800}>
                         {streamsByPlatform.map((_, i) => (
-                          <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                          <Cell key={i} fill={`url(#strPlatGrad${i})`} />
                         ))}
                       </Bar>
                     </BarChart>
@@ -554,7 +599,57 @@ export default function Analytics() {
               </GlassCard>
             </div>
 
-            {/* ── Countries ── */}
+            {/* ── World Map ── */}
+            <GlassCard className="!p-5">
+              <SectionHeader icon={Globe} title="Global Streams Distribution" subtitle="Streams by country on the world map" />
+              <div className="mt-4 flex justify-center overflow-hidden">
+                {worldMapData.length > 0 ? (
+                  <div className="w-full max-w-4xl [&_svg]:w-full [&_svg]:h-auto">
+                    <WorldMap
+                      color="#dc2626"
+                      valueSuffix=" streams"
+                      size="responsive"
+                      data={worldMapData}
+                      backgroundColor="transparent"
+                      borderColor="#333"
+                      styleFunction={(context: any) => {
+                        const opacityLevel = context.minValue && context.maxValue && context.countryValue
+                          ? 0.2 + 0.8 * ((context.countryValue - context.minValue) / (context.maxValue - context.minValue || 1))
+                          : 0.1;
+                        return {
+                          fill: context.countryValue ? `rgba(220, 38, 38, ${opacityLevel})` : 'hsl(0,0%,14%)',
+                          stroke: '#444',
+                          strokeWidth: 0.5,
+                          cursor: context.countryValue ? 'pointer' : 'default',
+                        };
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="py-12 text-center">
+                    <Globe className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
+                    <p className="text-muted-foreground text-sm">No geographic data available</p>
+                  </div>
+                )}
+              </div>
+              {/* Top countries legend below map */}
+              {worldMapData.length > 0 && (
+                <div className="mt-4 flex flex-wrap justify-center gap-3">
+                  {worldMapData
+                    .sort((a, b) => b.value - a.value)
+                    .slice(0, 8)
+                    .map((d, i) => (
+                      <div key={d.country} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/40 border border-border/30">
+                        <span className="h-2 w-2 rounded-full" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
+                        <span className="text-[10px] font-semibold text-foreground">{d.country}</span>
+                        <span className="text-[10px] text-muted-foreground">{formatCompact(d.value)}</span>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </GlassCard>
+
+            {/* ── Country Bar Charts ── */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <GlassCard className="!p-5">
                 <SectionHeader icon={Globe} title="Revenue by Country" subtitle="Geographic revenue distribution" />
@@ -563,8 +658,8 @@ export default function Analytics() {
                     <BarChart data={revenueByCountry} margin={{ top: 5, right: 10, left: -10, bottom: 30 }}>
                       <defs>
                         <linearGradient id="barRevGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#f97316" stopOpacity={0.9} />
-                          <stop offset="100%" stopColor="#dc2626" stopOpacity={0.9} />
+                          <stop offset="0%" stopColor="#f97316" stopOpacity={1} />
+                          <stop offset="100%" stopColor="#dc2626" stopOpacity={0.8} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,16%)" horizontal vertical={false} />
@@ -584,8 +679,8 @@ export default function Analytics() {
                     <BarChart data={streamsByCountry} margin={{ top: 5, right: 10, left: -10, bottom: 30 }}>
                       <defs>
                         <linearGradient id="barStrGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9} />
-                          <stop offset="100%" stopColor="#6366f1" stopOpacity={0.9} />
+                          <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
+                          <stop offset="100%" stopColor="#6366f1" stopOpacity={0.8} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,16%)" horizontal vertical={false} />
