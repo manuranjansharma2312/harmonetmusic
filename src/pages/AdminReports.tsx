@@ -170,7 +170,12 @@ export default function AdminReports() {
     setEntryPage(0);
   };
 
-  const pagedMonths = paginateItems(monthGroups, monthPage, monthPageSize);
+  const filteredMonthGroups = useMemo(() => {
+    if (!monthSearch.trim()) return monthGroups;
+    return monthGroups.filter((g) => g.month.toLowerCase().includes(monthSearch.toLowerCase()));
+  }, [monthGroups, monthSearch]);
+
+  const pagedMonths = paginateItems(filteredMonthGroups, monthPage, monthPageSize);
 
   const filteredEntries = useMemo(() => {
     let filtered = detailEntries;
