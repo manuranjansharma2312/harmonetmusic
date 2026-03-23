@@ -25,6 +25,7 @@ import InstagramLinkToSong from "./pages/InstagramLinkToSong";
 import ContentIdMerge from "./pages/ContentIdMerge";
 import OacApply from "./pages/OacApply";
 import Takedown from "./pages/Takedown";
+import CustomSupport from "./pages/CustomSupport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ function App() {
                   <Route path="/tools/content-id-merge" element={<ProtectedRoute><ContentIdMerge /></ProtectedRoute>} />
                   <Route path="/tools/oac-apply" element={<ProtectedRoute><OacApply /></ProtectedRoute>} />
                   <Route path="/tools/takedown" element={<ProtectedRoute><Takedown /></ProtectedRoute>} />
+                  <Route path="/tools/custom-support" element={<ProtectedRoute><CustomSupport /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </ImpersonateProvider>

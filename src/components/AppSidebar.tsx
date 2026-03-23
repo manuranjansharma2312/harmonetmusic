@@ -9,13 +9,14 @@ import {
   UserCircle,
   Tags,
   Tag,
-  Wrench,
+  Headset,
   ShieldAlert,
   Instagram,
   Merge,
   Youtube,
   Trash2,
   ChevronDown,
+  MessageSquare,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
@@ -53,6 +54,7 @@ const contentToolLinks = [
   { to: '/tools/content-id-merge', label: 'Content ID Merge', icon: Merge },
   { to: '/tools/oac-apply', label: 'Official Artist Channel', icon: Youtube },
   { to: '/tools/takedown', label: 'Takedown', icon: Trash2 },
+  { to: '/tools/custom-support', label: 'Custom Support', icon: MessageSquare },
 ];
 
 const adminLinks = [
@@ -61,7 +63,7 @@ const adminLinks = [
   { to: '/admin/submissions', label: 'All Submissions', icon: ListMusic },
   { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
   { to: '/admin/labels', label: 'Labels', icon: Tag },
-  { to: '/admin/content-requests', label: 'Content Requests', icon: Wrench },
+  { to: '/admin/content-requests', label: 'Content Requests', icon: Headset },
 ];
 
 export function AppSidebar() {
@@ -125,8 +127,8 @@ export function AppSidebar() {
                       <Collapsible open={toolsOpen} onOpenChange={setToolsOpen}>
                         <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all">
                           <span className="flex items-center gap-3">
-                            <Wrench className="h-5 w-5 flex-shrink-0" />
-                            Content Management Tools
+                            <Headset className="h-5 w-5 flex-shrink-0" />
+                            Support
                           </span>
                           <ChevronDown className={`h-4 w-4 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
                         </CollapsibleTrigger>
