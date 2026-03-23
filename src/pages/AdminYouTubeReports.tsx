@@ -498,7 +498,7 @@ export default function AdminYouTubeReports() {
                 </TableBody>
               </Table>
               <TablePagination
-                totalItems={monthGroups.length}
+                totalItems={filteredMonthGroups.length}
                 currentPage={monthPage}
                 pageSize={monthPageSize}
                 onPageChange={setMonthPage}

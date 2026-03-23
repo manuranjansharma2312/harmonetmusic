@@ -224,7 +224,7 @@ export default function YouTubeReports() {
                     ))}
                   </TableBody>
                 </Table>
-                <TablePagination totalItems={monthlyGroups.length} currentPage={monthPage} pageSize={monthPageSize} onPageChange={setMonthPage} onPageSizeChange={setMonthPageSize} itemLabel="months" />
+                <TablePagination totalItems={filteredMonthlyGroups.length} currentPage={monthPage} pageSize={monthPageSize} onPageChange={setMonthPage} onPageSizeChange={setMonthPageSize} itemLabel="months" />
               </>
             )}
           </GlassCard>

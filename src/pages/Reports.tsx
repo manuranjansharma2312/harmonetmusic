@@ -269,7 +269,7 @@ export default function Reports() {
                   </TableBody>
                 </Table>
                 <TablePagination
-                  totalItems={monthlyGroups.length}
+                  totalItems={filteredMonthlyGroups.length}
                   currentPage={monthPage}
                   pageSize={monthPageSize}
                   onPageChange={setMonthPage}
