@@ -715,8 +715,9 @@ export default function Analytics() {
                     <BarChart data={streamsByCountry} margin={{ top: 5, right: 10, left: -10, bottom: 30 }}>
                       <defs>
                         <linearGradient id="barStrGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
-                          <stop offset="100%" stopColor="#6366f1" stopOpacity={0.8} />
+                          <stop offset="0%" stopColor="#22d3ee" stopOpacity={1} />
+                          <stop offset="50%" stopColor="#3b82f6" stopOpacity={0.95} />
+                          <stop offset="100%" stopColor="#6366f1" stopOpacity={0.85} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,16%)" horizontal vertical={false} />
