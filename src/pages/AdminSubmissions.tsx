@@ -158,9 +158,22 @@ export default function AdminSubmissions() {
   };
 
   const handleStatusChange = async (id: string, status: string) => {
-    const { error } = await supabase.from('releases').update({ status }).eq('id', id);
+    if (status === 'rejected') {
+      setRejectTarget(id);
+      return;
+    }
+    const { error } = await supabase.from('releases').update({ status, rejection_reason: null }).eq('id', id);
     if (error) { toast.error(error.message); return; }
     toast.success(`Status changed to ${status}`);
+    fetchReleases();
+  };
+
+  const handleRejectConfirm = async (reason: string) => {
+    if (!rejectTarget) return;
+    const { error } = await supabase.from('releases').update({ status: 'rejected', rejection_reason: reason }).eq('id', rejectTarget);
+    if (error) { toast.error(error.message); return; }
+    toast.success('Release rejected');
+    setRejectTarget(null);
     fetchReleases();
   };
 
