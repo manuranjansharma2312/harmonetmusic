@@ -158,6 +158,7 @@ export default function AdminReports() {
   const handleViewMonth = (month: string) => {
     setSelectedMonth(month);
     setFilters({});
+    setEntryPage(0);
     fetchDetailEntries(month);
   };
 
