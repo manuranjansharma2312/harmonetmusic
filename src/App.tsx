@@ -17,6 +17,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminSubmissions from "./pages/AdminSubmissions";
 import AdminUsers from "./pages/AdminUsers";
 import MyProfile from "./pages/MyProfile";
+import MyLabels from "./pages/MyLabels";
+import AdminLabels from "./pages/AdminLabels";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,11 +45,13 @@ function App() {
                   <Route path="/submit" element={<ProtectedRoute><NewRelease /></ProtectedRoute>} />
                   <Route path="/admin/genres-languages" element={<ProtectedRoute requiredRole="admin"><AdminGenresLanguages /></ProtectedRoute>} />
                   <Route path="/my-releases" element={<ProtectedRoute><MyReleases /></ProtectedRoute>} />
+                  <Route path="/my-labels" element={<ProtectedRoute><MyLabels /></ProtectedRoute>} />
                   <Route path="/my-songs" element={<Navigate to="/my-releases" replace />} />
                   <Route path="/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
                   <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
                   <Route path="/admin/submissions" element={<ProtectedRoute requiredRole="admin"><AdminSubmissions /></ProtectedRoute>} />
                   <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
+                  <Route path="/admin/labels" element={<ProtectedRoute requiredRole="admin"><AdminLabels /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </ImpersonateProvider>
