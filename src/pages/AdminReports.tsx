@@ -169,8 +169,7 @@ export default function AdminReports() {
     setEntryPage(0);
   };
 
-  const totalMonthPages = Math.ceil(monthGroups.length / MONTHS_PER_PAGE);
-  const pagedMonths = monthGroups.slice(monthPage * MONTHS_PER_PAGE, (monthPage + 1) * MONTHS_PER_PAGE);
+  const pagedMonths = paginateItems(monthGroups, monthPage, monthPageSize);
 
   const filteredEntries = useMemo(() => {
     let filtered = detailEntries;
