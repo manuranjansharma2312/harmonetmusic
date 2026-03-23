@@ -17,6 +17,7 @@ import {
   Trash2,
   ChevronDown,
   MessageSquare,
+  BarChart3,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
@@ -45,6 +46,7 @@ const userLinksTop = [
 ];
 
 const userLinksBottom = [
+  { to: '/reports', label: 'Reports & Analytics', icon: BarChart3 },
   { to: '/profile', label: 'My Profile', icon: UserCircle },
 ];
 
@@ -64,6 +66,7 @@ const adminLinks = [
   { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
   { to: '/admin/labels', label: 'Labels', icon: Tag },
   { to: '/admin/content-requests', label: 'Content Requests', icon: Headset },
+  { to: '/admin/reports', label: 'Reports & Analytics', icon: BarChart3 },
 ];
 
 export function AppSidebar() {
