@@ -1,0 +1,193 @@
+import { useState, useEffect, useMemo } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { DashboardLayout } from '@/components/DashboardLayout';
+import { GlassCard } from '@/components/GlassCard';
+import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useAuth } from '@/hooks/useAuth';
+import { ArrowLeft, Download, Eye, BarChart3 } from 'lucide-react';
+import { format } from 'date-fns';
+
+interface ReportEntry {
+  id: string;
+  reporting_month: string;
+  store: string | null;
+  sales_type: string | null;
+  country: string | null;
+  label: string | null;
+  c_line: string | null;
+  p_line: string | null;
+  track: string | null;
+  artist: string | null;
+  isrc: string | null;
+  upc: string | null;
+  currency: string | null;
+  streams: number;
+  downloads: number;
+  net_generated_revenue: number;
+  imported_at: string;
+}
+
+const COLUMNS = [
+  { key: 'store', label: 'Store' },
+  { key: 'sales_type', label: 'Sales Type' },
+  { key: 'country', label: 'Country' },
+  { key: 'label', label: 'Label' },
+  { key: 'c_line', label: 'C Line' },
+  { key: 'p_line', label: 'P Line' },
+  { key: 'track', label: 'Track' },
+  { key: 'artist', label: 'Artist' },
+  { key: 'isrc', label: 'ISRC' },
+  { key: 'upc', label: 'UPC' },
+  { key: 'currency', label: 'Currency' },
+  { key: 'streams', label: 'Streams' },
+  { key: 'downloads', label: 'Downloads' },
+  { key: 'net_generated_revenue', label: 'Net Revenue' },
+];
+
+export default function Reports() {
+  const { user } = useAuth();
+  const [entries, setEntries] = useState<ReportEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchReports = async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from('report_entries')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('reporting_month', { ascending: false });
+      setEntries((data as ReportEntry[]) || []);
+      setLoading(false);
+    };
+    fetchReports();
+  }, [user]);
+
+  const monthlyGroups = useMemo(() => {
+    const groups: Record<string, { entries: ReportEntry[]; latestImport: string }> = {};
+    entries.forEach((e) => {
+      if (!groups[e.reporting_month]) {
+        groups[e.reporting_month] = { entries: [], latestImport: e.imported_at };
+      }
+      groups[e.reporting_month].entries.push(e);
+      if (e.imported_at > groups[e.reporting_month].latestImport) {
+        groups[e.reporting_month].latestImport = e.imported_at;
+      }
+    });
+    return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
+  }, [entries]);
+
+  const selectedEntries = useMemo(() => {
+    if (!selectedMonth) return [];
+    return entries.filter((e) => e.reporting_month === selectedMonth);
+  }, [entries, selectedMonth]);
+
+  const exportCSV = () => {
+    const headers = ['Reporting Month', ...COLUMNS.map((c) => c.label)];
+    const rows = selectedEntries.map((e) => [
+      e.reporting_month,
+      ...COLUMNS.map((c) => String(e[c.key as keyof ReportEntry] ?? '')),
+    ]);
+    const csv = [headers, ...rows].map((r) => r.map((v) => `"${v}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `report-${selectedMonth}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          {selectedMonth && (
+            <Button variant="ghost" size="icon" onClick={() => setSelectedMonth(null)}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          )}
+          <div>
+            <h1 className="text-2xl font-bold">Reports & Analytics</h1>
+            <p className="text-muted-foreground text-sm">
+              {selectedMonth ? `Viewing report for ${selectedMonth}` : 'Monthly revenue reports'}
+            </p>
+          </div>
+          {selectedMonth && (
+            <Button variant="outline" size="sm" className="ml-auto" onClick={exportCSV}>
+              <Download className="h-4 w-4 mr-2" /> Export CSV
+            </Button>
+          )}
+        </div>
+
+        {loading ? (
+          <GlassCard className="p-8 text-center text-muted-foreground">Loading reports...</GlassCard>
+        ) : !selectedMonth ? (
+          <GlassCard className="p-0 overflow-hidden">
+            {monthlyGroups.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground flex flex-col items-center gap-3">
+                <BarChart3 className="h-10 w-10 opacity-40" />
+                <p>No reports available yet.</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Reporting Month</TableHead>
+                    <TableHead>Records</TableHead>
+                    <TableHead>Last Updated</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {monthlyGroups.map(([month, group]) => (
+                    <TableRow key={month}>
+                      <TableCell className="font-medium">{month}</TableCell>
+                      <TableCell>{group.entries.length}</TableCell>
+                      <TableCell>{format(new Date(group.latestImport), 'dd MMM yyyy, hh:mm a')}</TableCell>
+                      <TableCell className="text-right">
+                        <Button size="sm" variant="outline" onClick={() => setSelectedMonth(month)}>
+                          <Eye className="h-4 w-4 mr-1" /> View
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </GlassCard>
+        ) : (
+          <GlassCard className="p-0 overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    {COLUMNS.map((col) => (
+                      <TableHead key={col.key} className="whitespace-nowrap">{col.label}</TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {selectedEntries.map((entry) => (
+                    <TableRow key={entry.id}>
+                      {COLUMNS.map((col) => (
+                        <TableCell key={col.key} className="whitespace-nowrap">
+                          {col.key === 'net_generated_revenue'
+                            ? Number(entry[col.key]).toFixed(4)
+                            : String(entry[col.key as keyof ReportEntry] ?? '-')}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </GlassCard>
+        )}
+      </div>
+    </DashboardLayout>
+  );
+}
