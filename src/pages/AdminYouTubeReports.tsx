@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Upload, Trash2, FileSpreadsheet, Eye, ArrowLeft, Filter, X, Download } from 'lucide-react';
+import { Upload, Trash2, FileSpreadsheet, Eye, ArrowLeft, Filter, X, Download, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { normalizeIsrc } from '@/lib/isrc';
