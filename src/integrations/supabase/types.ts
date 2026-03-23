@@ -529,6 +529,10 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      user_owns_isrc: {
+        Args: { _isrc: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "user" | "admin"
