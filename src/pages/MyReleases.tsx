@@ -13,13 +13,6 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import { ConfirmDialog } from '@/components/ConfirmDialog';
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from '@/components/ui/dialog';
-import { toast } from 'sonner';
 
 type Track = {
   id: string;
