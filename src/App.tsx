@@ -26,6 +26,8 @@ import ContentIdMerge from "./pages/ContentIdMerge";
 import OacApply from "./pages/OacApply";
 import Takedown from "./pages/Takedown";
 import CustomSupport from "./pages/CustomSupport";
+import Reports from "./pages/Reports";
+import AdminReports from "./pages/AdminReports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
