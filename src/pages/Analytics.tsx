@@ -305,7 +305,7 @@ export default function Analytics() {
       if (!iso) return;
       map[iso] = (map[iso] || 0) + (Number(e.streams) || 0);
     });
-    return Object.entries(map).map(([country, value]) => ({ country, value }));
+    return Object.entries(map).map(([country, value]) => ({ country: country as any, value }));
   }, [filtered]);
 
   const sourceSplit = useMemo(() => {
