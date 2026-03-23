@@ -339,12 +339,6 @@ export default function AdminYouTubeReports() {
           </GlassCard>
 
           <GlassCard className="p-0 overflow-hidden">
-            <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                {filteredEntries.length} record{filteredEntries.length !== 1 ? 's' : ''}
-                {activeFilterCount > 0 ? ' (filtered)' : ''}
-              </p>
-            </div>
             {detailLoading ? (
               <p className="p-6 text-center text-muted-foreground">Loading...</p>
             ) : (
@@ -358,14 +352,14 @@ export default function AdminYouTubeReports() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredEntries.length === 0 ? (
+                    {pagedEntries.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={COLUMNS.length} className="text-center text-muted-foreground py-8">
                           No records match the current filters.
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredEntries.map((entry) => (
+                      pagedEntries.map((entry) => (
                         <TableRow key={entry.id}>
                           {COLUMNS.map((col) => (
                             <TableCell key={col.key} className="whitespace-nowrap">
@@ -381,6 +375,14 @@ export default function AdminYouTubeReports() {
                 </Table>
               </div>
             )}
+            <TablePagination
+              totalItems={filteredEntries.length}
+              currentPage={entryPage}
+              pageSize={entryPageSize}
+              onPageChange={setEntryPage}
+              onPageSizeChange={setEntryPageSize}
+              onExport={exportCSV}
+            />
           </GlassCard>
         </div>
       </DashboardLayout>
