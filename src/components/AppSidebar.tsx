@@ -70,6 +70,7 @@ const adminReportLinks = [
 ];
 
 const userLinksBottom = [
+  { to: '/revenue', label: 'Revenue', icon: Wallet },
   { to: '/profile', label: 'My Profile', icon: UserCircle },
 ];
 
