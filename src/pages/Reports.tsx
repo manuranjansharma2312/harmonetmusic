@@ -71,12 +71,15 @@ function parseMonthKey(m: string): number {
   return year * 12 + monthNum;
 }
 
+const ENTRIES_PER_PAGE = 10;
+
 export default function Reports() {
   const { user, role } = useAuth();
   const [entries, setEntries] = useState<ReportEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [monthPage, setMonthPage] = useState(0);
+  const [entryPage, setEntryPage] = useState(0);
   const [filters, setFilters] = useState<Record<string, string>>({});
 
   const { impersonatedUserId, isImpersonating } = useImpersonate();
@@ -175,7 +178,10 @@ export default function Reports() {
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
 
-  const clearFilters = () => setFilters({});
+  const clearFilters = () => { setFilters({}); setEntryPage(0); };
+
+  const totalEntryPages = Math.ceil(selectedEntries.length / ENTRIES_PER_PAGE);
+  const pagedEntries = selectedEntries.slice(entryPage * ENTRIES_PER_PAGE, (entryPage + 1) * ENTRIES_PER_PAGE);
 
   const exportCSV = () => {
     const headers = ['Reporting Month', ...COLUMNS.map((c) => c.label)];
@@ -288,7 +294,7 @@ export default function Reports() {
                   <Select
                     key={key}
                     value={filters[key] || '_all'}
-                    onValueChange={(v) => setFilters((f) => ({ ...f, [key]: v === '_all' ? '' : v }))}
+                    onValueChange={(v) => { setFilters((f) => ({ ...f, [key]: v === '_all' ? '' : v })); setEntryPage(0); }}
                   >
                     <SelectTrigger className="h-9 text-xs">
                       <SelectValue placeholder={label} />
@@ -318,14 +324,14 @@ export default function Reports() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {selectedEntries.length === 0 ? (
+                    {pagedEntries.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={COLUMNS.length} className="text-center text-muted-foreground py-8">
                           No records match the current filters.
                         </TableCell>
                       </TableRow>
                     ) : (
-                      selectedEntries.map((entry) => (
+                      pagedEntries.map((entry) => (
                         <TableRow key={entry.id}>
                           {COLUMNS.map((col) => (
                             <TableCell key={col.key} className="whitespace-nowrap">
@@ -340,6 +346,21 @@ export default function Reports() {
                   </TableBody>
                 </Table>
               </div>
+              {totalEntryPages > 1 && (
+                <div className="flex items-center justify-between px-4 py-3 border-t border-border/50">
+                  <p className="text-sm text-muted-foreground">
+                    Page {entryPage + 1} of {totalEntryPages} ({selectedEntries.length} records)
+                  </p>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" disabled={entryPage === 0} onClick={() => setEntryPage((p) => p - 1)}>
+                      <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                    </Button>
+                    <Button size="sm" variant="outline" disabled={entryPage >= totalEntryPages - 1} onClick={() => setEntryPage((p) => p + 1)}>
+                      Next <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </GlassCard>
           </>
         )}

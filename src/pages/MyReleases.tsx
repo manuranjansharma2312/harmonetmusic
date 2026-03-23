@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { StatusBadge } from '@/components/StatusBadge';
-import { Loader2, Music, ChevronDown, ChevronRight, Trash2, Eye, Pencil } from 'lucide-react';
+import { Loader2, Music, ChevronDown, ChevronRight, ChevronLeft, Trash2, Eye, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -51,6 +51,8 @@ type Release = {
   tracks: Track[];
 };
 
+const RELEASES_PER_PAGE = 10;
+
 export default function MyReleases() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -59,6 +61,7 @@ export default function MyReleases() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [viewRelease, setViewRelease] = useState<Release | null>(null);
   const [deleteRelease, setDeleteRelease] = useState<Release | null>(null);
+  const [releasePage, setReleasePage] = useState(0);
 
   const fetchReleases = async () => {
     if (!user) return;
@@ -131,7 +134,12 @@ export default function MyReleases() {
         </GlassCard>
       ) : (
         <div className="space-y-4">
-          {releases.map((release) => {
+          {(() => {
+            const totalReleasePages = Math.ceil(releases.length / RELEASES_PER_PAGE);
+            const pagedReleases = releases.slice(releasePage * RELEASES_PER_PAGE, (releasePage + 1) * RELEASES_PER_PAGE);
+            return (
+              <>
+          {pagedReleases.map((release) => {
             const isExpanded = expandedId === release.id;
             return (
               <GlassCard key={release.id} className="animate-fade-in">
@@ -220,6 +228,24 @@ export default function MyReleases() {
               </GlassCard>
             );
           })}
+          {totalReleasePages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-card/50 border border-border/50">
+              <p className="text-sm text-muted-foreground">
+                Page {releasePage + 1} of {totalReleasePages} ({releases.length} releases)
+              </p>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" disabled={releasePage === 0} onClick={() => setReleasePage((p) => p - 1)}>
+                  <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                </Button>
+                <Button size="sm" variant="outline" disabled={releasePage >= totalReleasePages - 1} onClick={() => setReleasePage((p) => p + 1)}>
+                  Next <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
+              </>
+            );
+          })()}
         </div>
       )}
 
