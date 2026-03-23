@@ -71,12 +71,15 @@ function parseMonthKey(m: string): number {
   return year * 12 + monthNum;
 }
 
+const ENTRIES_PER_PAGE = 10;
+
 export default function Reports() {
   const { user, role } = useAuth();
   const [entries, setEntries] = useState<ReportEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [monthPage, setMonthPage] = useState(0);
+  const [entryPage, setEntryPage] = useState(0);
   const [filters, setFilters] = useState<Record<string, string>>({});
 
   const { impersonatedUserId, isImpersonating } = useImpersonate();
