@@ -27,6 +27,7 @@ const SHORTCODES = [
 ];
 
 export default function AdminAgreements() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState<any>(null);
