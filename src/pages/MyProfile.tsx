@@ -79,8 +79,44 @@ export default function MyProfile() {
   if (!profile) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Profile not found.</p>
+        <div className="mx-auto w-full max-w-5xl">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">My Profile</h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">Profile not found.</p>
+          </div>
+          {/* Still show bank details section if they exist */}
+          <GlassCard className="animate-fade-in">
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <Landmark className="h-4 w-4" /> Bank Details
+            </h3>
+            {bankDetail ? (
+              <div className="space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                  <span className="text-xs text-muted-foreground">Payment Method</span>
+                  <span className="text-sm font-medium text-foreground">{bankDetail.payment_method === 'wise' ? 'Wise (International)' : 'Bank Transfer (India)'}</span>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                  <span className="text-xs text-muted-foreground">Account Holder</span>
+                  <span className="text-sm font-medium text-foreground">{bankDetail.account_holder_name}</span>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                  <span className="text-xs text-muted-foreground">Bank Name</span>
+                  <span className="text-sm font-medium text-foreground">{bankDetail.bank_name}</span>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                  <span className="text-xs text-muted-foreground">{bankDetail.payment_method === 'wise' ? 'Account / IBAN' : 'Account Number'}</span>
+                  <span className="text-sm font-medium text-foreground">{bankDetail.account_number}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-sm text-muted-foreground mb-4">No bank details submitted yet.</p>
+                <a href="/bank-details" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl btn-primary-gradient text-primary-foreground font-semibold text-sm shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all">
+                  <Landmark className="h-4 w-4" /> Add Bank Details
+                </a>
+              </div>
+            )}
+          </GlassCard>
         </div>
       </DashboardLayout>
     );
