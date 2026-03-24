@@ -19,6 +19,7 @@ export type Database = {
           address: string
           company_name: string
           id: string
+          logo_url: string | null
           registration_ids: Json
           updated_at: string
           updated_by: string | null
@@ -27,6 +28,7 @@ export type Database = {
           address?: string
           company_name?: string
           id?: string
+          logo_url?: string | null
           registration_ids?: Json
           updated_at?: string
           updated_by?: string | null
@@ -35,6 +37,7 @@ export type Database = {
           address?: string
           company_name?: string
           id?: string
+          logo_url?: string | null
           registration_ids?: Json
           updated_at?: string
           updated_by?: string | null
