@@ -104,6 +104,25 @@ export default function AdminInvoices() {
   const [company, setCompany] = useState<CompanyDetails>(emptyCompany);
   const [companyForm, setCompanyForm] = useState<CompanyDetails>(emptyCompany);
   const [savingCompany, setSavingCompany] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  // Load logo base64 from URL
+  const loadLogoFromUrl = (url: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.onerror = () => resolve('');
+      img.src = url;
+    });
+  };
 
   useEffect(() => { loadLogoBase64().then(setLogoBase64); }, []);
 
@@ -119,9 +138,14 @@ export default function AdminInvoices() {
         company_name: data.company_name as string,
         address: data.address as string,
         registration_ids: (data.registration_ids as unknown as RegistrationId[]) || [],
+        logo_url: (data as any).logo_url || '',
       };
       setCompany(cd);
       setCompanyForm(cd);
+      // If custom logo exists, load it
+      if (cd.logo_url) {
+        loadLogoFromUrl(cd.logo_url).then(b64 => { if (b64) setLogoBase64(b64); });
+      }
     }
   };
 
