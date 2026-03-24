@@ -328,13 +328,12 @@
 .agreement-preview h5,
 .agreement-preview h6 {
   font-weight: 700 !important;
-  font-family: 'Times New Roman', 'Georgia', serif;
-  margin-top: 1em;
-  margin-bottom: 0.4em;
+  margin-top: 0.75em;
+  margin-bottom: 0.25em;
 }
-.agreement-preview h1 { font-size: 1.6rem; text-align: center; text-transform: uppercase; letter-spacing: 0.05em; }
-.agreement-preview h2 { font-size: 1.2rem; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
-.agreement-preview h3 { font-size: 1.05rem; }
+.agreement-preview h1 { font-size: 1.5rem; }
+.agreement-preview h2 { font-size: 1.25rem; }
+.agreement-preview h3 { font-size: 1.1rem; }
 .agreement-preview strong,
 .agreement-preview b {
   font-weight: 700 !important;
