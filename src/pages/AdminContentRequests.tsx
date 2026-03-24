@@ -40,6 +40,7 @@ export default function AdminContentRequests() {
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('all');
   const [rejectTarget, setRejectTarget] = useState<any | null>(null);
+  const [userInfoMap, setUserInfoMap] = useState<Record<string, { name: string; displayId?: number }>>({});
 
   const fetchRequests = async () => {
     let query = supabase
@@ -50,7 +51,27 @@ export default function AdminContentRequests() {
       query = query.eq('request_type', filterType);
     }
     const { data, error } = await query;
-    if (!error && data) setRequests(data);
+    if (!error && data) {
+      setRequests(data);
+      // Fetch user info
+      const userIds = [...new Set(data.map((r: any) => r.user_id))];
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase.from('profiles').select('user_id, email, artist_name, record_label_name, user_type, display_id').in('user_id', userIds);
+        const infoMap: Record<string, { name: string; displayId?: number }> = {};
+        profiles?.forEach((p: any) => {
+          infoMap[p.user_id] = {
+            name: p.user_type === 'label' ? (p.record_label_name || p.email) : (p.artist_name || p.email),
+            displayId: p.display_id,
+          };
+        });
+        const missingIds = userIds.filter((id: string) => !infoMap[id]);
+        if (missingIds.length > 0) {
+          const { data: authEmails } = await supabase.rpc('get_auth_emails', { _user_ids: missingIds });
+          authEmails?.forEach((ae: any) => { infoMap[ae.user_id] = { name: ae.email }; });
+        }
+        setUserInfoMap(infoMap);
+      }
+    }
     setLoading(false);
   };
 
@@ -126,9 +147,17 @@ export default function AdminContentRequests() {
                         <span className="text-xs font-medium px-2 py-1 rounded bg-accent text-accent-foreground">
                           {REQUEST_TYPES[item.request_type] || item.request_type}
                         </span>
-                        <span className="text-sm text-muted-foreground">
+                      <span className="text-sm text-muted-foreground">
                           {new Date(item.created_at).toLocaleDateString()}
                         </span>
+                        {userInfoMap[item.user_id] && (
+                          <span className="text-xs text-muted-foreground">
+                            By: {userInfoMap[item.user_id].name}
+                            {userInfoMap[item.user_id].displayId && (
+                              <span className="font-mono font-bold text-primary ml-1">(#{userInfoMap[item.user_id].displayId})</span>
+                            )}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <select

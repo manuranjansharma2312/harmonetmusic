@@ -19,6 +19,7 @@ interface WithdrawalRow {
   status: string;
   created_at: string;
   email?: string;
+  display_id?: number;
 }
 
 export default function AdminRevenue() {
@@ -60,12 +61,25 @@ export default function AdminRevenue() {
 
       const allW = (wData || []) as WithdrawalRow[];
 
-      // Fetch user emails
+      // Fetch user info
       const userIds = [...new Set(allW.map(w => w.user_id))];
       if (userIds.length > 0) {
-        const { data: emails } = await supabase.rpc('get_auth_emails', { _user_ids: userIds });
-        const emailMap = new Map((emails || []).map((e: any) => [e.user_id, e.email]));
-        allW.forEach(w => { w.email = emailMap.get(w.user_id) || 'Unknown'; });
+        const { data: profiles } = await supabase.from('profiles').select('user_id, email, artist_name, record_label_name, user_type, display_id').in('user_id', userIds);
+        const emailMap = new Map<string, string>();
+        const displayIdMap = new Map<string, number>();
+        profiles?.forEach((p: any) => {
+          emailMap.set(p.user_id, p.user_type === 'label' ? (p.record_label_name || p.email) : (p.artist_name || p.email));
+          if (p.display_id) displayIdMap.set(p.user_id, p.display_id);
+        });
+        const missingIds = userIds.filter(id => !emailMap.has(id));
+        if (missingIds.length > 0) {
+          const { data: authEmails } = await supabase.rpc('get_auth_emails', { _user_ids: missingIds });
+          (authEmails || []).forEach((ae: any) => { emailMap.set(ae.user_id, ae.email); });
+        }
+        allW.forEach(w => {
+          w.email = emailMap.get(w.user_id) || 'Unknown';
+          w.display_id = displayIdMap.get(w.user_id);
+        });
       }
 
       setWithdrawals(allW);
@@ -223,7 +237,10 @@ export default function AdminRevenue() {
                 ) : (
                   paginated.map((w) => (
                     <TableRow key={w.id}>
-                      <TableCell className="text-sm">{w.email || 'Unknown'}</TableCell>
+                      <TableCell className="text-sm">
+                        {w.email || 'Unknown'}
+                        {w.display_id && <span className="ml-1 font-mono font-bold text-primary text-xs">(#{w.display_id})</span>}
+                      </TableCell>
                       <TableCell className="font-medium">{formatCurrency(Number(w.amount))}</TableCell>
                       <TableCell>{format(new Date(w.created_at), 'dd MMM yyyy, hh:mm a')}</TableCell>
                       <TableCell>

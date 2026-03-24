@@ -28,6 +28,7 @@ export default function AdminLabels() {
   const [editName, setEditName] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'label' | 'b2b'; label: Label } | null>(null);
   const [userEmails, setUserEmails] = useState<Record<string, string>>({});
+  const [userDisplayIds, setUserDisplayIds] = useState<Record<string, number>>({});
   const [rejectTarget, setRejectTarget] = useState<Label | null>(null);
 
   const inputClass =
@@ -44,12 +45,14 @@ export default function AdminLabels() {
     // Fetch user emails
     const userIds = [...new Set(labelsData.map(l => l.user_id))];
     if (userIds.length > 0) {
-      const { data: profiles } = await supabase.from('profiles').select('user_id, email, artist_name, record_label_name, user_type').in('user_id', userIds);
+      const { data: profiles } = await supabase.from('profiles').select('user_id, email, artist_name, record_label_name, user_type, display_id').in('user_id', userIds);
       const emailMap: Record<string, string> = {};
+      const displayIdMap: Record<string, number> = {};
       profiles?.forEach((p: any) => {
         emailMap[p.user_id] = p.user_type === 'label'
           ? (p.record_label_name || p.email)
           : (p.artist_name || p.email);
+        if (p.display_id) displayIdMap[p.user_id] = p.display_id;
       });
       // Fallback for missing profiles
       const missingIds = userIds.filter(id => !emailMap[id]);
@@ -58,6 +61,7 @@ export default function AdminLabels() {
         authEmails?.forEach((ae: any) => { emailMap[ae.user_id] = ae.email; });
       }
       setUserEmails(emailMap);
+      setUserDisplayIds(displayIdMap);
     }
     setLoading(false);
   };
@@ -171,7 +175,7 @@ export default function AdminLabels() {
                     </div>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    By: {userEmails[label.user_id] || label.user_id.slice(0, 8)} • {new Date(label.created_at).toLocaleDateString()}
+                    By: {userEmails[label.user_id] || label.user_id.slice(0, 8)} {userDisplayIds[label.user_id] ? <span className="font-mono font-bold text-primary">(#{userDisplayIds[label.user_id]})</span> : null} • {new Date(label.created_at).toLocaleDateString()}
                   </p>
                   {label.status === 'rejected' && label.rejection_reason && (
                     <p className="text-xs text-destructive mt-1">Reason: {label.rejection_reason}</p>
