@@ -5,10 +5,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import {
   Loader2, Eye, CheckCircle, XCircle, Search, Shield, ShieldCheck, ShieldX, KeyRound,
-  ShieldAlert, Pencil, LogIn, Ban, Trash2, Download, FileX, CheckSquare, MoreVertical,
+  ShieldAlert, Pencil, LogIn, Ban, Trash2, Download, FileX, CheckSquare, MoreVertical, Landmark,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { EditProfileModal } from '@/components/EditProfileModal';
+import { EditBankDetailsModal } from '@/components/EditBankDetailsModal';
 import { ResetPasswordModal } from '@/components/ResetPasswordModal';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { useNavigate } from 'react-router-dom';
