@@ -84,6 +84,7 @@ const adminLinksTop = [
   { to: '/admin/labels', label: 'Labels', icon: Tag },
   { to: '/admin/content-requests', label: 'Content Requests', icon: Headset },
   { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
+  { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
 ];
 
 export function AppSidebar() {
