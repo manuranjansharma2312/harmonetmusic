@@ -166,18 +166,21 @@ export default function AdminPosterGenerator() {
       ctx.restore();
 
       // --- ZONE 3: Song Title + Artist (y: 930 to 1160) ---
-      const maxTextW = W - M * 2;
+      const maxTitleW = W - M * 2;
+      const maxArtistW = W - M * 2 - 40;
 
       const titleUpper = songTitle.trim().toUpperCase();
       let titleH = 0;
 
       if (titleUpper) {
-        let sz = 72;
-        for (let s = 72; s >= 20; s -= 2) {
-          ctx.font = `700 ${s}px "Outfit", sans-serif`;
-          if (ctx.measureText(titleUpper).width <= maxTextW) { sz = s; break; }
-          sz = s;
-        }
+        const sz = fitSingleLineFontSize(
+          ctx,
+          titleUpper,
+          maxTitleW,
+          72,
+          16,
+          (size) => `700 ${size}px "Outfit", sans-serif`,
+        );
 
         ctx.save();
         ctx.font = `700 ${sz}px "Outfit", sans-serif`;
@@ -187,7 +190,7 @@ export default function AdminPosterGenerator() {
         ctx.shadowBlur = 12;
         ctx.shadowOffsetY = 3;
         ctx.fillStyle = '#ffffff';
-        ctx.fillText(titleUpper, W / 2, 940, maxTextW);
+        ctx.fillText(titleUpper, W / 2, 940);
         ctx.restore();
         titleH = sz;
       }
@@ -195,12 +198,14 @@ export default function AdminPosterGenerator() {
       const artistText = artistName.trim();
       if (artistText) {
         const artistY = 940 + titleH + (titleUpper ? 18 : 0);
-        let sz = 38;
-        for (let s = 38; s >= 14; s -= 2) {
-          ctx.font = `400 ${s}px "Outfit", sans-serif`;
-          if (ctx.measureText(artistText).width <= maxTextW) { sz = s; break; }
-          sz = s;
-        }
+        const sz = fitSingleLineFontSize(
+          ctx,
+          artistText,
+          maxArtistW,
+          38,
+          12,
+          (size) => `400 ${size}px "Outfit", sans-serif`,
+        );
 
         ctx.save();
         ctx.font = `400 ${sz}px "Outfit", sans-serif`;
@@ -209,7 +214,7 @@ export default function AdminPosterGenerator() {
         ctx.shadowColor = 'rgba(0,0,0,0.3)';
         ctx.shadowBlur = 6;
         ctx.fillStyle = 'rgba(255,255,255,0.9)';
-        ctx.fillText(artistText, W / 2, artistY, maxTextW);
+        ctx.fillText(artistText, W / 2, artistY);
         ctx.restore();
       }
 
