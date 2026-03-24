@@ -133,6 +133,51 @@ export default function AdminPaymentSettings() {
           </CardContent>
         </Card>
 
+        {/* Takedown Amount & Tax Toggle */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><CreditCard className="h-5 w-5" /> Takedown Amount & Tax</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="space-y-2">
+              <Label>Takedown Amount (₹)</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={takedownAmount}
+                  onChange={e => setTakedownAmount(Number(e.target.value) || 0)}
+                  className="max-w-[200px]"
+                  placeholder="e.g. 500"
+                />
+                <Button size="sm" onClick={async () => {
+                  const { error } = await supabase.from('promotion_settings').update({ takedown_amount: takedownAmount, updated_at: new Date().toISOString() } as any).eq('id', settingsId);
+                  if (error) { toast.error('Failed to save'); return; }
+                  toast.success('Takedown amount saved');
+                }}>Save</Button>
+              </div>
+              <p className="text-xs text-muted-foreground">This amount will be shown to users on the Takedown form when payment is enabled.</p>
+            </div>
+            <div className="flex items-center justify-between p-4 rounded-lg border border-border">
+              <div>
+                <p className="font-medium text-foreground">Enable Taxes on Takedown</p>
+                <p className="text-sm text-muted-foreground">
+                  {takedownTaxEnabled
+                    ? '✅ Taxes (defined below) will be applied to the takedown amount.'
+                    : '❌ No taxes applied on the takedown form.'}
+                </p>
+              </div>
+              <Switch checked={takedownTaxEnabled} onCheckedChange={async (val) => {
+                const { error } = await supabase.from('promotion_settings').update({ takedown_tax_enabled: val, updated_at: new Date().toISOString() } as any).eq('id', settingsId);
+                if (error) { toast.error('Failed to update'); return; }
+                setTakedownTaxEnabled(val);
+                toast.success(val ? 'Taxes enabled for Takedown' : 'Taxes disabled for Takedown');
+              }} />
+            </div>
+          </CardContent>
+        </Card>
+
         {/* QR Code */}
         <Card>
           <CardHeader>
