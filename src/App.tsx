@@ -44,6 +44,7 @@ import HelpTutorials from "./pages/HelpTutorials";
 import AdminAgreements from "./pages/AdminAgreements";
 import AdminAgreementGenerator from "./pages/AdminAgreementGenerator";
 import AdminPromotionTools from "./pages/AdminPromotionTools";
+import AdminPaymentSettings from "./pages/AdminPaymentSettings";
 import PromotionTools from "./pages/PromotionTools";
 import BankDetails from "./pages/BankDetails";
 import NotFound from "./pages/NotFound";
@@ -99,6 +100,7 @@ function App() {
                   <Route path="/admin/agreements" element={<ProtectedRoute requiredRole="admin"><AdminAgreements /></ProtectedRoute>} />
                   <Route path="/admin/agreements/generate" element={<ProtectedRoute requiredRole="admin"><AdminAgreementGenerator /></ProtectedRoute>} />
                   <Route path="/admin/promotion-tools" element={<ProtectedRoute requiredRole="admin"><AdminPromotionTools /></ProtectedRoute>} />
+                  <Route path="/admin/payment-settings" element={<ProtectedRoute requiredRole="admin"><AdminPaymentSettings /></ProtectedRoute>} />
                   <Route path="/promotion-tools" element={<ProtectedRoute><PromotionTools /></ProtectedRoute>} />
                   <Route path="/terms" element={<ProtectedRoute><TermsConditions /></ProtectedRoute>} />
                   <Route path="/tools/copyright-claim" element={<ProtectedRoute><CopyrightClaimRemoval /></ProtectedRoute>} />

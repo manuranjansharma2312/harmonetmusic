@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StatusBadge } from '@/components/StatusBadge';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Eye, QrCode, Package, Percent, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, Package } from 'lucide-react';
 import { format } from 'date-fns';
 import { PlatformIcon, PLATFORMS } from '@/components/PlatformIcons';
 
@@ -52,10 +52,7 @@ interface Order {
 
 export default function AdminPromotionTools() {
   const [isEnabled, setIsEnabled] = useState(false);
-  const [takedownPaymentEnabled, setTakedownPaymentEnabled] = useState(false);
   const [settingsId, setSettingsId] = useState('');
-  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
-  const [taxes, setTaxes] = useState<Tax[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,8 +81,6 @@ export default function AdminPromotionTools() {
   const [orderPage, setOrderPage] = useState(1);
   const pageSize = 10;
 
-  // QR upload
-  const [uploadingQr, setUploadingQr] = useState(false);
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -96,14 +91,10 @@ export default function AdminPromotionTools() {
   };
 
   const fetchSettings = async () => {
-    const { data } = await supabase.from('promotion_settings').select('*').limit(1).single();
+    const { data } = await supabase.from('promotion_settings').select('id, is_enabled').limit(1).single();
     if (data) {
       setSettingsId(data.id);
       setIsEnabled(data.is_enabled);
-      setTakedownPaymentEnabled(data.takedown_payment_enabled || false);
-      setQrCodeUrl(data.qr_code_url);
-      const taxData = data.taxes as any;
-      if (Array.isArray(taxData)) setTaxes(taxData);
     }
   };
 
@@ -144,39 +135,6 @@ export default function AdminPromotionTools() {
     toast.success(val ? 'Promotion Tools enabled' : 'Promotion Tools disabled');
   };
 
-  // Tax management
-  const addTax = () => setTaxes([...taxes, { name: '', percent: 0 }]);
-  const removeTax = (i: number) => setTaxes(taxes.filter((_, idx) => idx !== i));
-  const updateTax = (i: number, field: 'name' | 'percent', value: string) => {
-    const updated = [...taxes];
-    if (field === 'name') updated[i].name = value;
-    else updated[i].percent = Number(value) || 0;
-    setTaxes(updated);
-  };
-  const saveTaxes = async () => {
-    for (const t of taxes) {
-      if (!t.name.trim()) { toast.error('All taxes must have a name'); return; }
-    }
-    const { error } = await supabase.from('promotion_settings').update({ taxes: taxes as any, updated_at: new Date().toISOString() }).eq('id', settingsId);
-    if (error) { toast.error('Failed to save taxes'); return; }
-    toast.success('Taxes saved');
-  };
-
-  const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadingQr(true);
-    const ext = file.name.split('.').pop();
-    const path = `qr-code.${ext}`;
-    const { error: uploadErr } = await supabase.storage.from('promotion-qr').upload(path, file, { upsert: true });
-    if (uploadErr) { toast.error('Upload failed'); setUploadingQr(false); return; }
-    const { data: urlData } = supabase.storage.from('promotion-qr').getPublicUrl(path);
-    const url = urlData.publicUrl + '?t=' + Date.now();
-    await supabase.from('promotion_settings').update({ qr_code_url: url, updated_at: new Date().toISOString() }).eq('id', settingsId);
-    setQrCodeUrl(url);
-    setUploadingQr(false);
-    toast.success('QR code updated');
-  };
 
   const openProductModal = (product?: Product) => {
     if (product) {
@@ -268,76 +226,6 @@ export default function AdminPromotionTools() {
           </div>
         </div>
 
-        {/* Takedown Payment Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span className="flex items-center gap-2">📋 Takedown Payment Settings</span>
-              <div className="flex items-center gap-3">
-                <Label htmlFor="takedown-payment-toggle" className="text-sm font-normal">Enable Payment for Takedown</Label>
-                <Switch id="takedown-payment-toggle" checked={takedownPaymentEnabled} onCheckedChange={async (val) => {
-                  const { error } = await supabase.from('promotion_settings').update({ takedown_payment_enabled: val, updated_at: new Date().toISOString() }).eq('id', settingsId);
-                  if (error) { toast.error('Failed to update'); return; }
-                  setTakedownPaymentEnabled(val);
-                  toast.success(val ? 'Takedown payment enabled' : 'Takedown payment disabled');
-                }} />
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              {takedownPaymentEnabled
-                ? '✅ Users will see QR Code, Transaction ID, and Payment Screenshot fields on the Takedown form.'
-                : '❌ Payment fields are hidden on the Takedown form. Users can submit takedown requests without payment.'}
-            </p>
-            <p className="text-xs text-muted-foreground mt-2">The QR code shown on the Takedown form is the same one configured below in "Payment QR Code".</p>
-          </CardContent>
-        </Card>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* QR Code */}
-          <Card>
-            <CardHeader><CardTitle className="flex items-center gap-2"><QrCode className="h-5 w-5" /> Payment QR Code</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              {qrCodeUrl ? (
-                <img src={qrCodeUrl} alt="Payment QR" className="w-40 h-40 object-contain border rounded-lg bg-white p-2" />
-              ) : (
-                <div className="w-40 h-40 border-2 border-dashed rounded-lg flex items-center justify-center text-muted-foreground text-sm">No QR uploaded</div>
-              )}
-              <div className="space-y-2">
-                <Label>Upload QR Code Image</Label>
-                <Input type="file" accept="image/*" onChange={handleQrUpload} disabled={uploadingQr} />
-                <p className="text-xs text-muted-foreground">This QR will be shown to users for payment</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Tax Settings */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2"><Percent className="h-5 w-5" /> Tax Settings</CardTitle>
-              <Button size="sm" variant="outline" onClick={addTax}><Plus className="h-4 w-4 mr-1" /> Add Tax</Button>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {taxes.length === 0 && (
-                <p className="text-sm text-muted-foreground py-4 text-center">No taxes configured. Click "Add Tax" to add one.</p>
-              )}
-              {taxes.map((tax, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <Input value={tax.name} onChange={e => updateTax(i, 'name', e.target.value)} placeholder="Tax name (e.g. GST)" className="flex-1" />
-                  <div className="flex items-center gap-1">
-                    <Input type="number" min="0" max="100" step="0.01" value={tax.percent} onChange={e => updateTax(i, 'percent', e.target.value)} className="w-20" />
-                    <span className="text-sm text-muted-foreground">%</span>
-                  </div>
-                  <Button variant="ghost" size="icon" onClick={() => removeTax(i)}><X className="h-4 w-4 text-destructive" /></Button>
-                </div>
-              ))}
-              {taxes.length > 0 && (
-                <Button size="sm" onClick={saveTaxes} className="w-full">Save Taxes</Button>
-              )}
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Services */}
         <Card>
