@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { NoticePopup } from '@/components/NoticePopup';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { StatCard } from '@/components/StatCard';
 import { GlassCard } from '@/components/GlassCard';
