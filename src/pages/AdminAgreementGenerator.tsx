@@ -201,6 +201,7 @@ export default function AdminAgreementGenerator() {
       .join(", ");
 
     let html = template.content as string;
+    html = html.replace(/\{\{client_type\}\}/g, clientType);
     html = html.replace(/\{\{date_of_agreement\}\}/g, dateOfAgreement);
     html = html.replace(/\{\{artist_label_name\}\}/g, artistLabelName);
     html = html.replace(/\{\{legal_name\}\}/g, legalName);
