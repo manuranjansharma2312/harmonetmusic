@@ -44,6 +44,7 @@ import HelpTutorials from "./pages/HelpTutorials";
 import AdminAgreements from "./pages/AdminAgreements";
 import AdminAgreementGenerator from "./pages/AdminAgreementGenerator";
 import AdminPromotionTools from "./pages/AdminPromotionTools";
+import AdminPaymentSettings from "./pages/AdminPaymentSettings";
 import PromotionTools from "./pages/PromotionTools";
 import BankDetails from "./pages/BankDetails";
 import NotFound from "./pages/NotFound";
