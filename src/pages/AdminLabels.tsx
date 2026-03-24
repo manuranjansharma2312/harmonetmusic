@@ -61,6 +61,7 @@ export default function AdminLabels() {
         authEmails?.forEach((ae: any) => { emailMap[ae.user_id] = ae.email; });
       }
       setUserEmails(emailMap);
+      setUserDisplayIds(displayIdMap);
     }
     setLoading(false);
   };
