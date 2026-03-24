@@ -254,6 +254,7 @@ export default function AdminInvoices() {
       company_name: companyForm.company_name,
       address: companyForm.address,
       registration_ids: companyForm.registration_ids as unknown as any,
+      logo_url: companyForm.logo_url || null,
       updated_at: new Date().toISOString(),
     };
     if (companyForm.id) {
@@ -266,6 +267,28 @@ export default function AdminInvoices() {
       else { toast.success('Company details saved'); setCompanyDetailsOpen(false); fetchCompanyDetails(); }
     }
     setSavingCompany(false);
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+    setUploadingLogo(true);
+    const ext = file.name.split('.').pop();
+    const path = `company-logo/logo-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('covers').upload(path, file, { upsert: true });
+    if (error) {
+      toast.error('Failed to upload logo');
+      setUploadingLogo(false);
+      return;
+    }
+    const { data: urlData } = supabase.storage.from('covers').getPublicUrl(path);
+    setCompanyForm(f => ({ ...f, logo_url: urlData.publicUrl }));
+    toast.success('Logo uploaded');
+    setUploadingLogo(false);
   };
 
   const addRegId = () => setCompanyForm(f => ({ ...f, registration_ids: [...f.registration_ids, { name: '', value: '' }] }));
