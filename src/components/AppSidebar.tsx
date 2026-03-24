@@ -96,6 +96,7 @@ const adminLinksTop = [
   { to: '/admin/poster-generator', label: 'Poster Generator', icon: ImageIcon },
   { to: '/admin/tutorials', label: 'Help Tutorials', icon: BookOpen },
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
+  { to: '/admin/agreements', label: 'Agreements', icon: FileSignature },
 ];
 
 export function AppSidebar() {
