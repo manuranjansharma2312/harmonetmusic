@@ -341,7 +341,7 @@ export default function AdminInvoices() {
     ]);
 
     autoTable(doc, {
-      startY: 62,
+      startY: detailsY + 18,
       head: [['#', 'Description', 'Amount (Rs.)']],
       body: tableRows,
       theme: 'striped',
