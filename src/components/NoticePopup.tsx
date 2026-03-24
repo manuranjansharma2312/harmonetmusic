@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect, useRef } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -26,13 +26,14 @@ export function NoticePopup() {
   const queryClient = useQueryClient();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [open, setOpen] = useState(false);
+  const shownRef = useRef(false);
+  const dismissedIds = useRef(new Set<string>());
 
   const { data: unreadNotices = [] } = useQuery({
     queryKey: ['unread-notices', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
 
-      // Get all active notices
       const { data: notices, error: nErr } = await supabase
         .from('notices')
         .select('*')
@@ -40,7 +41,6 @@ export function NoticePopup() {
         .order('created_at', { ascending: false });
       if (nErr) throw nErr;
 
-      // Get user's read notices
       const { data: reads, error: rErr } = await supabase
         .from('notice_reads')
         .select('notice_id')
@@ -51,39 +51,47 @@ export function NoticePopup() {
       return (notices || []).filter((n: any) => !readIds.has(n.id)) as Notice[];
     },
     enabled: !!user?.id,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
+  // Only open once per mount when data first arrives
   useEffect(() => {
-    if (unreadNotices.length > 0) {
+    if (!shownRef.current && unreadNotices.length > 0) {
+      shownRef.current = true;
       setCurrentIndex(0);
       setOpen(true);
     }
-  }, [unreadNotices.length]);
+  }, [unreadNotices]);
 
-  const markReadMutation = useMutation({
-    mutationFn: async (noticeId: string) => {
-      if (!user?.id) return;
-      await supabase.from('notice_reads').insert({ notice_id: noticeId, user_id: user.id });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['unread-notices'] });
-    },
-  });
+  const markRead = async (noticeId: string) => {
+    if (!user?.id || dismissedIds.current.has(noticeId)) return;
+    dismissedIds.current.add(noticeId);
+    await supabase
+      .from('notice_reads')
+      .upsert({ notice_id: noticeId, user_id: user.id }, { onConflict: 'notice_id,user_id' });
+  };
 
-  const handleDismiss = () => {
+  const handleDismiss = async () => {
     const notice = unreadNotices[currentIndex];
-    if (notice) markReadMutation.mutate(notice.id);
+    if (notice) await markRead(notice.id);
 
     if (currentIndex < unreadNotices.length - 1) {
       setCurrentIndex((i) => i + 1);
     } else {
       setOpen(false);
+      // Refresh cache after all dismissed
+      queryClient.invalidateQueries({ queryKey: ['unread-notices'] });
     }
   };
 
-  const handleDismissAll = () => {
-    unreadNotices.forEach((n) => markReadMutation.mutate(n.id));
+  const handleCloseAll = async () => {
+    for (const n of unreadNotices) {
+      await markRead(n.id);
+    }
     setOpen(false);
+    queryClient.invalidateQueries({ queryKey: ['unread-notices'] });
   };
 
   if (unreadNotices.length === 0) return null;
@@ -92,7 +100,7 @@ export function NoticePopup() {
   if (!notice) return null;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) handleDismissAll(); }}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
       <DialogContent className="max-w-md sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-2 text-primary">
