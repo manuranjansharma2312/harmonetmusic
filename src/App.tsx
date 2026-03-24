@@ -35,6 +35,7 @@ import Revenue from "./pages/Revenue";
 import AdminRevenue from "./pages/AdminRevenue";
 import TermsConditions from "./pages/TermsConditions";
 import AdminTermsConditions from "./pages/AdminTermsConditions";
+import AdminInvoices from "./pages/AdminInvoices";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
