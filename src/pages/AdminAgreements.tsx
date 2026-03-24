@@ -195,13 +195,14 @@ export default function AdminAgreements() {
         )}
       </div>
 
-      <ConfirmDialog
-        open={!!deleteId}
-        onOpenChange={() => setDeleteId(null)}
-        title="Delete Template"
-        description="Are you sure you want to delete this template?"
-        onConfirm={() => { if (deleteId) deleteMutation.mutate(deleteId); setDeleteId(null); }}
-      />
+      {!!deleteId && (
+        <ConfirmDialog
+          title="Delete Template"
+          message="Are you sure you want to delete this template?"
+          onConfirm={() => { deleteMutation.mutate(deleteId); setDeleteId(null); }}
+          onCancel={() => setDeleteId(null)}
+        />
+      )}
 
       <Dialog open={!!previewTemplate} onOpenChange={() => setPreviewTemplate(null)}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
