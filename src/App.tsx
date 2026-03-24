@@ -26,6 +26,7 @@ import ContentIdMerge from "./pages/ContentIdMerge";
 import OacApply from "./pages/OacApply";
 import Takedown from "./pages/Takedown";
 import CustomSupport from "./pages/CustomSupport";
+import PlaylistPitching from "./pages/PlaylistPitching";
 import Reports from "./pages/Reports";
 import YouTubeReports from "./pages/YouTubeReports";
 import AdminReports from "./pages/AdminReports";
