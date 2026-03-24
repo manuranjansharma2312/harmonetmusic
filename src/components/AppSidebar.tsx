@@ -24,6 +24,7 @@ import {
   FileText,
   Receipt,
   Image as ImageIcon,
+  Bell,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
