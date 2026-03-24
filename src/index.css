@@ -339,22 +339,20 @@
   font-weight: 700 !important;
 }
 .agreement-preview p {
-  margin-bottom: 0.6em;
-  line-height: 1.7;
-  text-align: justify;
+  margin-bottom: 0.5em;
+  line-height: 1.6;
 }
 .agreement-preview ul,
 .agreement-preview ol {
   padding-left: 1.5em;
-  margin-bottom: 0.6em;
+  margin-bottom: 0.5em;
 }
 .agreement-preview li {
-  margin-bottom: 0.3em;
-  text-align: justify;
+  margin-bottom: 0.25em;
 }
 .agreement-preview hr {
   border-top: 1px solid #333;
-  margin: 1.2em 0;
+  margin: 1em 0;
 }
 .agreement-preview img {
   max-width: 100% !important;
