@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { RichTextEditor } from "@/components/RichTextEditor";
 
 const SHORTCODES = [
+  { code: "{{client_type}}", label: "Client Type (Artist/Record Label)" },
   { code: "{{date_of_agreement}}", label: "Date of Agreement" },
   { code: "{{artist_label_name}}", label: "Artist / Label Name" },
   { code: "{{legal_name}}", label: "Legal Name" },

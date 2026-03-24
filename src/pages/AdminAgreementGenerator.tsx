@@ -156,6 +156,7 @@ interface GovtId {
 
 export default function AdminAgreementGenerator() {
   const [templateId, setTemplateId] = useState("");
+  const [clientType, setClientType] = useState("Artist");
   const [dateOfAgreement, setDateOfAgreement] = useState("");
   const [artistLabelName, setArtistLabelName] = useState("");
   const [legalName, setLegalName] = useState("");
@@ -200,6 +201,7 @@ export default function AdminAgreementGenerator() {
       .join(", ");
 
     let html = template.content as string;
+    html = html.replace(/\{\{client_type\}\}/g, clientType);
     html = html.replace(/\{\{date_of_agreement\}\}/g, dateOfAgreement);
     html = html.replace(/\{\{artist_label_name\}\}/g, artistLabelName);
     html = html.replace(/\{\{legal_name\}\}/g, legalName);
@@ -285,6 +287,18 @@ export default function AdminAgreementGenerator() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label>Client Type</Label>
+                <Select value={clientType} onValueChange={setClientType}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Artist">Artist</SelectItem>
+                    <SelectItem value="Record Label">Record Label</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div>
                 <Label>Date of Agreement</Label>
                 <Input type="date" value={dateOfAgreement} onChange={(e) => setDateOfAgreement(e.target.value)} />
