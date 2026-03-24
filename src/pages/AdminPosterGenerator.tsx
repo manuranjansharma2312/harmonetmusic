@@ -122,8 +122,8 @@ export default function AdminPosterGenerator() {
 
       // --- ZONE 2: Cover art (y: 150 to 900) ---
       const coverSize = 750;
-      const coverX = (W - coverSize) / 2; // centered = 165
-      const coverY = 150;
+      const coverX = (W - coverSize) / 2;
+      const coverY = 148;
       const radius = 14;
 
       ctx.save();
