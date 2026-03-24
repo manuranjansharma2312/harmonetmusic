@@ -12,6 +12,7 @@ const REQUEST_TYPES: Record<string, string> = {
   content_id_merge: 'Content ID Merge',
   oac_apply: 'Official Artist Channel Apply',
   takedown: 'Takedown',
+  playlist_pitching: 'Playlist Pitching',
   custom_support: 'Custom Support',
 };
 
