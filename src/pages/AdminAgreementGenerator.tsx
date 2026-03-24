@@ -235,27 +235,116 @@ export default function AdminAgreementGenerator() {
     const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 15;
     const maxWidth = pageWidth - margin * 2;
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let y = 20;
 
-    // Parse HTML to plain text for PDF
+    const addText = (text: string, fontSize: number, fontStyle: string, lineHeight: number, extraSpaceBefore = 0) => {
+      doc.setFont("helvetica", fontStyle);
+      doc.setFontSize(fontSize);
+      const lines = doc.splitTextToSize(text.trim(), maxWidth);
+      for (const line of lines) {
+        if (y + lineHeight + extraSpaceBefore > pageHeight - 15) {
+          doc.addPage();
+          y = 20;
+          extraSpaceBefore = 0;
+        }
+        if (extraSpaceBefore > 0) { y += extraSpaceBefore; extraSpaceBefore = 0; }
+        doc.text(line, margin, y);
+        y += lineHeight;
+      }
+    };
+
+    const addHr = () => {
+      if (y + 4 > pageHeight - 15) { doc.addPage(); y = 20; }
+      y += 2;
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.3);
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 4;
+    };
+
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = html;
-    const text = tempDiv.innerText || tempDiv.textContent || "";
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-
-    const lines = doc.splitTextToSize(text, maxWidth);
-    let y = 20;
-    const lineHeight = 6;
-    const pageHeight = doc.internal.pageSize.getHeight();
-
-    for (const line of lines) {
-      if (y + lineHeight > pageHeight - 15) {
-        doc.addPage();
-        y = 20;
+    const processNode = (node: Node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent?.trim();
+        if (text) addText(text, 11, "normal", 5.5);
+        return;
       }
-      doc.text(line, margin, y);
-      y += lineHeight;
+      if (node.nodeType !== Node.ELEMENT_NODE) return;
+      const el = node as HTMLElement;
+      const tag = el.tagName.toLowerCase();
+
+      if (tag === "hr") { addHr(); return; }
+      if (tag === "h1") { addText(el.textContent || "", 18, "bold", 8, 4); y += 2; return; }
+      if (tag === "h2") { addText(el.textContent || "", 14, "bold", 7, 6); y += 1; return; }
+      if (tag === "h3") { addText(el.textContent || "", 12, "bold", 6.5, 4); y += 1; return; }
+      if (tag === "h4" || tag === "h5" || tag === "h6") { addText(el.textContent || "", 11, "bold", 6, 3); return; }
+
+      if (tag === "strong" || tag === "b") {
+        addText(el.textContent || "", 11, "bold", 5.5);
+        return;
+      }
+
+      if (tag === "ul" || tag === "ol") {
+        const items = el.querySelectorAll(":scope > li");
+        items.forEach((li, idx) => {
+          const bullet = tag === "ul" ? "•" : `${idx + 1}.`;
+          const text = li.textContent?.trim() || "";
+          if (y + 6 > pageHeight - 15) { doc.addPage(); y = 20; }
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(11);
+          doc.text(bullet, margin + 2, y);
+          const liLines = doc.splitTextToSize(text, maxWidth - 10);
+          for (const line of liLines) {
+            if (y + 5.5 > pageHeight - 15) { doc.addPage(); y = 20; }
+            doc.text(line, margin + 8, y);
+            y += 5.5;
+          }
+        });
+        y += 2;
+        return;
+      }
+
+      if (tag === "br") { y += 4; return; }
+
+      if (tag === "p" || tag === "div" || tag === "td" || tag === "th") {
+        // Process children to handle mixed bold/normal inline content
+        const hasOnlyText = el.children.length === 0;
+        if (hasOnlyText) {
+          addText(el.textContent || "", 11, "normal", 5.5);
+        } else {
+          for (const child of Array.from(el.childNodes)) {
+            processNode(child);
+          }
+        }
+        if (tag === "p") y += 2;
+        return;
+      }
+
+      if (tag === "table") {
+        const rows = el.querySelectorAll("tr");
+        rows.forEach((row) => {
+          const cells = row.querySelectorAll("td, th");
+          cells.forEach((cell) => {
+            for (const child of Array.from(cell.childNodes)) {
+              processNode(child);
+            }
+          });
+          y += 2;
+        });
+        return;
+      }
+
+      // Fallback: process children
+      for (const child of Array.from(el.childNodes)) {
+        processNode(child);
+      }
+    };
+
+    for (const child of Array.from(tempDiv.childNodes)) {
+      processNode(child);
     }
 
     doc.save(`${templateName.replace(/\s+/g, "_")}.pdf`);
@@ -408,7 +497,8 @@ export default function AdminAgreementGenerator() {
           </DialogHeader>
           <div
             ref={previewRef}
-            className="tutorial-content text-foreground bg-white text-black p-6 rounded-md"
+            className="agreement-preview p-6 rounded-md"
+            style={{ backgroundColor: "white", color: "black" }}
             dangerouslySetInnerHTML={{ __html: previewHtml }}
           />
           <div className="flex justify-end pt-4">
