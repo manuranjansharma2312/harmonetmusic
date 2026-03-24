@@ -312,14 +312,15 @@ export default function AdminAgreementGenerator() {
                     <SelectTrigger className="w-[200px] flex-shrink-0">
                       <SelectValue>
                         {(() => {
-                          const c = COUNTRY_CODES.find(c => c.code === countryCode);
+                          const parts = countryCode.split("|");
+                          const c = COUNTRY_CODES.find(c => c.name === parts[0]);
                           return c ? `${c.flag} ${c.name} (${c.code})` : countryCode;
                         })()}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="max-h-60">
-                      {COUNTRY_CODES.map((c, i) => (
-                        <SelectItem key={`${c.code}-${i}`} value={c.code}>
+                      {COUNTRY_CODES.map((c) => (
+                        <SelectItem key={`${c.name}-${c.code}`} value={`${c.name}|${c.code}`}>
                           {c.flag} {c.name} ({c.code})
                         </SelectItem>
                       ))}
