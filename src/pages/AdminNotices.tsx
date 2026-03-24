@@ -244,15 +244,14 @@ export default function AdminNotices() {
         )}
       </div>
 
-      <ConfirmDialog
-        open={!!deleteId}
-        onOpenChange={(open) => !open && setDeleteId(null)}
-        title="Delete Notice"
-        description="Are you sure you want to delete this notice? This action cannot be undone."
-        onConfirm={() => deleteId && deleteMutation.mutate(deleteId)}
-        confirmLabel="Delete"
-        variant="destructive"
-      />
+      {deleteId && (
+        <ConfirmDialog
+          title="Delete Notice"
+          message="Are you sure you want to delete this notice? This action cannot be undone."
+          onConfirm={() => { deleteMutation.mutate(deleteId); }}
+          onCancel={() => setDeleteId(null)}
+        />
+      )}
     </DashboardLayout>
   );
 }
