@@ -776,6 +776,49 @@ export default function AdminInvoices() {
           </ConfirmContent>
         </ConfirmDialogWrapper>
       )}
+
+      {/* Company Details Dialog */}
+      <Dialog open={companyDetailsOpen} onOpenChange={setCompanyDetailsOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Settings className="h-5 w-5" /> Company Details</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Company Name</Label>
+              <Input value={companyForm.company_name} onChange={e => setCompanyForm(f => ({ ...f, company_name: e.target.value }))} placeholder="Harmonet Music" />
+            </div>
+            <div>
+              <Label>Address</Label>
+              <Textarea value={companyForm.address} onChange={e => setCompanyForm(f => ({ ...f, address: e.target.value }))} placeholder="Company full address..." rows={3} />
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-sm font-semibold">Registration IDs</Label>
+                <Button type="button" variant="outline" size="sm" onClick={addRegId} className="gap-1">
+                  <Plus className="h-3 w-3" /> Add ID
+                </Button>
+              </div>
+              {companyForm.registration_ids.length === 0 && <p className="text-xs text-muted-foreground">No registration IDs added</p>}
+              <div className="space-y-2">
+                {companyForm.registration_ids.map((r, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Input placeholder="ID Name (e.g. GST)" value={r.name} onChange={e => updateRegId(i, 'name', e.target.value)} className="w-36" />
+                    <Input placeholder="ID Number" value={r.value} onChange={e => updateRegId(i, 'value', e.target.value)} className="flex-1" />
+                    <Button type="button" variant="ghost" size="icon" onClick={() => removeRegId(i)} className="text-destructive shrink-0">
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setCompanyDetailsOpen(false)}>Cancel</Button>
+              <Button onClick={saveCompanyDetails} disabled={savingCompany}>{savingCompany ? 'Saving...' : 'Save'}</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
