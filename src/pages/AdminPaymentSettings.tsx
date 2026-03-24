@@ -143,11 +143,10 @@ export default function AdminPaymentSettings() {
               <Label>Takedown Amount (₹)</Label>
               <div className="flex items-center gap-2">
                 <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={takedownAmount}
-                  onChange={e => setTakedownAmount(Number(e.target.value) || 0)}
+                  type="text"
+                  inputMode="decimal"
+                  value={takedownAmount || ''}
+                  onChange={e => setTakedownAmount(Number(e.target.value.replace(/[^0-9.]/g, '')) || 0)}
                   className="max-w-[200px]"
                   placeholder="e.g. 500"
                 />
@@ -213,7 +212,7 @@ export default function AdminPaymentSettings() {
               <div key={i} className="flex items-center gap-2">
                 <Input value={tax.name} onChange={e => updateTax(i, 'name', e.target.value)} placeholder="Tax name (e.g. GST)" className="flex-1" />
                 <div className="flex items-center gap-1">
-                  <Input type="number" min="0" max="100" step="0.01" value={tax.percent} onChange={e => updateTax(i, 'percent', e.target.value)} className="w-20" />
+                  <Input type="text" inputMode="decimal" value={tax.percent || ''} onChange={e => updateTax(i, 'percent', e.target.value.replace(/[^0-9.]/g, ''))} className="w-20" placeholder="0" />
                   <span className="text-sm text-muted-foreground">%</span>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => removeTax(i)}><X className="h-4 w-4 text-destructive" /></Button>
