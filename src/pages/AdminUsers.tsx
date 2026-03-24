@@ -77,6 +77,12 @@ export default function AdminUsers() {
 
   useEffect(() => { fetchProfiles(); }, []);
 
+  const handleViewProfile = async (profile: Profile) => {
+    setViewProfile(profile);
+    const { data } = await supabase.from('bank_details').select('*').eq('user_id', profile.user_id).maybeSingle();
+    setViewBankDetails(data);
+  };
+
   const filtered = profiles.filter((p) => {
     if (statusFilter !== 'all' && p.verification_status !== statusFilter) return false;
     if (search) {
