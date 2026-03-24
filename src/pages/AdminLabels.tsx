@@ -28,6 +28,7 @@ export default function AdminLabels() {
   const [editName, setEditName] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'label' | 'b2b'; label: Label } | null>(null);
   const [userEmails, setUserEmails] = useState<Record<string, string>>({});
+  const [userDisplayIds, setUserDisplayIds] = useState<Record<string, number>>({});
   const [rejectTarget, setRejectTarget] = useState<Label | null>(null);
 
   const inputClass =
