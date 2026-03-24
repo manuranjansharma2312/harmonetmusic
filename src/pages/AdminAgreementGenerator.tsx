@@ -288,6 +288,18 @@ export default function AdminAgreementGenerator() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
+                <Label>Client Type</Label>
+                <Select value={clientType} onValueChange={setClientType}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Artist">Artist</SelectItem>
+                    <SelectItem value="Record Label">Record Label</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label>Date of Agreement</Label>
                 <Input type="date" value={dateOfAgreement} onChange={(e) => setDateOfAgreement(e.target.value)} />
               </div>
