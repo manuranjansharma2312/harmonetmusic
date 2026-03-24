@@ -551,6 +551,15 @@ export default function AdminUsers() {
         />
       )}
 
+      {/* Edit Bank Details Modal */}
+      {editBankDetail && (
+        <EditBankDetailsModal
+          bankDetail={editBankDetail}
+          onClose={() => setEditBankDetail(null)}
+          onSaved={() => { setEditBankDetail(null); }}
+        />
+      )}
+
       {/* Reset Password Modal */}
       {resetPasswordProfile && (
         <ResetPasswordModal
