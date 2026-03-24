@@ -52,6 +52,7 @@ interface Order {
 
 export default function AdminPromotionTools() {
   const [isEnabled, setIsEnabled] = useState(false);
+  const [takedownPaymentEnabled, setTakedownPaymentEnabled] = useState(false);
   const [settingsId, setSettingsId] = useState('');
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [taxes, setTaxes] = useState<Tax[]>([]);
