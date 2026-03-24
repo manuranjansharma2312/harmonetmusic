@@ -313,13 +313,9 @@
 /* Agreement Preview Styles */
 .agreement-preview {
   overflow-x: hidden;
-  word-wrap: break-word;
-  overflow-wrap: anywhere;
   word-break: normal;
-  font-family: 'Times New Roman', 'Georgia', serif;
-  font-size: 14px;
-  line-height: 1.7;
-  letter-spacing: 0.01em;
+  overflow-wrap: break-word;
+  hyphens: none;
 }
 .agreement-preview * {
   color: black !important;
