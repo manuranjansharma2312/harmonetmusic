@@ -73,6 +73,7 @@ const adminReportLinks = [
 ];
 
 const userLinksBottom = [
+  { to: '/poster-generator', label: 'Out Now Poster', icon: ImageIcon },
   { to: '/revenue', label: 'Revenue', icon: Wallet },
   { to: '/terms', label: 'Terms & Conditions', icon: FileText },
   { to: '/profile', label: 'My Profile', icon: UserCircle },
