@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GlassCard } from "@/components/GlassCard";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, FileText, Copy, Eye } from "lucide-react";
+import { Plus, Pencil, Trash2, FileText, Copy, Eye, Columns2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
@@ -153,7 +153,20 @@ export default function AdminAgreements() {
               </div>
 
               <div>
-                <Label>Template Content</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Template Content</Label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const twoColHtml = `<table style="width: 100%; border: none;"><tr><td style="width: 50%; vertical-align: top; padding: 10px;"><p><strong>Left Column</strong></p><p>Content here</p></td><td style="width: 50%; vertical-align: top; padding: 10px;"><p><strong>Right Column</strong></p><p>Content here</p></td></tr></table>`;
+                      setContent(content + twoColHtml);
+                    }}
+                  >
+                    <Columns2 className="h-4 w-4 mr-1" /> Insert Two-Column
+                  </Button>
+                </div>
                 <RichTextEditor value={content} onChange={setContent} />
               </div>
 
