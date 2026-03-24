@@ -27,6 +27,7 @@ import {
   Bell,
   BookOpen,
   FileSignature,
+  Megaphone,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
@@ -78,6 +79,7 @@ const adminReportLinks = [
 const userLinksBottom = [
   { to: '/poster-generator', label: 'Out Now Poster', icon: ImageIcon },
   { to: '/help-tutorials', label: 'Help Tutorials', icon: BookOpen },
+  { to: '/promotion-tools', label: 'Promotion Tools', icon: Megaphone },
   { to: '/revenue', label: 'Revenue', icon: Wallet },
   { to: '/terms', label: 'Terms & Conditions', icon: FileText },
   { to: '/profile', label: 'My Profile', icon: UserCircle },
@@ -97,6 +99,7 @@ const adminLinksTop = [
   { to: '/admin/tutorials', label: 'Help Tutorials', icon: BookOpen },
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
   { to: '/admin/agreements', label: 'Agreements', icon: FileSignature },
+  { to: '/admin/promotion-tools', label: 'Promotion Tools', icon: Megaphone },
 ];
 
 export function AppSidebar() {
