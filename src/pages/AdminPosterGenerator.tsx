@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Download, Upload, Image as ImageIcon } from 'lucide-react';
 import harmonetLogo from '@/assets/harmonet-logo.png';
+import harmonetLogoWhite from '@/assets/harmonet-logo-white.png';
 
 const SIZE_PRESETS: Record<string, { width: number; height: number; label: string }> = {
   '1-1': { width: 1080, height: 1080, label: 'Square (1:1) — 1080×1080' },
@@ -21,33 +22,28 @@ const SIZE_PRESETS: Record<string, { width: number; height: number; label: strin
 let fontsLoaded = false;
 async function ensureFonts() {
   if (fontsLoaded) return;
-  const outfitBold = new FontFace('Outfit', 'url(/fonts/Outfit-Bold.ttf)', { weight: '700' });
-  const outfitReg = new FontFace('Outfit', 'url(/fonts/Outfit-Regular.ttf)', { weight: '400' });
-  const italiana = new FontFace('Italiana', 'url(/fonts/Italiana-Regular.ttf)', { weight: '400' });
-  const workBold = new FontFace('Work Sans', 'url(/fonts/WorkSans-Bold.ttf)', { weight: '700' });
-  await Promise.all([outfitBold.load(), outfitReg.load(), italiana.load(), workBold.load()]);
-  document.fonts.add(outfitBold);
-  document.fonts.add(outfitReg);
-  document.fonts.add(italiana);
-  document.fonts.add(workBold);
+  const fonts = [
+    new FontFace('Outfit', 'url(/fonts/Outfit-Bold.ttf)', { weight: '700' }),
+    new FontFace('Outfit', 'url(/fonts/Outfit-Regular.ttf)', { weight: '400' }),
+    new FontFace('Italiana', 'url(/fonts/Italiana-Regular.ttf)', { weight: '400' }),
+    new FontFace('Work Sans', 'url(/fonts/WorkSans-Bold.ttf)', { weight: '700' }),
+  ];
+  await Promise.all(fonts.map(f => f.load()));
+  fonts.forEach(f => document.fonts.add(f));
   fontsLoaded = true;
 }
 
-function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, font: string): string[] {
+function wrapText(ctx: CanvasRenderingContext2D, text: string, maxW: number, font: string): string[] {
   ctx.font = font;
   const words = text.split(' ');
   const lines: string[] = [];
-  let currentLine = '';
-  for (const word of words) {
-    const testLine = currentLine ? `${currentLine} ${word}` : word;
-    if (ctx.measureText(testLine).width > maxWidth && currentLine) {
-      lines.push(currentLine);
-      currentLine = word;
-    } else {
-      currentLine = testLine;
-    }
+  let cur = '';
+  for (const w of words) {
+    const test = cur ? `${cur} ${w}` : w;
+    if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = w; }
+    else cur = test;
   }
-  if (currentLine) lines.push(currentLine);
+  if (cur) lines.push(cur);
   return lines;
 }
 
@@ -107,85 +103,81 @@ export default function AdminPosterGenerator() {
     const isLandscape = width > height;
     const isPortrait = height > width;
 
-    // ─── BACKGROUND ─────────────────────────────────
+    // ═══════════ BACKGROUND ═══════════
     const grad = ctx.createLinearGradient(0, 0, width * 0.4, height);
-    grad.addColorStop(0, '#0a0a0a');
-    grad.addColorStop(0.5, '#120e16');
-    grad.addColorStop(1, '#0a0a0a');
+    grad.addColorStop(0, '#080808');
+    grad.addColorStop(0.5, '#100c14');
+    grad.addColorStop(1, '#080808');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
 
     // Radial glow
-    const glowCX = isLandscape ? width * 0.3 : width * 0.5;
-    const glowCY = isPortrait ? height * 0.28 : height * 0.4;
-    const rg = ctx.createRadialGradient(glowCX, glowCY, 0, glowCX, glowCY, minDim * 0.8);
-    rg.addColorStop(0, 'rgba(107,21,21,0.20)');
+    const gx = isLandscape ? width * 0.3 : width * 0.5;
+    const gy = isPortrait ? height * 0.28 : height * 0.4;
+    const rg = ctx.createRadialGradient(gx, gy, 0, gx, gy, minDim * 0.8);
+    rg.addColorStop(0, 'rgba(107,21,21,0.18)');
     rg.addColorStop(0.5, 'rgba(107,21,21,0.04)');
     rg.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = rg;
     ctx.fillRect(0, 0, width, height);
 
-    // ─── LOAD IMAGES ─────────────────────────────────
+    // ═══════════ LOAD IMAGES ═══════════
     let coverImg: HTMLImageElement | null = null;
     let logoImg: HTMLImageElement | null = null;
     try { coverImg = await loadImage(posterPreview); } catch {}
-    try { logoImg = await loadImage(logoUrl || harmonetLogo); } catch {}
+    // Use white logo for poster (dark bg), fallback to bundled white logo
+    try { logoImg = await loadImage(harmonetLogoWhite); } catch {}
 
-    // ─── SPACING SYSTEM ──────────────────────────────
-    const margin = minDim * 0.055;
-    const bottomBarH = minDim * 0.07;
-    const usableH = height - margin * 2 - bottomBarH;
+    // ═══════════ SPACING ═══════════
+    const margin = minDim * 0.05;
+    const bottomBarH = minDim * 0.1; // bigger bottom bar
 
-    // ─── LOGO SIZE (big, on white pill) ──────────────
-    const logoH = minDim * 0.06;
-    const logoPadH = logoH * 0.3; // vertical padding inside pill
-    const logoPadW = logoH * 0.4; // horizontal padding inside pill
-    const logoPillH = logoH + logoPadH * 2;
+    // ═══════════ LOGO SIZE — BIG ═══════════
+    const logoH = minDim * 0.08;
 
-    // ─── LAYOUT per size ─────────────────────────────
+    // ═══════════ LAYOUT ═══════════
     let coverX: number, coverY: number, coverS: number;
     let textX: number, textY: number, textW: number;
     let logoX: number, logoY: number;
 
     if (isLandscape) {
       // 4:3 or 16:9 — cover left, text right
+      const usableH = height - margin * 2 - bottomBarH;
       coverS = Math.min(usableH, width * 0.38);
       coverX = margin;
       coverY = margin;
-      const rightStart = coverX + coverS + margin;
+      const rightStart = coverX + coverS + margin * 1.2;
       textX = rightStart;
       textW = width - rightStart - margin;
-      // Logo top of text area
       logoX = textX;
       logoY = margin;
-      textY = logoY + logoPillH + margin * 0.8;
+      textY = logoY + logoH + margin;
     } else if (isPortrait) {
       // 3:4 or 9:16
       const ratio = height / width;
-      // 9:16 needs smaller cover to leave room for text
-      const coverFraction = ratio > 1.6 ? 0.42 : 0.55;
-      coverS = Math.min(width - margin * 2, usableH * coverFraction);
+      const coverFrac = ratio > 1.5 ? 0.40 : 0.52;
+      const maxCoverS = Math.min(width - margin * 2, (height - margin * 2 - bottomBarH) * coverFrac);
+      coverS = maxCoverS;
       coverX = (width - coverS) / 2;
-      // Logo at top
       logoX = margin;
       logoY = margin;
-      coverY = logoY + logoPillH + margin * 0.6;
+      coverY = logoY + logoH + margin * 0.6;
       textX = margin;
       textW = width - margin * 2;
       textY = coverY + coverS + margin;
     } else {
-      // 1:1 square
-      coverS = width * 0.58;
-      coverX = (width - coverS) / 2;
+      // 1:1
       logoX = margin;
       logoY = margin;
-      coverY = logoY + logoPillH + margin * 0.5;
+      coverS = width * 0.55;
+      coverX = (width - coverS) / 2;
+      coverY = logoY + logoH + margin * 0.5;
       textX = margin;
       textW = width - margin * 2;
       textY = coverY + coverS + margin * 0.8;
     }
 
-    // ─── DRAW COVER ART ──────────────────────────────
+    // ═══════════ COVER ART ═══════════
     if (coverImg) {
       const r = minDim * 0.015;
       ctx.save();
@@ -197,9 +189,9 @@ export default function AdminPosterGenerator() {
       ctx.clip();
       ctx.drawImage(coverImg, coverX, coverY, coverS, coverS);
       ctx.restore();
-      // border
+
       ctx.save();
-      ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.roundRect(coverX, coverY, coverS, coverS, r);
@@ -207,56 +199,46 @@ export default function AdminPosterGenerator() {
       ctx.restore();
     }
 
-    // ─── LOGO on white pill ──────────────────────────
+    // ═══════════ LOGO — white on dark, BIG ═══════════
     if (logoImg) {
       const aspect = logoImg.width / logoImg.height;
       let lh = logoH;
       let lw = lh * aspect;
-      const maxLW = isLandscape ? textW * 0.7 : width * 0.45;
+      const maxLW = isLandscape ? textW * 0.75 : width * 0.55;
       if (lw > maxLW) { lw = maxLW; lh = lw / aspect; }
-      const pillW = lw + logoPadW * 2;
-      const pillH2 = lh + logoPadH * 2;
-      const pillR = pillH2 * 0.2;
-      // White pill background
       ctx.save();
-      ctx.fillStyle = 'rgba(255,255,255,0.95)';
-      ctx.beginPath();
-      ctx.roundRect(logoX, logoY, pillW, pillH2, pillR);
-      ctx.fill();
+      ctx.globalAlpha = 0.95;
+      ctx.drawImage(logoImg, logoX, logoY, lw, lh);
       ctx.restore();
-      // Draw logo inside pill
-      ctx.drawImage(logoImg, logoX + logoPadW, logoY + logoPadH, lw, lh);
     }
 
-    // ─── "NEW RELEASE" badge — top right ─────────────
-    const badgeFS = Math.round(minDim * 0.016);
+    // ═══════════ "NEW RELEASE" — larger ═══════════
+    const badgeFS = Math.round(minDim * 0.024);
     ctx.save();
     ctx.font = `700 ${badgeFS}px "Work Sans", sans-serif`;
     ctx.textAlign = 'right';
-    ctx.fillStyle = 'rgba(255,255,255,0.18)';
-    try { ctx.letterSpacing = `${badgeFS * 0.3}px`; } catch {}
+    ctx.fillStyle = 'rgba(255,255,255,0.30)';
+    try { ctx.letterSpacing = `${badgeFS * 0.25}px`; } catch {}
     ctx.fillText('NEW RELEASE', width - margin, margin + badgeFS);
     ctx.restore();
 
-    // ─── ACCENT LINE ─────────────────────────────────
+    // ═══════════ ACCENT LINE ═══════════
     const lineW = minDim * 0.06;
-    const lineTh = Math.max(2.5, minDim * 0.003);
+    const lineTh = Math.max(3, minDim * 0.004);
     ctx.save();
     ctx.fillStyle = '#6b1515';
     ctx.fillRect(textX, textY, lineW, lineTh);
     ctx.restore();
 
-    // ─── SONG TITLE ──────────────────────────────────
+    // ═══════════ SONG TITLE — BIG ═══════════
     const titleFS = isLandscape
-      ? Math.round(minDim * 0.06)
-      : Math.round(minDim * 0.07);
+      ? Math.round(minDim * 0.07)
+      : Math.round(minDim * 0.08);
     const titleFont = `700 ${titleFS}px "Outfit", sans-serif`;
     const titleLines = wrapText(ctx, songTitle.toUpperCase(), textW, titleFont);
-    const titleLH = titleFS * 1.18;
-    const titleStartY = textY + lineTh + margin * 0.5 + titleFS;
-
-    // Clamp: don't draw below bottom bar
-    const maxTextBottom = height - bottomBarH - margin * 0.5;
+    const titleLH = titleFS * 1.15;
+    const titleStartY = textY + lineTh + margin * 0.4 + titleFS;
+    const maxTextBottom = height - bottomBarH - margin * 0.3;
 
     ctx.save();
     ctx.textAlign = 'left';
@@ -268,25 +250,25 @@ export default function AdminPosterGenerator() {
     });
     ctx.restore();
 
-    // ─── ARTIST NAME ─────────────────────────────────
+    // ═══════════ ARTIST NAME — LARGER & BRIGHTER ═══════════
     const lastTitleY = titleStartY + (titleLines.length - 1) * titleLH;
-    const artistFS = Math.round(minDim * 0.03);
-    const artistY = Math.min(lastTitleY + margin * 0.7, maxTextBottom - artistFS);
+    const artistFS = Math.round(minDim * 0.04);
+    const artistY = Math.min(lastTitleY + margin * 0.6, maxTextBottom - artistFS);
 
     ctx.save();
     ctx.textAlign = 'left';
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
     ctx.font = `400 ${artistFS}px "Italiana", sans-serif`;
-    try { ctx.letterSpacing = `${artistFS * 0.12}px`; } catch {}
+    try { ctx.letterSpacing = `${artistFS * 0.1}px`; } catch {}
     ctx.fillText(artistName.toUpperCase(), textX, artistY, textW);
     ctx.restore();
 
-    // ─── BOTTOM BAR ──────────────────────────────────
+    // ═══════════ BOTTOM BAR — BIGGER ═══════════
     const bottomY = height - bottomBarH;
 
-    // Separator line
+    // Separator
     ctx.save();
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(margin, bottomY);
@@ -294,14 +276,14 @@ export default function AdminPosterGenerator() {
     ctx.stroke();
     ctx.restore();
 
-    // "OUT NOW" pill — bottom right
-    const pillFS = Math.round(minDim * 0.02);
+    // "OUT NOW" pill — LARGER
+    const pillFS = Math.round(minDim * 0.028);
     ctx.save();
     ctx.font = `700 ${pillFS}px "Outfit", sans-serif`;
     const pillText = 'OUT NOW';
     const ptw = ctx.measureText(pillText).width;
     const pW = ptw + pillFS * 2;
-    const pH = pillFS * 2.2;
+    const pH = pillFS * 2.4;
     const pX = width - margin - pW;
     const pY = bottomY + (bottomBarH - pH) / 2;
     ctx.fillStyle = '#6b1515';
@@ -314,14 +296,14 @@ export default function AdminPosterGenerator() {
     ctx.fillText(pillText, pX + pW / 2, pY + pH / 2);
     ctx.restore();
 
-    // Bottom tagline — left of pill
-    const tagFS = Math.round(minDim * 0.013);
+    // "AVAILABLE ON ALL MAJOR STREAMING PLATFORMS" — LARGER & BRIGHTER
+    const tagFS = Math.round(minDim * 0.02);
     ctx.save();
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'rgba(255,255,255,0.28)';
+    ctx.fillStyle = 'rgba(255,255,255,0.50)';
     ctx.font = `400 ${tagFS}px "Outfit", sans-serif`;
-    try { ctx.letterSpacing = `${tagFS * 0.15}px`; } catch {}
+    try { ctx.letterSpacing = `${tagFS * 0.1}px`; } catch {}
     const tagMaxW = pX - margin * 2;
     ctx.fillText('AVAILABLE ON ALL MAJOR STREAMING PLATFORMS', margin, bottomY + bottomBarH / 2, tagMaxW);
     ctx.restore();
@@ -436,10 +418,8 @@ export default function AdminPosterGenerator() {
             </div>
 
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-              <img src={logoUrl || harmonetLogo} alt="Logo" className="h-8 w-auto object-contain" />
-              <span className="text-sm text-muted-foreground">
-                {logoUrl ? 'Company logo will be used' : 'Harmonet Music logo will be used'}
-              </span>
+              <img src={harmonetLogo} alt="Harmonet Music" className="h-8 w-auto object-contain" />
+              <span className="text-sm text-muted-foreground">Harmonet Music logo will be used on poster</span>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
