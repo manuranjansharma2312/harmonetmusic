@@ -505,7 +505,7 @@ export default function AdminAgreementGenerator() {
             dangerouslySetInnerHTML={{ __html: previewHtml }}
           />
           <div className="flex justify-end pt-4">
-            <Button onClick={handleDownload}>
+            <Button className="bg-black hover:bg-black/90 text-white" onClick={handleDownload}>
               <Download className="h-4 w-4 mr-2" /> Download PDF
             </Button>
           </div>
