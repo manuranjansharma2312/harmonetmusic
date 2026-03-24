@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
@@ -8,8 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Dialog as ConfirmDialogWrapper, DialogContent as ConfirmContent, DialogHeader as ConfirmHeader, DialogTitle as ConfirmTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Plus, Trash2, Download, Eye, Pencil, X, FileText } from 'lucide-react';
+import { Plus, Trash2, Download, Eye, Pencil, X, FileText, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -46,6 +47,24 @@ const emptyForm = {
   taxes: [] as InvoiceTax[],
 };
 
+// Convert image to base64 for PDF embedding
+const loadLogoBase64 = (): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve('');
+    img.src = '/images/harmonet-logo-color.png';
+  });
+};
+
 export default function AdminInvoices() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +76,11 @@ export default function AdminInvoices() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
-  const perPage = 10;
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [search, setSearch] = useState('');
+  const [logoBase64, setLogoBase64] = useState('');
+
+  useEffect(() => { loadLogoBase64().then(setLogoBase64); }, []);
 
   const fetchInvoices = async () => {
     setLoading(true);
@@ -71,8 +94,20 @@ export default function AdminInvoices() {
 
   useEffect(() => { fetchInvoices(); }, []);
 
-  const totalPages = Math.ceil(invoices.length / perPage);
-  const paged = invoices.slice((page - 1) * perPage, page * perPage);
+  const filtered = useMemo(() => {
+    if (!search.trim()) return invoices;
+    const q = search.toLowerCase();
+    return invoices.filter(inv =>
+      inv.billing_name.toLowerCase().includes(q) ||
+      String(inv.user_display_id).includes(q) ||
+      inv.invoice_date.includes(q)
+    );
+  }, [invoices, search]);
+
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => { setPage(1); }, [search, pageSize]);
 
   const calcTotals = (amt: number, sharePercent: number, taxes: InvoiceTax[]) => {
     const harmonetShare = (amt * sharePercent) / 100;
@@ -141,84 +176,162 @@ export default function AdminInvoices() {
 
   const generatePDF = (inv: Invoice) => {
     const doc = new jsPDF();
-    const { harmonetShare, totalTax, net } = calcTotals(inv.amount, inv.harmonet_share_percent, inv.taxes);
+    const pw = doc.internal.pageSize.getWidth();
+    const { harmonetShare, net } = calcTotals(inv.amount, inv.harmonet_share_percent, inv.taxes);
+    const brandColor: [number, number, number] = [107, 21, 21]; // #6b1515
 
-    // Header
-    doc.setFontSize(22);
-    doc.setFont('helvetica', 'bold');
-    doc.text('INVOICE', 14, 22);
+    // ── Top accent bar ──
+    doc.setFillColor(...brandColor);
+    doc.rect(0, 0, pw, 4, 'F');
 
-    doc.setFontSize(12);
+    // ── Logo ──
+    if (logoBase64) {
+      doc.addImage(logoBase64, 'PNG', 14, 10, 45, 18);
+    } else {
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...brandColor);
+      doc.text('HARMONET MUSIC', 14, 22);
+    }
+
+    // ── INVOICE title ──
+    doc.setFontSize(28);
     doc.setFont('helvetica', 'bold');
-    doc.text('Harmonet Music', 14, 32);
+    doc.setTextColor(...brandColor);
+    doc.text('INVOICE', pw - 14, 22, { align: 'right' });
+
+    // ── Tagline ──
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
+    doc.setTextColor(120);
+    doc.text('Harmony On Networks', 14, 33);
 
-    // Invoice details
-    doc.text(`Invoice Date: ${format(new Date(inv.invoice_date), 'dd MMM yyyy')}`, 140, 22);
-    doc.text(`User ID: ${inv.user_display_id}`, 140, 28);
+    // ── Divider ──
+    doc.setDrawColor(...brandColor);
+    doc.setLineWidth(0.8);
+    doc.line(14, 37, pw - 14, 37);
 
-    doc.setDrawColor(100, 100, 255);
-    doc.setLineWidth(0.5);
-    doc.line(14, 38, 196, 38);
-
-    // Bill To
-    doc.setFontSize(10);
+    // ── Invoice details (right side) ──
+    doc.setFontSize(9);
+    doc.setTextColor(80);
     doc.setFont('helvetica', 'bold');
-    doc.text('Bill To:', 14, 46);
+    doc.text('Invoice Date:', pw - 80, 45);
+    doc.text('User ID:', pw - 80, 52);
+
     doc.setFont('helvetica', 'normal');
+    doc.text(format(new Date(inv.invoice_date), 'dd MMM yyyy'), pw - 14, 45, { align: 'right' });
+    doc.text(String(inv.user_display_id), pw - 14, 52, { align: 'right' });
+
+    // ── Bill To ──
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...brandColor);
+    doc.text('BILL TO', 14, 45);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(50);
+    doc.setFontSize(11);
     doc.text(inv.billing_name, 14, 52);
 
-    // Items table
+    // ── Items Table ──
     const tableRows = inv.items.map((item, i) => [
       String(i + 1),
       item.description,
-      `₹${Number(item.amount).toFixed(2)}`,
+      `Rs. ${Number(item.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
     ]);
 
     autoTable(doc, {
-      startY: 60,
-      head: [['#', 'Description', 'Amount']],
+      startY: 62,
+      head: [['#', 'Description', 'Amount (Rs.)']],
       body: tableRows,
-      theme: 'grid',
-      headStyles: { fillColor: [79, 70, 229], textColor: 255, fontStyle: 'bold' },
-      styles: { fontSize: 10 },
-      columnStyles: { 0: { cellWidth: 15 }, 2: { halign: 'right', cellWidth: 40 } },
+      theme: 'striped',
+      headStyles: {
+        fillColor: brandColor,
+        textColor: 255,
+        fontStyle: 'bold',
+        fontSize: 10,
+        cellPadding: 4,
+      },
+      bodyStyles: {
+        fontSize: 9,
+        cellPadding: 3.5,
+        textColor: [50, 50, 50],
+      },
+      alternateRowStyles: {
+        fillColor: [252, 245, 245],
+      },
+      columnStyles: {
+        0: { cellWidth: 14, halign: 'center' },
+        2: { halign: 'right', cellWidth: 45 },
+      },
+      styles: {
+        lineColor: [220, 220, 220],
+        lineWidth: 0.3,
+      },
+      margin: { left: 14, right: 14 },
     });
 
-    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    const finalY = (doc as any).lastAutoTable.finalY + 12;
 
-    // Summary
-    const summaryX = 120;
+    // ── Summary Box ──
+    const boxX = pw - 100;
+    const boxW = 86;
+    let sy = finalY;
+
+    // Background for summary
+    const summaryLines = 2 + inv.taxes.length + 1; // subtotal + share + taxes + net
+    const boxH = summaryLines * 8 + 16;
+    doc.setFillColor(252, 245, 245);
+    doc.setDrawColor(220, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(boxX - 4, sy - 6, boxW + 8, boxH, 3, 3, 'FD');
+
+    doc.setFontSize(9);
+    doc.setTextColor(80);
     doc.setFont('helvetica', 'normal');
-    doc.text('Subtotal:', summaryX, finalY);
-    doc.text(`₹${inv.amount.toFixed(2)}`, 180, finalY, { align: 'right' });
 
-    doc.text(`Harmonet Share (${inv.harmonet_share_percent}%):`, summaryX, finalY + 7);
-    doc.text(`- ₹${harmonetShare.toFixed(2)}`, 180, finalY + 7, { align: 'right' });
+    doc.text('Subtotal:', boxX, sy);
+    doc.text(`Rs. ${inv.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, boxX + boxW, sy, { align: 'right' });
+    sy += 8;
 
-    let taxY = finalY + 14;
+    doc.setTextColor(180, 50, 50);
+    doc.text(`Harmonet Share (${inv.harmonet_share_percent}%):`, boxX, sy);
+    doc.text(`- Rs. ${harmonetShare.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, boxX + boxW, sy, { align: 'right' });
+    sy += 8;
+
     inv.taxes.forEach(t => {
       const tAmt = (inv.amount * t.percent) / 100;
-      doc.text(`${t.name} (${t.percent}%):`, summaryX, taxY);
-      doc.text(`- ₹${tAmt.toFixed(2)}`, 180, taxY, { align: 'right' });
-      taxY += 7;
+      doc.text(`${t.name} (${t.percent}%):`, boxX, sy);
+      doc.text(`- Rs. ${tAmt.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, boxX + boxW, sy, { align: 'right' });
+      sy += 8;
     });
 
-    doc.setDrawColor(100, 100, 255);
-    doc.line(summaryX, taxY, 190, taxY);
-    taxY += 7;
+    // Net line
+    doc.setDrawColor(...brandColor);
+    doc.setLineWidth(0.6);
+    doc.line(boxX, sy - 2, boxX + boxW, sy - 2);
+    sy += 4;
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
-    doc.text('Net Payable:', summaryX, taxY);
-    doc.text(`₹${net.toFixed(2)}`, 180, taxY, { align: 'right' });
+    doc.setTextColor(...brandColor);
+    doc.text('Net Payable:', boxX, sy);
+    doc.text(`Rs. ${net.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, boxX + boxW, sy, { align: 'right' });
 
-    // Footer
+    // ── Footer ──
+    const footerY = 272;
+    doc.setDrawColor(...brandColor);
+    doc.setLineWidth(0.5);
+    doc.line(14, footerY, pw - 14, footerY);
+
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(130);
-    doc.text('This is a computer-generated invoice by Harmonet Music.', 14, 280);
+    doc.setTextColor(140);
+    doc.text('This is a computer-generated invoice by Harmonet Music.', 14, footerY + 6);
+    doc.text('Harmony On Networks | www.harmonetmusic.com', 14, footerY + 11);
+
+    // Bottom accent bar
+    doc.setFillColor(...brandColor);
+    doc.rect(0, doc.internal.pageSize.getHeight() - 4, pw, 4, 'F');
 
     return doc;
   };
@@ -261,10 +374,13 @@ export default function AdminInvoices() {
     form.taxes
   );
 
+  const startItem = (page - 1) * pageSize + 1;
+  const endItem = Math.min(page * pageSize, filtered.length);
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Generate Invoice</h1>
             <p className="text-muted-foreground text-sm">Create and manage invoices</p>
@@ -272,6 +388,17 @@ export default function AdminInvoices() {
           <Button onClick={openCreate} className="gap-2">
             <Plus className="h-4 w-4" /> New Invoice
           </Button>
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name, user ID, or date..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="pl-10"
+          />
         </div>
 
         <GlassCard>
@@ -291,7 +418,7 @@ export default function AdminInvoices() {
                 {loading ? (
                   <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
                 ) : paged.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No invoices yet</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{search ? 'No matching invoices' : 'No invoices yet'}</TableCell></TableRow>
                 ) : paged.map(inv => {
                   const { net } = calcTotals(inv.amount, inv.harmonet_share_percent, inv.taxes);
                   return (
@@ -300,7 +427,7 @@ export default function AdminInvoices() {
                       <TableCell>{inv.user_display_id}</TableCell>
                       <TableCell>{format(new Date(inv.invoice_date), 'dd MMM yyyy')}</TableCell>
                       <TableCell>₹{inv.amount.toFixed(2)}</TableCell>
-                      <TableCell className="font-semibold text-emerald-400">₹{net.toFixed(2)}</TableCell>
+                      <TableCell className="font-semibold text-primary">₹{net.toFixed(2)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Button variant="ghost" size="icon" onClick={() => openPreview(inv)} title="Preview">
@@ -323,11 +450,50 @@ export default function AdminInvoices() {
               </TableBody>
             </Table>
           </div>
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 py-4">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
-              <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
-              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
+
+          {/* Pagination */}
+          {filtered.length > 0 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>Showing {startItem}–{endItem} of {filtered.length}</span>
+                <Select value={String(pageSize)} onValueChange={v => setPageSize(Number(v))}>
+                  <SelectTrigger className="w-[70px] h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="25">25</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span>per page</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button variant="outline" size="icon" className="h-8 w-8" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  let pageNum: number;
+                  if (totalPages <= 5) pageNum = i + 1;
+                  else if (page <= 3) pageNum = i + 1;
+                  else if (page >= totalPages - 2) pageNum = totalPages - 4 + i;
+                  else pageNum = page - 2 + i;
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={pageNum === page ? 'default' : 'outline'}
+                      size="icon"
+                      className="h-8 w-8 text-xs"
+                      onClick={() => setPage(pageNum)}
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+                <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           )}
         </GlassCard>
@@ -366,19 +532,8 @@ export default function AdminInvoices() {
               <div className="space-y-2">
                 {form.items.map((item, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <Input
-                      placeholder="Description"
-                      value={item.description}
-                      onChange={e => updateItem(i, 'description', e.target.value)}
-                      className="flex-1"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Amount"
-                      value={item.amount || ''}
-                      onChange={e => updateItem(i, 'amount', e.target.value)}
-                      className="w-32"
-                    />
+                    <Input placeholder="Description" value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} className="flex-1" />
+                    <Input type="number" placeholder="Amount" value={item.amount || ''} onChange={e => updateItem(i, 'amount', e.target.value)} className="w-32" />
                     {form.items.length > 1 && (
                       <Button type="button" variant="ghost" size="icon" onClick={() => removeItem(i)} className="text-destructive shrink-0">
                         <X className="h-4 w-4" />
@@ -437,7 +592,7 @@ export default function AdminInvoices() {
                 </div>
               ))}
               <div className="border-t border-border pt-2 flex justify-between font-bold text-lg">
-                <span>Net Payable</span><span className="text-emerald-400">₹{formNet.toFixed(2)}</span>
+                <span>Net Payable</span><span className="text-primary">₹{formNet.toFixed(2)}</span>
               </div>
             </div>
 
@@ -456,7 +611,7 @@ export default function AdminInvoices() {
             <DialogTitle className="flex items-center gap-2"><FileText className="h-5 w-5" /> Invoice Preview</DialogTitle>
           </DialogHeader>
           {previewInvoice && (() => {
-            const { harmonetShare, totalTax, net } = calcTotals(previewInvoice.amount, previewInvoice.harmonet_share_percent, previewInvoice.taxes);
+            const { harmonetShare, net } = calcTotals(previewInvoice.amount, previewInvoice.harmonet_share_percent, previewInvoice.taxes);
             return (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-2 text-sm">
@@ -490,7 +645,7 @@ export default function AdminInvoices() {
                     </div>
                   ))}
                   <div className="border-t border-border pt-2 flex justify-between font-bold text-base">
-                    <span>Net Payable</span><span className="text-emerald-400">₹{net.toFixed(2)}</span>
+                    <span>Net Payable</span><span className="text-primary">₹{net.toFixed(2)}</span>
                   </div>
                 </div>
 
