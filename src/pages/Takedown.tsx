@@ -170,6 +170,27 @@ export default function Takedown() {
 
                 {paymentEnabled && (
                   <>
+                    {/* Amount Breakdown */}
+                    {takedownAmount > 0 && (
+                      <div className="p-4 rounded-lg border border-border bg-muted/30 space-y-2">
+                        <p className="font-semibold text-foreground">Payment Details</p>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Takedown Fee</span>
+                          <span className="text-foreground">₹{takedownAmount.toFixed(2)}</span>
+                        </div>
+                        {takedownTaxEnabled && taxes.map((t, i) => (
+                          <div key={i} className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">{t.name} ({t.percent}%)</span>
+                            <span className="text-foreground">₹{(takedownAmount * t.percent / 100).toFixed(2)}</span>
+                          </div>
+                        ))}
+                        <div className="flex justify-between text-sm font-bold border-t border-border pt-2 mt-2">
+                          <span>Total Payable</span>
+                          <span>₹{totalPayable.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    )}
+
                     {qrCodeUrl && (
                       <div className="space-y-2">
                         <Label className="text-base font-semibold">Scan QR to Pay</Label>
