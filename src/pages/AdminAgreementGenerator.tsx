@@ -156,6 +156,7 @@ interface GovtId {
 
 export default function AdminAgreementGenerator() {
   const [templateId, setTemplateId] = useState("");
+  const [clientType, setClientType] = useState("Artist");
   const [dateOfAgreement, setDateOfAgreement] = useState("");
   const [artistLabelName, setArtistLabelName] = useState("");
   const [legalName, setLegalName] = useState("");
