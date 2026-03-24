@@ -63,6 +63,21 @@ export default function AdminPosterGenerator() {
       img.src = src;
     });
 
+  const fitSingleLineFontSize = (
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    maxWidth: number,
+    startSize: number,
+    minSize: number,
+    getFont: (size: number) => string,
+  ) => {
+    for (let size = startSize; size >= minSize; size -= 1) {
+      ctx.font = getFont(size);
+      if (ctx.measureText(text).width <= maxWidth) return size;
+    }
+    return minSize;
+  };
+
   const generatePoster = useCallback(
     async (canvas: HTMLCanvasElement) => {
       await ensureFonts();
