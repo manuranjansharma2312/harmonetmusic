@@ -26,6 +26,18 @@ interface InvoiceTax {
   percent: number;
 }
 
+interface RegistrationId {
+  name: string;
+  value: string;
+}
+
+interface CompanyDetails {
+  id?: string;
+  company_name: string;
+  address: string;
+  registration_ids: RegistrationId[];
+}
+
 interface Invoice {
   id: string;
   billing_name: string;
@@ -46,6 +58,12 @@ const emptyForm = {
   amount: 0,
   harmonet_share_percent: 0,
   taxes: [] as InvoiceTax[],
+};
+
+const emptyCompany: CompanyDetails = {
+  company_name: 'Harmonet Music',
+  address: '',
+  registration_ids: [],
 };
 
 // Convert image to base64 for PDF embedding
