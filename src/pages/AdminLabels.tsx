@@ -45,12 +45,14 @@ export default function AdminLabels() {
     // Fetch user emails
     const userIds = [...new Set(labelsData.map(l => l.user_id))];
     if (userIds.length > 0) {
-      const { data: profiles } = await supabase.from('profiles').select('user_id, email, artist_name, record_label_name, user_type').in('user_id', userIds);
+      const { data: profiles } = await supabase.from('profiles').select('user_id, email, artist_name, record_label_name, user_type, display_id').in('user_id', userIds);
       const emailMap: Record<string, string> = {};
+      const displayIdMap: Record<string, number> = {};
       profiles?.forEach((p: any) => {
         emailMap[p.user_id] = p.user_type === 'label'
           ? (p.record_label_name || p.email)
           : (p.artist_name || p.email);
+        if (p.display_id) displayIdMap[p.user_id] = p.display_id;
       });
       // Fallback for missing profiles
       const missingIds = userIds.filter(id => !emailMap[id]);
