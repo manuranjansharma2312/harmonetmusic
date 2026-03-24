@@ -22,6 +22,7 @@ import {
   MonitorPlay,
   Wallet,
   FileText,
+  Receipt,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
