@@ -118,12 +118,12 @@ export default function AdminPosterGenerator() {
       ctx.restore();
 
       // === COVER ART AREA (centered white rounded rect) ===
-      const coverMarginX = 80;
-      const coverTop = 200;
-      const coverSize = W - coverMarginX * 2; // 920px square
+      const coverMarginX = 100;
+      const coverTop = 190;
+      const coverSize = W - coverMarginX * 2; // 880px square
       const coverX = coverMarginX;
       const coverY = coverTop;
-      const radius = 20;
+      const radius = 18;
 
       // White background for cover area
       ctx.save();
@@ -145,7 +145,7 @@ export default function AdminPosterGenerator() {
 
       // Subtle border on cover
       ctx.save();
-      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.roundRect(coverX, coverY, coverSize, coverSize, radius);
@@ -153,63 +153,86 @@ export default function AdminPosterGenerator() {
       ctx.restore();
 
       // === SONG TITLE & ARTIST (below cover) ===
-      const textAreaTop = coverY + coverSize + 30;
-      const textAreaBottom = H - 160; // reserve space for bottom section
-      const availableTextH = textAreaBottom - textAreaTop;
+      const textAreaTop = coverY + coverSize + 20;
+      const bottomSectionY = H - 130;
 
+      // Song title — big, bold, white, centered
       if (songTitle.trim()) {
-        // Song title - large, bold italic
-        const maxTitleSize = 78;
-        const minTitleSize = 40;
         const titleUpper = songTitle.trim().toUpperCase();
-        let titleSize = maxTitleSize;
+        const maxW = W - margin * 2;
 
-        for (let s = maxTitleSize; s >= minTitleSize; s -= 2) {
-          ctx.font = `italic 700 ${s}px "Outfit", sans-serif`;
-          if (ctx.measureText(titleUpper).width <= W - margin * 2) {
+        // Auto-fit font size
+        let titleSize = 82;
+        for (let s = 82; s >= 36; s -= 2) {
+          ctx.font = `800 ${s}px "Outfit", sans-serif`;
+          if (ctx.measureText(titleUpper).width <= maxW) {
             titleSize = s;
             break;
           }
           titleSize = s;
         }
 
+        // Shadow for depth
         ctx.save();
-        ctx.font = `italic 700 ${titleSize}px "Outfit", sans-serif`;
+        ctx.font = `800 ${titleSize}px "Outfit", sans-serif`;
         ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetY = 4;
         ctx.fillStyle = '#ffffff';
-        ctx.fillText(titleUpper, W / 2, textAreaTop + titleSize, W - margin * 2);
+        ctx.fillText(titleUpper, W / 2, textAreaTop, maxW);
         ctx.restore();
 
-        // Artist name below song title - visible and clear
+        // Artist name — slightly smaller, bold, below title
         if (artistName.trim()) {
-          const artistSize = Math.max(30, Math.min(42, titleSize - 20));
+          const artistY = textAreaTop + titleSize + 12;
+          let artistSize = 44;
+          const artistText = artistName.trim();
+          for (let s = 44; s >= 24; s -= 2) {
+            ctx.font = `700 ${s}px "Outfit", sans-serif`;
+            if (ctx.measureText(artistText).width <= maxW) {
+              artistSize = s;
+              break;
+            }
+            artistSize = s;
+          }
+
           ctx.save();
           ctx.font = `700 ${artistSize}px "Outfit", sans-serif`;
           ctx.textAlign = 'center';
-          ctx.fillStyle = 'rgba(255,255,255,0.9)';
-          ctx.fillText(artistName.trim(), W / 2, textAreaTop + titleSize + artistSize + 14, W - margin * 2);
+          ctx.textBaseline = 'top';
+          ctx.shadowColor = 'rgba(0,0,0,0.4)';
+          ctx.shadowBlur = 8;
+          ctx.shadowOffsetY = 3;
+          ctx.fillStyle = 'rgba(255,255,255,0.92)';
+          ctx.fillText(artistText, W / 2, artistY, maxW);
           ctx.restore();
         }
       }
 
       // === BOTTOM SECTION ===
-      const bottomY = H - 120;
+      const bottomY = bottomSectionY;
 
       // "OUT NOW" - large bold, bottom-left
       ctx.save();
-      ctx.font = '700 72px "Outfit", sans-serif';
+      ctx.font = '800 80px "Outfit", sans-serif';
       ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.shadowColor = 'rgba(0,0,0,0.4)';
+      ctx.shadowBlur = 8;
       ctx.fillStyle = '#ffffff';
-      ctx.fillText('OUT NOW', margin, bottomY + 10);
+      ctx.fillText('OUT NOW', margin, bottomY);
       ctx.restore();
 
       // "AVAILABLE ON ALL MAJOR STREAMING PLATFORMS!" - bottom-right
       ctx.save();
       ctx.textAlign = 'right';
-      ctx.fillStyle = 'rgba(255,255,255,0.85)';
-      ctx.font = '700 22px "Outfit", sans-serif';
-      ctx.fillText('AVAILABLE ON ALL MAJOR', W - margin, bottomY - 18);
-      ctx.fillText('STREAMING PLATFORMS!', W - margin, bottomY + 12);
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = 'rgba(255,255,255,0.88)';
+      ctx.font = '700 24px "Outfit", sans-serif';
+      ctx.fillText('AVAILABLE ON ALL MAJOR', W - margin, bottomY + 10);
+      ctx.fillText('STREAMING PLATFORMS!', W - margin, bottomY + 42);
       ctx.restore();
     },
     [posterPreview, songTitle, artistName],
