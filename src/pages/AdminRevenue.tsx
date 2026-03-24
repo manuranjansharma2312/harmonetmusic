@@ -230,19 +230,18 @@ export default function AdminRevenue() {
                         <StatusBadge status={w.status} />
                       </TableCell>
                       <TableCell>
-                        {w.status === 'pending' ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateStatus(w.id, 'paid')}
-                            className="gap-1.5"
-                          >
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                            Mark Paid
-                          </Button>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">Completed</span>
-                        )}
+                        <Select
+                          value={w.status}
+                          onValueChange={(val) => updateStatus(w.id, val)}
+                        >
+                          <SelectTrigger className="w-[120px] h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="paid">Paid</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                     </TableRow>
                   ))
