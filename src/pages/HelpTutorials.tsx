@@ -98,10 +98,7 @@ export default function HelpTutorials() {
           <DialogHeader>
             <DialogTitle>{viewTutorial?.subject}</DialogTitle>
           </DialogHeader>
-          <div
-            className="max-w-none tutorial-content text-foreground"
-            dangerouslySetInnerHTML={{ __html: viewTutorial?.content || '' }}
-          />
+          <TutorialContent html={viewTutorial?.content || ''} />
         </DialogContent>
       </Dialog>
     </DashboardLayout>
