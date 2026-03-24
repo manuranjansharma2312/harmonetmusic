@@ -34,6 +34,8 @@ export default function AdminPaymentSettings() {
       setSettingsId(data.id);
       setIsEnabled(data.is_enabled);
       setTakedownPaymentEnabled(data.takedown_payment_enabled || false);
+      setTakedownAmount((data as any).takedown_amount || 0);
+      setTakedownTaxEnabled((data as any).takedown_tax_enabled || false);
       setQrCodeUrl(data.qr_code_url);
       const taxData = data.taxes as any;
       if (Array.isArray(taxData)) setTaxes(taxData);
