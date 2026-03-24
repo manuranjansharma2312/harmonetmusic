@@ -111,10 +111,34 @@ export default function PromotionTools() {
   const totalCost = (baseAmount + totalTax).toFixed(2);
 
   const submitOrder = async () => {
-    if (!selectedProduct || !quantity || !screenshot || !user) {
-      toast.error('Please fill all fields and upload screenshot');
+    if (!selectedProduct || !quantity || !screenshot || !user || !transactionId.trim()) {
+      toast.error('Please fill all fields including Transaction ID and upload screenshot');
       return;
     }
+
+    // Validate transaction ID uniqueness
+    const tid = transactionId.trim();
+    const { data: poDup } = await supabase
+      .from('promotion_orders')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('transaction_id', tid)
+      .limit(1);
+    if (poDup && poDup.length > 0) {
+      toast.error('This Transaction ID has already been used in a previous order.');
+      return;
+    }
+    const { data: crDup } = await supabase
+      .from('content_requests')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('transaction_id', tid)
+      .limit(1);
+    if (crDup && crDup.length > 0) {
+      toast.error('This Transaction ID has already been used in a takedown request.');
+      return;
+    }
+
     setSubmitting(true);
 
     const ext = screenshot.name.split('.').pop();
@@ -130,6 +154,7 @@ export default function PromotionTools() {
       quantity: qty,
       total_amount: Number(totalCost),
       screenshot_url: urlData.publicUrl,
+      transaction_id: tid,
     });
 
     if (error) { toast.error('Failed to submit order'); setSubmitting(false); return; }
@@ -139,6 +164,7 @@ export default function PromotionTools() {
     setSelectedProduct('');
     setQuantity('');
     setScreenshot(null);
+    setTransactionId('');
     fetchOrders();
   };
 
