@@ -40,6 +40,7 @@ export default function AdminContentRequests() {
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('all');
   const [rejectTarget, setRejectTarget] = useState<any | null>(null);
+  const [userInfoMap, setUserInfoMap] = useState<Record<string, { name: string; displayId?: number }>>({});
 
   const fetchRequests = async () => {
     let query = supabase
