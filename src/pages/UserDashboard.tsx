@@ -11,6 +11,7 @@ import { Music, Clock, CheckCircle, XCircle, Loader2, Copy, X, BookOpen, ArrowRi
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { TutorialContent } from '@/components/TutorialContent';
 
 export default function UserDashboard() {
   const { user } = useAuth();

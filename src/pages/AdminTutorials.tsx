@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { Plus, Trash2, Edit2, Eye, EyeOff, ChevronLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { TutorialContent } from '@/components/TutorialContent';
 
 interface Tutorial {
   id: string;
