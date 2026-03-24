@@ -81,7 +81,6 @@ export default function AdminPosterGenerator() {
   const generatePoster = useCallback(
     async (canvas: HTMLCanvasElement) => {
       await ensureFonts();
-      if (!posterPreview) return;
 
       const W = POSTER_W;
       const H = POSTER_H;
@@ -242,9 +241,9 @@ export default function AdminPosterGenerator() {
   );
 
   useEffect(() => {
-    if (!posterPreview) return;
     const canvas = previewCanvasRef.current;
     if (!canvas) return;
+    if (!posterPreview && !songTitle && !artistName) return;
     generatePoster(canvas);
   }, [generatePoster, posterPreview, songTitle, artistName]);
 
@@ -287,7 +286,7 @@ export default function AdminPosterGenerator() {
                 className="relative cursor-pointer rounded-xl border-2 border-dashed border-border p-6 text-center transition-colors hover:border-primary/50"
                 onClick={() => document.getElementById('poster-upload')?.click()}
               >
-                {posterPreview ? (
+                {(posterPreview || songTitle || artistName) ? (
                   <img src={posterPreview} alt="Cover" className="mx-auto max-h-48 rounded-lg object-contain" />
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
