@@ -51,7 +51,27 @@ export default function AdminContentRequests() {
       query = query.eq('request_type', filterType);
     }
     const { data, error } = await query;
-    if (!error && data) setRequests(data);
+    if (!error && data) {
+      setRequests(data);
+      // Fetch user info
+      const userIds = [...new Set(data.map((r: any) => r.user_id))];
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase.from('profiles').select('user_id, email, artist_name, record_label_name, user_type, display_id').in('user_id', userIds);
+        const infoMap: Record<string, { name: string; displayId?: number }> = {};
+        profiles?.forEach((p: any) => {
+          infoMap[p.user_id] = {
+            name: p.user_type === 'label' ? (p.record_label_name || p.email) : (p.artist_name || p.email),
+            displayId: p.display_id,
+          };
+        });
+        const missingIds = userIds.filter((id: string) => !infoMap[id]);
+        if (missingIds.length > 0) {
+          const { data: authEmails } = await supabase.rpc('get_auth_emails', { _user_ids: missingIds });
+          authEmails?.forEach((ae: any) => { infoMap[ae.user_id] = { name: ae.email }; });
+        }
+        setUserInfoMap(infoMap);
+      }
+    }
     setLoading(false);
   };
 
