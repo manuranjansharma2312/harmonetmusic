@@ -145,7 +145,7 @@ export default function Revenue() {
     );
   }
 
-  if (hasBankDetails === false) {
+  if (hasBankDetails === false && role !== 'admin') {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
