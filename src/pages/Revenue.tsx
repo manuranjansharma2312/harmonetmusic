@@ -50,6 +50,13 @@ export default function Revenue() {
   async function fetchData() {
     setLoading(true);
     try {
+      // Check bank details first
+      const { data: bankData } = await supabase
+        .from('bank_details')
+        .select('id')
+        .eq('user_id', activeUserId!)
+        .maybeSingle();
+      setHasBankDetails(!!bankData);
       // Fetch total revenue from OTT reports
       const { data: ottData } = await supabase
         .from('report_entries')
