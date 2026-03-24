@@ -46,12 +46,14 @@ type Profile = {
   created_at: string;
 };
 
-function VerificationBadge({ status }: { status: string }) {
-  if (status === 'verified') return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 whitespace-nowrap"><ShieldCheck className="h-3 w-3" />Verified</span>;
-  if (status === 'rejected') return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 whitespace-nowrap"><ShieldX className="h-3 w-3" />Rejected</span>;
-  if (status === 'suspended') return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-500/20 text-orange-400 whitespace-nowrap"><ShieldAlert className="h-3 w-3" />Suspended</span>;
-  return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400 whitespace-nowrap"><Shield className="h-3 w-3" />Pending</span>;
-}
+const VerificationBadge = React.forwardRef<HTMLSpanElement, { status: string }>(
+  ({ status }, ref) => {
+    if (status === 'verified') return <span ref={ref} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 whitespace-nowrap"><ShieldCheck className="h-3 w-3" />Verified</span>;
+    if (status === 'rejected') return <span ref={ref} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 whitespace-nowrap"><ShieldX className="h-3 w-3" />Rejected</span>;
+    if (status === 'suspended') return <span ref={ref} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-500/20 text-orange-400 whitespace-nowrap"><ShieldAlert className="h-3 w-3" />Suspended</span>;
+    return <span ref={ref} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400 whitespace-nowrap"><Shield className="h-3 w-3" />Pending</span>;
+  }
+);
 
 export default function AdminUsers() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
