@@ -327,6 +327,7 @@ export default function PromotionTools() {
                 <div><span className="text-muted-foreground">Amount:</span> <span className="font-medium">₹{viewOrder.total_amount}</span></div>
                 <div><span className="text-muted-foreground">Status:</span> <StatusBadge status={viewOrder.status} /></div>
                 <div><span className="text-muted-foreground">Date:</span> <span className="font-medium">{format(new Date(viewOrder.created_at), 'dd MMM yyyy')}</span></div>
+                {(viewOrder as any).transaction_id && <div><span className="text-muted-foreground">Transaction ID:</span> <span className="font-medium">{(viewOrder as any).transaction_id}</span></div>}
                 {viewOrder.starts_from && <div><span className="text-muted-foreground">Starts From:</span> <span className="font-medium">{viewOrder.starts_from}</span></div>}
               </div>
               {viewOrder.rejection_reason && (
