@@ -23,6 +23,7 @@ import {
   Wallet,
   FileText,
   Receipt,
+  Image as ImageIcon,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
