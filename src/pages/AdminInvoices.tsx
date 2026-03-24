@@ -36,6 +36,7 @@ interface CompanyDetails {
   company_name: string;
   address: string;
   registration_ids: RegistrationId[];
+  logo_url?: string;
 }
 
 interface Invoice {
@@ -64,6 +65,7 @@ const emptyCompany: CompanyDetails = {
   company_name: 'Harmonet Music',
   address: '',
   registration_ids: [],
+  logo_url: '',
 };
 
 // Convert image to base64 for PDF embedding
@@ -102,6 +104,25 @@ export default function AdminInvoices() {
   const [company, setCompany] = useState<CompanyDetails>(emptyCompany);
   const [companyForm, setCompanyForm] = useState<CompanyDetails>(emptyCompany);
   const [savingCompany, setSavingCompany] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  // Load logo base64 from URL
+  const loadLogoFromUrl = (url: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.onerror = () => resolve('');
+      img.src = url;
+    });
+  };
 
   useEffect(() => { loadLogoBase64().then(setLogoBase64); }, []);
 
@@ -117,9 +138,14 @@ export default function AdminInvoices() {
         company_name: data.company_name as string,
         address: data.address as string,
         registration_ids: (data.registration_ids as unknown as RegistrationId[]) || [],
+        logo_url: (data as any).logo_url || '',
       };
       setCompany(cd);
       setCompanyForm(cd);
+      // If custom logo exists, load it
+      if (cd.logo_url) {
+        loadLogoFromUrl(cd.logo_url).then(b64 => { if (b64) setLogoBase64(b64); });
+      }
     }
   };
 
@@ -228,6 +254,7 @@ export default function AdminInvoices() {
       company_name: companyForm.company_name,
       address: companyForm.address,
       registration_ids: companyForm.registration_ids as unknown as any,
+      logo_url: companyForm.logo_url || null,
       updated_at: new Date().toISOString(),
     };
     if (companyForm.id) {
@@ -240,6 +267,28 @@ export default function AdminInvoices() {
       else { toast.success('Company details saved'); setCompanyDetailsOpen(false); fetchCompanyDetails(); }
     }
     setSavingCompany(false);
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+    setUploadingLogo(true);
+    const ext = file.name.split('.').pop();
+    const path = `company-logo/logo-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('covers').upload(path, file, { upsert: true });
+    if (error) {
+      toast.error('Failed to upload logo');
+      setUploadingLogo(false);
+      return;
+    }
+    const { data: urlData } = supabase.storage.from('covers').getPublicUrl(path);
+    setCompanyForm(f => ({ ...f, logo_url: urlData.publicUrl }));
+    toast.success('Logo uploaded');
+    setUploadingLogo(false);
   };
 
   const addRegId = () => setCompanyForm(f => ({ ...f, registration_ids: [...f.registration_ids, { name: '', value: '' }] }));
@@ -786,6 +835,39 @@ export default function AdminInvoices() {
             <DialogTitle className="flex items-center gap-2"><Settings className="h-5 w-5" /> Company Details</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Logo Upload */}
+            <div>
+              <Label className="text-sm font-semibold">Company Logo</Label>
+              <div className="flex items-center gap-4 mt-2">
+                {companyForm.logo_url ? (
+                  <div className="relative">
+                    <img src={companyForm.logo_url} alt="Logo" className="h-16 w-16 object-contain rounded-lg border border-border bg-white p-1" />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={() => setCompanyForm(f => ({ ...f, logo_url: '' }))}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="h-16 w-16 rounded-lg border-2 border-dashed border-border flex items-center justify-center text-muted-foreground">
+                    <FileText className="h-6 w-6" />
+                  </div>
+                )}
+                <div>
+                  <label className="cursor-pointer">
+                    <Button type="button" variant="outline" size="sm" disabled={uploadingLogo} asChild>
+                      <span>{uploadingLogo ? 'Uploading...' : 'Upload Logo'}</span>
+                    </Button>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-1">PNG or JPG recommended</p>
+                </div>
+              </div>
+            </div>
             <div>
               <Label>Company Name</Label>
               <Input value={companyForm.company_name} onChange={e => setCompanyForm(f => ({ ...f, company_name: e.target.value }))} placeholder="Harmonet Music" />
