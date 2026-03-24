@@ -4,7 +4,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
-import { Loader2, User, Mail, Phone, MapPin, Globe, Shield, ShieldCheck, ShieldX, ShieldAlert, Instagram, Facebook, Music, Youtube } from 'lucide-react';
+import { Loader2, User, Mail, Phone, MapPin, Globe, Shield, ShieldCheck, ShieldX, ShieldAlert, Instagram, Facebook, Music, Youtube, Landmark } from 'lucide-react';
 
 function VerificationBadge({ status }: { status: string }) {
   if (status === 'verified') return <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400"><ShieldCheck className="h-3.5 w-3.5" />Verified</span>;
@@ -33,22 +33,35 @@ type Profile = {
   created_at: string;
 };
 
+type BankDetail = {
+  payment_method: string;
+  account_holder_name: string;
+  bank_name: string;
+  account_number: string;
+  ifsc_code: string | null;
+  branch_name: string | null;
+  swift_bic: string | null;
+  bank_address: string | null;
+  country: string | null;
+};
+
 export default function MyProfile() {
   const { user } = useAuth();
   const { isImpersonating, impersonatedUserId } = useImpersonate();
   const effectiveUserId = isImpersonating ? impersonatedUserId : user?.id;
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [bankDetail, setBankDetail] = useState<BankDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!effectiveUserId) return;
     (async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', effectiveUserId)
-        .maybeSingle();
-      setProfile(data as Profile | null);
+      const [profileRes, bankRes] = await Promise.all([
+        supabase.from('profiles').select('*').eq('user_id', effectiveUserId).maybeSingle(),
+        supabase.from('bank_details').select('*').eq('user_id', effectiveUserId).maybeSingle(),
+      ]);
+      setProfile(profileRes.data as Profile | null);
+      setBankDetail(bankRes.data as BankDetail | null);
       setLoading(false);
     })();
   }, [effectiveUserId]);
@@ -144,9 +157,68 @@ export default function MyProfile() {
           </GlassCard>
         </div>
 
+        {/* Bank Details Section */}
+        <GlassCard className="mt-6 animate-fade-in">
+          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+            <Landmark className="h-4 w-4" /> Bank Details
+          </h3>
+          {bankDetail ? (
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                <span className="text-xs text-muted-foreground">Payment Method</span>
+                <span className="text-sm font-medium text-foreground">{bankDetail.payment_method === 'wise' ? 'Wise (International)' : 'Bank Transfer (India)'}</span>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                <span className="text-xs text-muted-foreground">Account Holder</span>
+                <span className="text-sm font-medium text-foreground">{bankDetail.account_holder_name}</span>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                <span className="text-xs text-muted-foreground">Bank Name</span>
+                <span className="text-sm font-medium text-foreground">{bankDetail.bank_name}</span>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                <span className="text-xs text-muted-foreground">{bankDetail.payment_method === 'wise' ? 'Account / IBAN' : 'Account Number'}</span>
+                <span className="text-sm font-medium text-foreground">{bankDetail.account_number}</span>
+              </div>
+              {bankDetail.payment_method === 'bank_transfer' && (
+                <>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                    <span className="text-xs text-muted-foreground">IFSC Code</span>
+                    <span className="text-sm font-medium text-foreground">{bankDetail.ifsc_code || '-'}</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                    <span className="text-xs text-muted-foreground">Branch</span>
+                    <span className="text-sm font-medium text-foreground">{bankDetail.branch_name || '-'}</span>
+                  </div>
+                </>
+              )}
+              {bankDetail.payment_method === 'wise' && (
+                <>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                    <span className="text-xs text-muted-foreground">SWIFT / BIC</span>
+                    <span className="text-sm font-medium text-foreground">{bankDetail.swift_bic || '-'}</span>
+                  </div>
+                  {bankDetail.bank_address && (
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                      <span className="text-xs text-muted-foreground">Bank Address</span>
+                      <span className="text-sm font-medium text-foreground">{bankDetail.bank_address}</span>
+                    </div>
+                  )}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                    <span className="text-xs text-muted-foreground">Country</span>
+                    <span className="text-sm font-medium text-foreground">{bankDetail.country || '-'}</span>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No bank details submitted yet. <a href="/bank-details" className="text-primary hover:underline">Add bank details →</a></p>
+          )}
+        </GlassCard>
+
         <GlassCard className="mt-6 animate-fade-in">
           <p className="text-center text-xs text-muted-foreground">
-            To update your profile details, please contact the admin.
+            To update your profile or bank details, please contact the admin.
           </p>
         </GlassCard>
       </div>
