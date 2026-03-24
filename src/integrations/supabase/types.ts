@@ -107,6 +107,45 @@ export type Database = {
         }
         Relationships: []
       }
+      invoices: {
+        Row: {
+          amount: number
+          billing_name: string
+          created_at: string
+          harmonet_share_percent: number
+          id: string
+          invoice_date: string
+          items: Json
+          taxes: Json
+          updated_at: string
+          user_display_id: number
+        }
+        Insert: {
+          amount: number
+          billing_name: string
+          created_at?: string
+          harmonet_share_percent?: number
+          id?: string
+          invoice_date: string
+          items?: Json
+          taxes?: Json
+          updated_at?: string
+          user_display_id: number
+        }
+        Update: {
+          amount?: number
+          billing_name?: string
+          created_at?: string
+          harmonet_share_percent?: number
+          id?: string
+          invoice_date?: string
+          items?: Json
+          taxes?: Json
+          updated_at?: string
+          user_display_id?: number
+        }
+        Relationships: []
+      }
       labels: {
         Row: {
           b2b_url: string | null
