@@ -181,7 +181,7 @@ export default function AdminPosterGenerator() {
       if (artistText) {
         const artistY = 940 + titleH + (titleUpper ? 18 : 0);
         let sz = 38;
-        for (let s = 38; s >= 18; s -= 2) {
+        for (let s = 38; s >= 14; s -= 2) {
           ctx.font = `400 ${s}px "Outfit", sans-serif`;
           if (ctx.measureText(artistText).width <= maxTextW) { sz = s; break; }
           sz = s;
