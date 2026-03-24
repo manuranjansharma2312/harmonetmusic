@@ -20,7 +20,9 @@ async function ensureFonts() {
   const fonts = [
     new FontFace('Outfit', 'url(/fonts/Outfit-Bold.ttf)', { weight: '700' }),
     new FontFace('Outfit', 'url(/fonts/Outfit-Regular.ttf)', { weight: '400' }),
-    new FontFace('Work Sans', 'url(/fonts/WorkSans-Bold.ttf)', { weight: '700' }),
+    new FontFace('Bricolage Grotesque', 'url(/fonts/BricolageGrotesque-Bold.ttf)', { weight: '700' }),
+    new FontFace('Bricolage Grotesque', 'url(/fonts/BricolageGrotesque-Regular.ttf)', { weight: '400' }),
+    new FontFace('Instrument Sans', 'url(/fonts/InstrumentSans-Bold.ttf)', { weight: '700' }),
   ];
   await Promise.all(fonts.map((f) => f.load()));
   fonts.forEach((f) => document.fonts.add(f));
