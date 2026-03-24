@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PosterCropModal } from '@/components/release/PosterCropModal';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Download, Upload, Image as ImageIcon } from 'lucide-react';
+import harmonetLogo from '@/assets/harmonet-logo.png';
 
 const SIZE_PRESETS: Record<string, { width: number; height: number; label: string }> = {
   '1-1': { width: 1080, height: 1080, label: 'Square (1:1) — 1080×1080' },
@@ -40,6 +42,10 @@ export default function AdminPosterGenerator() {
   const [generating, setGenerating] = useState(false);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Crop modal state
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [rawImageSrc, setRawImageSrc] = useState('');
+
   useEffect(() => {
     (async () => {
       const { data } = await supabase.from('company_details').select('logo_url').limit(1).single();
@@ -52,7 +58,22 @@ export default function AdminPosterGenerator() {
     const file = e.target.files?.[0];
     if (!file) return;
     const url = URL.createObjectURL(file);
+    setRawImageSrc(url);
+    setCropModalOpen(true);
+    // Reset input so same file can be re-selected
+    e.target.value = '';
+  };
+
+  const handleCropComplete = (croppedFile: File) => {
+    const url = URL.createObjectURL(croppedFile);
     setPosterPreview(url);
+    setCropModalOpen(false);
+    setRawImageSrc('');
+  };
+
+  const handleCropCancel = () => {
+    setCropModalOpen(false);
+    setRawImageSrc('');
   };
 
   const loadImage = (src: string): Promise<HTMLImageElement> =>
@@ -63,6 +84,25 @@ export default function AdminPosterGenerator() {
       img.onerror = reject;
       img.src = src;
     });
+
+  // Word-wrap helper (static, no ctx dependency in closure)
+  const wrapText = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number, font: string): string[] => {
+    ctx.font = font;
+    const words = text.split(' ');
+    const lines: string[] = [];
+    let currentLine = '';
+    for (const word of words) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      if (ctx.measureText(testLine).width > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  };
 
   const generatePoster = useCallback(async (canvas: HTMLCanvasElement, sizeKey?: string) => {
     await ensureFonts();
@@ -76,26 +116,25 @@ export default function AdminPosterGenerator() {
     const ctx = canvas.getContext('2d')!;
 
     const minDim = Math.min(width, height);
-    const pad = minDim * 0.06;
+    const maxDim = Math.max(width, height);
+    const pad = minDim * 0.05;
     const isLandscape = width > height;
     const isPortrait = height > width;
 
-    // === BACKGROUND ===
-    // Dark luxurious gradient
+    // === BACKGROUND — dark luxury ===
     const grad = ctx.createLinearGradient(0, 0, width * 0.3, height);
-    grad.addColorStop(0, '#0d0d0d');
-    grad.addColorStop(0.5, '#1a1118');
-    grad.addColorStop(1, '#0d0d0d');
+    grad.addColorStop(0, '#0a0a0a');
+    grad.addColorStop(0.5, '#15101a');
+    grad.addColorStop(1, '#0a0a0a');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
 
-    // Subtle radial glow behind the art
-    const glowCX = isLandscape ? width * 0.35 : width * 0.5;
-    const glowCY = isPortrait ? height * 0.32 : height * 0.45;
-    const glowR = minDim * 0.7;
-    const radGrad = ctx.createRadialGradient(glowCX, glowCY, 0, glowCX, glowCY, glowR);
-    radGrad.addColorStop(0, 'rgba(107, 21, 21, 0.25)');
-    radGrad.addColorStop(0.6, 'rgba(107, 21, 21, 0.06)');
+    // Radial glow
+    const glowCX = isLandscape ? width * 0.32 : width * 0.5;
+    const glowCY = isPortrait ? height * 0.3 : height * 0.42;
+    const radGrad = ctx.createRadialGradient(glowCX, glowCY, 0, glowCX, glowCY, minDim * 0.75);
+    radGrad.addColorStop(0, 'rgba(107, 21, 21, 0.22)');
+    radGrad.addColorStop(0.5, 'rgba(107, 21, 21, 0.05)');
     radGrad.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = radGrad;
     ctx.fillRect(0, 0, width, height);
@@ -104,72 +143,92 @@ export default function AdminPosterGenerator() {
     let coverImg: HTMLImageElement | null = null;
     let logoImg: HTMLImageElement | null = null;
     try { coverImg = await loadImage(posterPreview); } catch {}
-    if (logoUrl) try { logoImg = await loadImage(logoUrl); } catch {}
+    // Use company logo or fallback to bundled Harmonet logo
+    const logoSrc = logoUrl || harmonetLogo;
+    try { logoImg = await loadImage(logoSrc); } catch {}
 
-    // === LAYOUT ===
+    // === LAYOUT CALCULATIONS per aspect ratio ===
     let coverX: number, coverY: number, coverW: number, coverH: number;
-    let textAreaX: number, textAreaY: number, textAreaW: number;
-    let logoDrawX: number, logoDrawY: number, logoMaxW: number, logoMaxH: number;
+    let textX: number, textY: number, textW: number;
+    let logoX: number, logoY: number, logoMaxW: number, logoMaxH: number;
+    let bottomReserve: number;
+
+    bottomReserve = minDim * 0.08;
 
     if (isLandscape) {
-      // Cover on left, text on right
-      coverH = height - pad * 4;
-      coverW = coverH; // square cover
-      coverX = pad * 2;
-      coverY = pad * 2;
-      textAreaX = coverX + coverW + pad * 2;
-      textAreaW = width - textAreaX - pad * 2;
-      textAreaY = coverY;
-      logoMaxW = textAreaW * 0.45;
-      logoMaxH = height * 0.06;
-      logoDrawX = textAreaX;
-      logoDrawY = pad * 2;
+      // --- 4:3 and 16:9: Cover left, text right ---
+      const safePad = pad * 1.8;
+      coverH = height - safePad * 2 - bottomReserve;
+      coverW = coverH;
+      if (coverW > width * 0.42) coverW = coverH = width * 0.42;
+      coverX = safePad;
+      coverY = safePad;
+
+      textX = coverX + coverW + safePad;
+      textW = width - textX - safePad;
+      textY = safePad;
+
+      logoMaxW = textW * 0.5;
+      logoMaxH = height * 0.07;
+      logoX = textX;
+      logoY = safePad;
     } else if (isPortrait) {
-      // Cover centered top, text below
-      coverW = width - pad * 4;
-      coverH = coverW; // square cover
-      coverX = pad * 2;
-      coverY = height * 0.08;
-      textAreaX = pad * 2;
-      textAreaW = width - pad * 4;
-      textAreaY = coverY + coverH + pad * 1.5;
-      logoMaxW = width * 0.3;
+      // --- 3:4 and 9:16 ---
+      const safePad = pad * 1.5;
+      // For 9:16, cover should be smaller relative to height
+      const ratio = height / width;
+      const coverScale = ratio > 1.5 ? 0.45 : 0.58;
+      coverW = width - safePad * 2;
+      coverH = coverW;
+      if (coverH > height * coverScale) {
+        coverH = height * coverScale;
+        coverW = coverH; // keep square
+      }
+      coverX = (width - coverW) / 2;
+      coverY = height * 0.1;
+
+      textX = safePad;
+      textW = width - safePad * 2;
+      textY = coverY + coverH + safePad;
+
+      logoMaxW = width * 0.32;
       logoMaxH = height * 0.035;
-      logoDrawX = pad * 2;
-      logoDrawY = pad * 1.2;
+      logoX = safePad;
+      logoY = safePad;
     } else {
-      // Square
-      coverW = width * 0.7;
+      // --- 1:1 Square ---
+      const safePad = pad * 1.5;
+      coverW = width * 0.65;
       coverH = coverW;
       coverX = (width - coverW) / 2;
       coverY = height * 0.1;
-      textAreaX = pad * 2;
-      textAreaW = width - pad * 4;
-      textAreaY = coverY + coverH + pad * 1.2;
-      logoMaxW = width * 0.25;
+
+      textX = safePad;
+      textW = width - safePad * 2;
+      textY = coverY + coverH + safePad;
+
+      logoMaxW = width * 0.28;
       logoMaxH = height * 0.045;
-      logoDrawX = pad * 2;
-      logoDrawY = pad * 1.2;
+      logoX = safePad;
+      logoY = safePad;
     }
 
     // === DRAW COVER ART ===
     if (coverImg) {
-      const radius = minDim * 0.02;
-      // Shadow
+      const radius = minDim * 0.018;
       ctx.save();
-      ctx.shadowColor = 'rgba(107, 21, 21, 0.5)';
-      ctx.shadowBlur = minDim * 0.06;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = minDim * 0.015;
+      ctx.shadowColor = 'rgba(107, 21, 21, 0.45)';
+      ctx.shadowBlur = minDim * 0.05;
+      ctx.shadowOffsetY = minDim * 0.012;
       ctx.beginPath();
       ctx.roundRect(coverX, coverY, coverW, coverH, radius);
       ctx.clip();
       ctx.drawImage(coverImg, coverX, coverY, coverW, coverH);
       ctx.restore();
 
-      // Subtle border
+      // Border
       ctx.save();
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.roundRect(coverX, coverY, coverW, coverH, radius);
@@ -177,148 +236,127 @@ export default function AdminPosterGenerator() {
       ctx.restore();
     }
 
-    // === LOGO ===
+    // === LOGO (top-left, or top-right of text area for landscape) ===
+    let logoDrawnH = 0;
     if (logoImg) {
       const aspect = logoImg.width / logoImg.height;
       let lw = logoMaxW;
       let lh = lw / aspect;
       if (lh > logoMaxH) { lh = logoMaxH; lw = lh * aspect; }
+      logoDrawnH = lh;
       ctx.save();
-      ctx.globalAlpha = 0.9;
-      ctx.drawImage(logoImg, logoDrawX, logoDrawY, lw, lh);
+      ctx.globalAlpha = 0.92;
+      ctx.drawImage(logoImg, logoX, logoY, lw, lh);
       ctx.restore();
     }
 
-    // === "NEW RELEASE" BADGE ===
-    const badgeFontSize = Math.round(minDim * 0.022);
+    // === "NEW RELEASE" text — top right, subtle ===
+    const badgeFS = Math.round(minDim * 0.018);
     ctx.save();
-    ctx.font = `700 ${badgeFontSize}px "Work Sans", sans-serif`;
-    ctx.letterSpacing = `${badgeFontSize * 0.35}px`;
-    const badgeText = 'NEW RELEASE';
-    if (isLandscape) {
-      ctx.textAlign = 'right';
-      ctx.fillStyle = 'rgba(255,255,255,0.15)';
-      ctx.fillText(badgeText, width - pad * 2, pad * 2.5);
-    } else {
-      ctx.textAlign = 'right';
-      ctx.fillStyle = 'rgba(255,255,255,0.15)';
-      ctx.fillText(badgeText, width - pad * 2, pad * 2);
-    }
+    ctx.font = `700 ${badgeFS}px "Work Sans", sans-serif`;
+    ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    try { ctx.letterSpacing = `${badgeFS * 0.3}px`; } catch {}
+    ctx.fillText('NEW RELEASE', width - pad * 1.5, pad * 1.5 + badgeFS);
     ctx.restore();
 
-    // === ACCENT LINE ===
-    const lineWidth = minDim * 0.08;
-    const lineThickness = Math.max(2, minDim * 0.003);
+    // === TEXT SECTION ===
+    // Accent line
+    const lineW = minDim * 0.07;
+    const lineTh = Math.max(2, minDim * 0.0025);
+    let accentY: number;
+
     if (isLandscape) {
-      const lineY = textAreaY + (logoImg ? logoMaxH + pad * 1.5 : pad);
-      ctx.save();
-      ctx.fillStyle = '#6b1515';
-      ctx.fillRect(textAreaX, lineY, lineWidth, lineThickness);
-      ctx.restore();
+      accentY = textY + logoDrawnH + pad * 1.2;
     } else {
-      const lineY = textAreaY - pad * 0.5;
-      ctx.save();
-      ctx.fillStyle = '#6b1515';
-      ctx.fillRect(textAreaX, lineY, lineWidth, lineThickness);
-      ctx.restore();
+      accentY = textY;
     }
 
-    // === SONG TITLE ===
-    const titleMaxWidth = isLandscape ? textAreaW - pad : textAreaW;
-    const titleFontSize = Math.round(minDim * 0.065);
+    ctx.save();
+    ctx.fillStyle = '#6b1515';
+    ctx.fillRect(isLandscape ? textX : textX, accentY, lineW, lineTh);
+    ctx.restore();
 
-    // Word-wrap helper
-    const wrapText = (text: string, maxWidth: number, font: string): string[] => {
-      ctx.font = font;
-      const words = text.split(' ');
-      const lines: string[] = [];
-      let currentLine = '';
-      for (const word of words) {
-        const testLine = currentLine ? `${currentLine} ${word}` : word;
-        if (ctx.measureText(testLine).width > maxWidth && currentLine) {
-          lines.push(currentLine);
-          currentLine = word;
-        } else {
-          currentLine = testLine;
-        }
-      }
-      if (currentLine) lines.push(currentLine);
-      return lines;
-    };
+    // Song title
+    const titleFS = isLandscape
+      ? Math.round(minDim * 0.058)
+      : Math.round(minDim * 0.065);
+    const titleFont = `700 ${titleFS}px "Outfit", sans-serif`;
+    const titleMaxW = textW;
+    const titleLines = wrapText(ctx, songTitle.toUpperCase(), titleMaxW, titleFont);
+    const titleLineH = titleFS * 1.15;
+    const titleStartY = accentY + lineTh + pad * 0.7 + titleFS;
 
-    const titleFont = `700 ${titleFontSize}px "Outfit", sans-serif`;
-    const titleLines = wrapText(songTitle.toUpperCase(), titleMaxWidth, titleFont);
-
-    let titleStartY: number;
-    if (isLandscape) {
-      titleStartY = textAreaY + (logoImg ? logoMaxH + pad * 2.5 : pad * 2) + lineThickness;
-    } else {
-      titleStartY = textAreaY + pad * 0.5;
-    }
+    // Safety: ensure title doesn't go below the bottom reserve
+    const titleEndY = titleStartY + (titleLines.length - 1) * titleLineH;
+    const maxTitleEndY = height - bottomReserve - pad * 2;
 
     ctx.save();
     ctx.textAlign = 'left';
     ctx.fillStyle = '#ffffff';
     ctx.font = titleFont;
-    const titleLineHeight = titleFontSize * 1.15;
     titleLines.forEach((line, i) => {
-      ctx.fillText(line, isLandscape ? textAreaX : textAreaX, titleStartY + i * titleLineHeight);
+      const y = titleStartY + i * titleLineH;
+      if (y < maxTitleEndY) {
+        ctx.fillText(line, textX, y, titleMaxW);
+      }
     });
     ctx.restore();
 
-    // === ARTIST NAME ===
-    const artistFontSize = Math.round(minDim * 0.028);
-    const artistY = titleStartY + titleLines.length * titleLineHeight + pad * 0.6;
+    // Artist name
+    const artistFS = Math.round(minDim * 0.026);
+    const artistY = Math.min(titleEndY + pad * 0.8, maxTitleEndY);
     ctx.save();
     ctx.textAlign = 'left';
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.font = `400 ${artistFontSize}px "Italiana", sans-serif`;
-    ctx.letterSpacing = `${artistFontSize * 0.15}px`;
-    ctx.fillText(artistName.toUpperCase(), isLandscape ? textAreaX : textAreaX, artistY, titleMaxWidth);
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.font = `400 ${artistFS}px "Italiana", sans-serif`;
+    try { ctx.letterSpacing = `${artistFS * 0.12}px`; } catch {}
+    ctx.fillText(artistName.toUpperCase(), textX, artistY, titleMaxW);
     ctx.restore();
 
-    // === BOTTOM BAR ===
-    const bottomBarH = minDim * 0.06;
-    const bottomY = height - bottomBarH;
+    // === BOTTOM SECTION ===
+    const bottomY = height - bottomReserve;
 
-    // Thin separator line
+    // Separator
     ctx.save();
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(pad * 2, bottomY);
-    ctx.lineTo(width - pad * 2, bottomY);
+    ctx.moveTo(pad * 1.5, bottomY);
+    ctx.lineTo(width - pad * 1.5, bottomY);
     ctx.stroke();
     ctx.restore();
 
-    // Bottom text
-    const bottomFontSize = Math.round(minDim * 0.016);
+    // Bottom tagline
+    const bottomFS = Math.round(minDim * 0.014);
     ctx.save();
-    ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.font = `400 ${bottomFontSize}px "Outfit", sans-serif`;
-    ctx.letterSpacing = `${bottomFontSize * 0.2}px`;
-    ctx.fillText('AVAILABLE ON ALL MAJOR STREAMING PLATFORMS', width / 2, bottomY + bottomBarH * 0.6);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.font = `400 ${bottomFS}px "Outfit", sans-serif`;
+    try { ctx.letterSpacing = `${bottomFS * 0.15}px`; } catch {}
+    ctx.fillText('AVAILABLE ON ALL MAJOR STREAMING PLATFORMS', pad * 1.5, bottomY + bottomReserve * 0.58);
     ctx.restore();
 
-    // "OUT NOW" pill at bottom right
-    const pillFontSize = Math.round(minDim * 0.02);
+    // "OUT NOW" pill
+    const pillFS = Math.round(minDim * 0.018);
     const pillText = 'OUT NOW';
     ctx.save();
-    ctx.font = `700 ${pillFontSize}px "Outfit", sans-serif`;
-    const pillW = ctx.measureText(pillText).width + pillFontSize * 2;
-    const pillH = pillFontSize * 2;
-    const pillX = width - pad * 2 - pillW;
-    const pillY = bottomY - pillH - pad * 0.5;
-    // Pill background
+    ctx.font = `700 ${pillFS}px "Outfit", sans-serif`;
+    const pillTextW = ctx.measureText(pillText).width;
+    const pillPadH = pillFS * 1.2;
+    const pillPadV = pillFS * 0.55;
+    const pillTotalW = pillTextW + pillPadH * 2;
+    const pillTotalH = pillFS + pillPadV * 2;
+    const pillX = width - pad * 1.5 - pillTotalW;
+    const pillY2 = bottomY + (bottomReserve - pillTotalH) / 2;
     ctx.fillStyle = '#6b1515';
     ctx.beginPath();
-    ctx.roundRect(pillX, pillY, pillW, pillH, pillH / 2);
+    ctx.roundRect(pillX, pillY2, pillTotalW, pillTotalH, pillTotalH / 2);
     ctx.fill();
-    // Pill text
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(pillText, pillX + pillW / 2, pillY + pillH * 0.65);
+    ctx.fillText(pillText, pillX + pillTotalW / 2, pillY2 + pillTotalH / 2);
     ctx.restore();
   }, [selectedSize, posterPreview, songTitle, artistName, logoUrl]);
 
@@ -402,7 +440,7 @@ export default function AdminPosterGenerator() {
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
                     <Upload className="h-8 w-8" />
-                    <span className="text-sm">Click to upload cover art</span>
+                    <span className="text-sm">Click to upload cover art (auto-crops to square)</span>
                   </div>
                 )}
                 <input id="poster-upload" type="file" accept="image/*" className="hidden" onChange={handlePosterUpload} />
@@ -433,10 +471,12 @@ export default function AdminPosterGenerator() {
               </Select>
             </div>
 
-            {logoUrl && (
+            {(logoUrl || harmonetLogo) && (
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-                <img src={logoUrl} alt="Company Logo" className="h-8 w-auto object-contain" />
-                <span className="text-sm text-muted-foreground">Company logo will be used</span>
+                <img src={logoUrl || harmonetLogo} alt="Logo" className="h-8 w-auto object-contain" />
+                <span className="text-sm text-muted-foreground">
+                  {logoUrl ? 'Company logo will be used' : 'Harmonet Music logo will be used'}
+                </span>
               </div>
             )}
 
@@ -477,6 +517,14 @@ export default function AdminPosterGenerator() {
           </div>
         </div>
       </div>
+
+      {/* Crop Modal */}
+      <PosterCropModal
+        open={cropModalOpen}
+        imageSrc={rawImageSrc}
+        onCropComplete={handleCropComplete}
+        onCancel={handleCropCancel}
+      />
     </DashboardLayout>
   );
 }
