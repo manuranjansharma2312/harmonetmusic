@@ -181,7 +181,11 @@ export default function AdminContentRequests() {
                         item[field] ? (
                           <div key={field}>
                             <span className="text-xs text-muted-foreground">{FIELD_LABELS[field]}:</span>
-                            <p className="text-sm text-foreground break-all">{item[field]}</p>
+                            {field === 'payment_screenshot_url' ? (
+                              <img src={item[field]} alt="Payment" className="max-h-32 rounded-lg border mt-1 object-contain" />
+                            ) : (
+                              <p className="text-sm text-foreground break-all">{item[field]}</p>
+                            )}
                           </div>
                         ) : null
                       )}
