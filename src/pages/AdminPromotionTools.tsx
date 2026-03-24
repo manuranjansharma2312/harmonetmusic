@@ -100,7 +100,7 @@ export default function AdminPromotionTools() {
     if (data) {
       setSettingsId(data.id);
       setIsEnabled(data.is_enabled);
-      setTakedownPaymentEnabled((data as any).takedown_payment_enabled || false);
+      setTakedownPaymentEnabled(data.takedown_payment_enabled || false);
       setQrCodeUrl(data.qr_code_url);
       const taxData = data.taxes as any;
       if (Array.isArray(taxData)) setTaxes(taxData);
