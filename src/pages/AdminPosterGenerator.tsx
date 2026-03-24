@@ -122,8 +122,8 @@ export default function AdminPosterGenerator() {
 
       // --- ZONE 2: Cover art (y: 150 to 900) ---
       const coverSize = 750;
-      const coverX = (W - coverSize) / 2; // centered = 165
-      const coverY = 150;
+      const coverX = (W - coverSize) / 2;
+      const coverY = 148;
       const radius = 14;
 
       ctx.save();
@@ -158,7 +158,7 @@ export default function AdminPosterGenerator() {
 
       if (titleUpper) {
         let sz = 72;
-        for (let s = 72; s >= 28; s -= 2) {
+        for (let s = 72; s >= 20; s -= 2) {
           ctx.font = `700 ${s}px "Outfit", sans-serif`;
           if (ctx.measureText(titleUpper).width <= maxTextW) { sz = s; break; }
           sz = s;
@@ -181,7 +181,7 @@ export default function AdminPosterGenerator() {
       if (artistText) {
         const artistY = 940 + titleH + (titleUpper ? 18 : 0);
         let sz = 38;
-        for (let s = 38; s >= 18; s -= 2) {
+        for (let s = 38; s >= 14; s -= 2) {
           ctx.font = `400 ${s}px "Outfit", sans-serif`;
           if (ctx.measureText(artistText).width <= maxTextW) { sz = s; break; }
           sz = s;
