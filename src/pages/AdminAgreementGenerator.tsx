@@ -347,7 +347,10 @@ export default function AdminAgreementGenerator() {
       processNode(child);
     }
 
-    doc.save(`${templateName.replace(/\s+/g, "_")}.pdf`);
+    const fileName = artistLabelName.trim()
+      ? `${artistLabelName.trim()} - Distribution Agreement.pdf`
+      : `${templateName.replace(/\s+/g, "_")}.pdf`;
+    doc.save(fileName);
     toast.success("PDF downloaded!");
   };
 
@@ -482,7 +485,7 @@ export default function AdminAgreementGenerator() {
               <Button onClick={handlePreview}>
                 <Eye className="h-4 w-4 mr-2" /> Preview
               </Button>
-              <Button variant="secondary" onClick={handleDownload}>
+              <Button className="bg-black hover:bg-black/90 text-white" onClick={handleDownload}>
                 <Download className="h-4 w-4 mr-2" /> Download PDF
               </Button>
             </div>
@@ -502,7 +505,7 @@ export default function AdminAgreementGenerator() {
             dangerouslySetInnerHTML={{ __html: previewHtml }}
           />
           <div className="flex justify-end pt-4">
-            <Button onClick={handleDownload}>
+            <Button className="bg-black hover:bg-black/90 text-white" onClick={handleDownload}>
               <Download className="h-4 w-4 mr-2" /> Download PDF
             </Button>
           </div>
