@@ -243,8 +243,17 @@ export default function AdminPosterGenerator() {
   useEffect(() => {
     const canvas = previewCanvasRef.current;
     if (!canvas) return;
-    if (!posterPreview && !songTitle && !artistName) return;
-    generatePoster(canvas);
+    let cancelled = false;
+    const run = async () => {
+      await generatePoster(canvas);
+      // Re-draw once more after a brief delay to catch async image loads
+      if (!cancelled) {
+        await new Promise((r) => setTimeout(r, 100));
+        if (!cancelled) await generatePoster(canvas);
+      }
+    };
+    run();
+    return () => { cancelled = true; };
   }, [generatePoster, posterPreview, songTitle, artistName]);
 
   const handleDownload = async () => {
