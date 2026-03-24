@@ -427,8 +427,8 @@ export default function AdminInvoices() {
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(140);
-    doc.text('This is a computer-generated invoice by Harmonet Music.', 14, footerY + 6);
-    doc.text('Harmony On Networks | www.harmonetmusic.com', 14, footerY + 11);
+    doc.text(`This is a computer-generated invoice by ${company.company_name || 'Harmonet Music'}.`, 14, footerY + 6);
+    doc.text('Harmony On Networks', 14, footerY + 11);
 
     // Bottom accent bar
     doc.setFillColor(...brandColor);
