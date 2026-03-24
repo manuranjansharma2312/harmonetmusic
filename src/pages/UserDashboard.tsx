@@ -182,7 +182,7 @@ function RecentTutorialsWidget() {
             <DialogTitle>{viewTutorial?.subject}</DialogTitle>
           </DialogHeader>
           <div
-            className="prose prose-invert max-w-none tutorial-content"
+            className="max-w-none tutorial-content text-foreground"
             dangerouslySetInnerHTML={{ __html: viewTutorial?.content || '' }}
           />
         </DialogContent>
