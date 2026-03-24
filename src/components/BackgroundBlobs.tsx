@@ -1,4 +1,6 @@
-export function BackgroundBlobs() {
+import { memo } from 'react';
+
+export const BackgroundBlobs = memo(function BackgroundBlobs() {
   return (
     <>
       <div
@@ -9,6 +11,7 @@ export function BackgroundBlobs() {
           background: 'radial-gradient(circle, hsl(0 67% 25%), transparent)',
           top: '10%',
           left: '5%',
+          willChange: 'transform',
         }}
       />
       <div
@@ -20,6 +23,7 @@ export function BackgroundBlobs() {
           bottom: '15%',
           right: '10%',
           animation: 'float 8s ease-in-out infinite reverse',
+          willChange: 'transform',
         }}
       />
       <div
@@ -31,8 +35,9 @@ export function BackgroundBlobs() {
           top: '60%',
           left: '40%',
           animation: 'float 10s ease-in-out infinite',
+          willChange: 'transform',
         }}
       />
     </>
   );
-}
+});

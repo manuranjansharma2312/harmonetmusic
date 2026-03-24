@@ -80,8 +80,10 @@ export default function AdminUsers() {
   useEffect(() => { fetchProfiles(); }, []);
 
   const handleViewProfile = async (profile: Profile) => {
+    setViewBankDetails(null);
     setViewProfile(profile);
-    const { data } = await supabase.from('bank_details').select('*').eq('user_id', profile.user_id).maybeSingle();
+    const { data, error } = await supabase.from('bank_details').select('*').eq('user_id', profile.user_id).maybeSingle();
+    if (error) console.error('Bank details fetch error:', error);
     setViewBankDetails(data);
   };
 
