@@ -109,17 +109,12 @@ export default function AdminPosterGenerator() {
         ctx.restore();
       }
 
-      // "NEW RELEASES" top-right
-      const titleText = 'NEW RELEASES';
-      const subtitleText = 'BY OUR ARTIST & LABELS';
+      // "NEW RELEASES" top-right — large bold
       ctx.save();
       ctx.textAlign = 'right';
       ctx.fillStyle = '#ffffff';
-      ctx.font = '700 48px "Outfit", sans-serif';
-      ctx.fillText(titleText, W - margin, margin + 55);
-      ctx.font = '400 26px "Outfit", sans-serif';
-      ctx.fillStyle = 'rgba(255,255,255,0.85)';
-      ctx.fillText(subtitleText, W - margin, margin + 90);
+      ctx.font = '700 58px "Outfit", sans-serif';
+      ctx.fillText('NEW RELEASES', W - margin, margin + 65);
       ctx.restore();
 
       // === COVER ART AREA (centered white rounded rect) ===
@@ -163,14 +158,14 @@ export default function AdminPosterGenerator() {
       const availableTextH = textAreaBottom - textAreaTop;
 
       if (songTitle.trim()) {
-        // Song title - large bold
-        const maxTitleSize = 52;
-        const minTitleSize = 28;
+        // Song title - large, bold italic
+        const maxTitleSize = 78;
+        const minTitleSize = 40;
         const titleUpper = songTitle.trim().toUpperCase();
         let titleSize = maxTitleSize;
-        
+
         for (let s = maxTitleSize; s >= minTitleSize; s -= 2) {
-          ctx.font = `700 ${s}px "Outfit", sans-serif`;
+          ctx.font = `italic 700 ${s}px "Outfit", sans-serif`;
           if (ctx.measureText(titleUpper).width <= W - margin * 2) {
             titleSize = s;
             break;
@@ -179,21 +174,20 @@ export default function AdminPosterGenerator() {
         }
 
         ctx.save();
-        ctx.font = `700 ${titleSize}px "Outfit", sans-serif`;
+        ctx.font = `italic 700 ${titleSize}px "Outfit", sans-serif`;
         ctx.textAlign = 'center';
         ctx.fillStyle = '#ffffff';
         ctx.fillText(titleUpper, W / 2, textAreaTop + titleSize, W - margin * 2);
         ctx.restore();
 
-        // Artist name below song title
+        // Artist name below song title - visible and clear
         if (artistName.trim()) {
-          const artistUpper = artistName.trim().toUpperCase();
-          const artistSize = Math.max(22, Math.min(32, titleSize - 14));
+          const artistSize = Math.max(30, Math.min(42, titleSize - 20));
           ctx.save();
-          ctx.font = `400 ${artistSize}px "Outfit", sans-serif`;
+          ctx.font = `700 ${artistSize}px "Outfit", sans-serif`;
           ctx.textAlign = 'center';
-          ctx.fillStyle = 'rgba(255,255,255,0.8)';
-          ctx.fillText(artistUpper, W / 2, textAreaTop + titleSize + artistSize + 12, W - margin * 2);
+          ctx.fillStyle = 'rgba(255,255,255,0.9)';
+          ctx.fillText(artistName.trim(), W / 2, textAreaTop + titleSize + artistSize + 14, W - margin * 2);
           ctx.restore();
         }
       }
