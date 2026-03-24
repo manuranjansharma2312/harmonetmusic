@@ -573,15 +573,17 @@ export default function AdminUsers() {
   );
 }
 
-function Row({ label, value, link }: { label: string; value: string; link?: boolean }) {
-  return (
-    <div className="flex items-start justify-between gap-4">
-      <span className="text-muted-foreground flex-shrink-0">{label}</span>
-      {link ? (
-        <a href={value} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-right truncate max-w-[200px]">{value}</a>
-      ) : (
-        <span className="text-foreground font-medium text-right">{value}</span>
-      )}
-    </div>
-  );
-}
+const Row = React.forwardRef<HTMLDivElement, { label: string; value: string; link?: boolean }>(
+  ({ label, value, link }, ref) => {
+    return (
+      <div ref={ref} className="flex items-start justify-between gap-4">
+        <span className="text-muted-foreground flex-shrink-0">{label}</span>
+        {link ? (
+          <a href={value} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-right truncate max-w-[200px]">{value}</a>
+        ) : (
+          <span className="text-foreground font-medium text-right">{value}</span>
+        )}
+      </div>
+    );
+  }
+);
