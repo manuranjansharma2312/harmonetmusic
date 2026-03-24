@@ -91,14 +91,10 @@ export default function AdminPromotionTools() {
   };
 
   const fetchSettings = async () => {
-    const { data } = await supabase.from('promotion_settings').select('*').limit(1).single();
+    const { data } = await supabase.from('promotion_settings').select('id, is_enabled').limit(1).single();
     if (data) {
       setSettingsId(data.id);
       setIsEnabled(data.is_enabled);
-      setTakedownPaymentEnabled(data.takedown_payment_enabled || false);
-      setQrCodeUrl(data.qr_code_url);
-      const taxData = data.taxes as any;
-      if (Array.isArray(taxData)) setTaxes(taxData);
     }
   };
 
