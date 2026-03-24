@@ -351,3 +351,19 @@
   max-width: 100% !important;
   height: auto !important;
 }
+.agreement-preview table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.agreement-preview td,
+.agreement-preview th {
+  vertical-align: top;
+  padding: 4px 8px;
+}
+/* Two-column layout helper */
+.agreement-preview .two-columns,
+.agreement-preview .columns-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
