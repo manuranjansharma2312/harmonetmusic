@@ -835,6 +835,39 @@ export default function AdminInvoices() {
             <DialogTitle className="flex items-center gap-2"><Settings className="h-5 w-5" /> Company Details</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Logo Upload */}
+            <div>
+              <Label className="text-sm font-semibold">Company Logo</Label>
+              <div className="flex items-center gap-4 mt-2">
+                {companyForm.logo_url ? (
+                  <div className="relative">
+                    <img src={companyForm.logo_url} alt="Logo" className="h-16 w-16 object-contain rounded-lg border border-border bg-white p-1" />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={() => setCompanyForm(f => ({ ...f, logo_url: '' }))}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="h-16 w-16 rounded-lg border-2 border-dashed border-border flex items-center justify-center text-muted-foreground">
+                    <FileText className="h-6 w-6" />
+                  </div>
+                )}
+                <div>
+                  <label className="cursor-pointer">
+                    <Button type="button" variant="outline" size="sm" disabled={uploadingLogo} asChild>
+                      <span>{uploadingLogo ? 'Uploading...' : 'Upload Logo'}</span>
+                    </Button>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-1">PNG or JPG recommended</p>
+                </div>
+              </div>
+            </div>
             <div>
               <Label>Company Name</Label>
               <Input value={companyForm.company_name} onChange={e => setCompanyForm(f => ({ ...f, company_name: e.target.value }))} placeholder="Harmonet Music" />
