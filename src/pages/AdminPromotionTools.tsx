@@ -340,7 +340,7 @@ export default function AdminPromotionTools() {
               </TableBody>
             </Table>
             {orders.length > pageSize && (
-              <TablePagination currentPage={orderPage} totalPages={Math.ceil(orders.length / pageSize)} onPageChange={setOrderPage} pageSize={pageSize} onPageSizeChange={() => {}} totalItems={orders.length} />
+              <TablePagination currentPage={orderPage} onPageChange={setOrderPage} pageSize={pageSize} onPageSizeChange={() => {}} totalItems={orders.length} />
             )}
           </CardContent>
         </Card>
