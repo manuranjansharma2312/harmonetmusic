@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { ShoppingCart, Upload, QrCode, Package, Eye } from 'lucide-react';
+import { ShoppingCart, Package, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Product {
@@ -39,6 +39,7 @@ export default function PromotionTools() {
   const { user } = useAuth();
   const [isEnabled, setIsEnabled] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [taxPercent, setTaxPercent] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,6 +71,7 @@ export default function PromotionTools() {
     if (data) {
       setIsEnabled(data.is_enabled);
       setQrCodeUrl(data.qr_code_url);
+      setTaxPercent(Number(data.tax_percent) || 0);
     }
   };
 
@@ -89,7 +91,9 @@ export default function PromotionTools() {
   };
 
   const selectedProductObj = products.find(p => p.id === selectedProduct);
-  const totalCost = selectedProductObj && quantity ? (selectedProductObj.price_per_unit * Number(quantity)).toFixed(2) : '0.00';
+  const baseAmount = selectedProductObj && quantity ? (selectedProductObj.price_per_unit * Number(quantity) / 1000) : 0;
+  const taxAmount = baseAmount * (taxPercent / 100);
+  const totalCost = (baseAmount + taxAmount).toFixed(2);
 
   const submitOrder = async () => {
     if (!selectedProduct || !quantity || !screenshot || !user) {
@@ -98,7 +102,6 @@ export default function PromotionTools() {
     }
     setSubmitting(true);
 
-    // Upload screenshot
     const ext = screenshot.name.split('.').pop();
     const path = `${user.id}/${Date.now()}.${ext}`;
     const { error: uploadErr } = await supabase.storage.from('promotion-screenshots').upload(path, screenshot);
@@ -143,18 +146,8 @@ export default function PromotionTools() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-2xl font-bold">Promotion Tools</h1>
-          <Button onClick={() => setOrderModal(true)}><ShoppingCart className="h-4 w-4 mr-2" /> Buy Promotion</Button>
+          <Button onClick={() => setOrderModal(true)}><ShoppingCart className="h-4 w-4 mr-2" /> Services</Button>
         </div>
-
-        {/* QR Code Display */}
-        {qrCodeUrl && (
-          <Card>
-            <CardHeader><CardTitle className="flex items-center gap-2 text-lg"><QrCode className="h-5 w-5" /> Payment QR Code</CardTitle></CardHeader>
-            <CardContent className="flex justify-center">
-              <img src={qrCodeUrl} alt="Payment QR" className="w-48 h-48 object-contain border rounded-lg bg-white p-2" />
-            </CardContent>
-          </Card>
-        )}
 
         {/* Order History */}
         <Card>
@@ -163,7 +156,7 @@ export default function PromotionTools() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Product</TableHead>
+                  <TableHead>Service</TableHead>
                   <TableHead>Qty</TableHead>
                   <TableHead>Amount (₹)</TableHead>
                   <TableHead>Status</TableHead>
@@ -197,18 +190,18 @@ export default function PromotionTools() {
         </Card>
       </div>
 
-      {/* Buy Promotion Modal */}
+      {/* Services Modal */}
       <Dialog open={orderModal} onOpenChange={setOrderModal}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>Buy Promotion</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Services</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Select Product *</Label>
+              <Label>Select Service *</Label>
               <Select value={selectedProduct} onValueChange={setSelectedProduct}>
-                <SelectTrigger><SelectValue placeholder="Choose a product..." /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Choose a service..." /></SelectTrigger>
                 <SelectContent>
                   {products.map(p => (
-                    <SelectItem key={p.id} value={p.id}>{p.name} (₹{p.price_per_unit}/unit)</SelectItem>
+                    <SelectItem key={p.id} value={p.id}>{p.name} (₹{p.price_per_unit}/1000)</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -217,10 +210,22 @@ export default function PromotionTools() {
               <Label>Quantity *</Label>
               <Input type="number" min="1" value={quantity} onChange={e => setQuantity(e.target.value)} placeholder="Enter quantity..." />
             </div>
-            {selectedProduct && quantity && (
-              <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
-                <p className="text-sm text-muted-foreground">Total Cost</p>
-                <p className="text-2xl font-bold text-primary">₹{totalCost}</p>
+            {selectedProduct && quantity && Number(quantity) > 0 && (
+              <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Base Amount</span>
+                  <span>₹{baseAmount.toFixed(2)}</span>
+                </div>
+                {taxPercent > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Tax ({taxPercent}%)</span>
+                    <span>₹{taxAmount.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-lg border-t border-primary/20 pt-1">
+                  <span>Total</span>
+                  <span className="text-primary">₹{totalCost}</span>
+                </div>
               </div>
             )}
             {qrCodeUrl && (
@@ -250,7 +255,7 @@ export default function PromotionTools() {
           {viewOrder && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-muted-foreground">Product:</span> <span className="font-medium">{viewOrder.product_name}</span></div>
+                <div><span className="text-muted-foreground">Service:</span> <span className="font-medium">{viewOrder.product_name}</span></div>
                 <div><span className="text-muted-foreground">Quantity:</span> <span className="font-medium">{viewOrder.quantity}</span></div>
                 <div><span className="text-muted-foreground">Amount:</span> <span className="font-medium">₹{viewOrder.total_amount}</span></div>
                 <div><span className="text-muted-foreground">Status:</span> <StatusBadge status={viewOrder.status} /></div>

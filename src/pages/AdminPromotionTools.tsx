@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Eye, Upload, QrCode, Package } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, QrCode, Package, Percent } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Product {
@@ -45,6 +45,8 @@ export default function AdminPromotionTools() {
   const [isEnabled, setIsEnabled] = useState(false);
   const [settingsId, setSettingsId] = useState('');
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [taxPercent, setTaxPercent] = useState(0);
+  const [taxInput, setTaxInput] = useState('0');
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,7 +68,6 @@ export default function AdminPromotionTools() {
 
   // Delete
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'product' | 'order'; id: string } | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Pagination
   const [productPage, setProductPage] = useState(1);
@@ -90,6 +91,8 @@ export default function AdminPromotionTools() {
       setSettingsId(data.id);
       setIsEnabled(data.is_enabled);
       setQrCodeUrl(data.qr_code_url);
+      setTaxPercent(Number(data.tax_percent) || 0);
+      setTaxInput(String(Number(data.tax_percent) || 0));
     }
   };
 
@@ -102,12 +105,10 @@ export default function AdminPromotionTools() {
     const { data: ordersData } = await supabase.from('promotion_orders').select('*').order('created_at', { ascending: false });
     if (!ordersData) return;
 
-    // Get product names
     const productIds = [...new Set(ordersData.map(o => o.product_id))];
     const { data: productsData } = await supabase.from('promotion_products').select('id, name').in('id', productIds);
     const productMap = new Map((productsData || []).map(p => [p.id, p.name]));
 
-    // Get user info
     const userIds = [...new Set(ordersData.map(o => o.user_id))];
     const { data: profiles } = await supabase.from('profiles').select('user_id, display_id, artist_name, record_label_name, user_type').in('user_id', userIds);
     const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
@@ -128,6 +129,15 @@ export default function AdminPromotionTools() {
     if (error) { toast.error('Failed to update'); return; }
     setIsEnabled(val);
     toast.success(val ? 'Promotion Tools enabled' : 'Promotion Tools disabled');
+  };
+
+  const saveTax = async () => {
+    const val = Number(taxInput);
+    if (isNaN(val) || val < 0) { toast.error('Invalid tax percentage'); return; }
+    const { error } = await supabase.from('promotion_settings').update({ tax_percent: val, updated_at: new Date().toISOString() }).eq('id', settingsId);
+    if (error) { toast.error('Failed to update tax'); return; }
+    setTaxPercent(val);
+    toast.success('Tax updated');
   };
 
   const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,11 +181,11 @@ export default function AdminPromotionTools() {
     if (editingProduct) {
       const { error } = await supabase.from('promotion_products').update(payload).eq('id', editingProduct.id);
       if (error) { toast.error('Failed to update'); setSavingProduct(false); return; }
-      toast.success('Product updated');
+      toast.success('Service updated');
     } else {
       const { error } = await supabase.from('promotion_products').insert(payload);
       if (error) { toast.error('Failed to create'); setSavingProduct(false); return; }
-      toast.success('Product created');
+      toast.success('Service created');
     }
     setSavingProduct(false);
     setProductModal(false);
@@ -186,7 +196,7 @@ export default function AdminPromotionTools() {
     if (!deleteTarget) return;
     if (deleteTarget.type === 'product') {
       await supabase.from('promotion_products').delete().eq('id', deleteTarget.id);
-      toast.success('Product deleted');
+      toast.success('Service deleted');
       fetchProducts();
     } else {
       await supabase.from('promotion_orders').delete().eq('id', deleteTarget.id);
@@ -236,46 +246,62 @@ export default function AdminPromotionTools() {
           </div>
         </div>
 
-        {/* QR Code & Settings */}
-        <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><QrCode className="h-5 w-5" /> Payment QR Code</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-col sm:flex-row items-start gap-4">
-              {qrCodeUrl ? (
-                <img src={qrCodeUrl} alt="Payment QR" className="w-40 h-40 object-contain border rounded-lg bg-white p-2" />
-              ) : (
-                <div className="w-40 h-40 border-2 border-dashed rounded-lg flex items-center justify-center text-muted-foreground text-sm">No QR uploaded</div>
-              )}
-              <div className="space-y-2">
-                <Label>Upload QR Code Image</Label>
-                <div className="relative">
+        {/* Settings Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* QR Code */}
+          <Card>
+            <CardHeader><CardTitle className="flex items-center gap-2"><QrCode className="h-5 w-5" /> Payment QR Code</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col items-start gap-4">
+                {qrCodeUrl ? (
+                  <img src={qrCodeUrl} alt="Payment QR" className="w-40 h-40 object-contain border rounded-lg bg-white p-2" />
+                ) : (
+                  <div className="w-40 h-40 border-2 border-dashed rounded-lg flex items-center justify-center text-muted-foreground text-sm">No QR uploaded</div>
+                )}
+                <div className="space-y-2 w-full">
+                  <Label>Upload QR Code Image</Label>
                   <Input type="file" accept="image/*" onChange={handleQrUpload} disabled={uploadingQr} />
+                  <p className="text-xs text-muted-foreground">This QR will be shown to users for payment</p>
                 </div>
-                <p className="text-xs text-muted-foreground">This QR will be shown to users for payment</p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Products */}
+          {/* Tax Settings */}
+          <Card>
+            <CardHeader><CardTitle className="flex items-center gap-2"><Percent className="h-5 w-5" /> Tax Settings</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Tax Percentage (%)</Label>
+                <div className="flex gap-2">
+                  <Input type="number" min="0" max="100" step="0.01" value={taxInput} onChange={e => setTaxInput(e.target.value)} placeholder="0" className="max-w-[150px]" />
+                  <Button onClick={saveTax}>Save</Button>
+                </div>
+                <p className="text-xs text-muted-foreground">Current tax: {taxPercent}% — Applied on all service orders</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Services */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Products</CardTitle>
-            <Button size="sm" onClick={() => openProductModal()}><Plus className="h-4 w-4 mr-1" /> Add Product</Button>
+            <CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Services</CardTitle>
+            <Button size="sm" onClick={() => openProductModal()}><Plus className="h-4 w-4 mr-1" /> Add Service</Button>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead>Price/Unit (₹)</TableHead>
+                  <TableHead>Price per 1000 (₹)</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedProducts.length === 0 ? (
-                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">No products yet</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">No services yet</TableCell></TableRow>
                 ) : paginatedProducts.map(p => (
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.name}</TableCell>
@@ -305,7 +331,7 @@ export default function AdminPromotionTools() {
               <TableHeader>
                 <TableRow>
                   <TableHead>User</TableHead>
-                  <TableHead>Product</TableHead>
+                  <TableHead>Service</TableHead>
                   <TableHead>Qty</TableHead>
                   <TableHead>Amount (₹)</TableHead>
                   <TableHead>Status</TableHead>
@@ -349,10 +375,10 @@ export default function AdminPromotionTools() {
       {/* Product Modal */}
       <Dialog open={productModal} onOpenChange={setProductModal}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>{editingProduct ? 'Edit Product' : 'Add Product'}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editingProduct ? 'Edit Service' : 'Add Service'}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Product Name *</Label>
+              <Label>Service Name *</Label>
               <Input value={productName} onChange={e => setProductName(e.target.value)} placeholder="e.g. Instagram Followers" />
             </div>
             <div className="space-y-2">
@@ -360,7 +386,7 @@ export default function AdminPromotionTools() {
               <Textarea value={productDesc} onChange={e => setProductDesc(e.target.value)} placeholder="Brief description..." />
             </div>
             <div className="space-y-2">
-              <Label>Price per Unit (₹) *</Label>
+              <Label>Price per 1000 Quantity (₹) *</Label>
               <Input type="number" min="0" step="0.01" value={productPrice} onChange={e => setProductPrice(e.target.value)} placeholder="0.00" />
             </div>
             <div className="flex items-center gap-2">
@@ -383,7 +409,7 @@ export default function AdminPromotionTools() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div><span className="text-muted-foreground">User:</span> <span className="font-medium">{viewingOrder.user_name} #{viewingOrder.user_display_id}</span></div>
-                <div><span className="text-muted-foreground">Product:</span> <span className="font-medium">{viewingOrder.product_name}</span></div>
+                <div><span className="text-muted-foreground">Service:</span> <span className="font-medium">{viewingOrder.product_name}</span></div>
                 <div><span className="text-muted-foreground">Quantity:</span> <span className="font-medium">{viewingOrder.quantity}</span></div>
                 <div><span className="text-muted-foreground">Amount:</span> <span className="font-medium">₹{viewingOrder.total_amount}</span></div>
                 <div><span className="text-muted-foreground">Status:</span> <StatusBadge status={viewingOrder.status} /></div>
