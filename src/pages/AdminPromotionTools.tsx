@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Eye, QrCode, Package, Percent, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, Package } from 'lucide-react';
 import { format } from 'date-fns';
 import { PlatformIcon, PLATFORMS } from '@/components/PlatformIcons';
 
