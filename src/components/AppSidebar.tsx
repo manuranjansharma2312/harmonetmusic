@@ -29,6 +29,7 @@ import {
   FileSignature,
   Megaphone,
   Landmark,
+  CreditCard,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
