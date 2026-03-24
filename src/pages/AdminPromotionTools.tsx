@@ -66,6 +66,7 @@ export default function AdminPromotionTools() {
 
   // Delete
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'product' | 'order'; id: string } | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Pagination
   const [productPage, setProductPage] = useState(1);
