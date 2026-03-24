@@ -220,17 +220,52 @@
 
 /* Tutorial Content Styles */
 .tutorial-content img {
-  max-width: 100%;
+  width: 100%;
   height: auto;
   border-radius: 0.5rem;
   margin: 1rem 0;
+  display: block;
 }
-.tutorial-content iframe {
-  max-width: 100%;
+.tutorial-content iframe,
+.tutorial-content .ql-video {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16/9;
   border-radius: 0.5rem;
   margin: 1rem 0;
-  aspect-ratio: 16/9;
+  display: block;
+  border: none;
+}
+.tutorial-content .ql-video-wrapper {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+}
+.tutorial-content .ql-video-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+/* Rich text editor video embed */
+.ql-snow .ql-editor .ql-video {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16/9;
+  display: block;
+}
+
+/* Rich text editor images full width */
+.ql-snow .ql-editor img {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 .tutorial-content h1, .tutorial-content h2, .tutorial-content h3 {
   color: hsl(var(--foreground));
