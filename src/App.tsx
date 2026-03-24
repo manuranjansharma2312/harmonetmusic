@@ -33,6 +33,8 @@ import AdminYouTubeReports from "./pages/AdminYouTubeReports";
 import Analytics from "./pages/Analytics";
 import Revenue from "./pages/Revenue";
 import AdminRevenue from "./pages/AdminRevenue";
+import TermsConditions from "./pages/TermsConditions";
+import AdminTermsConditions from "./pages/AdminTermsConditions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -73,6 +75,8 @@ function App() {
                   <Route path="/admin/reports" element={<Navigate to="/admin/reports/ott" replace />} />
                   <Route path="/revenue" element={<ProtectedRoute><Revenue /></ProtectedRoute>} />
                   <Route path="/admin/revenue" element={<ProtectedRoute requiredRole="admin"><AdminRevenue /></ProtectedRoute>} />
+                  <Route path="/admin/terms" element={<ProtectedRoute requiredRole="admin"><AdminTermsConditions /></ProtectedRoute>} />
+                  <Route path="/terms" element={<ProtectedRoute><TermsConditions /></ProtectedRoute>} />
                   <Route path="/tools/copyright-claim" element={<ProtectedRoute><CopyrightClaimRemoval /></ProtectedRoute>} />
                   <Route path="/tools/instagram-link" element={<ProtectedRoute><InstagramLinkToSong /></ProtectedRoute>} />
                   <Route path="/tools/content-id-merge" element={<ProtectedRoute><ContentIdMerge /></ProtectedRoute>} />

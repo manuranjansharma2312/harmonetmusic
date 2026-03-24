@@ -21,6 +21,7 @@ import {
   Music,
   MonitorPlay,
   Wallet,
+  FileText,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
@@ -71,6 +72,7 @@ const adminReportLinks = [
 
 const userLinksBottom = [
   { to: '/revenue', label: 'Revenue', icon: Wallet },
+  { to: '/terms', label: 'Terms & Conditions', icon: FileText },
   { to: '/profile', label: 'My Profile', icon: UserCircle },
 ];
 
@@ -82,6 +84,7 @@ const adminLinksTop = [
   { to: '/admin/labels', label: 'Labels', icon: Tag },
   { to: '/admin/content-requests', label: 'Content Requests', icon: Headset },
   { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
+  { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
 ];
 
 export function AppSidebar() {
