@@ -45,6 +45,7 @@ import AdminAgreements from "./pages/AdminAgreements";
 import AdminAgreementGenerator from "./pages/AdminAgreementGenerator";
 import AdminPromotionTools from "./pages/AdminPromotionTools";
 import PromotionTools from "./pages/PromotionTools";
+import BankDetails from "./pages/BankDetails";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -74,6 +75,7 @@ function App() {
                   <Route path="/my-labels" element={<ProtectedRoute><MyLabels /></ProtectedRoute>} />
                   <Route path="/my-songs" element={<Navigate to="/my-releases" replace />} />
                   <Route path="/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
+                  <Route path="/bank-details" element={<ProtectedRoute><BankDetails /></ProtectedRoute>} />
                   <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
                   <Route path="/admin/submissions" element={<ProtectedRoute requiredRole="admin"><AdminSubmissions /></ProtectedRoute>} />
                   <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />

@@ -5,10 +5,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import {
   Loader2, Eye, CheckCircle, XCircle, Search, Shield, ShieldCheck, ShieldX, KeyRound,
-  ShieldAlert, Pencil, LogIn, Ban, Trash2, Download, FileX, CheckSquare, MoreVertical,
+  ShieldAlert, Pencil, LogIn, Ban, Trash2, Download, FileX, CheckSquare, MoreVertical, Landmark,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { EditProfileModal } from '@/components/EditProfileModal';
+import { EditBankDetailsModal } from '@/components/EditBankDetailsModal';
 import { ResetPasswordModal } from '@/components/ResetPasswordModal';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { useNavigate } from 'react-router-dom';
@@ -62,6 +63,8 @@ export default function AdminUsers() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'single' | 'bulk'; userId?: string; name?: string } | null>(null);
   const [resetPasswordProfile, setResetPasswordProfile] = useState<Profile | null>(null);
+  const [editBankDetail, setEditBankDetail] = useState<any>(null);
+  const [viewBankDetails, setViewBankDetails] = useState<any>(null);
   const [deleting, setDeleting] = useState(false);
   const { startImpersonating } = useImpersonate();
   const navigate = useNavigate();
@@ -73,6 +76,12 @@ export default function AdminUsers() {
   };
 
   useEffect(() => { fetchProfiles(); }, []);
+
+  const handleViewProfile = async (profile: Profile) => {
+    setViewProfile(profile);
+    const { data } = await supabase.from('bank_details').select('*').eq('user_id', profile.user_id).maybeSingle();
+    setViewBankDetails(data);
+  };
 
   const filtered = profiles.filter((p) => {
     if (statusFilter !== 'all' && p.verification_status !== statusFilter) return false;
@@ -308,7 +317,7 @@ export default function AdminUsers() {
                     <td className="py-3 px-3 text-muted-foreground whitespace-nowrap hidden lg:table-cell">{new Date(profile.created_at).toLocaleDateString()}</td>
                     <td className="py-3 px-3">
                       <div className="flex items-center justify-end gap-0.5">
-                        <button onClick={() => setViewProfile(profile)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all" title="View">
+                        <button onClick={() => handleViewProfile(profile)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all" title="View">
                           <Eye className="h-4 w-4" />
                         </button>
                         <DropdownMenu>
@@ -428,6 +437,40 @@ export default function AdminUsers() {
                   </div>
                 </div>
               )}
+
+              {/* Bank Details Section */}
+              <div className="pt-3 border-t border-border/50">
+                <p className="text-muted-foreground mb-2 font-medium flex items-center gap-2"><Landmark className="h-3.5 w-3.5" /> Bank Details</p>
+                {viewBankDetails ? (
+                  <div className="space-y-2 text-sm">
+                    <Row label="Method" value={viewBankDetails.payment_method === 'wise' ? 'Wise (International)' : 'Bank Transfer (India)'} />
+                    <Row label="Account Holder" value={viewBankDetails.account_holder_name} />
+                    <Row label="Bank" value={viewBankDetails.bank_name} />
+                    <Row label={viewBankDetails.payment_method === 'wise' ? 'Account/IBAN' : 'Account No.'} value={viewBankDetails.account_number} />
+                    {viewBankDetails.payment_method === 'bank_transfer' && (
+                      <>
+                        <Row label="IFSC" value={viewBankDetails.ifsc_code || '-'} />
+                        <Row label="Branch" value={viewBankDetails.branch_name || '-'} />
+                      </>
+                    )}
+                    {viewBankDetails.payment_method === 'wise' && (
+                      <>
+                        <Row label="SWIFT/BIC" value={viewBankDetails.swift_bic || '-'} />
+                        {viewBankDetails.bank_address && <Row label="Bank Address" value={viewBankDetails.bank_address} />}
+                        <Row label="Country" value={viewBankDetails.country || '-'} />
+                      </>
+                    )}
+                    <button
+                      onClick={() => { setViewProfile(null); setEditBankDetail(viewBankDetails); }}
+                      className="w-full mt-2 py-2 rounded-lg bg-muted/50 border border-border text-sm font-medium text-foreground hover:bg-muted transition-all flex items-center justify-center gap-2"
+                    >
+                      <Pencil className="h-3.5 w-3.5" /> Edit Bank Details
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground/60">No bank details submitted.</p>
+                )}
+              </div>
             </div>
 
             <div className="flex gap-3 mt-6">
@@ -505,6 +548,15 @@ export default function AdminUsers() {
             }
           }}
           onCancel={() => setDeleteConfirm(null)}
+        />
+      )}
+
+      {/* Edit Bank Details Modal */}
+      {editBankDetail && (
+        <EditBankDetailsModal
+          bankDetail={editBankDetail}
+          onClose={() => setEditBankDetail(null)}
+          onSaved={() => { setEditBankDetail(null); }}
         />
       )}
 

@@ -41,6 +41,92 @@ export type Database = {
         }
         Relationships: []
       }
+      bank_detail_audit_logs: {
+        Row: {
+          bank_detail_id: string
+          changed_by: string
+          changes: Json
+          created_at: string
+          id: string
+        }
+        Insert: {
+          bank_detail_id: string
+          changed_by: string
+          changes?: Json
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          bank_detail_id?: string
+          changed_by?: string
+          changes?: Json
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_detail_audit_logs_bank_detail_id_fkey"
+            columns: ["bank_detail_id"]
+            isOneToOne: false
+            referencedRelation: "bank_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bank_details: {
+        Row: {
+          account_holder_name: string
+          account_number: string
+          bank_address: string | null
+          bank_name: string
+          branch_name: string | null
+          country: string | null
+          created_at: string
+          iban: string | null
+          id: string
+          ifsc_code: string | null
+          is_locked: boolean
+          payment_method: string
+          swift_bic: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_holder_name: string
+          account_number: string
+          bank_address?: string | null
+          bank_name: string
+          branch_name?: string | null
+          country?: string | null
+          created_at?: string
+          iban?: string | null
+          id?: string
+          ifsc_code?: string | null
+          is_locked?: boolean
+          payment_method?: string
+          swift_bic?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_holder_name?: string
+          account_number?: string
+          bank_address?: string | null
+          bank_name?: string
+          branch_name?: string | null
+          country?: string | null
+          created_at?: string
+          iban?: string | null
+          id?: string
+          ifsc_code?: string | null
+          is_locked?: boolean
+          payment_method?: string
+          swift_bic?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       company_details: {
         Row: {
           address: string
