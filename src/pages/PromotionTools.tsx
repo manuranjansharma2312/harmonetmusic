@@ -57,6 +57,7 @@ export default function PromotionTools() {
   const [selectedProduct, setSelectedProduct] = useState('');
   const [quantity, setQuantity] = useState('');
   const [screenshot, setScreenshot] = useState<File | null>(null);
+  const [transactionId, setTransactionId] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   // View order
@@ -110,10 +111,34 @@ export default function PromotionTools() {
   const totalCost = (baseAmount + totalTax).toFixed(2);
 
   const submitOrder = async () => {
-    if (!selectedProduct || !quantity || !screenshot || !user) {
-      toast.error('Please fill all fields and upload screenshot');
+    if (!selectedProduct || !quantity || !screenshot || !user || !transactionId.trim()) {
+      toast.error('Please fill all fields including Transaction ID and upload screenshot');
       return;
     }
+
+    // Validate transaction ID uniqueness
+    const tid = transactionId.trim();
+    const { data: poDup } = await supabase
+      .from('promotion_orders')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('transaction_id', tid)
+      .limit(1);
+    if (poDup && poDup.length > 0) {
+      toast.error('This Transaction ID has already been used in a previous order.');
+      return;
+    }
+    const { data: crDup } = await supabase
+      .from('content_requests')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('transaction_id', tid)
+      .limit(1);
+    if (crDup && crDup.length > 0) {
+      toast.error('This Transaction ID has already been used in a takedown request.');
+      return;
+    }
+
     setSubmitting(true);
 
     const ext = screenshot.name.split('.').pop();
@@ -129,6 +154,7 @@ export default function PromotionTools() {
       quantity: qty,
       total_amount: Number(totalCost),
       screenshot_url: urlData.publicUrl,
+      transaction_id: tid,
     });
 
     if (error) { toast.error('Failed to submit order'); setSubmitting(false); return; }
@@ -138,6 +164,7 @@ export default function PromotionTools() {
     setSelectedProduct('');
     setQuantity('');
     setScreenshot(null);
+    setTransactionId('');
     fetchOrders();
   };
 
@@ -269,6 +296,10 @@ export default function PromotionTools() {
             )}
 
             <div className="space-y-2">
+              <Label>Transaction ID *</Label>
+              <Input value={transactionId} onChange={e => setTransactionId(e.target.value)} placeholder="Enter your payment transaction ID" />
+            </div>
+            <div className="space-y-2">
               <Label>Upload Payment Screenshot *</Label>
               <Input type="file" accept="image/*" onChange={e => setScreenshot(e.target.files?.[0] || null)} />
             </div>
@@ -296,6 +327,7 @@ export default function PromotionTools() {
                 <div><span className="text-muted-foreground">Amount:</span> <span className="font-medium">₹{viewOrder.total_amount}</span></div>
                 <div><span className="text-muted-foreground">Status:</span> <StatusBadge status={viewOrder.status} /></div>
                 <div><span className="text-muted-foreground">Date:</span> <span className="font-medium">{format(new Date(viewOrder.created_at), 'dd MMM yyyy')}</span></div>
+                {(viewOrder as any).transaction_id && <div><span className="text-muted-foreground">Transaction ID:</span> <span className="font-medium">{(viewOrder as any).transaction_id}</span></div>}
                 {viewOrder.starts_from && <div><span className="text-muted-foreground">Starts From:</span> <span className="font-medium">{viewOrder.starts_from}</span></div>}
               </div>
               {viewOrder.rejection_reason && (

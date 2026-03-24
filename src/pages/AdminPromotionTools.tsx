@@ -52,6 +52,7 @@ interface Order {
 
 export default function AdminPromotionTools() {
   const [isEnabled, setIsEnabled] = useState(false);
+  const [takedownPaymentEnabled, setTakedownPaymentEnabled] = useState(false);
   const [settingsId, setSettingsId] = useState('');
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [taxes, setTaxes] = useState<Tax[]>([]);
@@ -99,6 +100,7 @@ export default function AdminPromotionTools() {
     if (data) {
       setSettingsId(data.id);
       setIsEnabled(data.is_enabled);
+      setTakedownPaymentEnabled((data as any).takedown_payment_enabled || false);
       setQrCodeUrl(data.qr_code_url);
       const taxData = data.taxes as any;
       if (Array.isArray(taxData)) setTaxes(taxData);
@@ -263,6 +265,15 @@ export default function AdminPromotionTools() {
           <div className="flex items-center gap-3">
             <Label htmlFor="promo-toggle" className="text-sm">Enable for Users</Label>
             <Switch id="promo-toggle" checked={isEnabled} onCheckedChange={toggleEnabled} />
+          </div>
+          <div className="flex items-center gap-3">
+            <Label htmlFor="takedown-payment-toggle" className="text-sm">Takedown Payment</Label>
+            <Switch id="takedown-payment-toggle" checked={takedownPaymentEnabled} onCheckedChange={async (val) => {
+              const { error } = await supabase.from('promotion_settings').update({ takedown_payment_enabled: val, updated_at: new Date().toISOString() } as any).eq('id', settingsId);
+              if (error) { toast.error('Failed to update'); return; }
+              setTakedownPaymentEnabled(val);
+              toast.success(val ? 'Takedown payment enabled' : 'Takedown payment disabled');
+            }} />
           </div>
         </div>
 
@@ -467,6 +478,7 @@ export default function AdminPromotionTools() {
                 <div><span className="text-muted-foreground">Amount:</span> <span className="font-medium">₹{viewingOrder.total_amount}</span></div>
                 <div><span className="text-muted-foreground">Status:</span> <StatusBadge status={viewingOrder.status} /></div>
                 <div><span className="text-muted-foreground">Date:</span> <span className="font-medium">{format(new Date(viewingOrder.created_at), 'dd MMM yyyy')}</span></div>
+                {(viewingOrder as any).transaction_id && <div className="col-span-2"><span className="text-muted-foreground">Transaction ID:</span> <span className="font-medium">{(viewingOrder as any).transaction_id}</span></div>}
               </div>
 
               {viewingOrder.screenshot_url && (

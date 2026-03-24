@@ -168,6 +168,7 @@ export type Database = {
           instagram_profile_link: string | null
           isrc: string | null
           official_artist_channel_link: string | null
+          payment_screenshot_url: string | null
           reason_for_takedown: string | null
           rejection_reason: string | null
           release_link_1: string | null
@@ -178,6 +179,7 @@ export type Database = {
           song_title: string | null
           status: string
           topic_channel_link: string | null
+          transaction_id: string | null
           updated_at: string
           user_id: string
           video_link: string | null
@@ -192,6 +194,7 @@ export type Database = {
           instagram_profile_link?: string | null
           isrc?: string | null
           official_artist_channel_link?: string | null
+          payment_screenshot_url?: string | null
           reason_for_takedown?: string | null
           rejection_reason?: string | null
           release_link_1?: string | null
@@ -202,6 +205,7 @@ export type Database = {
           song_title?: string | null
           status?: string
           topic_channel_link?: string | null
+          transaction_id?: string | null
           updated_at?: string
           user_id: string
           video_link?: string | null
@@ -216,6 +220,7 @@ export type Database = {
           instagram_profile_link?: string | null
           isrc?: string | null
           official_artist_channel_link?: string | null
+          payment_screenshot_url?: string | null
           reason_for_takedown?: string | null
           rejection_reason?: string | null
           release_link_1?: string | null
@@ -226,6 +231,7 @@ export type Database = {
           song_title?: string | null
           status?: string
           topic_channel_link?: string | null
+          transaction_id?: string | null
           updated_at?: string
           user_id?: string
           video_link?: string | null
@@ -488,6 +494,7 @@ export type Database = {
           starts_from: string | null
           status: string
           total_amount: number
+          transaction_id: string | null
           updated_at: string
           user_id: string
         }
@@ -501,6 +508,7 @@ export type Database = {
           starts_from?: string | null
           status?: string
           total_amount?: number
+          transaction_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -514,6 +522,7 @@ export type Database = {
           starts_from?: string | null
           status?: string
           total_amount?: number
+          transaction_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -565,6 +574,7 @@ export type Database = {
           id: string
           is_enabled: boolean
           qr_code_url: string | null
+          takedown_payment_enabled: boolean
           tax_percent: number
           taxes: Json
           updated_at: string
@@ -574,6 +584,7 @@ export type Database = {
           id?: string
           is_enabled?: boolean
           qr_code_url?: string | null
+          takedown_payment_enabled?: boolean
           tax_percent?: number
           taxes?: Json
           updated_at?: string
@@ -583,6 +594,7 @@ export type Database = {
           id?: string
           is_enabled?: boolean
           qr_code_url?: string | null
+          takedown_payment_enabled?: boolean
           tax_percent?: number
           taxes?: Json
           updated_at?: string
