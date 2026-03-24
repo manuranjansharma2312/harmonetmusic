@@ -237,7 +237,10 @@ export default function AdminRevenue() {
                 ) : (
                   paginated.map((w) => (
                     <TableRow key={w.id}>
-                      <TableCell className="text-sm">{w.email || 'Unknown'}</TableCell>
+                      <TableCell className="text-sm">
+                        {w.email || 'Unknown'}
+                        {w.display_id && <span className="ml-1 font-mono font-bold text-primary text-xs">(#{w.display_id})</span>}
+                      </TableCell>
                       <TableCell className="font-medium">{formatCurrency(Number(w.amount))}</TableCell>
                       <TableCell>{format(new Date(w.created_at), 'dd MMM yyyy, hh:mm a')}</TableCell>
                       <TableCell>

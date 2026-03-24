@@ -147,9 +147,17 @@ export default function AdminContentRequests() {
                         <span className="text-xs font-medium px-2 py-1 rounded bg-accent text-accent-foreground">
                           {REQUEST_TYPES[item.request_type] || item.request_type}
                         </span>
-                        <span className="text-sm text-muted-foreground">
+                      <span className="text-sm text-muted-foreground">
                           {new Date(item.created_at).toLocaleDateString()}
                         </span>
+                        {userInfoMap[item.user_id] && (
+                          <span className="text-xs text-muted-foreground">
+                            By: {userInfoMap[item.user_id].name}
+                            {userInfoMap[item.user_id].displayId && (
+                              <span className="font-mono font-bold text-primary ml-1">(#{userInfoMap[item.user_id].displayId})</span>
+                            )}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <select

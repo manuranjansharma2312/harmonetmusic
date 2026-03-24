@@ -175,7 +175,7 @@ export default function AdminLabels() {
                     </div>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    By: {userEmails[label.user_id] || label.user_id.slice(0, 8)} • {new Date(label.created_at).toLocaleDateString()}
+                    By: {userEmails[label.user_id] || label.user_id.slice(0, 8)} {userDisplayIds[label.user_id] ? <span className="font-mono font-bold text-primary">(#{userDisplayIds[label.user_id]})</span> : null} • {new Date(label.created_at).toLocaleDateString()}
                   </p>
                   {label.status === 'rejected' && label.rejection_reason && (
                     <p className="text-xs text-destructive mt-1">Reason: {label.rejection_reason}</p>
