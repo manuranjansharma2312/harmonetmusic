@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { NoticePopup } from '@/components/NoticePopup';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { StatCard } from '@/components/StatCard';
 import { GlassCard } from '@/components/GlassCard';
@@ -110,6 +111,7 @@ export default function UserDashboard() {
         <StatCard title="Approved" value={stats.approved} icon={CheckCircle} color="hsla(140, 60%, 30%, 0.3)" />
         <StatCard title="Rejected" value={stats.rejected} icon={XCircle} color="hsla(0, 60%, 40%, 0.3)" />
       </div>
+      <NoticePopup />
     </DashboardLayout>
   );
 }

@@ -24,6 +24,7 @@ import {
   FileText,
   Receipt,
   Image as ImageIcon,
+  Bell,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
@@ -90,6 +91,7 @@ const adminLinksTop = [
   { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
   { to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt },
   { to: '/admin/poster-generator', label: 'Poster Generator', icon: ImageIcon },
+  { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
 ];
 
 export function AppSidebar() {
