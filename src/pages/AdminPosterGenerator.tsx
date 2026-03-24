@@ -55,6 +55,17 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number,
   return lines;
 }
 
+function clampLineWithEllipsis(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, font: string) {
+  ctx.font = font;
+  let output = text.trim();
+
+  while (output.length > 0 && ctx.measureText(`${output}…`).width > maxWidth) {
+    output = output.slice(0, -1).trimEnd();
+  }
+
+  return output ? `${output}…` : '…';
+}
+
 function fitSingleLineFontSize(
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -71,14 +82,6 @@ function fitSingleLineFontSize(
   return minSize;
 }
 
-function clampLineWithEllipsis(ctx: CanvasRenderingContext2D, text: string, maxWidth: number) {
-  let output = text.trim();
-  while (output.length > 0 && ctx.measureText(`${output}…`).width > maxWidth) {
-    output = output.slice(0, -1).trimEnd();
-  }
-  return output ? `${output}…` : '…';
-}
-
 function fitTitleBlock(
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -90,13 +93,12 @@ function fitTitleBlock(
 ) {
   for (let size = startSize; size >= minSize; size -= 2) {
     const font = `700 ${size}px "Outfit", sans-serif`;
-    ctx.font = font;
     let lines = wrapText(ctx, text, maxWidth, font);
     const lineHeight = size * 1.08;
 
     if (lines.length > maxLines) {
       lines = lines.slice(0, maxLines);
-      lines[maxLines - 1] = clampLineWithEllipsis(ctx, lines[maxLines - 1], maxWidth);
+      lines[maxLines - 1] = clampLineWithEllipsis(ctx, lines[maxLines - 1], maxWidth, font);
     }
 
     if (lines.length * lineHeight <= maxHeight) {
@@ -105,10 +107,9 @@ function fitTitleBlock(
   }
 
   const fallbackFont = `700 ${minSize}px "Outfit", sans-serif`;
-  ctx.font = fallbackFont;
   let lines = wrapText(ctx, text, maxWidth, fallbackFont).slice(0, maxLines);
   if (lines.length === maxLines) {
-    lines[maxLines - 1] = clampLineWithEllipsis(ctx, lines[maxLines - 1], maxWidth);
+    lines[maxLines - 1] = clampLineWithEllipsis(ctx, lines[maxLines - 1], maxWidth, fallbackFont);
   }
 
   return {
@@ -177,17 +178,17 @@ export default function AdminPosterGenerator() {
       const isTallPortrait = aspectRatio > 1.5;
 
       const margin = minDim * (isLandscape ? 0.055 : 0.06);
-      const bottomBarH = minDim * (isLandscape ? 0.11 : 0.12);
+      const bottomBarH = minDim * (isLandscape ? 0.085 : 0.11);
       const bottomY = height - bottomBarH;
 
-      const backgroundGradient = ctx.createLinearGradient(0, 0, width * 0.4, height);
+      const backgroundGradient = ctx.createLinearGradient(0, 0, width * 0.42, height);
       backgroundGradient.addColorStop(0, '#080808');
       backgroundGradient.addColorStop(0.5, '#100c14');
       backgroundGradient.addColorStop(1, '#080808');
       ctx.fillStyle = backgroundGradient;
       ctx.fillRect(0, 0, width, height);
 
-      const glowX = isLandscape ? width * 0.3 : width * 0.5;
+      const glowX = isLandscape ? width * 0.28 : width * 0.5;
       const glowY = isPortrait ? height * 0.28 : height * 0.4;
       const radialGlow = ctx.createRadialGradient(glowX, glowY, 0, glowX, glowY, minDim * 0.8);
       radialGlow.addColorStop(0, 'rgba(107,21,21,0.18)');
@@ -206,59 +207,111 @@ export default function AdminPosterGenerator() {
       } catch {}
 
       const logoAspect = logoImg ? logoImg.width / logoImg.height : 3.2;
+      const topRightLabel = 'NEW RELEASE';
+      const outNowText = 'OUT NOW';
+      const taglineText = 'AVAILABLE ON ALL MAJOR STREAMING PLATFORMS';
 
       let coverX = 0;
       let coverY = 0;
       let coverS = 0;
-      let textX = 0;
-      let textY = 0;
-      let textW = 0;
       let logoX = margin;
       let logoY = margin;
       let logoW = 0;
-      let logoH = minDim * 0.085;
+      let logoH = minDim * (isLandscape ? 0.075 : 0.082);
+      let textX = margin;
+      let textW = width - margin * 2;
+      let textTop = 0;
+      let pillX = 0;
+      let pillY = 0;
+      let pillW = 0;
+      let pillH = 0;
+      let contentBottom = 0;
+
+      const topRightAvailableWidth = width * 0.3;
+      const badgeFontSize = fitSingleLineFontSize(
+        ctx,
+        topRightLabel,
+        topRightAvailableWidth,
+        Math.round(minDim * 0.024),
+        Math.round(minDim * 0.016),
+        (size) => `700 ${size}px "Work Sans", sans-serif`,
+      );
+      const topRowHeight = Math.max(logoH, badgeFontSize * 1.2);
 
       if (isLandscape) {
-        const usableH = bottomY - margin * 2;
-        coverS = Math.min(usableH * 0.92, width * 0.37);
+        const usableHeight = bottomY - margin * 2;
+        coverS = Math.min(usableHeight * 0.88, width * 0.36);
         coverX = margin;
-        coverY = margin + (usableH - coverS) / 2;
-        textX = coverX + coverS + margin * 1.2;
+        coverY = margin + (usableHeight - coverS) / 2;
+
+        textX = coverX + coverS + margin * 1.25;
         textW = width - textX - margin;
-        const maxLogoW = textW * 0.72;
+
+        const maxLogoW = textW * 0.68;
         logoW = logoH * logoAspect;
         if (logoW > maxLogoW) {
           logoW = maxLogoW;
           logoH = logoW / logoAspect;
         }
-        textY = logoY + logoH + margin * 0.75;
+
+        const titlePillFontSize = fitSingleLineFontSize(
+          ctx,
+          outNowText,
+          textW * 0.32,
+          Math.round(minDim * 0.026),
+          Math.round(minDim * 0.018),
+          (size) => `700 ${size}px "Outfit", sans-serif`,
+        );
+        ctx.font = `700 ${titlePillFontSize}px "Outfit", sans-serif`;
+        pillW = ctx.measureText(outNowText).width + titlePillFontSize * 1.7;
+        pillH = titlePillFontSize * 2.15;
+        pillX = width - margin - pillW;
+        pillY = bottomY - pillH - margin * 0.4;
+
+        textTop = logoY + Math.max(logoH, badgeFontSize) + margin * 0.75;
+        contentBottom = pillY - margin * 0.5;
       } else {
-        const maxLogoW = width * (isTallPortrait ? 0.62 : 0.68);
+        const maxLogoW = width * (isTallPortrait ? 0.6 : 0.66);
         logoW = logoH * logoAspect;
         if (logoW > maxLogoW) {
           logoW = maxLogoW;
           logoH = logoW / logoAspect;
         }
 
-        if (isPortrait) {
-          coverS = width * (isTallPortrait ? 0.56 : 0.62);
-        } else {
-          coverS = width * 0.5;
-        }
-
+        coverS = width * (isTallPortrait ? 0.54 : 0.5);
+        const topBlockBottom = logoY + Math.max(logoH, badgeFontSize) + margin * 0.7;
         coverX = (width - coverS) / 2;
-        coverY = logoY + logoH + margin * 0.75;
-        textX = margin;
-        textW = width - margin * 2;
-        textY = coverY + coverS + margin * 0.85;
+        coverY = topBlockBottom;
+
+        const pillFontSize = fitSingleLineFontSize(
+          ctx,
+          outNowText,
+          width * 0.36,
+          Math.round(minDim * 0.032),
+          Math.round(minDim * 0.02),
+          (size) => `700 ${size}px "Outfit", sans-serif`,
+        );
+        ctx.font = `700 ${pillFontSize}px "Outfit", sans-serif`;
+        pillW = ctx.measureText(outNowText).width + pillFontSize * 1.7;
+        pillH = pillFontSize * 2.15;
+        pillX = width - margin - pillW;
+        pillY = bottomY - pillH - margin * 0.5;
+
+        textTop = coverY + coverS + margin * 0.8;
+        contentBottom = pillY - margin * 0.5;
 
         const minimumTextSpace = minDim * (isTallPortrait ? 0.34 : 0.24);
-        const availableTextSpace = bottomY - margin * 0.6 - textY;
+        let availableTextSpace = contentBottom - textTop;
         if (availableTextSpace < minimumTextSpace) {
           const deficit = minimumTextSpace - availableTextSpace;
-          coverS = Math.max(minDim * 0.4, coverS - deficit);
+          coverS = Math.max(minDim * 0.36, coverS - deficit);
           coverX = (width - coverS) / 2;
-          textY = coverY + coverS + margin * 0.85;
+          textTop = coverY + coverS + margin * 0.8;
+          availableTextSpace = contentBottom - textTop;
+          if (availableTextSpace < minimumTextSpace) {
+            pillY = bottomY - pillH - margin * 0.25;
+            contentBottom = pillY - margin * 0.35;
+          }
         }
       }
 
@@ -290,77 +343,84 @@ export default function AdminPosterGenerator() {
         ctx.restore();
       }
 
-      const badgeText = 'NEW RELEASE';
-      const badgeAvailableWidth = Math.max(width * 0.12, width - (logoX + logoW) - margin * 2);
-      const badgeFontSize = fitSingleLineFontSize(
-        ctx,
-        badgeText,
-        badgeAvailableWidth,
-        Math.round(minDim * 0.028),
-        Math.round(minDim * 0.018),
-        (size) => `700 ${size}px "Work Sans", sans-serif`,
-      );
       ctx.save();
       ctx.font = `700 ${badgeFontSize}px "Work Sans", sans-serif`;
       ctx.textAlign = 'right';
       ctx.fillStyle = 'rgba(255,255,255,0.34)';
-      ctx.fillText(badgeText, width - margin, logoY + Math.max(logoH * 0.72, badgeFontSize));
+      ctx.fillText(topRightLabel, width - margin, logoY + Math.max(logoH * 0.72, badgeFontSize));
       ctx.restore();
 
+      const accentY = textTop;
       const accentLineWidth = minDim * 0.07;
       const accentLineHeight = Math.max(3, minDim * 0.004);
       ctx.save();
       ctx.fillStyle = '#6b1515';
-      ctx.fillRect(textX, textY, accentLineWidth, accentLineHeight);
+      ctx.fillRect(textX, accentY, accentLineWidth, accentLineHeight);
       ctx.restore();
 
-      const textTop = textY + accentLineHeight + margin * 0.45;
-      const textBottom = bottomY - margin * 0.55;
-
       const artistText = artistName.trim().toUpperCase();
-      const artistFontSize = artistText
+      const artistBaseFont = artistText
         ? fitSingleLineFontSize(
             ctx,
             artistText,
             textW,
-            Math.round(minDim * 0.042),
-            Math.round(minDim * 0.024),
+            Math.round(minDim * 0.04),
+            Math.round(minDim * 0.022),
             (size) => `400 ${size}px "Italiana", sans-serif`,
           )
         : 0;
-      const artistReserve = artistText ? artistFontSize * 1.5 + margin * 0.45 : 0;
+      const artistReserve = artistText ? artistBaseFont * 1.45 + margin * 0.45 : 0;
 
-      const maxTitleHeight = Math.max(minDim * 0.08, textBottom - textTop - artistReserve);
+      const titleBlockMaxHeight = Math.max(
+        minDim * 0.08,
+        contentBottom - (accentY + accentLineHeight + margin * 0.45) - artistReserve,
+      );
+
       const titleBlock = fitTitleBlock(
         ctx,
         songTitle.trim().toUpperCase(),
         textW,
-        maxTitleHeight,
-        Math.round(minDim * (isLandscape ? 0.072 : 0.082)),
-        Math.round(minDim * 0.04),
-        isTallPortrait ? 4 : 3,
+        titleBlockMaxHeight,
+        Math.round(minDim * (isLandscape ? 0.07 : 0.076)),
+        Math.round(minDim * 0.036),
+        isLandscape ? 3 : isTallPortrait ? 4 : 3,
       );
 
+      const titleStartY = accentY + accentLineHeight + margin * 0.4;
       ctx.save();
       ctx.font = titleBlock.font;
       ctx.textAlign = 'left';
       ctx.fillStyle = '#ffffff';
       titleBlock.lines.forEach((line, index) => {
-        const y = textTop + titleBlock.fontSize + index * titleBlock.lineHeight;
+        const y = titleStartY + titleBlock.fontSize + index * titleBlock.lineHeight;
         ctx.fillText(line, textX, y, textW);
       });
       ctx.restore();
 
-      const titleBottom = textTop + titleBlock.fontSize + (titleBlock.lines.length - 1) * titleBlock.lineHeight;
+      const titleBottom = titleStartY + titleBlock.fontSize + (titleBlock.lines.length - 1) * titleBlock.lineHeight;
       if (artistText) {
-        const artistY = Math.min(titleBottom + margin * 0.65, textBottom);
+        const artistFont = `400 ${artistBaseFont}px "Italiana", sans-serif`;
+        const artistLine = clampLineWithEllipsis(ctx, artistText, textW, artistFont);
+        const artistY = Math.min(titleBottom + margin * 0.62, contentBottom);
         ctx.save();
-        ctx.font = `400 ${artistFontSize}px "Italiana", sans-serif`;
+        ctx.font = artistFont;
         ctx.textAlign = 'left';
         ctx.fillStyle = 'rgba(255,255,255,0.8)';
-        ctx.fillText(artistText, textX, artistY, textW);
+        ctx.fillText(artistLine, textX, artistY, textW);
         ctx.restore();
       }
+
+      ctx.save();
+      ctx.fillStyle = '#6b1515';
+      ctx.beginPath();
+      ctx.roundRect(pillX, pillY, pillW, pillH, pillH / 2);
+      ctx.fill();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `${Math.round(pillH / 2.15)}px "Outfit", sans-serif`;
+      ctx.fillText(outNowText, pillX + pillW / 2, pillY + pillH / 2);
+      ctx.restore();
 
       ctx.save();
       ctx.strokeStyle = 'rgba(255,255,255,0.08)';
@@ -371,52 +431,41 @@ export default function AdminPosterGenerator() {
       ctx.stroke();
       ctx.restore();
 
-      const outNowText = 'OUT NOW';
-      const outNowFontSize = fitSingleLineFontSize(
-        ctx,
-        outNowText,
-        width * 0.2,
-        Math.round(minDim * 0.028),
-        Math.round(minDim * 0.02),
-        (size) => `700 ${size}px "Outfit", sans-serif`,
-      );
-      ctx.font = `700 ${outNowFontSize}px "Outfit", sans-serif`;
-      const outNowTextWidth = ctx.measureText(outNowText).width;
-      const outNowPillW = outNowTextWidth + outNowFontSize * 1.8;
-      const outNowPillH = outNowFontSize * 2.3;
-      const outNowX = width - margin - outNowPillW;
-      const outNowY = bottomY + (bottomBarH - outNowPillH) / 2;
-
-      ctx.save();
-      ctx.fillStyle = '#6b1515';
-      ctx.beginPath();
-      ctx.roundRect(outNowX, outNowY, outNowPillW, outNowPillH, outNowPillH / 2);
-      ctx.fill();
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = `700 ${outNowFontSize}px "Outfit", sans-serif`;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(outNowText, outNowX + outNowPillW / 2, outNowY + outNowPillH / 2);
-      ctx.restore();
-
-      const taglineText = 'AVAILABLE ON ALL MAJOR STREAMING PLATFORMS';
-      const taglineAvailableWidth = Math.max(width * 0.18, outNowX - margin * 2);
-      const taglineFontSize = fitSingleLineFontSize(
-        ctx,
-        taglineText,
-        taglineAvailableWidth,
-        Math.round(minDim * 0.022),
-        Math.round(minDim * 0.0125),
-        (size) => `400 ${size}px "Outfit", sans-serif`,
-      );
-
-      ctx.save();
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.font = `400 ${taglineFontSize}px "Outfit", sans-serif`;
-      ctx.fillStyle = 'rgba(255,255,255,0.58)';
-      ctx.fillText(taglineText, margin, bottomY + bottomBarH / 2, taglineAvailableWidth);
-      ctx.restore();
+      if (isLandscape) {
+        const taglineAvailableWidth = Math.max(width * 0.18, pillX - margin * 2);
+        const taglineFontSize = fitSingleLineFontSize(
+          ctx,
+          taglineText,
+          taglineAvailableWidth,
+          Math.round(minDim * 0.02),
+          Math.round(minDim * 0.0125),
+          (size) => `400 ${size}px "Outfit", sans-serif`,
+        );
+        ctx.save();
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.font = `400 ${taglineFontSize}px "Outfit", sans-serif`;
+        ctx.fillStyle = 'rgba(255,255,255,0.58)';
+        ctx.fillText(taglineText, margin, bottomY + bottomBarH / 2, taglineAvailableWidth);
+        ctx.restore();
+      } else {
+        const footerWidth = width - margin * 2;
+        const footerFontSize = fitSingleLineFontSize(
+          ctx,
+          taglineText,
+          footerWidth,
+          Math.round(minDim * 0.019),
+          Math.round(minDim * 0.0115),
+          (size) => `400 ${size}px "Outfit", sans-serif`,
+        );
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = `400 ${footerFontSize}px "Outfit", sans-serif`;
+        ctx.fillStyle = 'rgba(255,255,255,0.58)';
+        ctx.fillText(taglineText, width / 2, bottomY + bottomBarH / 2, footerWidth);
+        ctx.restore();
+      }
     },
     [posterPreview, selectedSize],
   );
