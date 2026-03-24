@@ -83,7 +83,6 @@ const userLinksBottom = [
   { to: '/help-tutorials', label: 'Help Tutorials', icon: BookOpen },
   { to: '/promotion-tools', label: 'Promotion Tools', icon: Megaphone },
   { to: '/revenue', label: 'Revenue', icon: Wallet },
-  { to: '/bank-details', label: 'Bank Details', icon: Landmark },
   { to: '/terms', label: 'Terms & Conditions', icon: FileText },
   { to: '/profile', label: 'My Profile', icon: UserCircle },
 ];
