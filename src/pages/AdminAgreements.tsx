@@ -220,7 +220,8 @@ export default function AdminAgreements() {
             <DialogTitle>{previewTemplate?.name}</DialogTitle>
           </DialogHeader>
           <div
-            className="tutorial-content text-foreground"
+            className="agreement-preview p-6 rounded-md"
+            style={{ backgroundColor: "white", color: "black" }}
             dangerouslySetInnerHTML={{ __html: previewTemplate?.content || "" }}
           />
         </DialogContent>
