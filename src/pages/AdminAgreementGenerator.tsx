@@ -204,7 +204,7 @@ export default function AdminAgreementGenerator() {
     html = html.replace(/\{\{artist_label_name\}\}/g, artistLabelName);
     html = html.replace(/\{\{legal_name\}\}/g, legalName);
     html = html.replace(/\{\{address\}\}/g, address);
-    html = html.replace(/\{\{mobile_number\}\}/g, `${countryCode} ${mobileNumber}`);
+    html = html.replace(/\{\{mobile_number\}\}/g, `${countryCode.split("|")[1]} ${mobileNumber}`);
     html = html.replace(/\{\{email\}\}/g, email);
     html = html.replace(/\{\{govt_ids\}\}/g, govtIdText);
     html = html.replace(/\{\{client_revenue_percent\}\}/g, `${clientRevenue}%`);
