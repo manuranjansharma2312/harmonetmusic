@@ -103,6 +103,7 @@ const adminLinksTop = [
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
   { to: '/admin/agreements', label: 'Agreements', icon: FileSignature },
   { to: '/admin/promotion-tools', label: 'Promotion Tools', icon: Megaphone },
+  { to: '/admin/payment-settings', label: 'Payment Settings', icon: CreditCard },
 ];
 
 export function AppSidebar() {
