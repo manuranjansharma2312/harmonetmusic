@@ -264,7 +264,8 @@ export default function AdminInvoices() {
 
     // ── Logo ──
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', 14, 10, 45, 18);
+      // Logo is roughly square — use proportional sizing
+      doc.addImage(logoBase64, 'PNG', 14, 8, 28, 28);
     } else {
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
@@ -276,34 +277,35 @@ export default function AdminInvoices() {
     doc.setFontSize(28);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...brandColor);
-    doc.text('INVOICE', pw - 14, 22, { align: 'right' });
+    doc.text('INVOICE', pw - 14, 26, { align: 'right' });
 
-    // ── Company details under logo ──
-    let compY = 33;
+    // ── Company details beside logo ──
+    let compY = 10;
+    const compX = 45; // right of the logo
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(80);
     if (company.company_name) {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
-      doc.text(company.company_name, 14, compY);
+      doc.text(company.company_name, compX, compY);
       compY += 4;
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
     }
     if (company.address) {
-      const addressLines = doc.splitTextToSize(company.address, 80);
-      doc.text(addressLines, 14, compY);
+      const addressLines = doc.splitTextToSize(company.address, 70);
+      doc.text(addressLines, compX, compY);
       compY += addressLines.length * 3.5;
     }
     company.registration_ids.forEach(r => {
       if (r.name && r.value) {
-        doc.text(`${r.name}: ${r.value}`, 14, compY);
+        doc.text(`${r.name}: ${r.value}`, compX, compY);
         compY += 3.5;
       }
     });
 
-    const dividerY = Math.max(compY + 3, 40);
+    const dividerY = Math.max(compY + 2, 39);
 
     // ── Divider ──
     doc.setDrawColor(...brandColor);
