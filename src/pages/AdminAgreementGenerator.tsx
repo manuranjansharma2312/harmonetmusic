@@ -500,7 +500,7 @@ export default function AdminAgreementGenerator() {
           </DialogHeader>
           <div
             ref={previewRef}
-            className="agreement-preview p-8 rounded-md overflow-x-hidden"
+            className="agreement-preview p-6 rounded-md overflow-x-hidden"
             style={{ backgroundColor: "white", color: "black" }}
             dangerouslySetInnerHTML={{ __html: previewHtml }}
           />
