@@ -309,3 +309,45 @@
   color: hsl(var(--muted-foreground));
   margin: 1rem 0;
 }
+
+/* Agreement Preview Styles */
+.agreement-preview * {
+  color: black !important;
+}
+.agreement-preview h1,
+.agreement-preview h2,
+.agreement-preview h3,
+.agreement-preview h4,
+.agreement-preview h5,
+.agreement-preview h6 {
+  font-weight: 700 !important;
+  margin-top: 0.75em;
+  margin-bottom: 0.25em;
+}
+.agreement-preview h1 { font-size: 1.5rem; }
+.agreement-preview h2 { font-size: 1.25rem; }
+.agreement-preview h3 { font-size: 1.1rem; }
+.agreement-preview strong,
+.agreement-preview b {
+  font-weight: 700 !important;
+}
+.agreement-preview p {
+  margin-bottom: 0.5em;
+  line-height: 1.6;
+}
+.agreement-preview ul,
+.agreement-preview ol {
+  padding-left: 1.5em;
+  margin-bottom: 0.5em;
+}
+.agreement-preview li {
+  margin-bottom: 0.25em;
+}
+.agreement-preview hr {
+  border-top: 1px solid #333;
+  margin: 1em 0;
+}
+.agreement-preview img {
+  max-width: 100% !important;
+  height: auto !important;
+}
