@@ -6,10 +6,8 @@ import { Label } from '@/components/ui/label';
 import { PosterCropModal } from '@/components/release/PosterCropModal';
 import { toast } from 'sonner';
 import { Download, Upload, Image as ImageIcon } from 'lucide-react';
-import harmonetLogo from '@/assets/harmonet-logo.png';
 import harmonetLogoWhite from '@/assets/harmonet-logo-white.png';
 
-// Fixed poster size matching the template
 const POSTER_W = 1080;
 const POSTER_H = 1350;
 
@@ -17,15 +15,14 @@ let fontsLoaded = false;
 
 async function ensureFonts() {
   if (fontsLoaded) return;
+
   const fonts = [
     new FontFace('Outfit', 'url(/fonts/Outfit-Bold.ttf)', { weight: '700' }),
     new FontFace('Outfit', 'url(/fonts/Outfit-Regular.ttf)', { weight: '400' }),
-    new FontFace('Bricolage Grotesque', 'url(/fonts/BricolageGrotesque-Bold.ttf)', { weight: '700' }),
-    new FontFace('Bricolage Grotesque', 'url(/fonts/BricolageGrotesque-Regular.ttf)', { weight: '400' }),
-    new FontFace('Instrument Sans', 'url(/fonts/InstrumentSans-Bold.ttf)', { weight: '700' }),
   ];
-  await Promise.all(fonts.map((f) => f.load()));
-  fonts.forEach((f) => document.fonts.add(f));
+
+  await Promise.all(fonts.map((font) => font.load()));
+  fonts.forEach((font) => document.fonts.add(font));
   fontsLoaded = true;
 }
 
@@ -37,46 +34,86 @@ export default function AdminPosterGenerator() {
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [rawImageSrc, setRawImageSrc] = useState('');
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
+  const imageCacheRef = useRef(new Map<string, HTMLImageElement>());
+  const previewFrameRef = useRef<number | null>(null);
 
-  useEffect(() => { ensureFonts(); }, []);
+  useEffect(() => {
+    ensureFonts();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (previewFrameRef.current) {
+        cancelAnimationFrame(previewFrameRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (rawImageSrc.startsWith('blob:')) URL.revokeObjectURL(rawImageSrc);
+    };
+  }, [rawImageSrc]);
+
+  useEffect(() => {
+    return () => {
+      if (posterPreview.startsWith('blob:')) URL.revokeObjectURL(posterPreview);
+    };
+  }, [posterPreview]);
 
   const handlePosterUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (rawImageSrc.startsWith('blob:')) URL.revokeObjectURL(rawImageSrc);
     setRawImageSrc(URL.createObjectURL(file));
     setCropModalOpen(true);
     e.target.value = '';
   };
 
   const handleCropComplete = (croppedFile: File) => {
+    if (posterPreview.startsWith('blob:')) URL.revokeObjectURL(posterPreview);
     setPosterPreview(URL.createObjectURL(croppedFile));
     setCropModalOpen(false);
     setRawImageSrc('');
   };
 
-  const loadImage = (src: string): Promise<HTMLImageElement> =>
-    new Promise((resolve, reject) => {
+  const loadImage = useCallback((src: string): Promise<HTMLImageElement> => {
+    if (!src) return Promise.reject(new Error('Missing image source'));
+
+    const cached = imageCacheRef.current.get(src);
+    if (cached) return Promise.resolve(cached);
+
+    return new Promise((resolve, reject) => {
       const img = new window.Image();
       img.crossOrigin = 'anonymous';
-      img.onload = () => resolve(img);
+      img.onload = () => {
+        imageCacheRef.current.set(src, img);
+        resolve(img);
+      };
       img.onerror = reject;
       img.src = src;
     });
+  }, []);
 
-  const fitSingleLineFontSize = (
-    ctx: CanvasRenderingContext2D,
-    text: string,
-    maxWidth: number,
-    startSize: number,
-    minSize: number,
-    getFont: (size: number) => string,
-  ) => {
-    for (let size = startSize; size >= minSize; size -= 1) {
-      ctx.font = getFont(size);
-      if (ctx.measureText(text).width <= maxWidth) return size;
-    }
-    return minSize;
-  };
+  const fitSingleLineFontSize = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      text: string,
+      maxWidth: number,
+      startSize: number,
+      minSize: number,
+      getFont: (size: number) => string,
+    ) => {
+      for (let size = startSize; size >= minSize; size -= 1) {
+        ctx.font = getFont(size);
+        if (ctx.measureText(text).width <= maxWidth) return size;
+      }
+
+      return minSize;
+    },
+    [],
+  );
 
   const generatePoster = useCallback(
     async (canvas: HTMLCanvasElement) => {
@@ -86,10 +123,10 @@ export default function AdminPosterGenerator() {
       const H = POSTER_H;
       canvas.width = W;
       canvas.height = H;
+
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      // === BACKGROUND ===
       const bg = ctx.createLinearGradient(0, 0, W * 0.3, H);
       bg.addColorStop(0, '#0e0202');
       bg.addColorStop(0.4, '#280909');
@@ -105,25 +142,39 @@ export default function AdminPosterGenerator() {
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, W, H);
 
-      // === LOAD IMAGES ===
       let coverImg: HTMLImageElement | null = null;
       let logoImg: HTMLImageElement | null = null;
-      try { coverImg = await loadImage(posterPreview); } catch {}
-      try { logoImg = await loadImage(harmonetLogoWhite); } catch {}
 
-      // === STRICT ZONE LAYOUT (1080 x 1350) ===
-      // Zone 1: Top row       y: 0   → 140   (140px)
-      // Zone 2: Cover art     y: 140 → 890   (750px)
-      // Zone 3: Title/Artist  y: 920 → 1140  (220px)
-      // Zone 4: Bottom row    y: 1200 → 1350 (150px)
+      if (posterPreview) {
+        try {
+          coverImg = await loadImage(posterPreview);
+        } catch {
+          coverImg = null;
+        }
+      }
 
-      const M = 70; // side margin
+      try {
+        logoImg = await loadImage(harmonetLogoWhite);
+      } catch {
+        logoImg = null;
+      }
 
-      // --- ZONE 1: Logo + NEW RELEASES (y: 30 to 130) ---
+      const sideMargin = 70;
+      const topRowY = 35;
+      const topRowHeight = 95;
+      const coverSize = 750;
+      const coverX = (W - coverSize) / 2;
+      const coverY = 148;
+      const radius = 14;
+      const textTopY = 940;
+      const bottomRowY = H - 50;
+      const maxTitleW = W - sideMargin * 2;
+      const maxArtistW = W - sideMargin * 2 - 40;
+
       if (logoImg) {
-        const lh = 80;
-        const lw = (logoImg.width / logoImg.height) * lh;
-        ctx.drawImage(logoImg, M, 35, lw, lh);
+        const logoHeight = 80;
+        const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
+        ctx.drawImage(logoImg, sideMargin, topRowY, logoWidth, logoHeight);
       }
 
       ctx.save();
@@ -131,14 +182,8 @@ export default function AdminPosterGenerator() {
       ctx.textBaseline = 'middle';
       ctx.fillStyle = '#ffffff';
       ctx.font = '700 48px "Outfit", sans-serif';
-      ctx.fillText('NEW RELEASES', W - M, 75);
+      ctx.fillText('NEW RELEASES', W - sideMargin, topRowY + topRowHeight / 2 - 8);
       ctx.restore();
-
-      // --- ZONE 2: Cover art (y: 150 to 900) ---
-      const coverSize = 750;
-      const coverX = (W - coverSize) / 2;
-      const coverY = 148;
-      const radius = 14;
 
       ctx.save();
       ctx.fillStyle = '#ffffff';
@@ -154,6 +199,18 @@ export default function AdminPosterGenerator() {
         ctx.clip();
         ctx.drawImage(coverImg, coverX, coverY, coverSize, coverSize);
         ctx.restore();
+      } else {
+        ctx.save();
+        ctx.fillStyle = 'rgba(10,10,10,0.12)';
+        ctx.beginPath();
+        ctx.roundRect(coverX, coverY, coverSize, coverSize, radius);
+        ctx.fill();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        ctx.font = '400 28px "Outfit", sans-serif';
+        ctx.fillText('UPLOAD COVER ART', W / 2, coverY + coverSize / 2);
+        ctx.restore();
       }
 
       ctx.save();
@@ -164,15 +221,11 @@ export default function AdminPosterGenerator() {
       ctx.stroke();
       ctx.restore();
 
-      // --- ZONE 3: Song Title + Artist (y: 930 to 1160) ---
-      const maxTitleW = W - M * 2;
-      const maxArtistW = W - M * 2 - 40;
-
       const titleUpper = songTitle.trim().toUpperCase();
-      let titleH = 0;
+      let titleHeight = 0;
 
       if (titleUpper) {
-        const sz = fitSingleLineFontSize(
+        const titleSize = fitSingleLineFontSize(
           ctx,
           titleUpper,
           maxTitleW,
@@ -182,22 +235,23 @@ export default function AdminPosterGenerator() {
         );
 
         ctx.save();
-        ctx.font = `700 ${sz}px "Outfit", sans-serif`;
+        ctx.font = `700 ${titleSize}px "Outfit", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
         ctx.shadowColor = 'rgba(0,0,0,0.5)';
         ctx.shadowBlur = 12;
         ctx.shadowOffsetY = 3;
         ctx.fillStyle = '#ffffff';
-        ctx.fillText(titleUpper, W / 2, 940);
+        ctx.fillText(titleUpper, W / 2, textTopY);
         ctx.restore();
-        titleH = sz;
+
+        titleHeight = titleSize;
       }
 
       const artistText = artistName.trim();
       if (artistText) {
-        const artistY = 940 + titleH + (titleUpper ? 18 : 0);
-        const sz = fitSingleLineFontSize(
+        const artistY = textTopY + titleHeight + (titleUpper ? 18 : 0);
+        const artistSize = fitSingleLineFontSize(
           ctx,
           artistText,
           maxArtistW,
@@ -207,7 +261,7 @@ export default function AdminPosterGenerator() {
         );
 
         ctx.save();
-        ctx.font = `400 ${sz}px "Outfit", sans-serif`;
+        ctx.font = `400 ${artistSize}px "Outfit", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
         ctx.shadowColor = 'rgba(0,0,0,0.3)';
@@ -217,7 +271,6 @@ export default function AdminPosterGenerator() {
         ctx.restore();
       }
 
-      // --- ZONE 4: Bottom row (y: ~1210 to 1310) ---
       ctx.save();
       ctx.font = '700 70px "Outfit", sans-serif';
       ctx.textAlign = 'left';
@@ -225,7 +278,7 @@ export default function AdminPosterGenerator() {
       ctx.shadowColor = 'rgba(0,0,0,0.4)';
       ctx.shadowBlur = 8;
       ctx.fillStyle = '#ffffff';
-      ctx.fillText('OUT NOW', M, H - 50);
+      ctx.fillText('OUT NOW', sideMargin, bottomRowY);
       ctx.restore();
 
       ctx.save();
@@ -233,34 +286,40 @@ export default function AdminPosterGenerator() {
       ctx.textBaseline = 'bottom';
       ctx.fillStyle = 'rgba(255,255,255,0.85)';
       ctx.font = '700 22px "Outfit", sans-serif';
-      ctx.fillText('STREAMING PLATFORMS!', W - M, H - 50);
-      ctx.fillText('AVAILABLE ON ALL MAJOR', W - M, H - 80);
+      ctx.fillText('STREAMING PLATFORMS!', W - sideMargin, bottomRowY);
+      ctx.fillText('AVAILABLE ON ALL MAJOR', W - sideMargin, bottomRowY - 30);
       ctx.restore();
     },
-    [posterPreview, songTitle, artistName],
+    [artistName, fitSingleLineFontSize, loadImage, posterPreview, songTitle],
   );
 
   useEffect(() => {
     const canvas = previewCanvasRef.current;
     if (!canvas) return;
-    let cancelled = false;
-    const run = async () => {
-      await generatePoster(canvas);
-      // Re-draw once more after a brief delay to catch async image loads
-      if (!cancelled) {
-        await new Promise((r) => setTimeout(r, 100));
-        if (!cancelled) await generatePoster(canvas);
+    if (!posterPreview && !songTitle && !artistName) return;
+
+    if (previewFrameRef.current) {
+      cancelAnimationFrame(previewFrameRef.current);
+    }
+
+    previewFrameRef.current = requestAnimationFrame(() => {
+      generatePoster(canvas);
+    });
+
+    return () => {
+      if (previewFrameRef.current) {
+        cancelAnimationFrame(previewFrameRef.current);
+        previewFrameRef.current = null;
       }
     };
-    run();
-    return () => { cancelled = true; };
-  }, [generatePoster, posterPreview, songTitle, artistName]);
+  }, [artistName, generatePoster, posterPreview, songTitle]);
 
   const handleDownload = async () => {
     if (!posterPreview) {
       toast.error('Please upload a poster image');
       return;
     }
+
     setGenerating(true);
     try {
       const canvas = document.createElement('canvas');
@@ -277,6 +336,8 @@ export default function AdminPosterGenerator() {
       setGenerating(false);
     }
   };
+
+  const hasPreview = Boolean(posterPreview || songTitle || artistName);
 
   return (
     <DashboardLayout>
@@ -296,7 +357,7 @@ export default function AdminPosterGenerator() {
                 className="relative cursor-pointer rounded-xl border-2 border-dashed border-border p-6 text-center transition-colors hover:border-primary/50"
                 onClick={() => document.getElementById('poster-upload')?.click()}
               >
-                {(posterPreview || songTitle || artistName) ? (
+                {posterPreview ? (
                   <img src={posterPreview} alt="Cover" className="mx-auto max-h-48 rounded-lg object-contain" />
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
@@ -318,7 +379,6 @@ export default function AdminPosterGenerator() {
               <Input placeholder="Enter artist name" value={artistName} onChange={(e) => setArtistName(e.target.value)} />
             </div>
 
-
             <Button onClick={handleDownload} disabled={generating || !posterPreview} className="w-full">
               <Download className="mr-2 h-4 w-4" />
               {generating ? 'Generating...' : 'Download Poster'}
@@ -331,12 +391,12 @@ export default function AdminPosterGenerator() {
               className="relative flex w-full items-center justify-center overflow-hidden rounded-xl border border-border/50 bg-muted/20"
               style={{ aspectRatio: POSTER_W / POSTER_H, maxHeight: '70vh' }}
             >
-              {posterPreview ? (
+              {hasPreview ? (
                 <canvas ref={previewCanvasRef} className="h-full w-full object-contain" />
               ) : (
                 <div className="flex flex-col items-center gap-2 p-8 text-muted-foreground">
                   <ImageIcon className="h-12 w-12 opacity-30" />
-                  <span className="text-sm">Upload cover art to preview</span>
+                  <span className="text-sm">Upload cover art or enter text to preview</span>
                 </div>
               )}
             </div>
