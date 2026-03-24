@@ -309,12 +309,19 @@ export default function AdminAgreementGenerator() {
                 <Label>Mobile Number</Label>
                 <div className="flex gap-2">
                   <Select value={countryCode} onValueChange={setCountryCode}>
-                    <SelectTrigger className="w-24 flex-shrink-0">
-                      <SelectValue />
+                    <SelectTrigger className="w-[200px] flex-shrink-0">
+                      <SelectValue>
+                        {(() => {
+                          const c = COUNTRY_CODES.find(c => c.code === countryCode);
+                          return c ? `${c.flag} ${c.name} (${c.code})` : countryCode;
+                        })()}
+                      </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
-                      {COUNTRY_CODES.map((c) => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                    <SelectContent className="max-h-60">
+                      {COUNTRY_CODES.map((c, i) => (
+                        <SelectItem key={`${c.code}-${i}`} value={c.code}>
+                          {c.flag} {c.name} ({c.code})
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
