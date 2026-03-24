@@ -323,7 +323,13 @@ export default function AdminInvoices() {
               </TableBody>
             </Table>
           </div>
-          {totalPages > 1 && <TablePagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 py-4">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
+              <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
+            </div>
+          )}
         </GlassCard>
       </div>
 
