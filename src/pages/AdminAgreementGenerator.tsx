@@ -482,7 +482,7 @@ export default function AdminAgreementGenerator() {
               <Button onClick={handlePreview}>
                 <Eye className="h-4 w-4 mr-2" /> Preview
               </Button>
-              <Button variant="secondary" onClick={handleDownload}>
+              <Button className="bg-black hover:bg-black/90 text-white" onClick={handleDownload}>
                 <Download className="h-4 w-4 mr-2" /> Download PDF
               </Button>
             </div>
