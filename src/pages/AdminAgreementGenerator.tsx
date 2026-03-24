@@ -500,8 +500,8 @@ export default function AdminAgreementGenerator() {
           </DialogHeader>
           <div
             ref={previewRef}
-            className="agreement-preview p-6 rounded-md overflow-x-hidden break-words"
-            style={{ backgroundColor: "white", color: "black", wordBreak: "break-word", overflowWrap: "break-word" }}
+            className="agreement-preview p-8 rounded-md overflow-x-hidden"
+            style={{ backgroundColor: "white", color: "black" }}
             dangerouslySetInnerHTML={{ __html: previewHtml }}
           />
           <div className="flex justify-end pt-4">
