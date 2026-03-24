@@ -25,6 +25,9 @@ export default function Takedown() {
   // Payment settings from admin
   const [paymentEnabled, setPaymentEnabled] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [takedownAmount, setTakedownAmount] = useState(0);
+  const [takedownTaxEnabled, setTakedownTaxEnabled] = useState(false);
+  const [taxes, setTaxes] = useState<{name: string; percent: number}[]>([]);
 
   useEffect(() => {
     fetchHistory();
@@ -32,12 +35,19 @@ export default function Takedown() {
   }, [user]);
 
   const fetchPaymentSettings = async () => {
-    const { data } = await supabase.from('promotion_settings').select('takedown_payment_enabled, qr_code_url').limit(1).single();
+    const { data } = await supabase.from('promotion_settings').select('*').limit(1).single();
     if (data) {
       setPaymentEnabled(data.takedown_payment_enabled || false);
       setQrCodeUrl(data.qr_code_url);
+      setTakedownAmount((data as any).takedown_amount || 0);
+      setTakedownTaxEnabled((data as any).takedown_tax_enabled || false);
+      const taxData = data.taxes as any;
+      if (Array.isArray(taxData)) setTaxes(taxData);
     }
   };
+
+  const totalTax = takedownTaxEnabled ? taxes.reduce((sum, t) => sum + (takedownAmount * t.percent / 100), 0) : 0;
+  const totalPayable = takedownAmount + totalTax;
 
   const fetchHistory = async () => {
     if (!user) return;
