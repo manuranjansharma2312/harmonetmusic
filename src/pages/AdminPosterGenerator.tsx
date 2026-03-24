@@ -75,7 +75,7 @@ export default function AdminPosterGenerator() {
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      // === BACKGROUND: rich dark red/maroon gradient ===
+      // === BACKGROUND ===
       const bg = ctx.createLinearGradient(0, 0, W * 0.3, H);
       bg.addColorStop(0, '#0e0202');
       bg.addColorStop(0.4, '#280909');
@@ -84,7 +84,6 @@ export default function AdminPosterGenerator() {
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, W, H);
 
-      // Radial glow
       const glow = ctx.createRadialGradient(W * 0.5, H * 0.35, 0, W * 0.5, H * 0.35, W * 0.75);
       glow.addColorStop(0, 'rgba(140, 25, 25, 0.22)');
       glow.addColorStop(0.5, 'rgba(90, 15, 15, 0.06)');
@@ -98,36 +97,35 @@ export default function AdminPosterGenerator() {
       try { coverImg = await loadImage(posterPreview); } catch {}
       try { logoImg = await loadImage(harmonetLogoWhite); } catch {}
 
-      // === LAYOUT ZONES ===
-      const sideMargin = 70;
-      const topMargin = 55;
-      const bottomMargin = 50;
+      // === STRICT ZONE LAYOUT (1080 x 1350) ===
+      // Zone 1: Top row       y: 0   → 140   (140px)
+      // Zone 2: Cover art     y: 140 → 890   (750px)
+      // Zone 3: Title/Artist  y: 920 → 1140  (220px)
+      // Zone 4: Bottom row    y: 1200 → 1350 (150px)
 
-      // --- TOP ROW: Logo + "NEW RELEASES" ---
-      const logoH = 90;
+      const M = 70; // side margin
+
+      // --- ZONE 1: Logo + NEW RELEASES (y: 30 to 130) ---
       if (logoImg) {
-        const logoW = (logoImg.width / logoImg.height) * logoH;
-        ctx.drawImage(logoImg, sideMargin, topMargin, logoW, logoH);
+        const lh = 80;
+        const lw = (logoImg.width / logoImg.height) * lh;
+        ctx.drawImage(logoImg, M, 35, lw, lh);
       }
 
       ctx.save();
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = '#ffffff';
-      ctx.font = '700 50px "Bricolage Grotesque", sans-serif';
-      ctx.fillText('NEW RELEASES', W - sideMargin, topMargin + logoH / 2);
+      ctx.font = '700 48px "Outfit", sans-serif';
+      ctx.fillText('NEW RELEASES', W - M, 75);
       ctx.restore();
 
-      // --- COVER ART ---
-      const coverGap = 40; // gap below top row
-      const coverTopY = topMargin + logoH + coverGap;
-      const coverPadX = 95;
-      const coverSize = W - coverPadX * 2; // ~890px
-      const coverX = coverPadX;
-      const coverY = coverTopY;
+      // --- ZONE 2: Cover art (y: 150 to 900) ---
+      const coverSize = 750;
+      const coverX = (W - coverSize) / 2; // centered = 165
+      const coverY = 150;
       const radius = 14;
 
-      // White fill
       ctx.save();
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
@@ -135,7 +133,6 @@ export default function AdminPosterGenerator() {
       ctx.fill();
       ctx.restore();
 
-      // Image
       if (coverImg) {
         ctx.save();
         ctx.beginPath();
@@ -145,7 +142,6 @@ export default function AdminPosterGenerator() {
         ctx.restore();
       }
 
-      // Subtle border
       ctx.save();
       ctx.strokeStyle = 'rgba(255,255,255,0.08)';
       ctx.lineWidth = 1.5;
@@ -154,94 +150,72 @@ export default function AdminPosterGenerator() {
       ctx.stroke();
       ctx.restore();
 
-      // --- TEXT ZONE: Song Title + Artist ---
-      const textGap = 40;
-      const textTopY = coverY + coverSize + textGap;
-      const maxTextW = W - sideMargin * 2;
+      // --- ZONE 3: Song Title + Artist (y: 930 to 1160) ---
+      const maxTextW = W - M * 2;
 
-      // Bottom zone starts here — "OUT NOW" area
-      const outNowH = 85;
-      const streamingH = 60;
-      const bottomZoneH = Math.max(outNowH, streamingH) + bottomMargin;
-      const bottomZoneTopY = H - bottomZoneH;
-
-      // Song Title — premium display font, bold
       const titleUpper = songTitle.trim().toUpperCase();
-      let titleRenderedH = 0;
+      let titleH = 0;
 
       if (titleUpper) {
-        let titleSize = 74;
-        for (let s = 74; s >= 30; s -= 2) {
-          ctx.font = `700 ${s}px "Bricolage Grotesque", sans-serif`;
-          if (ctx.measureText(titleUpper).width <= maxTextW) {
-            titleSize = s;
-            break;
-          }
-          titleSize = s;
+        let sz = 72;
+        for (let s = 72; s >= 28; s -= 2) {
+          ctx.font = `700 ${s}px "Outfit", sans-serif`;
+          if (ctx.measureText(titleUpper).width <= maxTextW) { sz = s; break; }
+          sz = s;
         }
 
         ctx.save();
-        ctx.font = `700 ${titleSize}px "Bricolage Grotesque", sans-serif`;
+        ctx.font = `700 ${sz}px "Outfit", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
         ctx.shadowColor = 'rgba(0,0,0,0.5)';
-        ctx.shadowBlur = 14;
-        ctx.shadowOffsetY = 4;
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetY = 3;
         ctx.fillStyle = '#ffffff';
-        ctx.fillText(titleUpper, W / 2, textTopY, maxTextW);
+        ctx.fillText(titleUpper, W / 2, 940, maxTextW);
         ctx.restore();
-
-        titleRenderedH = titleSize;
+        titleH = sz;
       }
 
-      // Artist Name — clean, readable
       const artistText = artistName.trim();
       if (artistText) {
-        const artistGapFromTitle = titleUpper ? 20 : 0;
-        const artistTopY = textTopY + titleRenderedH + artistGapFromTitle;
-
-        let artistSize = 40;
-        for (let s = 40; s >= 20; s -= 2) {
-          ctx.font = `400 ${s}px "Bricolage Grotesque", sans-serif`;
-          if (ctx.measureText(artistText).width <= maxTextW) {
-            artistSize = s;
-            break;
-          }
-          artistSize = s;
+        const artistY = 940 + titleH + (titleUpper ? 18 : 0);
+        let sz = 38;
+        for (let s = 38; s >= 18; s -= 2) {
+          ctx.font = `400 ${s}px "Outfit", sans-serif`;
+          if (ctx.measureText(artistText).width <= maxTextW) { sz = s; break; }
+          sz = s;
         }
 
         ctx.save();
-        ctx.font = `400 ${artistSize}px "Bricolage Grotesque", sans-serif`;
+        ctx.font = `400 ${sz}px "Outfit", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
         ctx.shadowColor = 'rgba(0,0,0,0.3)';
         ctx.shadowBlur = 6;
-        ctx.shadowOffsetY = 2;
         ctx.fillStyle = 'rgba(255,255,255,0.9)';
-        ctx.fillText(artistText, W / 2, artistTopY, maxTextW);
+        ctx.fillText(artistText, W / 2, artistY, maxTextW);
         ctx.restore();
       }
 
-      // --- BOTTOM ROW ---
-      // "OUT NOW" — bottom-left, anchored
+      // --- ZONE 4: Bottom row (y: ~1210 to 1310) ---
       ctx.save();
-      ctx.font = '700 74px "Bricolage Grotesque", sans-serif';
+      ctx.font = '700 70px "Outfit", sans-serif';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';
       ctx.shadowColor = 'rgba(0,0,0,0.4)';
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 8;
       ctx.fillStyle = '#ffffff';
-      ctx.fillText('OUT NOW', sideMargin, H - bottomMargin);
+      ctx.fillText('OUT NOW', M, H - 50);
       ctx.restore();
 
-      // "AVAILABLE ON ALL MAJOR / STREAMING PLATFORMS!" — bottom-right
       ctx.save();
       ctx.textAlign = 'right';
       ctx.textBaseline = 'bottom';
       ctx.fillStyle = 'rgba(255,255,255,0.85)';
-      ctx.font = '700 22px "Instrument Sans", sans-serif';
-      ctx.fillText('STREAMING PLATFORMS!', W - sideMargin, H - bottomMargin);
-      ctx.fillText('AVAILABLE ON ALL MAJOR', W - sideMargin, H - bottomMargin - 32);
+      ctx.font = '700 22px "Outfit", sans-serif';
+      ctx.fillText('STREAMING PLATFORMS!', W - M, H - 50);
+      ctx.fillText('AVAILABLE ON ALL MAJOR', W - M, H - 80);
       ctx.restore();
     },
     [posterPreview, songTitle, artistName],
