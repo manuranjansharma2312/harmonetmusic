@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      company_details: {
+        Row: {
+          address: string
+          company_name: string
+          id: string
+          registration_ids: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          address?: string
+          company_name?: string
+          id?: string
+          registration_ids?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          address?: string
+          company_name?: string
+          id?: string
+          registration_ids?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       content_requests: {
         Row: {
           artist_name: string | null
