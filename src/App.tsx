@@ -37,6 +37,7 @@ import TermsConditions from "./pages/TermsConditions";
 import AdminTermsConditions from "./pages/AdminTermsConditions";
 import AdminInvoices from "./pages/AdminInvoices";
 import AdminPosterGenerator from "./pages/AdminPosterGenerator";
+import AdminNotices from "./pages/AdminNotices";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
