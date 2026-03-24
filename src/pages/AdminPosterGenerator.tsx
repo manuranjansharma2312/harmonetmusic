@@ -81,7 +81,6 @@ export default function AdminPosterGenerator() {
   const generatePoster = useCallback(
     async (canvas: HTMLCanvasElement) => {
       await ensureFonts();
-      if (!posterPreview) return;
 
       const W = POSTER_W;
       const H = POSTER_H;
