@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useImpersonate } from '@/hooks/useImpersonate';
 import {
   Dialog,
   DialogContent,
@@ -23,80 +23,84 @@ interface Notice {
 
 export function NoticePopup() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { isImpersonating, impersonatedUserId } = useImpersonate();
+  const [notices, setNotices] = useState<Notice[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [open, setOpen] = useState(false);
-  const shownRef = useRef(false);
-  const dismissedIds = useRef(new Set<string>());
+  const fetchedRef = useRef(false);
 
-  const { data: unreadNotices = [] } = useQuery({
-    queryKey: ['unread-notices', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
+  const effectiveUserId = isImpersonating ? impersonatedUserId : user?.id;
 
-      const { data: notices, error: nErr } = await supabase
+  const fetchUnread = useCallback(async () => {
+    if (!effectiveUserId || fetchedRef.current) return;
+    fetchedRef.current = true;
+
+    try {
+      // Get active notices
+      const { data: allNotices, error: nErr } = await supabase
         .from('notices')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
       if (nErr) throw nErr;
+      if (!allNotices || allNotices.length === 0) return;
 
+      // Get already-read notice IDs
       const { data: reads, error: rErr } = await supabase
         .from('notice_reads')
         .select('notice_id')
-        .eq('user_id', user.id);
+        .eq('user_id', effectiveUserId);
       if (rErr) throw rErr;
 
       const readIds = new Set((reads || []).map((r: any) => r.notice_id));
-      return (notices || []).filter((n: any) => !readIds.has(n.id)) as Notice[];
-    },
-    enabled: !!user?.id,
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-  });
+      const unread = allNotices.filter((n: any) => !readIds.has(n.id)) as Notice[];
 
-  // Only open once per mount when data first arrives
-  useEffect(() => {
-    if (!shownRef.current && unreadNotices.length > 0) {
-      shownRef.current = true;
-      setCurrentIndex(0);
-      setOpen(true);
+      if (unread.length > 0) {
+        setNotices(unread);
+        setCurrentIndex(0);
+        setOpen(true);
+      }
+    } catch (err) {
+      console.error('Failed to fetch notices:', err);
     }
-  }, [unreadNotices]);
+  }, [effectiveUserId]);
+
+  useEffect(() => {
+    fetchUnread();
+  }, [fetchUnread]);
 
   const markRead = async (noticeId: string) => {
-    if (!user?.id || dismissedIds.current.has(noticeId)) return;
-    dismissedIds.current.add(noticeId);
-    await supabase
-      .from('notice_reads')
-      .upsert({ notice_id: noticeId, user_id: user.id }, { onConflict: 'notice_id,user_id' });
+    if (!effectiveUserId) return;
+    try {
+      await supabase
+        .from('notice_reads')
+        .insert({ notice_id: noticeId, user_id: effectiveUserId });
+    } catch {
+      // ignore duplicate errors
+    }
   };
 
   const handleDismiss = async () => {
-    const notice = unreadNotices[currentIndex];
+    const notice = notices[currentIndex];
     if (notice) await markRead(notice.id);
 
-    if (currentIndex < unreadNotices.length - 1) {
+    if (currentIndex < notices.length - 1) {
       setCurrentIndex((i) => i + 1);
     } else {
       setOpen(false);
-      // Refresh cache after all dismissed
-      queryClient.invalidateQueries({ queryKey: ['unread-notices'] });
     }
   };
 
   const handleCloseAll = async () => {
-    for (const n of unreadNotices) {
+    for (const n of notices) {
       await markRead(n.id);
     }
     setOpen(false);
-    queryClient.invalidateQueries({ queryKey: ['unread-notices'] });
   };
 
-  if (unreadNotices.length === 0) return null;
+  if (notices.length === 0 || !open) return null;
 
-  const notice = unreadNotices[currentIndex];
+  const notice = notices[currentIndex];
   if (!notice) return null;
 
   return (
@@ -106,7 +110,7 @@ export function NoticePopup() {
           <div className="flex items-center gap-2 text-primary">
             <Bell className="h-5 w-5" />
             <span className="text-xs font-medium uppercase tracking-wider">
-              Notice {currentIndex + 1} of {unreadNotices.length}
+              Notice {currentIndex + 1} of {notices.length}
             </span>
           </div>
           <DialogTitle className="text-lg">{notice.title}</DialogTitle>
@@ -135,14 +139,14 @@ export function NoticePopup() {
                 <ChevronLeft className="h-4 w-4 mr-1" /> Prev
               </Button>
             )}
-            {currentIndex < unreadNotices.length - 1 && (
+            {currentIndex < notices.length - 1 && (
               <Button size="sm" variant="outline" onClick={() => setCurrentIndex((i) => i + 1)}>
                 Next <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             )}
           </div>
           <Button size="sm" onClick={handleDismiss}>
-            {currentIndex < unreadNotices.length - 1 ? 'Dismiss' : 'Close'}
+            {currentIndex < notices.length - 1 ? 'Dismiss' : 'Close'}
           </Button>
         </div>
       </DialogContent>
