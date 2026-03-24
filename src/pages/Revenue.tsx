@@ -25,7 +25,9 @@ export default function Revenue() {
   const { user, role } = useAuth();
   const { impersonatedUserId } = useImpersonate();
   const activeUserId = impersonatedUserId || user?.id;
+  const navigate = useNavigate();
 
+  const [hasBankDetails, setHasBankDetails] = useState<boolean | null>(null);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [paidWithdrawals, setPaidWithdrawals] = useState(0);
   const [pendingWithdrawals, setPendingWithdrawals] = useState(0);
