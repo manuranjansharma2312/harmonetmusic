@@ -217,6 +217,41 @@ export default function AdminInvoices() {
     fetchInvoices();
   };
 
+  const openCompanySettings = () => {
+    setCompanyForm({ ...company });
+    setCompanyDetailsOpen(true);
+  };
+
+  const saveCompanyDetails = async () => {
+    setSavingCompany(true);
+    const payload = {
+      company_name: companyForm.company_name,
+      address: companyForm.address,
+      registration_ids: companyForm.registration_ids as unknown as any,
+      updated_at: new Date().toISOString(),
+    };
+    if (companyForm.id) {
+      const { error } = await supabase.from('company_details').update(payload).eq('id', companyForm.id);
+      if (error) toast.error(error.message);
+      else { toast.success('Company details updated'); setCompanyDetailsOpen(false); fetchCompanyDetails(); }
+    } else {
+      const { error } = await supabase.from('company_details').insert(payload);
+      if (error) toast.error(error.message);
+      else { toast.success('Company details saved'); setCompanyDetailsOpen(false); fetchCompanyDetails(); }
+    }
+    setSavingCompany(false);
+  };
+
+  const addRegId = () => setCompanyForm(f => ({ ...f, registration_ids: [...f.registration_ids, { name: '', value: '' }] }));
+  const removeRegId = (i: number) => setCompanyForm(f => ({ ...f, registration_ids: f.registration_ids.filter((_, idx) => idx !== i) }));
+  const updateRegId = (i: number, key: 'name' | 'value', val: string) => {
+    setCompanyForm(f => {
+      const ids = [...f.registration_ids];
+      ids[i] = { ...ids[i], [key]: val };
+      return { ...f, registration_ids: ids };
+    });
+  };
+
   const generatePDF = (inv: Invoice) => {
     const doc = new jsPDF();
     const pw = doc.internal.pageSize.getWidth();
