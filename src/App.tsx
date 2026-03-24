@@ -33,6 +33,8 @@ import AdminYouTubeReports from "./pages/AdminYouTubeReports";
 import Analytics from "./pages/Analytics";
 import Revenue from "./pages/Revenue";
 import AdminRevenue from "./pages/AdminRevenue";
+import TermsConditions from "./pages/TermsConditions";
+import AdminTermsConditions from "./pages/AdminTermsConditions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
