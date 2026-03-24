@@ -26,6 +26,7 @@ import {
   Image as ImageIcon,
   Bell,
   BookOpen,
+  FileSignature,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
@@ -95,6 +96,7 @@ const adminLinksTop = [
   { to: '/admin/poster-generator', label: 'Poster Generator', icon: ImageIcon },
   { to: '/admin/tutorials', label: 'Help Tutorials', icon: BookOpen },
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
+  { to: '/admin/agreements', label: 'Agreements', icon: FileSignature },
 ];
 
 export function AppSidebar() {

@@ -40,6 +40,8 @@ import AdminPosterGenerator from "./pages/AdminPosterGenerator";
 import AdminNotices from "./pages/AdminNotices";
 import AdminTutorials from "./pages/AdminTutorials";
 import HelpTutorials from "./pages/HelpTutorials";
+import AdminAgreements from "./pages/AdminAgreements";
+import AdminAgreementGenerator from "./pages/AdminAgreementGenerator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -87,6 +89,8 @@ function App() {
                   <Route path="/admin/tutorials" element={<ProtectedRoute requiredRole="admin"><AdminTutorials /></ProtectedRoute>} />
                   <Route path="/poster-generator" element={<ProtectedRoute><AdminPosterGenerator /></ProtectedRoute>} />
                   <Route path="/help-tutorials" element={<ProtectedRoute><HelpTutorials /></ProtectedRoute>} />
+                  <Route path="/admin/agreements" element={<ProtectedRoute requiredRole="admin"><AdminAgreements /></ProtectedRoute>} />
+                  <Route path="/admin/agreements/generate" element={<ProtectedRoute requiredRole="admin"><AdminAgreementGenerator /></ProtectedRoute>} />
                   <Route path="/terms" element={<ProtectedRoute><TermsConditions /></ProtectedRoute>} />
                   <Route path="/tools/copyright-claim" element={<ProtectedRoute><CopyrightClaimRemoval /></ProtectedRoute>} />
                   <Route path="/tools/instagram-link" element={<ProtectedRoute><InstagramLinkToSong /></ProtectedRoute>} />
