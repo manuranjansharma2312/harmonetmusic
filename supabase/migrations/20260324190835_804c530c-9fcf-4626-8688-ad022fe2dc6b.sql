@@ -1,0 +1,1 @@
+ALTER TABLE public.promotion_settings ADD COLUMN tax_percent numeric NOT NULL DEFAULT 0;

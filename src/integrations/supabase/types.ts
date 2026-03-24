@@ -476,6 +476,7 @@ export type Database = {
           id: string
           is_enabled: boolean
           qr_code_url: string | null
+          tax_percent: number
           updated_at: string
           updated_by: string | null
         }
@@ -483,6 +484,7 @@ export type Database = {
           id?: string
           is_enabled?: boolean
           qr_code_url?: string | null
+          tax_percent?: number
           updated_at?: string
           updated_by?: string | null
         }
@@ -490,6 +492,7 @@ export type Database = {
           id?: string
           is_enabled?: boolean
           qr_code_url?: string | null
+          tax_percent?: number
           updated_at?: string
           updated_by?: string | null
         }
