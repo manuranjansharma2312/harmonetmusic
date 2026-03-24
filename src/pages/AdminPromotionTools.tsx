@@ -478,6 +478,7 @@ export default function AdminPromotionTools() {
                 <div><span className="text-muted-foreground">Amount:</span> <span className="font-medium">₹{viewingOrder.total_amount}</span></div>
                 <div><span className="text-muted-foreground">Status:</span> <StatusBadge status={viewingOrder.status} /></div>
                 <div><span className="text-muted-foreground">Date:</span> <span className="font-medium">{format(new Date(viewingOrder.created_at), 'dd MMM yyyy')}</span></div>
+                {(viewingOrder as any).transaction_id && <div className="col-span-2"><span className="text-muted-foreground">Transaction ID:</span> <span className="font-medium">{(viewingOrder as any).transaction_id}</span></div>}
               </div>
 
               {viewingOrder.screenshot_url && (
