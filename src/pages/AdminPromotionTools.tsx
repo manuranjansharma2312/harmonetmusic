@@ -266,6 +266,15 @@ export default function AdminPromotionTools() {
             <Label htmlFor="promo-toggle" className="text-sm">Enable for Users</Label>
             <Switch id="promo-toggle" checked={isEnabled} onCheckedChange={toggleEnabled} />
           </div>
+          <div className="flex items-center gap-3">
+            <Label htmlFor="takedown-payment-toggle" className="text-sm">Takedown Payment</Label>
+            <Switch id="takedown-payment-toggle" checked={takedownPaymentEnabled} onCheckedChange={async (val) => {
+              const { error } = await supabase.from('promotion_settings').update({ takedown_payment_enabled: val, updated_at: new Date().toISOString() } as any).eq('id', settingsId);
+              if (error) { toast.error('Failed to update'); return; }
+              setTakedownPaymentEnabled(val);
+              toast.success(val ? 'Takedown payment enabled' : 'Takedown payment disabled');
+            }} />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
