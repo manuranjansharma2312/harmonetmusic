@@ -81,8 +81,6 @@ export default function AdminPromotionTools() {
   const [orderPage, setOrderPage] = useState(1);
   const pageSize = 10;
 
-  // QR upload
-  const [uploadingQr, setUploadingQr] = useState(false);
 
   useEffect(() => { fetchAll(); }, []);
 
