@@ -98,8 +98,32 @@ export default function AdminInvoices() {
   const [pageSize, setPageSize] = useState<number>(10);
   const [search, setSearch] = useState('');
   const [logoBase64, setLogoBase64] = useState('');
+  const [companyDetailsOpen, setCompanyDetailsOpen] = useState(false);
+  const [company, setCompany] = useState<CompanyDetails>(emptyCompany);
+  const [companyForm, setCompanyForm] = useState<CompanyDetails>(emptyCompany);
+  const [savingCompany, setSavingCompany] = useState(false);
 
   useEffect(() => { loadLogoBase64().then(setLogoBase64); }, []);
+
+  const fetchCompanyDetails = async () => {
+    const { data } = await supabase
+      .from('company_details')
+      .select('*')
+      .limit(1)
+      .maybeSingle();
+    if (data) {
+      const cd: CompanyDetails = {
+        id: data.id,
+        company_name: data.company_name as string,
+        address: data.address as string,
+        registration_ids: (data.registration_ids as unknown as RegistrationId[]) || [],
+      };
+      setCompany(cd);
+      setCompanyForm(cd);
+    }
+  };
+
+  useEffect(() => { fetchCompanyDetails(); }, []);
 
   const fetchInvoices = async () => {
     setLoading(true);
