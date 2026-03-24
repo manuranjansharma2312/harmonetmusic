@@ -14,12 +14,19 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { ShoppingCart, Package, Eye } from 'lucide-react';
 import { format } from 'date-fns';
+import { PlatformIcon } from '@/components/PlatformIcons';
+
+interface Tax {
+  name: string;
+  percent: number;
+}
 
 interface Product {
   id: string;
   name: string;
   description: string;
   price_per_unit: number;
+  platform: string;
 }
 
 interface Order {
@@ -33,13 +40,14 @@ interface Order {
   starts_from: string | null;
   created_at: string;
   product_name?: string;
+  product_platform?: string;
 }
 
 export default function PromotionTools() {
   const { user } = useAuth();
   const [isEnabled, setIsEnabled] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
-  const [taxPercent, setTaxPercent] = useState(0);
+  const [taxes, setTaxes] = useState<Tax[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,13 +79,14 @@ export default function PromotionTools() {
     if (data) {
       setIsEnabled(data.is_enabled);
       setQrCodeUrl(data.qr_code_url);
-      setTaxPercent(Number(data.tax_percent) || 0);
+      const taxData = data.taxes as any;
+      if (Array.isArray(taxData)) setTaxes(taxData);
     }
   };
 
   const fetchProducts = async () => {
     const { data } = await supabase.from('promotion_products').select('*').eq('is_active', true).order('name');
-    if (data) setProducts(data);
+    if (data) setProducts(data as any);
   };
 
   const fetchOrders = async () => {
@@ -85,15 +94,20 @@ export default function PromotionTools() {
     if (!ordersData) return;
     const productIds = [...new Set(ordersData.map(o => o.product_id))];
     if (productIds.length === 0) { setOrders([]); return; }
-    const { data: productsData } = await supabase.from('promotion_products').select('id, name').in('id', productIds);
-    const productMap = new Map((productsData || []).map(p => [p.id, p.name]));
-    setOrders(ordersData.map(o => ({ ...o, product_name: productMap.get(o.product_id) || 'Unknown' })));
+    const { data: productsData } = await supabase.from('promotion_products').select('id, name, platform').in('id', productIds);
+    const productMap = new Map((productsData || []).map((p: any) => [p.id, { name: p.name, platform: p.platform }]));
+    setOrders(ordersData.map(o => {
+      const prod = productMap.get(o.product_id);
+      return { ...o, product_name: prod?.name || 'Unknown', product_platform: prod?.platform || '' };
+    }));
   };
 
   const selectedProductObj = products.find(p => p.id === selectedProduct);
-  const baseAmount = selectedProductObj && quantity ? (selectedProductObj.price_per_unit * Number(quantity) / 1000) : 0;
-  const taxAmount = baseAmount * (taxPercent / 100);
-  const totalCost = (baseAmount + taxAmount).toFixed(2);
+  const qty = Number(quantity) || 0;
+  const baseAmount = selectedProductObj && qty > 0 ? (selectedProductObj.price_per_unit * qty / 1000) : 0;
+  const taxBreakdown = taxes.map(t => ({ name: t.name, percent: t.percent, amount: baseAmount * (t.percent / 100) }));
+  const totalTax = taxBreakdown.reduce((s, t) => s + t.amount, 0);
+  const totalCost = (baseAmount + totalTax).toFixed(2);
 
   const submitOrder = async () => {
     if (!selectedProduct || !quantity || !screenshot || !user) {
@@ -112,7 +126,7 @@ export default function PromotionTools() {
     const { error } = await supabase.from('promotion_orders').insert({
       user_id: user.id,
       product_id: selectedProduct,
-      quantity: Number(quantity),
+      quantity: qty,
       total_amount: Number(totalCost),
       screenshot_url: urlData.publicUrl,
     });
@@ -170,7 +184,12 @@ export default function PromotionTools() {
                   <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No orders yet</TableCell></TableRow>
                 ) : paginatedOrders.map(o => (
                   <TableRow key={o.id}>
-                    <TableCell className="font-medium">{o.product_name}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <PlatformIcon platform={o.product_platform || ''} size={18} />
+                        <span className="font-medium">{o.product_name}</span>
+                      </div>
+                    </TableCell>
                     <TableCell>{o.quantity}</TableCell>
                     <TableCell>₹{o.total_amount}</TableCell>
                     <TableCell><StatusBadge status={o.status} /></TableCell>
@@ -192,7 +211,7 @@ export default function PromotionTools() {
 
       {/* Services Modal */}
       <Dialog open={orderModal} onOpenChange={setOrderModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Services</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -201,7 +220,12 @@ export default function PromotionTools() {
                 <SelectTrigger><SelectValue placeholder="Choose a service..." /></SelectTrigger>
                 <SelectContent>
                   {products.map(p => (
-                    <SelectItem key={p.id} value={p.id}>{p.name} (₹{p.price_per_unit}/1000)</SelectItem>
+                    <SelectItem key={p.id} value={p.id}>
+                      <span className="flex items-center gap-2">
+                        <PlatformIcon platform={p.platform} size={18} />
+                        {p.name} (₹{p.price_per_unit}/1000)
+                      </span>
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -210,32 +234,40 @@ export default function PromotionTools() {
               <Label>Quantity *</Label>
               <Input type="number" min="1" value={quantity} onChange={e => setQuantity(e.target.value)} placeholder="Enter quantity..." />
             </div>
-            {selectedProduct && quantity && Number(quantity) > 0 && (
-              <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 space-y-1">
+
+            {selectedProduct && qty > 0 && (
+              <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Base Amount</span>
                   <span>₹{baseAmount.toFixed(2)}</span>
                 </div>
-                {taxPercent > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Tax ({taxPercent}%)</span>
-                    <span>₹{taxAmount.toFixed(2)}</span>
+                {taxBreakdown.map((t, i) => (
+                  <div key={i} className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{t.name} ({t.percent}%)</span>
+                    <span>₹{t.amount.toFixed(2)}</span>
                   </div>
-                )}
-                <div className="flex justify-between font-bold text-lg border-t border-primary/20 pt-1">
+                ))}
+                <div className="flex justify-between font-bold text-lg border-t border-primary/20 pt-2">
                   <span>Total</span>
                   <span className="text-primary">₹{totalCost}</span>
                 </div>
               </div>
             )}
+
             {qrCodeUrl && (
               <div className="space-y-2">
-                <Label>Scan QR to Pay</Label>
-                <div className="flex justify-center">
-                  <img src={qrCodeUrl} alt="Pay QR" className="w-36 h-36 object-contain border rounded-lg bg-white p-2" />
+                <Label className="text-base font-semibold">Scan QR to Pay</Label>
+                <div className="flex justify-center p-4 bg-white rounded-xl border-2 border-dashed border-primary/30">
+                  <img
+                    src={qrCodeUrl}
+                    alt="Payment QR Code"
+                    className="w-full max-w-[280px] h-auto aspect-square object-contain"
+                  />
                 </div>
+                <p className="text-xs text-center text-muted-foreground">Scan this QR code with any UPI app to make payment</p>
               </div>
             )}
+
             <div className="space-y-2">
               <Label>Upload Payment Screenshot *</Label>
               <Input type="file" accept="image/*" onChange={e => setScreenshot(e.target.files?.[0] || null)} />
@@ -255,7 +287,11 @@ export default function PromotionTools() {
           {viewOrder && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-muted-foreground">Service:</span> <span className="font-medium">{viewOrder.product_name}</span></div>
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground">Service:</span>
+                  <PlatformIcon platform={viewOrder.product_platform || ''} size={16} />
+                  <span className="font-medium">{viewOrder.product_name}</span>
+                </div>
                 <div><span className="text-muted-foreground">Quantity:</span> <span className="font-medium">{viewOrder.quantity}</span></div>
                 <div><span className="text-muted-foreground">Amount:</span> <span className="font-medium">₹{viewOrder.total_amount}</span></div>
                 <div><span className="text-muted-foreground">Status:</span> <StatusBadge status={viewOrder.status} /></div>
