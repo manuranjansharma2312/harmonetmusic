@@ -18,6 +18,8 @@ export default function AdminPaymentSettings() {
   const [settingsId, setSettingsId] = useState('');
   const [isEnabled, setIsEnabled] = useState(false);
   const [takedownPaymentEnabled, setTakedownPaymentEnabled] = useState(false);
+  const [takedownAmount, setTakedownAmount] = useState<number>(0);
+  const [takedownTaxEnabled, setTakedownTaxEnabled] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [taxes, setTaxes] = useState<Tax[]>([]);
   const [loading, setLoading] = useState(true);
