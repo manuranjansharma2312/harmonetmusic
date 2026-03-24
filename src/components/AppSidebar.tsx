@@ -26,6 +26,7 @@ import {
   Image as ImageIcon,
   Bell,
   BookOpen,
+  FileSignature,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
