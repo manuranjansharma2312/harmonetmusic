@@ -143,11 +143,10 @@ export default function AdminPaymentSettings() {
               <Label>Takedown Amount (₹)</Label>
               <div className="flex items-center gap-2">
                 <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={takedownAmount}
-                  onChange={e => setTakedownAmount(Number(e.target.value) || 0)}
+                  type="text"
+                  inputMode="decimal"
+                  value={takedownAmount || ''}
+                  onChange={e => setTakedownAmount(Number(e.target.value.replace(/[^0-9.]/g, '')) || 0)}
                   className="max-w-[200px]"
                   placeholder="e.g. 500"
                 />
