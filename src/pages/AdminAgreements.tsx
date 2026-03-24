@@ -215,13 +215,13 @@ export default function AdminAgreements() {
       )}
 
       <Dialog open={!!previewTemplate} onOpenChange={() => setPreviewTemplate(null)}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto overflow-x-hidden">
           <DialogHeader>
             <DialogTitle>{previewTemplate?.name}</DialogTitle>
           </DialogHeader>
           <div
-            className="agreement-preview p-6 rounded-md"
-            style={{ backgroundColor: "white", color: "black" }}
+            className="agreement-preview p-6 rounded-md overflow-x-hidden break-words"
+            style={{ backgroundColor: "white", color: "black", wordBreak: "break-word", overflowWrap: "break-word" }}
             dangerouslySetInnerHTML={{ __html: previewTemplate?.content || "" }}
           />
         </DialogContent>
