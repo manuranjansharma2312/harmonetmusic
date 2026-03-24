@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StatusBadge } from '@/components/StatusBadge';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { TablePagination } from '@/components/TablePagination';
@@ -13,8 +14,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Eye, QrCode, Package, Percent } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, QrCode, Package, Percent, X } from 'lucide-react';
 import { format } from 'date-fns';
+import { PlatformIcon, PLATFORMS } from '@/components/PlatformIcons';
+
+interface Tax {
+  name: string;
+  percent: number;
+}
 
 interface Product {
   id: string;
@@ -22,6 +29,7 @@ interface Product {
   description: string;
   price_per_unit: number;
   is_active: boolean;
+  platform: string;
   created_at: string;
 }
 
@@ -37,6 +45,7 @@ interface Order {
   starts_from: string | null;
   created_at: string;
   product_name?: string;
+  product_platform?: string;
   user_display_id?: number;
   user_name?: string;
 }
@@ -45,8 +54,7 @@ export default function AdminPromotionTools() {
   const [isEnabled, setIsEnabled] = useState(false);
   const [settingsId, setSettingsId] = useState('');
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
-  const [taxPercent, setTaxPercent] = useState(0);
-  const [taxInput, setTaxInput] = useState('0');
+  const [taxes, setTaxes] = useState<Tax[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +65,7 @@ export default function AdminPromotionTools() {
   const [productName, setProductName] = useState('');
   const [productDesc, setProductDesc] = useState('');
   const [productPrice, setProductPrice] = useState('');
+  const [productPlatform, setProductPlatform] = useState('');
   const [productActive, setProductActive] = useState(true);
   const [savingProduct, setSavingProduct] = useState(false);
 
@@ -91,14 +100,14 @@ export default function AdminPromotionTools() {
       setSettingsId(data.id);
       setIsEnabled(data.is_enabled);
       setQrCodeUrl(data.qr_code_url);
-      setTaxPercent(Number(data.tax_percent) || 0);
-      setTaxInput(String(Number(data.tax_percent) || 0));
+      const taxData = data.taxes as any;
+      if (Array.isArray(taxData)) setTaxes(taxData);
     }
   };
 
   const fetchProducts = async () => {
     const { data } = await supabase.from('promotion_products').select('*').order('created_at', { ascending: false });
-    if (data) setProducts(data);
+    if (data) setProducts(data as any);
   };
 
   const fetchOrders = async () => {
@@ -106,8 +115,8 @@ export default function AdminPromotionTools() {
     if (!ordersData) return;
 
     const productIds = [...new Set(ordersData.map(o => o.product_id))];
-    const { data: productsData } = await supabase.from('promotion_products').select('id, name').in('id', productIds);
-    const productMap = new Map((productsData || []).map(p => [p.id, p.name]));
+    const { data: productsData } = await supabase.from('promotion_products').select('id, name, platform').in('id', productIds);
+    const productMap = new Map((productsData || []).map((p: any) => [p.id, { name: p.name, platform: p.platform }]));
 
     const userIds = [...new Set(ordersData.map(o => o.user_id))];
     const { data: profiles } = await supabase.from('profiles').select('user_id, display_id, artist_name, record_label_name, user_type').in('user_id', userIds);
@@ -115,9 +124,11 @@ export default function AdminPromotionTools() {
 
     setOrders(ordersData.map(o => {
       const profile = profileMap.get(o.user_id);
+      const prod = productMap.get(o.product_id);
       return {
         ...o,
-        product_name: productMap.get(o.product_id) || 'Unknown',
+        product_name: prod?.name || 'Unknown',
+        product_platform: prod?.platform || '',
         user_display_id: profile?.display_id,
         user_name: profile?.user_type === 'record_label' ? profile?.record_label_name : profile?.artist_name || 'Unknown',
       };
@@ -131,13 +142,22 @@ export default function AdminPromotionTools() {
     toast.success(val ? 'Promotion Tools enabled' : 'Promotion Tools disabled');
   };
 
-  const saveTax = async () => {
-    const val = Number(taxInput);
-    if (isNaN(val) || val < 0) { toast.error('Invalid tax percentage'); return; }
-    const { error } = await supabase.from('promotion_settings').update({ tax_percent: val, updated_at: new Date().toISOString() }).eq('id', settingsId);
-    if (error) { toast.error('Failed to update tax'); return; }
-    setTaxPercent(val);
-    toast.success('Tax updated');
+  // Tax management
+  const addTax = () => setTaxes([...taxes, { name: '', percent: 0 }]);
+  const removeTax = (i: number) => setTaxes(taxes.filter((_, idx) => idx !== i));
+  const updateTax = (i: number, field: 'name' | 'percent', value: string) => {
+    const updated = [...taxes];
+    if (field === 'name') updated[i].name = value;
+    else updated[i].percent = Number(value) || 0;
+    setTaxes(updated);
+  };
+  const saveTaxes = async () => {
+    for (const t of taxes) {
+      if (!t.name.trim()) { toast.error('All taxes must have a name'); return; }
+    }
+    const { error } = await supabase.from('promotion_settings').update({ taxes: taxes as any, updated_at: new Date().toISOString() }).eq('id', settingsId);
+    if (error) { toast.error('Failed to save taxes'); return; }
+    toast.success('Taxes saved');
   };
 
   const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,19 +176,20 @@ export default function AdminPromotionTools() {
     toast.success('QR code updated');
   };
 
-  // Product CRUD
   const openProductModal = (product?: Product) => {
     if (product) {
       setEditingProduct(product);
       setProductName(product.name);
       setProductDesc(product.description);
       setProductPrice(String(product.price_per_unit));
+      setProductPlatform(product.platform || '');
       setProductActive(product.is_active);
     } else {
       setEditingProduct(null);
       setProductName('');
       setProductDesc('');
       setProductPrice('');
+      setProductPlatform('');
       setProductActive(true);
     }
     setProductModal(true);
@@ -177,7 +198,7 @@ export default function AdminPromotionTools() {
   const saveProduct = async () => {
     if (!productName.trim() || !productPrice) { toast.error('Name and price required'); return; }
     setSavingProduct(true);
-    const payload = { name: productName.trim(), description: productDesc.trim(), price_per_unit: Number(productPrice), is_active: productActive, updated_at: new Date().toISOString() };
+    const payload: any = { name: productName.trim(), description: productDesc.trim(), price_per_unit: Number(productPrice), platform: productPlatform, is_active: productActive, updated_at: new Date().toISOString() };
     if (editingProduct) {
       const { error } = await supabase.from('promotion_products').update(payload).eq('id', editingProduct.id);
       if (error) { toast.error('Failed to update'); setSavingProduct(false); return; }
@@ -206,7 +227,6 @@ export default function AdminPromotionTools() {
     setDeleteTarget(null);
   };
 
-  // Order management
   const openOrderModal = (order: Order) => {
     setViewingOrder(order);
     setOrderStartsFrom(order.starts_from || '');
@@ -246,39 +266,47 @@ export default function AdminPromotionTools() {
           </div>
         </div>
 
-        {/* Settings Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* QR Code */}
           <Card>
             <CardHeader><CardTitle className="flex items-center gap-2"><QrCode className="h-5 w-5" /> Payment QR Code</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex flex-col items-start gap-4">
-                {qrCodeUrl ? (
-                  <img src={qrCodeUrl} alt="Payment QR" className="w-40 h-40 object-contain border rounded-lg bg-white p-2" />
-                ) : (
-                  <div className="w-40 h-40 border-2 border-dashed rounded-lg flex items-center justify-center text-muted-foreground text-sm">No QR uploaded</div>
-                )}
-                <div className="space-y-2 w-full">
-                  <Label>Upload QR Code Image</Label>
-                  <Input type="file" accept="image/*" onChange={handleQrUpload} disabled={uploadingQr} />
-                  <p className="text-xs text-muted-foreground">This QR will be shown to users for payment</p>
-                </div>
+              {qrCodeUrl ? (
+                <img src={qrCodeUrl} alt="Payment QR" className="w-40 h-40 object-contain border rounded-lg bg-white p-2" />
+              ) : (
+                <div className="w-40 h-40 border-2 border-dashed rounded-lg flex items-center justify-center text-muted-foreground text-sm">No QR uploaded</div>
+              )}
+              <div className="space-y-2">
+                <Label>Upload QR Code Image</Label>
+                <Input type="file" accept="image/*" onChange={handleQrUpload} disabled={uploadingQr} />
+                <p className="text-xs text-muted-foreground">This QR will be shown to users for payment</p>
               </div>
             </CardContent>
           </Card>
 
           {/* Tax Settings */}
           <Card>
-            <CardHeader><CardTitle className="flex items-center gap-2"><Percent className="h-5 w-5" /> Tax Settings</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Tax Percentage (%)</Label>
-                <div className="flex gap-2">
-                  <Input type="number" min="0" max="100" step="0.01" value={taxInput} onChange={e => setTaxInput(e.target.value)} placeholder="0" className="max-w-[150px]" />
-                  <Button onClick={saveTax}>Save</Button>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2"><Percent className="h-5 w-5" /> Tax Settings</CardTitle>
+              <Button size="sm" variant="outline" onClick={addTax}><Plus className="h-4 w-4 mr-1" /> Add Tax</Button>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {taxes.length === 0 && (
+                <p className="text-sm text-muted-foreground py-4 text-center">No taxes configured. Click "Add Tax" to add one.</p>
+              )}
+              {taxes.map((tax, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <Input value={tax.name} onChange={e => updateTax(i, 'name', e.target.value)} placeholder="Tax name (e.g. GST)" className="flex-1" />
+                  <div className="flex items-center gap-1">
+                    <Input type="number" min="0" max="100" step="0.01" value={tax.percent} onChange={e => updateTax(i, 'percent', e.target.value)} className="w-20" />
+                    <span className="text-sm text-muted-foreground">%</span>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => removeTax(i)}><X className="h-4 w-4 text-destructive" /></Button>
                 </div>
-                <p className="text-xs text-muted-foreground">Current tax: {taxPercent}% — Applied on all service orders</p>
-              </div>
+              ))}
+              {taxes.length > 0 && (
+                <Button size="sm" onClick={saveTaxes} className="w-full">Save Taxes</Button>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -293,6 +321,7 @@ export default function AdminPromotionTools() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Platform</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Price per 1000 (₹)</TableHead>
                   <TableHead>Status</TableHead>
@@ -301,9 +330,10 @@ export default function AdminPromotionTools() {
               </TableHeader>
               <TableBody>
                 {paginatedProducts.length === 0 ? (
-                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">No services yet</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No services yet</TableCell></TableRow>
                 ) : paginatedProducts.map(p => (
                   <TableRow key={p.id}>
+                    <TableCell><PlatformIcon platform={p.platform} size={24} /></TableCell>
                     <TableCell className="font-medium">{p.name}</TableCell>
                     <TableCell>₹{p.price_per_unit}</TableCell>
                     <TableCell><StatusBadge status={p.is_active ? 'approved' : 'rejected'} /></TableCell>
@@ -350,7 +380,12 @@ export default function AdminPromotionTools() {
                         {o.user_display_id && <span className="text-xs text-muted-foreground ml-1">#{o.user_display_id}</span>}
                       </div>
                     </TableCell>
-                    <TableCell>{o.product_name}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <PlatformIcon platform={o.product_platform || ''} size={18} />
+                        <span>{o.product_name}</span>
+                      </div>
+                    </TableCell>
                     <TableCell>{o.quantity}</TableCell>
                     <TableCell>₹{o.total_amount}</TableCell>
                     <TableCell><StatusBadge status={o.status} /></TableCell>
@@ -377,6 +412,24 @@ export default function AdminPromotionTools() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader><DialogTitle>{editingProduct ? 'Edit Service' : 'Add Service'}</DialogTitle></DialogHeader>
           <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Platform *</Label>
+              <Select value={productPlatform} onValueChange={setProductPlatform}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select platform..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {PLATFORMS.map(p => (
+                    <SelectItem key={p.value} value={p.value}>
+                      <span className="flex items-center gap-2">
+                        <PlatformIcon platform={p.value} size={18} />
+                        {p.label}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label>Service Name *</Label>
               <Input value={productName} onChange={e => setProductName(e.target.value)} placeholder="e.g. Instagram Followers" />
@@ -409,7 +462,7 @@ export default function AdminPromotionTools() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div><span className="text-muted-foreground">User:</span> <span className="font-medium">{viewingOrder.user_name} #{viewingOrder.user_display_id}</span></div>
-                <div><span className="text-muted-foreground">Service:</span> <span className="font-medium">{viewingOrder.product_name}</span></div>
+                <div className="flex items-center gap-1"><span className="text-muted-foreground">Service:</span> <PlatformIcon platform={viewingOrder.product_platform || ''} size={16} /> <span className="font-medium">{viewingOrder.product_name}</span></div>
                 <div><span className="text-muted-foreground">Quantity:</span> <span className="font-medium">{viewingOrder.quantity}</span></div>
                 <div><span className="text-muted-foreground">Amount:</span> <span className="font-medium">₹{viewingOrder.total_amount}</span></div>
                 <div><span className="text-muted-foreground">Status:</span> <StatusBadge status={viewingOrder.status} /></div>

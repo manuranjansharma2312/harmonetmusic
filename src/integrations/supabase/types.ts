@@ -448,6 +448,7 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          platform: string | null
           price_per_unit: number
           updated_at: string
         }
@@ -457,6 +458,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          platform?: string | null
           price_per_unit?: number
           updated_at?: string
         }
@@ -466,6 +468,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          platform?: string | null
           price_per_unit?: number
           updated_at?: string
         }
@@ -477,6 +480,7 @@ export type Database = {
           is_enabled: boolean
           qr_code_url: string | null
           tax_percent: number
+          taxes: Json
           updated_at: string
           updated_by: string | null
         }
@@ -485,6 +489,7 @@ export type Database = {
           is_enabled?: boolean
           qr_code_url?: string | null
           tax_percent?: number
+          taxes?: Json
           updated_at?: string
           updated_by?: string | null
         }
@@ -493,6 +498,7 @@ export type Database = {
           is_enabled?: boolean
           qr_code_url?: string | null
           tax_percent?: number
+          taxes?: Json
           updated_at?: string
           updated_by?: string | null
         }
