@@ -99,6 +99,7 @@ const adminLinksTop = [
   { to: '/admin/tutorials', label: 'Help Tutorials', icon: BookOpen },
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
   { to: '/admin/agreements', label: 'Agreements', icon: FileSignature },
+  { to: '/admin/promotion-tools', label: 'Promotion Tools', icon: Megaphone },
 ];
 
 export function AppSidebar() {
