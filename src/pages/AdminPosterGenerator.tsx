@@ -109,17 +109,12 @@ export default function AdminPosterGenerator() {
         ctx.restore();
       }
 
-      // "NEW RELEASES" top-right
-      const titleText = 'NEW RELEASES';
-      const subtitleText = 'BY OUR ARTIST & LABELS';
+      // "NEW RELEASES" top-right — large bold
       ctx.save();
       ctx.textAlign = 'right';
       ctx.fillStyle = '#ffffff';
-      ctx.font = '700 48px "Outfit", sans-serif';
-      ctx.fillText(titleText, W - margin, margin + 55);
-      ctx.font = '400 26px "Outfit", sans-serif';
-      ctx.fillStyle = 'rgba(255,255,255,0.85)';
-      ctx.fillText(subtitleText, W - margin, margin + 90);
+      ctx.font = '700 58px "Outfit", sans-serif';
+      ctx.fillText('NEW RELEASES', W - margin, margin + 65);
       ctx.restore();
 
       // === COVER ART AREA (centered white rounded rect) ===
