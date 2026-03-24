@@ -26,6 +26,7 @@ import ContentIdMerge from "./pages/ContentIdMerge";
 import OacApply from "./pages/OacApply";
 import Takedown from "./pages/Takedown";
 import CustomSupport from "./pages/CustomSupport";
+import PlaylistPitching from "./pages/PlaylistPitching";
 import Reports from "./pages/Reports";
 import YouTubeReports from "./pages/YouTubeReports";
 import AdminReports from "./pages/AdminReports";
@@ -102,6 +103,7 @@ function App() {
                   <Route path="/tools/oac-apply" element={<ProtectedRoute><OacApply /></ProtectedRoute>} />
                   <Route path="/tools/takedown" element={<ProtectedRoute><Takedown /></ProtectedRoute>} />
                   <Route path="/tools/custom-support" element={<ProtectedRoute><CustomSupport /></ProtectedRoute>} />
+                  <Route path="/tools/playlist-pitching" element={<ProtectedRoute><PlaylistPitching /></ProtectedRoute>} />
                   <Route path="/reports/ott" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
                   <Route path="/reports/youtube" element={<ProtectedRoute><YouTubeReports /></ProtectedRoute>} />
                   <Route path="/reports/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
