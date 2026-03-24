@@ -42,6 +42,8 @@ import AdminTutorials from "./pages/AdminTutorials";
 import HelpTutorials from "./pages/HelpTutorials";
 import AdminAgreements from "./pages/AdminAgreements";
 import AdminAgreementGenerator from "./pages/AdminAgreementGenerator";
+import AdminPromotionTools from "./pages/AdminPromotionTools";
+import PromotionTools from "./pages/PromotionTools";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
