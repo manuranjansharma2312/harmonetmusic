@@ -212,7 +212,15 @@ export default function MyProfile() {
               )}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">No bank details submitted yet. <a href="/bank-details" className="text-primary hover:underline">Add bank details →</a></p>
+            <div className="text-center py-4">
+              <p className="text-sm text-muted-foreground mb-4">No bank details submitted yet.</p>
+              <a
+                href="/bank-details"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl btn-primary-gradient text-primary-foreground font-semibold text-sm shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
+              >
+                <Landmark className="h-4 w-4" /> Add Bank Details
+              </a>
+            </div>
           )}
         </GlassCard>
 
