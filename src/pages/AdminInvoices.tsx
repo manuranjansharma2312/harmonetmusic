@@ -269,7 +269,7 @@ export default function AdminInvoices() {
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...brandColor);
-      doc.text('HARMONET MUSIC', 14, 22);
+      doc.text(company.company_name || 'HARMONET MUSIC', 14, 22);
     }
 
     // ── INVOICE title ──
@@ -278,37 +278,60 @@ export default function AdminInvoices() {
     doc.setTextColor(...brandColor);
     doc.text('INVOICE', pw - 14, 22, { align: 'right' });
 
-    // ── Tagline ──
+    // ── Company details under logo ──
+    let compY = 33;
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(120);
-    doc.text('Harmony On Networks', 14, 33);
+    doc.setTextColor(80);
+    if (company.company_name) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.text(company.company_name, 14, compY);
+      compY += 4;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+    }
+    if (company.address) {
+      const addressLines = doc.splitTextToSize(company.address, 80);
+      doc.text(addressLines, 14, compY);
+      compY += addressLines.length * 3.5;
+    }
+    company.registration_ids.forEach(r => {
+      if (r.name && r.value) {
+        doc.text(`${r.name}: ${r.value}`, 14, compY);
+        compY += 3.5;
+      }
+    });
+
+    const dividerY = Math.max(compY + 3, 40);
 
     // ── Divider ──
     doc.setDrawColor(...brandColor);
     doc.setLineWidth(0.8);
-    doc.line(14, 37, pw - 14, 37);
+    doc.line(14, dividerY, pw - 14, dividerY);
+
+    const detailsY = dividerY + 8;
 
     // ── Invoice details (right side) ──
     doc.setFontSize(9);
     doc.setTextColor(80);
     doc.setFont('helvetica', 'bold');
-    doc.text('Invoice Date:', pw - 80, 45);
-    doc.text('User ID:', pw - 80, 52);
+    doc.text('Invoice Date:', pw - 80, detailsY);
+    doc.text('User ID:', pw - 80, detailsY + 7);
 
     doc.setFont('helvetica', 'normal');
-    doc.text(format(new Date(inv.invoice_date), 'dd MMM yyyy'), pw - 14, 45, { align: 'right' });
-    doc.text(String(inv.user_display_id), pw - 14, 52, { align: 'right' });
+    doc.text(format(new Date(inv.invoice_date), 'dd MMM yyyy'), pw - 14, detailsY, { align: 'right' });
+    doc.text(String(inv.user_display_id), pw - 14, detailsY + 7, { align: 'right' });
 
     // ── Bill To ──
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...brandColor);
-    doc.text('BILL TO', 14, 45);
+    doc.text('BILL TO', 14, detailsY);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(50);
     doc.setFontSize(11);
-    doc.text(inv.billing_name, 14, 52);
+    doc.text(inv.billing_name, 14, detailsY + 7);
 
     // ── Items Table ──
     const tableRows = inv.items.map((item, i) => [
