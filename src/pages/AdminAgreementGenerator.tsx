@@ -497,7 +497,8 @@ export default function AdminAgreementGenerator() {
           </DialogHeader>
           <div
             ref={previewRef}
-            className="tutorial-content text-foreground bg-white text-black p-6 rounded-md"
+            className="agreement-preview p-6 rounded-md"
+            style={{ backgroundColor: "white", color: "black" }}
             dangerouslySetInnerHTML={{ __html: previewHtml }}
           />
           <div className="flex justify-end pt-4">
