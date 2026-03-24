@@ -503,13 +503,18 @@ export default function AdminInvoices() {
         </DialogContent>
       </Dialog>
 
-      <ConfirmDialog
-        open={!!deleteId}
-        onOpenChange={(o) => !o && setDeleteId(null)}
-        title="Delete Invoice"
-        description="Are you sure you want to delete this invoice?"
-        onConfirm={handleDelete}
-      />
+      {deleteId && (
+        <ConfirmDialogWrapper open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+          <ConfirmContent>
+            <ConfirmHeader><ConfirmTitle>Delete Invoice</ConfirmTitle></ConfirmHeader>
+            <p className="text-sm text-muted-foreground">Are you sure you want to delete this invoice?</p>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
+              <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+            </div>
+          </ConfirmContent>
+        </ConfirmDialogWrapper>
+      )}
     </DashboardLayout>
   );
 }
