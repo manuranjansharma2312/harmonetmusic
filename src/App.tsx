@@ -81,6 +81,7 @@ function App() {
                   <Route path="/admin/terms" element={<ProtectedRoute requiredRole="admin"><AdminTermsConditions /></ProtectedRoute>} />
                   <Route path="/admin/invoices" element={<ProtectedRoute requiredRole="admin"><AdminInvoices /></ProtectedRoute>} />
                   <Route path="/admin/poster-generator" element={<ProtectedRoute requiredRole="admin"><AdminPosterGenerator /></ProtectedRoute>} />
+                  <Route path="/admin/notices" element={<ProtectedRoute requiredRole="admin"><AdminNotices /></ProtectedRoute>} />
                   <Route path="/poster-generator" element={<ProtectedRoute><AdminPosterGenerator /></ProtectedRoute>} />
                   <Route path="/terms" element={<ProtectedRoute><TermsConditions /></ProtectedRoute>} />
                   <Route path="/tools/copyright-claim" element={<ProtectedRoute><CopyrightClaimRemoval /></ProtectedRoute>} />
