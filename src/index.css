@@ -311,8 +311,14 @@
 }
 
 /* Agreement Preview Styles */
+.agreement-preview {
+  overflow-x: hidden;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
 .agreement-preview * {
   color: black !important;
+  max-width: 100%;
 }
 .agreement-preview h1,
 .agreement-preview h2,

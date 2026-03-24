@@ -494,14 +494,14 @@ export default function AdminAgreementGenerator() {
       </div>
 
       <Dialog open={showPreview} onOpenChange={setShowPreview}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto overflow-x-hidden">
           <DialogHeader>
             <DialogTitle>Agreement Preview</DialogTitle>
           </DialogHeader>
           <div
             ref={previewRef}
-            className="agreement-preview p-6 rounded-md"
-            style={{ backgroundColor: "white", color: "black" }}
+            className="agreement-preview p-6 rounded-md overflow-x-hidden break-words"
+            style={{ backgroundColor: "white", color: "black", wordBreak: "break-word", overflowWrap: "break-word" }}
             dangerouslySetInnerHTML={{ __html: previewHtml }}
           />
           <div className="flex justify-end pt-4">
