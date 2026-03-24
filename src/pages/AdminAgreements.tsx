@@ -11,7 +11,7 @@ import { Plus, Pencil, Trash2, FileText, Copy, Eye } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
-import RichTextEditor from "@/components/RichTextEditor";
+import { RichTextEditor } from "@/components/RichTextEditor";
 
 const SHORTCODES = [
   { code: "{{date_of_agreement}}", label: "Date of Agreement" },
