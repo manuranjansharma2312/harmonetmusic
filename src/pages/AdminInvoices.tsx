@@ -264,7 +264,8 @@ export default function AdminInvoices() {
 
     // ── Logo ──
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', 14, 10, 45, 18);
+      // Logo is roughly square — use proportional sizing
+      doc.addImage(logoBase64, 'PNG', 14, 8, 28, 28);
     } else {
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
@@ -276,13 +277,11 @@ export default function AdminInvoices() {
     doc.setFontSize(28);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...brandColor);
-    doc.text('INVOICE', pw - 14, 22, { align: 'right' });
+    doc.text('INVOICE', pw - 14, 26, { align: 'right' });
 
-    // ── Company details under logo ──
-    let compY = 33;
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(80);
+    // ── Company details beside logo ──
+    let compY = 10;
+    const compX = 45; // right of the logo
     if (company.company_name) {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
