@@ -27,6 +27,7 @@ import {
   Bell,
   BookOpen,
   FileSignature,
+  Megaphone,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
