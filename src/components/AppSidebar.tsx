@@ -25,6 +25,7 @@ import {
   Receipt,
   Image as ImageIcon,
   Bell,
+  BookOpen,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
@@ -75,6 +76,7 @@ const adminReportLinks = [
 
 const userLinksBottom = [
   { to: '/poster-generator', label: 'Out Now Poster', icon: ImageIcon },
+  { to: '/help-tutorials', label: 'Help Tutorials', icon: BookOpen },
   { to: '/revenue', label: 'Revenue', icon: Wallet },
   { to: '/terms', label: 'Terms & Conditions', icon: FileText },
   { to: '/profile', label: 'My Profile', icon: UserCircle },
@@ -91,6 +93,7 @@ const adminLinksTop = [
   { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
   { to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt },
   { to: '/admin/poster-generator', label: 'Poster Generator', icon: ImageIcon },
+  { to: '/admin/tutorials', label: 'Help Tutorials', icon: BookOpen },
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
 ];
 

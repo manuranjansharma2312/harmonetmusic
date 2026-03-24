@@ -173,3 +173,85 @@
 .animate-scale-in {
   animation: scale-in 0.3s ease-out;
 }
+
+/* Rich Text Editor Styles */
+.rich-text-editor .ql-toolbar {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border)) !important;
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+.rich-text-editor .ql-container {
+  background: hsl(var(--background));
+  border-color: hsl(var(--border)) !important;
+  border-radius: 0 0 0.5rem 0.5rem;
+  min-height: 200px;
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+}
+.rich-text-editor .ql-editor {
+  min-height: 200px;
+  color: hsl(var(--foreground));
+}
+.rich-text-editor .ql-editor.ql-blank::before {
+  color: hsl(var(--muted-foreground));
+  font-style: normal;
+}
+.rich-text-editor .ql-toolbar .ql-stroke {
+  stroke: hsl(var(--muted-foreground));
+}
+.rich-text-editor .ql-toolbar .ql-fill {
+  fill: hsl(var(--muted-foreground));
+}
+.rich-text-editor .ql-toolbar .ql-picker-label {
+  color: hsl(var(--muted-foreground));
+}
+.rich-text-editor .ql-toolbar button:hover .ql-stroke,
+.rich-text-editor .ql-toolbar button.ql-active .ql-stroke {
+  stroke: hsl(var(--primary));
+}
+.rich-text-editor .ql-toolbar button:hover .ql-fill,
+.rich-text-editor .ql-toolbar button.ql-active .ql-fill {
+  fill: hsl(var(--primary));
+}
+.rich-text-editor .ql-snow .ql-picker-options {
+  background: hsl(var(--popover));
+  border-color: hsl(var(--border));
+}
+
+/* Tutorial Content Styles */
+.tutorial-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+.tutorial-content iframe {
+  max-width: 100%;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  aspect-ratio: 16/9;
+  width: 100%;
+}
+.tutorial-content h1, .tutorial-content h2, .tutorial-content h3 {
+  color: hsl(var(--foreground));
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+.tutorial-content p {
+  margin-bottom: 0.75rem;
+  line-height: 1.7;
+}
+.tutorial-content ul, .tutorial-content ol {
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+.tutorial-content a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+}
+.tutorial-content blockquote {
+  border-left: 3px solid hsl(var(--primary));
+  padding-left: 1rem;
+  color: hsl(var(--muted-foreground));
+  margin: 1rem 0;
+}
