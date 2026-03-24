@@ -191,7 +191,7 @@ export default function PromotionTools() {
               </TableBody>
             </Table>
             {orders.length > pageSize && (
-              <TablePagination currentPage={page} totalPages={Math.ceil(orders.length / pageSize)} onPageChange={setPage} pageSize={pageSize} onPageSizeChange={() => {}} totalItems={orders.length} />
+              <TablePagination currentPage={page} onPageChange={setPage} pageSize={pageSize} onPageSizeChange={() => {}} totalItems={orders.length} />
             )}
           </CardContent>
         </Card>
