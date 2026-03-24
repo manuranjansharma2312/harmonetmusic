@@ -294,7 +294,7 @@ export default function AdminPosterGenerator() {
         ctx.font = `700 ${pillFontSize}px "Outfit", sans-serif`;
         pillW = ctx.measureText(outNowText).width + pillFontSize * 1.7;
         pillH = pillFontSize * 2.15;
-        pillX = width - margin - pillW;
+        pillX = (width - pillW) / 2;
         pillY = bottomY - pillH - margin * 0.5;
 
         textTop = coverY + coverS + margin * 0.8;
