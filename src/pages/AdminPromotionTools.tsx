@@ -135,39 +135,6 @@ export default function AdminPromotionTools() {
     toast.success(val ? 'Promotion Tools enabled' : 'Promotion Tools disabled');
   };
 
-  // Tax management
-  const addTax = () => setTaxes([...taxes, { name: '', percent: 0 }]);
-  const removeTax = (i: number) => setTaxes(taxes.filter((_, idx) => idx !== i));
-  const updateTax = (i: number, field: 'name' | 'percent', value: string) => {
-    const updated = [...taxes];
-    if (field === 'name') updated[i].name = value;
-    else updated[i].percent = Number(value) || 0;
-    setTaxes(updated);
-  };
-  const saveTaxes = async () => {
-    for (const t of taxes) {
-      if (!t.name.trim()) { toast.error('All taxes must have a name'); return; }
-    }
-    const { error } = await supabase.from('promotion_settings').update({ taxes: taxes as any, updated_at: new Date().toISOString() }).eq('id', settingsId);
-    if (error) { toast.error('Failed to save taxes'); return; }
-    toast.success('Taxes saved');
-  };
-
-  const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadingQr(true);
-    const ext = file.name.split('.').pop();
-    const path = `qr-code.${ext}`;
-    const { error: uploadErr } = await supabase.storage.from('promotion-qr').upload(path, file, { upsert: true });
-    if (uploadErr) { toast.error('Upload failed'); setUploadingQr(false); return; }
-    const { data: urlData } = supabase.storage.from('promotion-qr').getPublicUrl(path);
-    const url = urlData.publicUrl + '?t=' + Date.now();
-    await supabase.from('promotion_settings').update({ qr_code_url: url, updated_at: new Date().toISOString() }).eq('id', settingsId);
-    setQrCodeUrl(url);
-    setUploadingQr(false);
-    toast.success('QR code updated');
-  };
 
   const openProductModal = (product?: Product) => {
     if (product) {
