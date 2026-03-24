@@ -65,6 +65,7 @@ const emptyCompany: CompanyDetails = {
   company_name: 'Harmonet Music',
   address: '',
   registration_ids: [],
+  logo_url: '',
 };
 
 // Convert image to base64 for PDF embedding
