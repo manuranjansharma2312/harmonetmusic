@@ -309,10 +309,6 @@ export default function AdminPosterGenerator() {
               <Input placeholder="Enter artist name" value={artistName} onChange={(e) => setArtistName(e.target.value)} />
             </div>
 
-            <div className="flex items-center gap-3 rounded-lg bg-muted/30 p-3">
-              <img src={harmonetLogo} alt="Harmonet Music" className="h-8 w-auto object-contain" />
-              <span className="text-sm text-muted-foreground">Harmonet Music logo is included on the poster</span>
-            </div>
 
             <Button onClick={handleDownload} disabled={generating || !posterPreview} className="w-full">
               <Download className="mr-2 h-4 w-4" />
