@@ -391,6 +391,110 @@ export type Database = {
         }
         Relationships: []
       }
+      promotion_orders: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          quantity: number
+          rejection_reason: string | null
+          screenshot_url: string | null
+          starts_from: string | null
+          status: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity?: number
+          rejection_reason?: string | null
+          screenshot_url?: string | null
+          starts_from?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+          rejection_reason?: string | null
+          screenshot_url?: string | null
+          starts_from?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotion_orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "promotion_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promotion_products: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          price_per_unit: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          price_per_unit?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_per_unit?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      promotion_settings: {
+        Row: {
+          id: string
+          is_enabled: boolean
+          qr_code_url: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          is_enabled?: boolean
+          qr_code_url?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          is_enabled?: boolean
+          qr_code_url?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       releases: {
         Row: {
           album_name: string | null
