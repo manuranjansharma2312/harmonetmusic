@@ -32,6 +32,8 @@ const FIELD_LABELS: Record<string, string> = {
   release_link_2: 'Release Link 2',
   release_link_3: 'Release Link 3',
   reason_for_takedown: 'Reason for Takedown',
+  transaction_id: 'Transaction ID',
+  payment_screenshot_url: 'Payment Screenshot',
 };
 
 const DATA_FIELDS = Object.keys(FIELD_LABELS);
