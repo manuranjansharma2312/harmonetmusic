@@ -437,6 +437,40 @@ export default function AdminUsers() {
                   </div>
                 </div>
               )}
+
+              {/* Bank Details Section */}
+              <div className="pt-3 border-t border-border/50">
+                <p className="text-muted-foreground mb-2 font-medium flex items-center gap-2"><Landmark className="h-3.5 w-3.5" /> Bank Details</p>
+                {viewBankDetails ? (
+                  <div className="space-y-2 text-sm">
+                    <Row label="Method" value={viewBankDetails.payment_method === 'wise' ? 'Wise (International)' : 'Bank Transfer (India)'} />
+                    <Row label="Account Holder" value={viewBankDetails.account_holder_name} />
+                    <Row label="Bank" value={viewBankDetails.bank_name} />
+                    <Row label={viewBankDetails.payment_method === 'wise' ? 'Account/IBAN' : 'Account No.'} value={viewBankDetails.account_number} />
+                    {viewBankDetails.payment_method === 'bank_transfer' && (
+                      <>
+                        <Row label="IFSC" value={viewBankDetails.ifsc_code || '-'} />
+                        <Row label="Branch" value={viewBankDetails.branch_name || '-'} />
+                      </>
+                    )}
+                    {viewBankDetails.payment_method === 'wise' && (
+                      <>
+                        <Row label="SWIFT/BIC" value={viewBankDetails.swift_bic || '-'} />
+                        {viewBankDetails.bank_address && <Row label="Bank Address" value={viewBankDetails.bank_address} />}
+                        <Row label="Country" value={viewBankDetails.country || '-'} />
+                      </>
+                    )}
+                    <button
+                      onClick={() => { setViewProfile(null); setEditBankDetail(viewBankDetails); }}
+                      className="w-full mt-2 py-2 rounded-lg bg-muted/50 border border-border text-sm font-medium text-foreground hover:bg-muted transition-all flex items-center justify-center gap-2"
+                    >
+                      <Pencil className="h-3.5 w-3.5" /> Edit Bank Details
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground/60">No bank details submitted.</p>
+                )}
+              </div>
             </div>
 
             <div className="flex gap-3 mt-6">
