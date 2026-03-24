@@ -242,9 +242,9 @@ export default function AdminPosterGenerator() {
   );
 
   useEffect(() => {
-    if (!posterPreview) return;
     const canvas = previewCanvasRef.current;
     if (!canvas) return;
+    if (!posterPreview && !songTitle && !artistName) return;
     generatePoster(canvas);
   }, [generatePoster, posterPreview, songTitle, artistName]);
 
