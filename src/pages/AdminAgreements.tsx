@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GlassCard } from "@/components/GlassCard";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, FileText, Copy, Eye, Columns2 } from "lucide-react";
+import { Plus, Pencil, Trash2, FileText, Copy, Eye } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
