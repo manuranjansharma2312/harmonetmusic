@@ -296,6 +296,10 @@ export default function PromotionTools() {
             )}
 
             <div className="space-y-2">
+              <Label>Transaction ID *</Label>
+              <Input value={transactionId} onChange={e => setTransactionId(e.target.value)} placeholder="Enter your payment transaction ID" />
+            </div>
+            <div className="space-y-2">
               <Label>Upload Payment Screenshot *</Label>
               <Input type="file" accept="image/*" onChange={e => setScreenshot(e.target.files?.[0] || null)} />
             </div>
