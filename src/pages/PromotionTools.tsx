@@ -57,6 +57,7 @@ export default function PromotionTools() {
   const [selectedProduct, setSelectedProduct] = useState('');
   const [quantity, setQuantity] = useState('');
   const [screenshot, setScreenshot] = useState<File | null>(null);
+  const [transactionId, setTransactionId] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   // View order
