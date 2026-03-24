@@ -86,6 +86,7 @@ const adminLinksTop = [
   { to: '/admin/content-requests', label: 'Content Requests', icon: Headset },
   { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
   { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
+  { to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt },
 ];
 
 export function AppSidebar() {
