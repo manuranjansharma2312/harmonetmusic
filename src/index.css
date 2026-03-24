@@ -219,6 +219,26 @@
 }
 
 /* Tutorial Content Styles */
+.tutorial-content {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.tutorial-content * {
+  max-width: 100%;
+}
+
+.tutorial-content p,
+.tutorial-content a,
+.tutorial-content span,
+.tutorial-content li,
+.tutorial-content strong,
+.tutorial-content em {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .tutorial-content img {
   width: 100% !important;
   max-width: 100% !important;
@@ -228,12 +248,14 @@
   display: block;
   object-fit: contain;
 }
+
 .tutorial-content iframe,
 .tutorial-content .ql-video {
   width: 100% !important;
-  min-height: 300px;
+  max-width: 100% !important;
+  min-height: 220px;
   height: auto;
-  aspect-ratio: 16/9;
+  aspect-ratio: 16 / 9;
   border-radius: 0.5rem;
   margin: 1rem 0;
   display: block !important;
@@ -241,12 +263,18 @@
 }
 
 /* Rich text editor styles */
+.ql-snow .ql-editor {
+  overflow-x: hidden;
+}
+
 .ql-snow .ql-editor .ql-video {
   width: 100% !important;
-  min-height: 300px;
-  aspect-ratio: 16/9;
+  max-width: 100% !important;
+  min-height: 220px;
+  aspect-ratio: 16 / 9;
   display: block !important;
 }
+
 .ql-snow .ql-editor img {
   width: 100% !important;
   max-width: 100% !important;
@@ -254,36 +282,27 @@
   display: block;
 }
 
-/* Override prose styles for tutorial content */
-.prose.tutorial-content img {
-  width: 100% !important;
-  max-width: 100% !important;
-  margin-top: 1rem !important;
-  margin-bottom: 1rem !important;
-}
-.prose.tutorial-content iframe {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-height: 300px;
-  aspect-ratio: 16/9;
-}
 .tutorial-content h1, .tutorial-content h2, .tutorial-content h3 {
   color: hsl(var(--foreground));
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
 }
+
 .tutorial-content p {
   margin-bottom: 0.75rem;
   line-height: 1.7;
 }
+
 .tutorial-content ul, .tutorial-content ol {
   padding-left: 1.5rem;
   margin-bottom: 0.75rem;
 }
+
 .tutorial-content a {
   color: hsl(var(--primary));
   text-decoration: underline;
 }
+
 .tutorial-content blockquote {
   border-left: 3px solid hsl(var(--primary));
   padding-left: 1rem;

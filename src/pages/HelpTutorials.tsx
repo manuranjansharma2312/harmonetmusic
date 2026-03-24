@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Loader2, Search, BookOpen } from 'lucide-react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { TutorialContent } from '@/components/TutorialContent';
 
 interface Tutorial {
   id: string;
@@ -97,10 +98,7 @@ export default function HelpTutorials() {
           <DialogHeader>
             <DialogTitle>{viewTutorial?.subject}</DialogTitle>
           </DialogHeader>
-          <div
-            className="max-w-none tutorial-content text-foreground"
-            dangerouslySetInnerHTML={{ __html: viewTutorial?.content || '' }}
-          />
+          <TutorialContent html={viewTutorial?.content || ''} />
         </DialogContent>
       </Dialog>
     </DashboardLayout>
