@@ -160,7 +160,7 @@ export default function AdminAgreementGenerator() {
   const [artistLabelName, setArtistLabelName] = useState("");
   const [legalName, setLegalName] = useState("");
   const [address, setAddress] = useState("");
-  const [countryCode, setCountryCode] = useState("+91");
+  const [countryCode, setCountryCode] = useState("India|+91");
   const [mobileNumber, setMobileNumber] = useState("");
   const [email, setEmail] = useState("");
   const [govtIds, setGovtIds] = useState<GovtId[]>([{ idName: "", idNumber: "" }]);
