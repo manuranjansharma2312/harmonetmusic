@@ -574,7 +574,9 @@ export type Database = {
           id: string
           is_enabled: boolean
           qr_code_url: string | null
+          takedown_amount: number
           takedown_payment_enabled: boolean
+          takedown_tax_enabled: boolean
           tax_percent: number
           taxes: Json
           updated_at: string
@@ -584,7 +586,9 @@ export type Database = {
           id?: string
           is_enabled?: boolean
           qr_code_url?: string | null
+          takedown_amount?: number
           takedown_payment_enabled?: boolean
+          takedown_tax_enabled?: boolean
           tax_percent?: number
           taxes?: Json
           updated_at?: string
@@ -594,7 +598,9 @@ export type Database = {
           id?: string
           is_enabled?: boolean
           qr_code_url?: string | null
+          takedown_amount?: number
           takedown_payment_enabled?: boolean
+          takedown_tax_enabled?: boolean
           tax_percent?: number
           taxes?: Json
           updated_at?: string
