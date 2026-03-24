@@ -257,7 +257,8 @@ export default function AdminPosterGenerator() {
       const canvas = document.createElement('canvas');
       await generatePoster(canvas);
       const link = document.createElement('a');
-      link.download = `${(songTitle || 'poster').replace(/\s+/g, '_')}_poster.png`;
+      const nameParts = [songTitle.trim(), artistName.trim()].filter(Boolean).join(' - ') || 'poster';
+      link.download = `${nameParts.replace(/\s+/g, '_')}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
       toast.success('Poster downloaded!');
