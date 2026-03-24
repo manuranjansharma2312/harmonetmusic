@@ -100,7 +100,7 @@ export default function AdminPromotionTools() {
     if (data) {
       setSettingsId(data.id);
       setIsEnabled(data.is_enabled);
-      setTakedownPaymentEnabled((data as any).takedown_payment_enabled || false);
+      setTakedownPaymentEnabled(data.takedown_payment_enabled || false);
       setQrCodeUrl(data.qr_code_url);
       const taxData = data.taxes as any;
       if (Array.isArray(taxData)) setTaxes(taxData);
@@ -266,16 +266,33 @@ export default function AdminPromotionTools() {
             <Label htmlFor="promo-toggle" className="text-sm">Enable for Users</Label>
             <Switch id="promo-toggle" checked={isEnabled} onCheckedChange={toggleEnabled} />
           </div>
-          <div className="flex items-center gap-3">
-            <Label htmlFor="takedown-payment-toggle" className="text-sm">Takedown Payment</Label>
-            <Switch id="takedown-payment-toggle" checked={takedownPaymentEnabled} onCheckedChange={async (val) => {
-              const { error } = await supabase.from('promotion_settings').update({ takedown_payment_enabled: val, updated_at: new Date().toISOString() } as any).eq('id', settingsId);
-              if (error) { toast.error('Failed to update'); return; }
-              setTakedownPaymentEnabled(val);
-              toast.success(val ? 'Takedown payment enabled' : 'Takedown payment disabled');
-            }} />
-          </div>
         </div>
+
+        {/* Takedown Payment Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">📋 Takedown Payment Settings</span>
+              <div className="flex items-center gap-3">
+                <Label htmlFor="takedown-payment-toggle" className="text-sm font-normal">Enable Payment for Takedown</Label>
+                <Switch id="takedown-payment-toggle" checked={takedownPaymentEnabled} onCheckedChange={async (val) => {
+                  const { error } = await supabase.from('promotion_settings').update({ takedown_payment_enabled: val, updated_at: new Date().toISOString() }).eq('id', settingsId);
+                  if (error) { toast.error('Failed to update'); return; }
+                  setTakedownPaymentEnabled(val);
+                  toast.success(val ? 'Takedown payment enabled' : 'Takedown payment disabled');
+                }} />
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              {takedownPaymentEnabled
+                ? '✅ Users will see QR Code, Transaction ID, and Payment Screenshot fields on the Takedown form.'
+                : '❌ Payment fields are hidden on the Takedown form. Users can submit takedown requests without payment.'}
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">The QR code shown on the Takedown form is the same one configured below in "Payment QR Code".</p>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* QR Code */}
