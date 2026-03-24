@@ -20,7 +20,9 @@ async function ensureFonts() {
   const fonts = [
     new FontFace('Outfit', 'url(/fonts/Outfit-Bold.ttf)', { weight: '700' }),
     new FontFace('Outfit', 'url(/fonts/Outfit-Regular.ttf)', { weight: '400' }),
-    new FontFace('Work Sans', 'url(/fonts/WorkSans-Bold.ttf)', { weight: '700' }),
+    new FontFace('Bricolage Grotesque', 'url(/fonts/BricolageGrotesque-Bold.ttf)', { weight: '700' }),
+    new FontFace('Bricolage Grotesque', 'url(/fonts/BricolageGrotesque-Regular.ttf)', { weight: '400' }),
+    new FontFace('Instrument Sans', 'url(/fonts/InstrumentSans-Bold.ttf)', { weight: '700' }),
   ];
   await Promise.all(fonts.map((f) => f.load()));
   fonts.forEach((f) => document.fonts.add(f));
@@ -73,20 +75,20 @@ export default function AdminPosterGenerator() {
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      // === BACKGROUND: dark red/maroon gradient ===
-      const bg = ctx.createLinearGradient(0, 0, W * 0.5, H);
-      bg.addColorStop(0, '#1a0505');
-      bg.addColorStop(0.35, '#2d0a0a');
-      bg.addColorStop(0.65, '#3a0e0e');
-      bg.addColorStop(1, '#1a0505');
+      // === BACKGROUND: rich dark red/maroon gradient ===
+      const bg = ctx.createLinearGradient(0, 0, W * 0.3, H);
+      bg.addColorStop(0, '#0e0202');
+      bg.addColorStop(0.4, '#280909');
+      bg.addColorStop(0.7, '#350d0d');
+      bg.addColorStop(1, '#0e0202');
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, W, H);
 
-      // Radial glow in center
-      const glow = ctx.createRadialGradient(W * 0.5, H * 0.38, 0, W * 0.5, H * 0.38, W * 0.7);
-      glow.addColorStop(0, 'rgba(120, 20, 20, 0.25)');
-      glow.addColorStop(0.6, 'rgba(80, 12, 12, 0.08)');
-      glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      // Radial glow
+      const glow = ctx.createRadialGradient(W * 0.5, H * 0.35, 0, W * 0.5, H * 0.35, W * 0.75);
+      glow.addColorStop(0, 'rgba(140, 25, 25, 0.22)');
+      glow.addColorStop(0.5, 'rgba(90, 15, 15, 0.06)');
+      glow.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, W, H);
 
@@ -96,35 +98,36 @@ export default function AdminPosterGenerator() {
       try { coverImg = await loadImage(posterPreview); } catch {}
       try { logoImg = await loadImage(harmonetLogoWhite); } catch {}
 
-      const margin = 65;
-      const topPad = 50;
+      // === LAYOUT ZONES ===
+      const sideMargin = 70;
+      const topMargin = 55;
+      const bottomMargin = 50;
 
-      // === TOP SECTION ===
-      // Logo top-left
+      // --- TOP ROW: Logo + "NEW RELEASES" ---
+      const logoH = 90;
       if (logoImg) {
-        const logoH = 95;
         const logoW = (logoImg.width / logoImg.height) * logoH;
-        ctx.drawImage(logoImg, margin, topPad, logoW, logoH);
+        ctx.drawImage(logoImg, sideMargin, topMargin, logoW, logoH);
       }
 
-      // "NEW RELEASES" top-right
       ctx.save();
       ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
       ctx.fillStyle = '#ffffff';
-      ctx.font = '700 54px "Outfit", sans-serif';
-      ctx.textBaseline = 'top';
-      ctx.fillText('NEW RELEASES', W - margin, topPad + 20);
+      ctx.font = '700 50px "Bricolage Grotesque", sans-serif';
+      ctx.fillText('NEW RELEASES', W - sideMargin, topMargin + logoH / 2);
       ctx.restore();
 
-      // === COVER ART (centered, with breathing room) ===
-      const coverPad = 110;
-      const coverTop = topPad + 120;
-      const coverSize = W - coverPad * 2; // 860px
-      const coverX = coverPad;
-      const coverY = coverTop;
-      const radius = 16;
+      // --- COVER ART ---
+      const coverGap = 40; // gap below top row
+      const coverTopY = topMargin + logoH + coverGap;
+      const coverPadX = 95;
+      const coverSize = W - coverPadX * 2; // ~890px
+      const coverX = coverPadX;
+      const coverY = coverTopY;
+      const radius = 14;
 
-      // White bg
+      // White fill
       ctx.save();
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
@@ -132,7 +135,7 @@ export default function AdminPosterGenerator() {
       ctx.fill();
       ctx.restore();
 
-      // Cover image
+      // Image
       if (coverImg) {
         ctx.save();
         ctx.beginPath();
@@ -142,29 +145,34 @@ export default function AdminPosterGenerator() {
         ctx.restore();
       }
 
-      // Border
+      // Subtle border
       ctx.save();
-      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.roundRect(coverX, coverY, coverSize, coverSize, radius);
       ctx.stroke();
       ctx.restore();
 
-      // === SONG TITLE & ARTIST NAME (below cover) ===
-      const textGap = 35;
-      const textTop = coverY + coverSize + textGap;
-      const maxTextW = W - margin * 2;
-      const bottomZoneY = H - 140;
+      // --- TEXT ZONE: Song Title + Artist ---
+      const textGap = 40;
+      const textTopY = coverY + coverSize + textGap;
+      const maxTextW = W - sideMargin * 2;
 
-      // Song Title — large bold centered
+      // Bottom zone starts here — "OUT NOW" area
+      const outNowH = 85;
+      const streamingH = 60;
+      const bottomZoneH = Math.max(outNowH, streamingH) + bottomMargin;
+      const bottomZoneTopY = H - bottomZoneH;
+
+      // Song Title — premium display font, bold
       const titleUpper = songTitle.trim().toUpperCase();
-      let titleSize = 76;
-      let titleBottom = textTop;
+      let titleRenderedH = 0;
 
       if (titleUpper) {
-        for (let s = 76; s >= 34; s -= 2) {
-          ctx.font = `800 ${s}px "Outfit", sans-serif`;
+        let titleSize = 74;
+        for (let s = 74; s >= 30; s -= 2) {
+          ctx.font = `700 ${s}px "Bricolage Grotesque", sans-serif`;
           if (ctx.measureText(titleUpper).width <= maxTextW) {
             titleSize = s;
             break;
@@ -173,28 +181,28 @@ export default function AdminPosterGenerator() {
         }
 
         ctx.save();
-        ctx.font = `800 ${titleSize}px "Outfit", sans-serif`;
+        ctx.font = `700 ${titleSize}px "Bricolage Grotesque", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
-        ctx.shadowColor = 'rgba(0,0,0,0.45)';
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetY = 3;
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 14;
+        ctx.shadowOffsetY = 4;
         ctx.fillStyle = '#ffffff';
-        ctx.fillText(titleUpper, W / 2, textTop, maxTextW);
+        ctx.fillText(titleUpper, W / 2, textTopY, maxTextW);
         ctx.restore();
 
-        titleBottom = textTop + titleSize;
+        titleRenderedH = titleSize;
       }
 
-      // Artist Name — always show if provided, bold, good size
+      // Artist Name — clean, readable
       const artistText = artistName.trim();
       if (artistText) {
-        const artistGap = titleUpper ? 16 : 0;
-        const artistTop = titleBottom + artistGap;
+        const artistGapFromTitle = titleUpper ? 20 : 0;
+        const artistTopY = textTopY + titleRenderedH + artistGapFromTitle;
 
-        let artistSize = 42;
-        for (let s = 42; s >= 22; s -= 2) {
-          ctx.font = `700 ${s}px "Outfit", sans-serif`;
+        let artistSize = 40;
+        for (let s = 40; s >= 20; s -= 2) {
+          ctx.font = `400 ${s}px "Bricolage Grotesque", sans-serif`;
           if (ctx.measureText(artistText).width <= maxTextW) {
             artistSize = s;
             break;
@@ -203,37 +211,37 @@ export default function AdminPosterGenerator() {
         }
 
         ctx.save();
-        ctx.font = `700 ${artistSize}px "Outfit", sans-serif`;
+        ctx.font = `400 ${artistSize}px "Bricolage Grotesque", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
-        ctx.shadowColor = 'rgba(0,0,0,0.35)';
+        ctx.shadowColor = 'rgba(0,0,0,0.3)';
         ctx.shadowBlur = 6;
         ctx.shadowOffsetY = 2;
-        ctx.fillStyle = 'rgba(255,255,255,0.93)';
-        ctx.fillText(artistText, W / 2, artistTop, maxTextW);
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.fillText(artistText, W / 2, artistTopY, maxTextW);
         ctx.restore();
       }
 
-      // === BOTTOM SECTION (fixed at bottom) ===
-      // "OUT NOW" — bottom-left
+      // --- BOTTOM ROW ---
+      // "OUT NOW" — bottom-left, anchored
       ctx.save();
-      ctx.font = '800 76px "Outfit", sans-serif';
+      ctx.font = '700 74px "Bricolage Grotesque", sans-serif';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';
       ctx.shadowColor = 'rgba(0,0,0,0.4)';
-      ctx.shadowBlur = 8;
+      ctx.shadowBlur = 10;
       ctx.fillStyle = '#ffffff';
-      ctx.fillText('OUT NOW', margin, H - 45);
+      ctx.fillText('OUT NOW', sideMargin, H - bottomMargin);
       ctx.restore();
 
       // "AVAILABLE ON ALL MAJOR / STREAMING PLATFORMS!" — bottom-right
       ctx.save();
       ctx.textAlign = 'right';
       ctx.textBaseline = 'bottom';
-      ctx.fillStyle = 'rgba(255,255,255,0.88)';
-      ctx.font = '700 23px "Outfit", sans-serif';
-      ctx.fillText('STREAMING PLATFORMS!', W - margin, H - 45);
-      ctx.fillText('AVAILABLE ON ALL MAJOR', W - margin, H - 75);
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.font = '700 22px "Instrument Sans", sans-serif';
+      ctx.fillText('STREAMING PLATFORMS!', W - sideMargin, H - bottomMargin);
+      ctx.fillText('AVAILABLE ON ALL MAJOR', W - sideMargin, H - bottomMargin - 32);
       ctx.restore();
     },
     [posterPreview, songTitle, artistName],
