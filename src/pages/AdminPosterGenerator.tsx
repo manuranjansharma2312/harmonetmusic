@@ -158,7 +158,7 @@ export default function AdminPosterGenerator() {
 
       if (titleUpper) {
         let sz = 72;
-        for (let s = 72; s >= 28; s -= 2) {
+        for (let s = 72; s >= 20; s -= 2) {
           ctx.font = `700 ${s}px "Outfit", sans-serif`;
           if (ctx.measureText(titleUpper).width <= maxTextW) { sz = s; break; }
           sz = s;
