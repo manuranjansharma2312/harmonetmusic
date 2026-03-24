@@ -347,7 +347,10 @@ export default function AdminAgreementGenerator() {
       processNode(child);
     }
 
-    doc.save(`${templateName.replace(/\s+/g, "_")}.pdf`);
+    const fileName = artistLabelName.trim()
+      ? `${artistLabelName.trim()} - Distribution Agreement.pdf`
+      : `${templateName.replace(/\s+/g, "_")}.pdf`;
+    doc.save(fileName);
     toast.success("PDF downloaded!");
   };
 

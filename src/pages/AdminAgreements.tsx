@@ -153,20 +153,7 @@ export default function AdminAgreements() {
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label>Template Content</Label>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      const twoColHtml = `<table style="width: 100%; border: none;"><tr><td style="width: 50%; vertical-align: top; padding: 10px;"><p><strong>Left Column</strong></p><p>Content here</p></td><td style="width: 50%; vertical-align: top; padding: 10px;"><p><strong>Right Column</strong></p><p>Content here</p></td></tr></table>`;
-                      setContent(content + twoColHtml);
-                    }}
-                  >
-                    <Columns2 className="h-4 w-4 mr-1" /> Insert Two-Column
-                  </Button>
-                </div>
+                <Label className="mb-2 block">Template Content</Label>
                 <RichTextEditor value={content} onChange={setContent} />
               </div>
 
