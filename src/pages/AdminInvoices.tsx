@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Dialog as ConfirmDialogWrapper, DialogContent as ConfirmContent, DialogHeader as ConfirmHeader, DialogTitle as ConfirmTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Plus, Trash2, Download, Eye, Pencil, X, FileText, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, Download, Eye, Pencil, X, FileText, Search, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -23,6 +24,18 @@ interface InvoiceItem {
 interface InvoiceTax {
   name: string;
   percent: number;
+}
+
+interface RegistrationId {
+  name: string;
+  value: string;
+}
+
+interface CompanyDetails {
+  id?: string;
+  company_name: string;
+  address: string;
+  registration_ids: RegistrationId[];
 }
 
 interface Invoice {
@@ -45,6 +58,12 @@ const emptyForm = {
   amount: 0,
   harmonet_share_percent: 0,
   taxes: [] as InvoiceTax[],
+};
+
+const emptyCompany: CompanyDetails = {
+  company_name: 'Harmonet Music',
+  address: '',
+  registration_ids: [],
 };
 
 // Convert image to base64 for PDF embedding
@@ -79,8 +98,32 @@ export default function AdminInvoices() {
   const [pageSize, setPageSize] = useState<number>(10);
   const [search, setSearch] = useState('');
   const [logoBase64, setLogoBase64] = useState('');
+  const [companyDetailsOpen, setCompanyDetailsOpen] = useState(false);
+  const [company, setCompany] = useState<CompanyDetails>(emptyCompany);
+  const [companyForm, setCompanyForm] = useState<CompanyDetails>(emptyCompany);
+  const [savingCompany, setSavingCompany] = useState(false);
 
   useEffect(() => { loadLogoBase64().then(setLogoBase64); }, []);
+
+  const fetchCompanyDetails = async () => {
+    const { data } = await supabase
+      .from('company_details')
+      .select('*')
+      .limit(1)
+      .maybeSingle();
+    if (data) {
+      const cd: CompanyDetails = {
+        id: data.id,
+        company_name: data.company_name as string,
+        address: data.address as string,
+        registration_ids: (data.registration_ids as unknown as RegistrationId[]) || [],
+      };
+      setCompany(cd);
+      setCompanyForm(cd);
+    }
+  };
+
+  useEffect(() => { fetchCompanyDetails(); }, []);
 
   const fetchInvoices = async () => {
     setLoading(true);
@@ -174,6 +217,41 @@ export default function AdminInvoices() {
     fetchInvoices();
   };
 
+  const openCompanySettings = () => {
+    setCompanyForm({ ...company });
+    setCompanyDetailsOpen(true);
+  };
+
+  const saveCompanyDetails = async () => {
+    setSavingCompany(true);
+    const payload = {
+      company_name: companyForm.company_name,
+      address: companyForm.address,
+      registration_ids: companyForm.registration_ids as unknown as any,
+      updated_at: new Date().toISOString(),
+    };
+    if (companyForm.id) {
+      const { error } = await supabase.from('company_details').update(payload).eq('id', companyForm.id);
+      if (error) toast.error(error.message);
+      else { toast.success('Company details updated'); setCompanyDetailsOpen(false); fetchCompanyDetails(); }
+    } else {
+      const { error } = await supabase.from('company_details').insert(payload);
+      if (error) toast.error(error.message);
+      else { toast.success('Company details saved'); setCompanyDetailsOpen(false); fetchCompanyDetails(); }
+    }
+    setSavingCompany(false);
+  };
+
+  const addRegId = () => setCompanyForm(f => ({ ...f, registration_ids: [...f.registration_ids, { name: '', value: '' }] }));
+  const removeRegId = (i: number) => setCompanyForm(f => ({ ...f, registration_ids: f.registration_ids.filter((_, idx) => idx !== i) }));
+  const updateRegId = (i: number, key: 'name' | 'value', val: string) => {
+    setCompanyForm(f => {
+      const ids = [...f.registration_ids];
+      ids[i] = { ...ids[i], [key]: val };
+      return { ...f, registration_ids: ids };
+    });
+  };
+
   const generatePDF = (inv: Invoice) => {
     const doc = new jsPDF();
     const pw = doc.internal.pageSize.getWidth();
@@ -191,7 +269,7 @@ export default function AdminInvoices() {
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...brandColor);
-      doc.text('HARMONET MUSIC', 14, 22);
+      doc.text(company.company_name || 'HARMONET MUSIC', 14, 22);
     }
 
     // ── INVOICE title ──
@@ -200,37 +278,60 @@ export default function AdminInvoices() {
     doc.setTextColor(...brandColor);
     doc.text('INVOICE', pw - 14, 22, { align: 'right' });
 
-    // ── Tagline ──
+    // ── Company details under logo ──
+    let compY = 33;
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(120);
-    doc.text('Harmony On Networks', 14, 33);
+    doc.setTextColor(80);
+    if (company.company_name) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.text(company.company_name, 14, compY);
+      compY += 4;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+    }
+    if (company.address) {
+      const addressLines = doc.splitTextToSize(company.address, 80);
+      doc.text(addressLines, 14, compY);
+      compY += addressLines.length * 3.5;
+    }
+    company.registration_ids.forEach(r => {
+      if (r.name && r.value) {
+        doc.text(`${r.name}: ${r.value}`, 14, compY);
+        compY += 3.5;
+      }
+    });
+
+    const dividerY = Math.max(compY + 3, 40);
 
     // ── Divider ──
     doc.setDrawColor(...brandColor);
     doc.setLineWidth(0.8);
-    doc.line(14, 37, pw - 14, 37);
+    doc.line(14, dividerY, pw - 14, dividerY);
+
+    const detailsY = dividerY + 8;
 
     // ── Invoice details (right side) ──
     doc.setFontSize(9);
     doc.setTextColor(80);
     doc.setFont('helvetica', 'bold');
-    doc.text('Invoice Date:', pw - 80, 45);
-    doc.text('User ID:', pw - 80, 52);
+    doc.text('Invoice Date:', pw - 80, detailsY);
+    doc.text('User ID:', pw - 80, detailsY + 7);
 
     doc.setFont('helvetica', 'normal');
-    doc.text(format(new Date(inv.invoice_date), 'dd MMM yyyy'), pw - 14, 45, { align: 'right' });
-    doc.text(String(inv.user_display_id), pw - 14, 52, { align: 'right' });
+    doc.text(format(new Date(inv.invoice_date), 'dd MMM yyyy'), pw - 14, detailsY, { align: 'right' });
+    doc.text(String(inv.user_display_id), pw - 14, detailsY + 7, { align: 'right' });
 
     // ── Bill To ──
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...brandColor);
-    doc.text('BILL TO', 14, 45);
+    doc.text('BILL TO', 14, detailsY);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(50);
     doc.setFontSize(11);
-    doc.text(inv.billing_name, 14, 52);
+    doc.text(inv.billing_name, 14, detailsY + 7);
 
     // ── Items Table ──
     const tableRows = inv.items.map((item, i) => [
@@ -240,7 +341,7 @@ export default function AdminInvoices() {
     ]);
 
     autoTable(doc, {
-      startY: 62,
+      startY: detailsY + 18,
       head: [['#', 'Description', 'Amount (Rs.)']],
       body: tableRows,
       theme: 'striped',
@@ -326,8 +427,8 @@ export default function AdminInvoices() {
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(140);
-    doc.text('This is a computer-generated invoice by Harmonet Music.', 14, footerY + 6);
-    doc.text('Harmony On Networks | www.harmonetmusic.com', 14, footerY + 11);
+    doc.text(`This is a computer-generated invoice by ${company.company_name || 'Harmonet Music'}.`, 14, footerY + 6);
+    doc.text('Harmony On Networks', 14, footerY + 11);
 
     // Bottom accent bar
     doc.setFillColor(...brandColor);
@@ -385,9 +486,14 @@ export default function AdminInvoices() {
             <h1 className="text-2xl font-bold text-foreground">Generate Invoice</h1>
             <p className="text-muted-foreground text-sm">Create and manage invoices</p>
           </div>
-          <Button onClick={openCreate} className="gap-2">
-            <Plus className="h-4 w-4" /> New Invoice
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={openCompanySettings} className="gap-2">
+              <Settings className="h-4 w-4" /> Company Details
+            </Button>
+            <Button onClick={openCreate} className="gap-2">
+              <Plus className="h-4 w-4" /> New Invoice
+            </Button>
+          </div>
         </div>
 
         {/* Search Bar */}
@@ -670,6 +776,49 @@ export default function AdminInvoices() {
           </ConfirmContent>
         </ConfirmDialogWrapper>
       )}
+
+      {/* Company Details Dialog */}
+      <Dialog open={companyDetailsOpen} onOpenChange={setCompanyDetailsOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Settings className="h-5 w-5" /> Company Details</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Company Name</Label>
+              <Input value={companyForm.company_name} onChange={e => setCompanyForm(f => ({ ...f, company_name: e.target.value }))} placeholder="Harmonet Music" />
+            </div>
+            <div>
+              <Label>Address</Label>
+              <Textarea value={companyForm.address} onChange={e => setCompanyForm(f => ({ ...f, address: e.target.value }))} placeholder="Company full address..." rows={3} />
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-sm font-semibold">Registration IDs</Label>
+                <Button type="button" variant="outline" size="sm" onClick={addRegId} className="gap-1">
+                  <Plus className="h-3 w-3" /> Add ID
+                </Button>
+              </div>
+              {companyForm.registration_ids.length === 0 && <p className="text-xs text-muted-foreground">No registration IDs added</p>}
+              <div className="space-y-2">
+                {companyForm.registration_ids.map((r, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Input placeholder="ID Name (e.g. GST)" value={r.name} onChange={e => updateRegId(i, 'name', e.target.value)} className="w-36" />
+                    <Input placeholder="ID Number" value={r.value} onChange={e => updateRegId(i, 'value', e.target.value)} className="flex-1" />
+                    <Button type="button" variant="ghost" size="icon" onClick={() => removeRegId(i)} className="text-destructive shrink-0">
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setCompanyDetailsOpen(false)}>Cancel</Button>
+              <Button onClick={saveCompanyDetails} disabled={savingCompany}>{savingCompany ? 'Saving...' : 'Save'}</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
