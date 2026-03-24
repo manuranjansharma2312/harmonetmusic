@@ -9,9 +9,10 @@ import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { StatusBadge } from '@/components/StatusBadge';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
-import { Wallet, IndianRupee, ArrowDownToLine, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Wallet, IndianRupee, ArrowDownToLine, Clock, CheckCircle2, AlertCircle, Landmark, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 interface WithdrawalRequest {
   id: string;
