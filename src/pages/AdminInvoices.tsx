@@ -36,6 +36,7 @@ interface CompanyDetails {
   company_name: string;
   address: string;
   registration_ids: RegistrationId[];
+  logo_url?: string;
 }
 
 interface Invoice {
