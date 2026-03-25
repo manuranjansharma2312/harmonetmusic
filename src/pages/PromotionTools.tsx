@@ -167,7 +167,7 @@ export default function PromotionTools() {
     fetchOrders();
   };
 
-  const paginatedOrders = orders.slice((page - 1) * pageSize, page * pageSize);
+  const paginatedOrders = paginateItems(orders, page, pageSize);
 
   if (!isEnabled && !loading) {
     return (
