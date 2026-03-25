@@ -209,6 +209,7 @@ export function AppSidebar() {
               ) : (
                 <>
                   {adminLinksTop.map(renderNavLink)}
+                  {renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}
                 </>
               )}
