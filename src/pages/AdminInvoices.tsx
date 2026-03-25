@@ -97,8 +97,8 @@ export default function AdminInvoices() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
   const [search, setSearch] = useState('');
   const [logoBase64, setLogoBase64] = useState('');
   const [companyDetailsOpen, setCompanyDetailsOpen] = useState(false);
