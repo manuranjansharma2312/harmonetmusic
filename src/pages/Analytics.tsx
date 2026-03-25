@@ -609,12 +609,12 @@ export default function Analytics() {
                   )}
                 </div>
                 {worldMapData.length > 0 && (
-                  <div className="p-6 pt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="p-3 sm:p-6 pt-3 sm:pt-5 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                     {worldMapData.sort((a, b) => b.value - a.value).slice(0, 8).map((d, i) => {
                       const maxVal = worldMapData.reduce((m, x) => Math.max(m, x.value), 0);
                       const pct = maxVal > 0 ? (d.value / maxVal) * 100 : 0;
                       return (
-                        <div key={d.country} className="flex items-center gap-3 px-3.5 py-3 rounded-xl bg-gradient-to-r from-muted/25 to-transparent border border-border/10 hover:border-border/25 transition-all duration-300 group">
+                        <div key={d.country} className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3.5 py-2 sm:py-3 rounded-xl bg-gradient-to-r from-muted/25 to-transparent border border-border/10 hover:border-border/25 transition-all duration-300 group">
                           <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0"
                             style={{ background: `linear-gradient(135deg, ${PALETTE[i % PALETTE.length].from}30, ${PALETTE[i % PALETTE.length].to}15)`, color: PALETTE[i % PALETTE.length].from }}>
                             {i + 1}
