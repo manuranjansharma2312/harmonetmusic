@@ -3,7 +3,8 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { StatusBadge } from '@/components/StatusBadge';
-import { Loader2, Users, Eye, Trash2, CheckCircle, XCircle, Ban, FileText, Search, Pencil } from 'lucide-react';
+import { Loader2, Users, Eye, Trash2, FileText, Search, Pencil } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -47,6 +48,7 @@ export default function AdminSubLabels() {
   const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editParentLabelName, setEditParentLabelName] = useState('');
+  const [editStatus, setEditStatus] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
@@ -112,6 +114,7 @@ export default function AdminSubLabels() {
 
   const handleEditSave = async () => {
     if (!editSL) return;
+    const newStatus = editStatus;
     const { error } = await supabase.from('sub_labels').update({
       sub_label_name: editSubLabelName.trim(),
       parent_label_name: editParentLabelName.trim(),
@@ -120,8 +123,20 @@ export default function AdminSubLabels() {
       agreement_start_date: editStart,
       agreement_end_date: editEnd,
       percentage_cut: parseFloat(editCut) || 0,
+      status: newStatus,
     }).eq('id', editSL.id);
     if (error) { toast.error(error.message); return; }
+
+    // Update profile verification_status if sub_user_id exists
+    if (editSL.sub_user_id) {
+      const verificationMap: Record<string, string> = {
+        active: 'verified', rejected: 'rejected', suspended: 'suspended', pending: 'pending',
+      };
+      await supabase.from('profiles').update({
+        verification_status: verificationMap[newStatus] || 'pending',
+      }).eq('user_id', editSL.sub_user_id);
+    }
+
     toast.success('Sub label updated');
     setEditSL(null);
     fetchAll();
@@ -187,33 +202,27 @@ export default function AdminSubLabels() {
                   </div>
                 </div>
                 <StatusBadge status={sl.status === 'active' ? 'approved' : sl.status} />
-                <div className="flex gap-1 flex-wrap">
+                <Select value={sl.status} onValueChange={(val) => {
+                  if (val === 'rejected') { setRejectSL(sl); }
+                  else { updateStatus(sl, val); }
+                }}>
+                  <SelectTrigger className="w-[130px] h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="flex gap-1">
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewSL(sl)} title="View">
                     <Eye className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditSL(sl); setEditSubLabelName(sl.sub_label_name); setEditParentLabelName(sl.parent_label_name); setEditEmail(sl.email); setEditPhone(sl.phone); setEditStart(sl.agreement_start_date); setEditEnd(sl.agreement_end_date); setEditCut(String(sl.percentage_cut)); }} title="Edit">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditSL(sl); setEditSubLabelName(sl.sub_label_name); setEditParentLabelName(sl.parent_label_name); setEditEmail(sl.email); setEditPhone(sl.phone); setEditStart(sl.agreement_start_date); setEditEnd(sl.agreement_end_date); setEditCut(String(sl.percentage_cut)); setEditStatus(sl.status); }} title="Edit">
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  {sl.status === 'pending' && (
-                    <>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateStatus(sl, 'active')} title="Approve">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setRejectSL(sl)} title="Reject">
-                        <XCircle className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </>
-                  )}
-                  {sl.status === 'active' && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateStatus(sl, 'suspended')} title="Suspend">
-                      <Ban className="h-4 w-4 text-orange-500" />
-                    </Button>
-                  )}
-                  {sl.status === 'suspended' && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateStatus(sl, 'active')} title="Reactivate">
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                    </Button>
-                  )}
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteSL(sl)} title="Delete">
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
@@ -292,6 +301,20 @@ export default function AdminSubLabels() {
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">Percentage Cut %</label>
                 <input className={inputClass} type="text" inputMode="decimal" value={editCut} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setEditCut(e.target.value); }} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Status</label>
+                <Select value={editStatus} onValueChange={setEditStatus}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <DialogFooter>
