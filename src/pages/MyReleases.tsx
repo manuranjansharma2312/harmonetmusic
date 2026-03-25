@@ -60,6 +60,8 @@ type Release = {
 export default function MyReleases() {
   const navigate = useNavigate();
   const { user, userType, isSubLabel } = useAuth();
+  const { isImpersonating, impersonatedUserId } = useImpersonate();
+  const effectiveUserId = isImpersonating ? impersonatedUserId : user?.id;
   const [releases, setReleases] = useState<Release[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -69,13 +71,13 @@ export default function MyReleases() {
   const [releasePageSize, setReleasePageSize] = useState<number | 'all'>(10);
 
   const fetchReleases = async () => {
-    if (!user) return;
+    if (!effectiveUserId) return;
 
     // Get own releases
     const { data: releasesData } = await supabase
       .from('releases')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', effectiveUserId)
       .order('created_at', { ascending: false });
 
     let allReleases = (releasesData || []) as any[];
