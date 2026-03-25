@@ -136,6 +136,7 @@ export default function AdminSubLabels() {
       agreement_start_date: editStart,
       agreement_end_date: editEnd,
       percentage_cut: parseFloat(editCut) || 0,
+      withdrawal_threshold: parseFloat(editThreshold) || 1000,
       status: newStatus,
     }).eq('id', editSL.id);
     if (error) { toast.error(error.message); return; }
