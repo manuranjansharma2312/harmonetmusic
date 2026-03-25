@@ -115,7 +115,19 @@ export default function BankDetails() {
     );
   }
 
-  // Read-only view when details exist
+  // Sub-label users don't need bank details
+  if (isSubLabel) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center max-w-md mx-auto p-8">
+            <p className="text-muted-foreground">Bank details are managed by your parent label. This section is not available for sub-label accounts.</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   if (bankDetail) {
     return (
       <DashboardLayout>
