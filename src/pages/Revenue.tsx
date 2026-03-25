@@ -87,19 +87,53 @@ export default function Revenue() {
       if (subLabelData) {
         setSubLabelCut(Number(subLabelData.percentage_cut) || 0);
       }
-      // Fetch total revenue from OTT reports
-      const { data: ottData } = await supabase
-        .from('report_entries')
-        .select('net_generated_revenue');
+      // When admin impersonates, we need to filter by user's ISRCs
+      // because admin RLS sees all entries
+      let ottTotal = 0;
+      let ytTotal = 0;
 
-      const ottTotal = (ottData || []).reduce((sum, r) => sum + (Number(r.net_generated_revenue) || 0), 0);
+      if (role === 'admin' && impersonatedUserId && impersonatedUserId !== user?.id) {
+        // Get sub-label user IDs for this parent user
+        const { data: subLabels } = await supabase
+          .from('sub_labels')
+          .select('sub_user_id')
+          .eq('parent_user_id', activeUserId!)
+          .eq('status', 'active');
 
-      // Fetch total revenue from YouTube reports
-      const { data: ytData } = await supabase
-        .from('youtube_report_entries')
-        .select('net_generated_revenue');
+        const subUserIds = (subLabels || [])
+          .map(sl => sl.sub_user_id)
+          .filter(Boolean) as string[];
 
-      const ytTotal = (ytData || []).reduce((sum, r) => sum + (Number(r.net_generated_revenue) || 0), 0);
+        const allUserIds = [activeUserId!, ...subUserIds];
+
+        const [{ data: trackRows }, { data: songRows }] = await Promise.all([
+          supabase.from('tracks').select('isrc').in('user_id', allUserIds),
+          supabase.from('songs').select('isrc').in('user_id', allUserIds),
+        ]);
+
+        const ownedIsrcs = [...new Set(
+          [...(trackRows ?? []), ...(songRows ?? [])]
+            .map(r => (r.isrc || '').trim().toUpperCase())
+            .filter(Boolean)
+        )];
+
+        if (ownedIsrcs.length > 0) {
+          const [{ data: ottData }, { data: ytData }] = await Promise.all([
+            supabase.from('report_entries').select('net_generated_revenue').in('isrc', ownedIsrcs),
+            supabase.from('youtube_report_entries').select('net_generated_revenue').in('isrc', ownedIsrcs),
+          ]);
+          ottTotal = (ottData || []).reduce((sum, r) => sum + (Number(r.net_generated_revenue) || 0), 0);
+          ytTotal = (ytData || []).reduce((sum, r) => sum + (Number(r.net_generated_revenue) || 0), 0);
+        }
+      } else {
+        // Regular user or admin not impersonating - rely on RLS
+        const [{ data: ottData }, { data: ytData }] = await Promise.all([
+          supabase.from('report_entries').select('net_generated_revenue'),
+          supabase.from('youtube_report_entries').select('net_generated_revenue'),
+        ]);
+        ottTotal = (ottData || []).reduce((sum, r) => sum + (Number(r.net_generated_revenue) || 0), 0);
+        ytTotal = (ytData || []).reduce((sum, r) => sum + (Number(r.net_generated_revenue) || 0), 0);
+      }
 
       setTotalRevenue(ottTotal + ytTotal);
 
