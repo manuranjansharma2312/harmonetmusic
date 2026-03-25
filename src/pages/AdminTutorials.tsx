@@ -32,6 +32,8 @@ export default function AdminTutorials() {
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [viewTutorial, setViewTutorial] = useState<Tutorial | null>(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const { data: tutorials = [], isLoading } = useQuery({
     queryKey: ['admin-tutorials'],
