@@ -378,10 +378,10 @@ export default function Analytics() {
 
               {/* Revenue Split Donut */}
               <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
-                <div className="p-6 pb-2">
+                <div className="p-4 sm:p-6 pb-2">
                   <SectionHeader icon={Disc3} title="Revenue Split" subtitle="OTT vs YouTube share" accent="#eb4d4b" />
                 </div>
-                <div className="h-[240px] flex items-center justify-center relative">
+                <div className="h-[200px] sm:h-[240px] flex items-center justify-center relative">
                   {sourceSplit.length > 0 ? (
                     <>
                       <ResponsiveContainer width="100%" height="100%">
