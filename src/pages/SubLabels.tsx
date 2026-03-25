@@ -205,7 +205,6 @@ export default function SubLabels() {
               <input className={inputClass} type="text" inputMode="decimal" value={formData.withdrawal_threshold} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setFormData(p => ({ ...p, withdrawal_threshold: e.target.value })); }} placeholder="e.g. 1000" />
               <p className="text-xs text-muted-foreground mt-1">Minimum balance required for sub-label to request withdrawal</p>
             </div>
-            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
