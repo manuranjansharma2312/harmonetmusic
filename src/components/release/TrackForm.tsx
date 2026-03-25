@@ -58,6 +58,7 @@ const defaultTrackData: TrackData = {
   language: '',
   genre: '',
   primaryArtists: [{ name: '', spotifyLink: '', appleMusicLink: '', isNewProfile: false }],
+  singer: '',
   lyricist: '',
   composer: '',
   producer: '',
