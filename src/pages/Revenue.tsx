@@ -40,6 +40,7 @@ export default function Revenue() {
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
   const [hiddenCut, setHiddenCut] = useState(0);
   const [subLabelCut, setSubLabelCut] = useState(0);
+  const [isSubLabelUser, setIsSubLabelUser] = useState(false);
 
   const effectiveCut = subLabelCut > 0 ? subLabelCut : hiddenCut;
   const cutMultiplier = (role !== 'admin' || (impersonatedUserId && impersonatedUserId !== user?.id)) ? (1 - effectiveCut / 100) : 1;
