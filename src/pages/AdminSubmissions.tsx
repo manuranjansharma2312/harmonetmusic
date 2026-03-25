@@ -201,17 +201,34 @@ export default function AdminSubmissions() {
     }
     const { error } = await supabase.from('releases').update({ status, rejection_reason: null }).eq('id', id);
     if (error) { toast.error(error.message); return; }
-    toast.success(`Status changed to ${status}`);
+    // Also update all tracks of this release to the same status
+    const { error: trackError } = await supabase.from('tracks').update({ status, rejection_reason: null }).eq('release_id', id);
+    if (trackError) { toast.error('Release updated but failed to update tracks: ' + trackError.message); }
+    toast.success(`Status changed to ${status} (all tracks updated)`);
     fetchReleases();
+    if (viewRelease?.id === id) {
+      setViewRelease((prev) => prev ? {
+        ...prev, status, rejection_reason: null,
+        tracks: prev.tracks?.map((t) => ({ ...t, status, rejection_reason: null })),
+      } : null);
+    }
   };
 
   const handleRejectConfirm = async (reason: string) => {
     if (!rejectTarget) return;
     const { error } = await supabase.from('releases').update({ status: 'rejected', rejection_reason: reason }).eq('id', rejectTarget);
     if (error) { toast.error(error.message); return; }
-    toast.success('Release rejected');
+    // Also reject all tracks
+    await supabase.from('tracks').update({ status: 'rejected', rejection_reason: reason }).eq('release_id', rejectTarget);
+    toast.success('Release and all tracks rejected');
     setRejectTarget(null);
     fetchReleases();
+    if (viewRelease?.id === rejectTarget) {
+      setViewRelease((prev) => prev ? {
+        ...prev, status: 'rejected', rejection_reason: reason,
+        tracks: prev.tracks?.map((t) => ({ ...t, status: 'rejected', rejection_reason: reason })),
+      } : null);
+    }
   };
 
   const handleTrackStatusChange = async (trackId: string, status: string) => {
