@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { forwardRef, ReactNode } from 'react';
+import { ReactNode } from 'react';
 
 interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
@@ -7,15 +7,10 @@ interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
   glow?: boolean;
 }
 
-export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
-  ({ children, className, glow, ...props }, ref) => {
-    return (
-      <div ref={ref} className={cn(glow ? 'glass-card-glow' : 'glass-card', 'p-4 sm:p-6', className)} {...props}>
-        {children}
-      </div>
-    );
-  }
-);
-
-GlassCard.displayName = 'GlassCard';
-
+export function GlassCard({ children, className, glow, ...props }: GlassCardProps) {
+  return (
+    <div className={cn(glow ? 'glass-card-glow' : 'glass-card', 'p-4 sm:p-6', className)} {...props}>
+      {children}
+    </div>
+  );
+}
