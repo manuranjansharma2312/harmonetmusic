@@ -557,8 +557,8 @@ export default function Analytics() {
                 </div>
               </div>
               <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
-                <div className="p-6 pb-3"><SectionHeader icon={Users} title="Top Artists · Streams" subtitle="Most streamed artists" accent="#26de81" /></div>
-                <div className="px-6 pb-6 space-y-3">
+                <div className="p-4 sm:p-6 pb-3"><SectionHeader icon={Users} title="Top Artists · Streams" subtitle="Most streamed artists" accent="#26de81" /></div>
+                <div className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-2 sm:space-y-3">
                   {streamsByArtist.length === 0 && <EmptyState text="No artist data" />}
                   {streamsByArtist.map((a, i) => (
                     <RankRow key={a.name} rank={i + 1} name={a.name} value={formatStreams(a.value)} pct={streamsByArtist[0] ? (a.value / streamsByArtist[0].value) * 100 : 0} pal={PALETTE[(i + 3) % PALETTE.length]} />
