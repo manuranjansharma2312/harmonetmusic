@@ -1405,3 +1405,4 @@ function Detail({ label, value, copyable }: { label: string; value: string; copy
     </div>
   );
 }
+
