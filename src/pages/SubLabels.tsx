@@ -441,7 +441,7 @@ export default function SubLabels() {
                       <TableCell><StatusBadge status={w.status} /></TableCell>
                       <TableCell>
                         {w.status === 'paid' ? (
-                          <span className="text-xs text-muted-foreground italic">Paid — Contact admin to edit</span>
+                          <StatusBadge status="paid" />
                         ) : (
                           <Select
                             value={w.status}
