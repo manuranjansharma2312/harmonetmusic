@@ -135,7 +135,7 @@ export default function MyReleases() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchReleases(); }, [user]);
+  useEffect(() => { fetchReleases(); }, [effectiveUserId]);
 
   const getReleaseName = (r: Release) => {
     if (r.content_type === 'album') return r.album_name || 'Untitled Album';
