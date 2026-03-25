@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { NoticePopup } from '@/components/NoticePopup';
 import { DashboardLayout } from '@/components/DashboardLayout';
-import { StatCard } from '@/components/StatCard';
 import { GlassCard } from '@/components/GlassCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +11,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import {
   Clock, CheckCircle, XCircle, Loader2, Copy, X, BookOpen, ArrowRight,
-  Disc3, Wallet, DollarSign, BarChart3
+  Disc3, Wallet, DollarSign, BarChart3, Music, TrendingUp, TrendingDown,
+  Activity, Globe, Headphones
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -20,7 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { TutorialContent } from '@/components/TutorialContent';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, BarChart, Bar
+  PieChart, Pie, Cell, BarChart, Bar, Legend
 } from 'recharts';
 import { format } from 'date-fns';
 
@@ -33,12 +33,29 @@ const CHART_COLORS = [
   'hsl(30, 80%, 50%)',
 ];
 
+const STORE_COLORS: Record<string, string> = {
+  Spotify: '#1DB954',
+  'Apple Music': '#FA2D48',
+  'YouTube Music': '#FF0000',
+  YouTube: '#FF0000',
+  JioSaavn: '#2BC5B4',
+  Gaana: '#E72C30',
+  Wynk: '#1E90FF',
+  Amazon: '#FF9900',
+  Hungama: '#EF2D56',
+  Instagram: '#E1306C',
+  Facebook: '#1877F2',
+  TikTok: '#000000',
+};
+
 const tooltipStyle = {
-  background: 'hsl(0 0% 12%)',
-  border: '1px solid hsl(0 0% 20%)',
-  borderRadius: '8px',
+  background: 'hsl(0 0% 10%)',
+  border: '1px solid hsl(0 0% 18%)',
+  borderRadius: '12px',
   color: 'hsl(0 0% 90%)',
   fontSize: '12px',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+  padding: '10px 14px',
 };
 
 export default function UserDashboard() {
@@ -51,9 +68,11 @@ export default function UserDashboard() {
   const [releaseStats, setReleaseStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [totalStreams, setTotalStreams] = useState(0);
+  const [totalDownloads, setTotalDownloads] = useState(0);
   const [monthlyRevenue, setMonthlyRevenue] = useState<{ month: string; revenue: number; streams: number }[]>([]);
   const [topTracks, setTopTracks] = useState<{ name: string; streams: number }[]>([]);
-  const [topStores, setTopStores] = useState<{ name: string; value: number }[]>([]);
+  const [topStores, setTopStores] = useState<{ name: string; value: number; color: string }[]>([]);
+  const [countryData, setCountryData] = useState<{ name: string; streams: number }[]>([]);
   const [recentReleases, setRecentReleases] = useState<any[]>([]);
   const [withdrawalBalance, setWithdrawalBalance] = useState({ pending: 0, paid: 0 });
   const [hiddenCut, setHiddenCut] = useState(0);
@@ -131,10 +150,7 @@ export default function UserDashboard() {
         .eq('parent_user_id', effectiveUserId)
         .eq('status', 'active');
 
-      const subUserIds = (subLabels || [])
-        .map(sl => sl.sub_user_id)
-        .filter(Boolean) as string[];
-
+      const subUserIds = (subLabels || []).map(sl => sl.sub_user_id).filter(Boolean) as string[];
       const allUserIds = [effectiveUserId, ...subUserIds];
 
       const [{ data: trackRows }, { data: songRows }] = await Promise.all([
@@ -150,19 +166,17 @@ export default function UserDashboard() {
 
       if (ownedIsrcs.length > 0) {
         const [{ data: ottData }, { data: ytData }] = await Promise.all([
-          supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, store, track').in('isrc', ownedIsrcs),
-          supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, store, track').in('isrc', ownedIsrcs),
+          supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country').in('isrc', ownedIsrcs),
+          supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country').in('isrc', ownedIsrcs),
         ]);
-
         reportData = ottData || [];
         ytReportData = ytData || [];
       }
     } else {
       const [reportRes, ytReportRes] = await Promise.all([
-        supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, store, track'),
-        supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, store, track'),
+        supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country'),
+        supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country'),
       ]);
-
       reportData = reportRes.data || [];
       ytReportData = ytReportRes.data || [];
     }
@@ -172,16 +186,20 @@ export default function UserDashboard() {
     if (allReports.length > 0) {
       let totalRev = 0;
       let totalStr = 0;
+      let totalDl = 0;
       const monthMap: Record<string, { revenue: number; streams: number }> = {};
       const storeMap: Record<string, number> = {};
       const trackMap: Record<string, number> = {};
+      const countryMap: Record<string, number> = {};
 
       allReports.forEach((r: any) => {
         const grossRevenue = Number(r.net_generated_revenue || 0);
         const rev = applyRevenueCutToAmount(grossRevenue, effectiveCutPercent, shouldApplyCut);
         const str = Number(r.streams || 0);
+        const dl = Number(r.downloads || 0);
         totalRev += grossRevenue;
         totalStr += str;
+        totalDl += dl;
 
         const month = r.reporting_month;
         if (!monthMap[month]) monthMap[month] = { revenue: 0, streams: 0 };
@@ -190,15 +208,15 @@ export default function UserDashboard() {
 
         if (r.store) storeMap[r.store] = (storeMap[r.store] || 0) + str;
         if (r.track) trackMap[r.track] = (trackMap[r.track] || 0) + str;
+        if (r.country) countryMap[r.country] = (countryMap[r.country] || 0) + str;
       });
 
       setTotalRevenue(Math.round(totalRev * 100) / 100);
       setTotalStreams(totalStr);
+      setTotalDownloads(totalDl);
 
       setMonthlyRevenue(
-        Object.entries(monthMap)
-          .sort(([a], [b]) => a.localeCompare(b))
-          .slice(-8)
+        Object.entries(monthMap).sort(([a], [b]) => a.localeCompare(b)).slice(-8)
           .map(([month, data]) => ({
             month: month.length > 7 ? month.substring(0, 7) : month,
             revenue: Math.round(data.revenue * 100) / 100,
@@ -207,19 +225,27 @@ export default function UserDashboard() {
       );
 
       setTopStores(
-        Object.entries(storeMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, value]) => ({ name, value }))
+        Object.entries(storeMap).sort(([, a], [, b]) => b - a).slice(0, 6)
+          .map(([name, value]) => ({ name, value, color: STORE_COLORS[name] || CHART_COLORS[0] }))
       );
 
       setTopTracks(
         Object.entries(trackMap).sort(([, a], [, b]) => b - a).slice(0, 5)
-          .map(([name, streams]) => ({ name: name.length > 20 ? name.substring(0, 20) + '…' : name, streams }))
+          .map(([name, streams]) => ({ name: name.length > 22 ? name.substring(0, 22) + '…' : name, streams }))
+      );
+
+      setCountryData(
+        Object.entries(countryMap).sort(([, a], [, b]) => b - a).slice(0, 6)
+          .map(([name, streams]) => ({ name, streams }))
       );
     } else {
       setTotalRevenue(0);
       setTotalStreams(0);
+      setTotalDownloads(0);
       setMonthlyRevenue([]);
       setTopStores([]);
       setTopTracks([]);
+      setCountryData([]);
     }
 
     if (withdrawalRes.data) {
@@ -266,6 +292,8 @@ export default function UserDashboard() {
     return r.album_name || r.ep_name || 'Untitled Single';
   };
 
+  const totalStoreStreams = topStores.reduce((a, b) => a + b.value, 0);
+
   return (
     <DashboardLayout>
       {isImpersonating && (
@@ -284,37 +312,89 @@ export default function UserDashboard() {
         </div>
       )}
 
-      <div className="mb-4 sm:mb-6 lg:mb-8">
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1 text-xs sm:text-sm lg:text-base">Welcome back! Here's your overview.</p>
+      <div className="mb-4 sm:mb-6 lg:mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-1 text-xs sm:text-sm lg:text-base">Welcome back! Here's your overview.</p>
+        </div>
+        {displayId && (
+          <button
+            onClick={copyUserId}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl glass hover:ring-1 hover:ring-primary/30 transition-all group"
+            title="Copy User ID"
+          >
+            <span className="font-mono text-sm sm:text-base font-bold text-foreground">#{displayId}</span>
+            <Copy className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+          </button>
+        )}
       </div>
 
-      {displayId && (
-        <GlassCard className="mb-4 sm:mb-6 !p-3 sm:!p-4 animate-fade-in">
-          <div className="flex items-center justify-between">
-            <div className="min-w-0">
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Your User ID</p>
-              <p className="font-mono text-base sm:text-lg font-bold text-foreground mt-0.5">#{displayId}</p>
-            </div>
-            <button
-              onClick={copyUserId}
-              className="p-1.5 sm:p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"
-              title="Copy ID"
-            >
-              <Copy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            </button>
+      {/* Financial Overview */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <GlassCard className="!p-3 sm:!p-4 animate-fade-in border-l-4" style={{ borderLeftColor: 'hsl(140, 60%, 40%)' }}>
+          <div className="flex items-center gap-2 mb-1.5">
+            <DollarSign className="h-4 w-4 text-emerald-400" />
+            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium">Available</span>
+          </div>
+          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground whitespace-nowrap">{formatRevenue(availableRevenue)}</p>
+        </GlassCard>
+        <GlassCard className="!p-3 sm:!p-4 animate-fade-in border-l-4" style={{ borderLeftColor: 'hsl(45, 80%, 45%)' }}>
+          <div className="flex items-center gap-2 mb-1.5">
+            <Clock className="h-4 w-4 text-yellow-400" />
+            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium">Pending</span>
+          </div>
+          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground whitespace-nowrap">{formatRevenue(withdrawalBalance.pending)}</p>
+        </GlassCard>
+        <GlassCard className="!p-3 sm:!p-4 animate-fade-in border-l-4" style={{ borderLeftColor: 'hsl(200, 70%, 50%)' }}>
+          <div className="flex items-center gap-2 mb-1.5">
+            <Wallet className="h-4 w-4 text-blue-400" />
+            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium">Paid</span>
+          </div>
+          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground whitespace-nowrap">{formatRevenue(withdrawalBalance.paid)}</p>
+        </GlassCard>
+        <GlassCard className="!p-3 sm:!p-4 animate-fade-in border-l-4" style={{ borderLeftColor: 'hsl(0, 67%, 35%)' }}>
+          <div className="flex items-center gap-2 mb-1.5">
+            <TrendingUp className="h-4 w-4 text-primary" />
+            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium">Net Revenue</span>
+          </div>
+          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground whitespace-nowrap">{formatRevenue(netRevenue)}</p>
+        </GlassCard>
+      </div>
+
+      {/* KPI Stats Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <GlassCard className="!p-3 sm:!p-4 animate-fade-in group hover:scale-[1.02] transition-transform duration-200">
+          <div className="flex items-center gap-2 mb-1">
+            <Disc3 className="h-4 w-4 text-primary" />
+            <span className="text-[10px] sm:text-xs text-muted-foreground">Releases</span>
+          </div>
+          <p className="text-lg sm:text-xl font-bold text-foreground">{releaseStats.total}</p>
+          <div className="flex gap-2 mt-1.5">
+            <span className="text-[10px] text-emerald-400">{releaseStats.approved} live</span>
+            <span className="text-[10px] text-yellow-400">{releaseStats.pending} pending</span>
           </div>
         </GlassCard>
-      )}
-
-      {/* Top Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
-        <StatCard title="Total Releases" value={releaseStats.total} icon={Disc3} />
-        <StatCard title="Pending" value={releaseStats.pending} icon={Clock} color="hsla(45, 80%, 40%, 0.3)" />
-        <StatCard title="Approved" value={releaseStats.approved} icon={CheckCircle} color="hsla(140, 60%, 30%, 0.3)" />
-        <StatCard title="Rejected" value={releaseStats.rejected} icon={XCircle} color="hsla(0, 60%, 40%, 0.3)" />
-        <StatCard title="Total Streams" value={formatStreams(totalStreams)} icon={BarChart3} color="hsla(200, 70%, 40%, 0.3)" />
-        <StatCard title="Available Revenue" value={formatRevenue(availableRevenue)} icon={DollarSign} color="hsla(140, 60%, 35%, 0.3)" />
+        <GlassCard className="!p-3 sm:!p-4 animate-fade-in group hover:scale-[1.02] transition-transform duration-200">
+          <div className="flex items-center gap-2 mb-1">
+            <Headphones className="h-4 w-4 text-blue-400" />
+            <span className="text-[10px] sm:text-xs text-muted-foreground">Total Streams</span>
+          </div>
+          <p className="text-lg sm:text-xl font-bold text-foreground">{formatStreams(totalStreams)}</p>
+        </GlassCard>
+        <GlassCard className="!p-3 sm:!p-4 animate-fade-in group hover:scale-[1.02] transition-transform duration-200">
+          <div className="flex items-center gap-2 mb-1">
+            <BarChart3 className="h-4 w-4 text-purple-400" />
+            <span className="text-[10px] sm:text-xs text-muted-foreground">Downloads</span>
+          </div>
+          <p className="text-lg sm:text-xl font-bold text-foreground">{formatStreams(totalDownloads)}</p>
+        </GlassCard>
+        <GlassCard className="!p-3 sm:!p-4 animate-fade-in group hover:scale-[1.02] transition-transform duration-200">
+          <div className="flex items-center gap-2 mb-1">
+            <Music className="h-4 w-4 text-orange-400" />
+            <span className="text-[10px] sm:text-xs text-muted-foreground">Top Platforms</span>
+          </div>
+          <p className="text-lg sm:text-xl font-bold text-foreground">{topStores.length}</p>
+        </GlassCard>
       </div>
 
       {/* Pending Releases */}
@@ -346,171 +426,213 @@ export default function UserDashboard() {
         </GlassCard>
       )}
 
-      {/* Revenue Trend + Release Status */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <GlassCard className="lg:col-span-2 animate-fade-in">
-          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Revenue Trend</h3>
-          {monthlyRevenue.length > 0 ? (
-            <div className="h-44 sm:h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={monthlyRevenue}>
-                  <defs>
-                    <linearGradient id="userRevenueGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(0, 67%, 35%)" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="hsl(0, 67%, 35%)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 20%)" />
-                  <XAxis dataKey="month" tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} />
-                  <YAxis tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} width={45} />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Area type="monotone" dataKey="revenue" stroke="hsl(0, 67%, 40%)" fill="url(#userRevenueGrad)" strokeWidth={2} name="Revenue (₹)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground text-center py-16 sm:py-20">No revenue data yet</p>
-          )}
-        </GlassCard>
+      {/* Revenue & Streams Dual Chart */}
+      <GlassCard className="mb-4 sm:mb-6 animate-fade-in">
+        <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+          <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+          Revenue & Streams Trend
+        </h3>
+        {monthlyRevenue.length > 0 ? (
+          <div className="h-52 sm:h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={monthlyRevenue}>
+                <defs>
+                  <linearGradient id="userRevenueGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(0, 67%, 35%)" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="hsl(0, 67%, 35%)" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="userStreamsGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(200, 70%, 50%)" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="hsl(200, 70%, 50%)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 16%)" />
+                <XAxis dataKey="month" tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} axisLine={{ stroke: 'hsl(0 0% 20%)' }} />
+                <YAxis yAxisId="left" tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} width={50} axisLine={{ stroke: 'hsl(0 0% 20%)' }} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} width={50} axisLine={{ stroke: 'hsl(0 0% 20%)' }} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend wrapperStyle={{ fontSize: '11px', color: 'hsl(0 0% 60%)' }} />
+                <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(0, 67%, 40%)" fill="url(#userRevenueGrad)" strokeWidth={2.5} name="Revenue (₹)" dot={{ r: 3, fill: 'hsl(0, 67%, 40%)' }} />
+                <Area yAxisId="right" type="monotone" dataKey="streams" stroke="hsl(200, 70%, 50%)" fill="url(#userStreamsGrad)" strokeWidth={2} name="Streams" dot={{ r: 2.5, fill: 'hsl(200, 70%, 50%)' }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground text-center py-16">No revenue data yet</p>
+        )}
+      </GlassCard>
 
+      {/* Release Status Donut + Platform Distribution */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <GlassCard className="animate-fade-in">
-          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Release Status</h3>
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3">Release Status</h3>
           {releaseStatusData.length > 0 ? (
             <>
-              <div className="h-36 sm:h-44">
+              <div className="h-44 sm:h-52 relative">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={releaseStatusData} cx="50%" cy="50%" innerRadius={35} outerRadius={55} dataKey="value" strokeWidth={0}>
+                    <Pie data={releaseStatusData} cx="50%" cy="50%" innerRadius={42} outerRadius={65} dataKey="value" strokeWidth={0} paddingAngle={3}>
                       {releaseStatusData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                     </Pie>
                     <Tooltip contentStyle={tooltipStyle} />
                   </PieChart>
                 </ResponsiveContainer>
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="text-center">
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">{releaseStats.total}</p>
+                    <p className="text-[10px] text-muted-foreground">Total</p>
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mt-1">
+              <div className="flex flex-wrap justify-center gap-3 mt-2">
                 {releaseStatusData.map(d => (
-                  <div key={d.name} className="flex items-center gap-1 text-[10px] sm:text-xs">
-                    <div className="h-2 w-2 rounded-full" style={{ background: d.color }} />
-                    <span className="text-muted-foreground">{d.name}: {d.value}</span>
+                  <div key={d.name} className="flex items-center gap-1.5 text-[10px] sm:text-xs">
+                    <div className="h-2.5 w-2.5 rounded-full" style={{ background: d.color }} />
+                    <span className="text-muted-foreground">{d.name}: <span className="text-foreground font-medium">{d.value}</span></span>
                   </div>
                 ))}
               </div>
             </>
           ) : (
-            <p className="text-xs text-muted-foreground text-center py-12 sm:py-16">No releases yet</p>
+            <p className="text-xs text-muted-foreground text-center py-16">No releases yet</p>
+          )}
+        </GlassCard>
+
+        {/* Platform Distribution */}
+        <GlassCard className="animate-fade-in">
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3">Platform Distribution</h3>
+          {topStores.length > 0 ? (
+            <div className="space-y-2.5 sm:space-y-3">
+              {topStores.map((store) => {
+                const pct = totalStoreStreams > 0 ? (store.value / totalStoreStreams) * 100 : 0;
+                return (
+                  <div key={store.name}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-foreground font-medium">{store.name}</span>
+                      <span className="text-[10px] sm:text-xs text-muted-foreground">{formatStreams(store.value)} ({pct.toFixed(1)}%)</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-muted/40 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${pct}%`, background: store.color }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground text-center py-16">No platform data yet</p>
           )}
         </GlassCard>
       </div>
 
-      {/* Top Tracks + Top Stores */}
+      {/* Top Tracks + Country Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        {topTracks.length > 0 && (
-          <GlassCard className="animate-fade-in">
-            <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Top Tracks by Streams</h3>
-            <div className="h-44 sm:h-52">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topTracks} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 20%)" />
-                  <XAxis type="number" tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} />
-                  <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0 0% 55%)', fontSize: 9 }} width={90} />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Bar dataKey="streams" fill="hsl(0, 67%, 35%)" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+        {/* Top Tracks */}
+        <GlassCard className="animate-fade-in">
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+            <Music className="h-4 w-4 text-primary" />
+            Top Tracks
+          </h3>
+          {topTracks.length > 0 ? (
+            <div className="space-y-2">
+              {topTracks.map((track, i) => (
+                <div key={track.name} className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
+                  <span className="text-xs font-bold text-primary w-5 text-center">#{i + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-foreground truncate">{track.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{formatStreams(track.streams)} streams</p>
+                  </div>
+                  <div className="w-16 h-1.5 rounded-full bg-muted/40 overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${topTracks[0]?.streams ? (track.streams / topTracks[0].streams) * 100 : 0}%`,
+                        background: CHART_COLORS[i % CHART_COLORS.length]
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
-          </GlassCard>
-        )}
+          ) : (
+            <p className="text-xs text-muted-foreground text-center py-12">No track data yet</p>
+          )}
+        </GlassCard>
 
-        {topStores.length > 0 && (
-          <GlassCard className="animate-fade-in">
-            <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Streams by Platform</h3>
-            <div className="h-44 sm:h-52">
+        {/* Country Distribution */}
+        <GlassCard className="animate-fade-in">
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+            <Globe className="h-4 w-4 text-primary" />
+            Top Countries
+          </h3>
+          {countryData.length > 0 ? (
+            <div className="h-48 sm:h-56">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topStores}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 20%)" />
-                  <XAxis dataKey="name" tick={{ fill: 'hsl(0 0% 55%)', fontSize: 9 }} />
-                  <YAxis tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} width={40} />
+                <BarChart data={countryData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 16%)" />
+                  <XAxis dataKey="name" tick={{ fill: 'hsl(0 0% 55%)', fontSize: 9 }} axisLine={{ stroke: 'hsl(0 0% 20%)' }} />
+                  <YAxis tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} width={45} axisLine={{ stroke: 'hsl(0 0% 20%)' }} />
                   <Tooltip contentStyle={tooltipStyle} />
-                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                    {topStores.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                  <Bar dataKey="streams" name="Streams" radius={[6, 6, 0, 0]}>
+                    {countryData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </GlassCard>
-        )}
-      </div>
-
-      {/* Withdrawal Summary + Recent Releases */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <GlassCard className="animate-fade-in">
-          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Withdrawal Summary</h3>
-          <div className="space-y-2 sm:space-y-3">
-            <div className="p-2.5 sm:p-3 rounded-lg bg-muted/30">
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Available Revenue</p>
-                <p className="text-lg sm:text-xl font-bold text-foreground mt-1">{formatRevenue(availableRevenue)}</p>
-            </div>
-            <div className="flex gap-2 sm:gap-3">
-              <div className="flex-1 p-2.5 sm:p-3 rounded-lg bg-muted/30">
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Pending</p>
-                <p className="text-xs sm:text-sm font-bold text-foreground mt-1">{formatRevenue(withdrawalBalance.pending)}</p>
-              </div>
-              <div className="flex-1 p-2.5 sm:p-3 rounded-lg bg-muted/30">
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Paid</p>
-                <p className="text-xs sm:text-sm font-bold text-foreground mt-1">{formatRevenue(withdrawalBalance.paid)}</p>
-              </div>
-            </div>
-          </div>
-        </GlassCard>
-
-        <GlassCard className="lg:col-span-2 animate-fade-in">
-          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Recent Releases</h3>
-          {recentReleases.length > 0 ? (
-            <>
-              {/* Desktop table */}
-              <div className="hidden sm:block overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border/50">
-                      <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Release</th>
-                      <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Type</th>
-                      <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Status</th>
-                      <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentReleases.map((r: any) => (
-                      <tr key={r.id} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
-                        <td className="py-2.5 px-3 text-foreground font-medium truncate max-w-[180px]">{getReleaseName(r)}</td>
-                        <td className="py-2.5 px-3 text-muted-foreground capitalize text-xs">{r.content_type}</td>
-                        <td className="py-2.5 px-3"><StatusBadge status={r.status} /></td>
-                        <td className="py-2.5 px-3 text-muted-foreground text-xs">{format(new Date(r.created_at), 'dd MMM yyyy')}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {/* Mobile card list */}
-              <div className="sm:hidden space-y-2">
-                {recentReleases.map((r: any) => (
-                  <div key={r.id} className="p-2.5 rounded-lg bg-muted/20">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-medium text-foreground truncate">{getReleaseName(r)}</p>
-                        <p className="text-[10px] text-muted-foreground capitalize">{r.content_type}</p>
-                      </div>
-                      <StatusBadge status={r.status} />
-                    </div>
-                    <p className="text-[10px] text-muted-foreground mt-1">{format(new Date(r.created_at), 'dd MMM yyyy')}</p>
-                  </div>
-                ))}
-              </div>
-            </>
           ) : (
-            <p className="text-xs text-muted-foreground text-center py-6 sm:py-8">No releases yet</p>
+            <p className="text-xs text-muted-foreground text-center py-12">No country data yet</p>
           )}
         </GlassCard>
       </div>
+
+      {/* Recent Releases */}
+      <GlassCard className="mb-4 sm:mb-6 animate-fade-in">
+        <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Recent Releases</h3>
+        {recentReleases.length > 0 ? (
+          <>
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border/50">
+                    <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Release</th>
+                    <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Type</th>
+                    <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Status</th>
+                    <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentReleases.map((r: any) => (
+                    <tr key={r.id} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
+                      <td className="py-2.5 px-3 text-foreground font-medium truncate max-w-[180px]">{getReleaseName(r)}</td>
+                      <td className="py-2.5 px-3 text-muted-foreground capitalize text-xs">{r.content_type}</td>
+                      <td className="py-2.5 px-3"><StatusBadge status={r.status} /></td>
+                      <td className="py-2.5 px-3 text-muted-foreground text-xs">{format(new Date(r.created_at), 'dd MMM yyyy')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="sm:hidden space-y-2">
+              {recentReleases.map((r: any) => (
+                <div key={r.id} className="p-2.5 rounded-lg bg-muted/20">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium text-foreground truncate">{getReleaseName(r)}</p>
+                      <p className="text-[10px] text-muted-foreground capitalize">{r.content_type}</p>
+                    </div>
+                    <StatusBadge status={r.status} />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">{format(new Date(r.created_at), 'dd MMM yyyy')}</p>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="text-xs text-muted-foreground text-center py-6 sm:py-8">No releases yet</p>
+        )}
+      </GlassCard>
 
       <RecentTutorialsWidget />
       <NoticePopup />
