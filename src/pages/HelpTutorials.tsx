@@ -20,6 +20,8 @@ interface Tutorial {
 export default function HelpTutorials() {
   const [search, setSearch] = useState('');
   const [viewTutorial, setViewTutorial] = useState<Tutorial | null>(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const { data: tutorials = [], isLoading } = useQuery({
     queryKey: ['tutorials'],
