@@ -788,6 +788,13 @@ export default function AdminSubmissions() {
                   <div className="relative inline-block">
                     <img src={viewRelease.poster_url} alt="Poster" className="h-32 w-32 rounded-lg object-cover border border-border" />
                     <button
+                      onClick={() => handleDownloadFile(viewRelease.poster_url!, `${getReleaseName(viewRelease)}-poster.${viewRelease.poster_url!.split('.').pop()?.split('?')[0] || 'jpg'}`)}
+                      className="absolute -top-2 -left-2 p-1 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-all"
+                      title="Download poster"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                    </button>
+                    <button
                       onClick={() => handleDeletePoster(viewRelease.id, viewRelease.poster_url!)}
                       className="absolute -top-2 -right-2 p-1 rounded-full bg-destructive text-destructive-foreground hover:opacity-90 transition-all"
                       title="Delete poster"
