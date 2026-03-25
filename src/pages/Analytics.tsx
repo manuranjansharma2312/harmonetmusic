@@ -571,8 +571,8 @@ export default function Analytics() {
             <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden relative">
               <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/[0.03] via-transparent to-emerald-500/[0.03] pointer-events-none" />
               <div className="relative">
-                <div className="p-6 pb-0"><SectionHeader icon={Globe} title="Global Streams Distribution" subtitle="Streams intensity across countries" accent="#00d2d3" /></div>
-                <div className="mt-4 flex justify-center overflow-hidden px-4">
+                <div className="p-4 sm:p-6 pb-0"><SectionHeader icon={Globe} title="Global Streams Distribution" subtitle="Streams intensity across countries" accent="#00d2d3" /></div>
+                <div className="mt-2 sm:mt-4 flex justify-center overflow-hidden px-2 sm:px-4">
                   {worldMapData.length > 0 ? (
                     <div className="w-full max-w-4xl [&_svg]:w-full [&_svg]:h-auto">
                       <WorldMap
