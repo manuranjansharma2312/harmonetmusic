@@ -48,6 +48,7 @@ const adminLinksTop = [
   { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
   { to: '/admin/labels', label: 'Labels', icon: Tag },
   { to: '/admin/sub-labels', label: 'Sub Labels', icon: UsersRound },
+  { to: '/admin/sub-label-withdrawals', label: 'Sub Label Withdrawals', icon: Wallet },
   { to: '/admin/content-requests', label: 'Content Requests', icon: Headset },
   { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
   { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
