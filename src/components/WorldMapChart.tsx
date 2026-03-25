@@ -79,9 +79,9 @@ export function WorldMapChart({ data, className }: WorldMapChartProps) {
   const mapData = data
     .map((d) => {
       const code = getCountryCode(d.name);
-      return code ? { country: code.toLowerCase(), value: d.streams } : null;
+      return code ? { country: code.toLowerCase() as any, value: d.streams } : null;
     })
-    .filter(Boolean) as { country: string; value: number }[];
+    .filter(Boolean) as any[];
 
   const maxStreams = Math.max(...data.map(d => d.streams), 1);
 
