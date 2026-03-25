@@ -20,6 +20,7 @@ import MyProfile from "./pages/MyProfile";
 import MyLabels from "./pages/MyLabels";
 import SubLabels from "./pages/SubLabels";
 import AdminSubLabels from "./pages/AdminSubLabels";
+import AdminSubLabelWithdrawals from "./pages/AdminSubLabelWithdrawals";
 import AdminLabels from "./pages/AdminLabels";
 import AdminContentRequests from "./pages/AdminContentRequests";
 import CopyrightClaimRemoval from "./pages/CopyrightClaimRemoval";
@@ -87,6 +88,7 @@ function App() {
                   <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
                   <Route path="/admin/labels" element={<ProtectedRoute requiredRole="admin"><AdminLabels /></ProtectedRoute>} />
                   <Route path="/admin/sub-labels" element={<ProtectedRoute requiredRole="admin"><AdminSubLabels /></ProtectedRoute>} />
+                  <Route path="/admin/sub-label-withdrawals" element={<ProtectedRoute requiredRole="admin"><AdminSubLabelWithdrawals /></ProtectedRoute>} />
                   <Route path="/admin/content-requests" element={<ProtectedRoute requiredRole="admin"><AdminContentRequests /></ProtectedRoute>} />
                   <Route path="/admin/reports/ott" element={<ProtectedRoute requiredRole="admin"><AdminReports /></ProtectedRoute>} />
                   <Route path="/admin/reports/youtube" element={<ProtectedRoute requiredRole="admin"><AdminYouTubeReports /></ProtectedRoute>} />
