@@ -275,7 +275,9 @@ export default function SubLabels() {
                   <div className="flex flex-wrap items-center gap-2 mt-1">
                     <span className="text-xs text-muted-foreground">{sl.email}</span>
                     <span className="text-xs text-muted-foreground">•</span>
-                    <span className="text-xs text-muted-foreground">Cut: {sl.percentage_cut}%</span>
+                     <span className="text-xs text-muted-foreground">Cut: {sl.percentage_cut}%</span>
+                    <span className="text-xs text-muted-foreground">•</span>
+                    <span className="text-xs text-muted-foreground">Threshold: ₹{sl.withdrawal_threshold?.toLocaleString() || '1,000'}</span>
                     <span className="text-xs text-muted-foreground">•</span>
                     <span className="text-xs text-muted-foreground">
                       {new Date(sl.agreement_start_date).toLocaleDateString()} – {new Date(sl.agreement_end_date).toLocaleDateString()}
