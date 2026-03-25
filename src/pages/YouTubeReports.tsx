@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { formatRevenue } from '@/lib/formatNumbers';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
@@ -247,7 +248,7 @@ export default function YouTubeReports() {
                       <TableRow key={month}>
                         <TableCell className="font-medium">{month}</TableCell>
                         <TableCell>{group.entries.length}</TableCell>
-                        <TableCell className="font-medium">{group.totalRevenue.toFixed(4)}</TableCell>
+                        <TableCell className="font-medium">{formatRevenue(group.totalRevenue)}</TableCell>
                         <TableCell>{format(new Date(group.latestImport), 'dd MMM yyyy, hh:mm a')}</TableCell>
                         <TableCell className="text-right">
                           <Button size="sm" variant="outline" onClick={() => setSelectedMonth(month)}>

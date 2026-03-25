@@ -10,6 +10,7 @@ import {
   IndianRupee, TrendingUp, Music2, Globe, Play, BarChart3,
   Download, Users, Disc3,
 } from 'lucide-react';
+import { formatStreams, formatRevenue } from '@/lib/formatNumbers';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
@@ -98,12 +99,6 @@ function aggregateByKey<T extends ReportEntry>(data: T[], key: keyof T, metric: 
   return Object.entries(map).sort(([, a], [, b]) => b - a).slice(0, limit).map(([name, value]) => ({ name, value: Math.round(value * 100) / 100 }));
 }
 
-function formatCompact(n: number): string {
-  if (n >= 10000000) return `${(n / 10000000).toFixed(2)}Cr`;
-  if (n >= 100000) return `${(n / 100000).toFixed(2)}L`;
-  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
-  return n.toLocaleString('en-IN', { maximumFractionDigits: 2 });
-}
 
 /* ── Tooltips ── */
 function CustomTooltip({ active, payload, label, prefix = '' }: any) {
@@ -334,9 +329,9 @@ export default function Analytics() {
             {/* ── KPI Cards ── */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
               {[
-                { icon: IndianRupee, label: 'Revenue', value: `₹${formatCompact(totalRevenue)}`, from: '#ff6b6b', to: '#ee5a24' },
-                { icon: Play, label: 'Streams', value: formatCompact(totalStreams), from: '#45aaf2', to: '#4834d4' },
-                { icon: Download, label: 'Downloads', value: formatCompact(totalDownloads), from: '#00d2d3', to: '#01a3a4' },
+                { icon: IndianRupee, label: 'Revenue', value: formatRevenue(totalRevenue), from: '#ff6b6b', to: '#ee5a24' },
+                { icon: Play, label: 'Streams', value: formatStreams(totalStreams), from: '#45aaf2', to: '#4834d4' },
+                { icon: Download, label: 'Downloads', value: formatStreams(totalDownloads), from: '#00d2d3', to: '#01a3a4' },
                 { icon: Music2, label: 'Tracks', value: String(uniqueTracks), from: '#f0932b', to: '#e55039' },
                 { icon: Users, label: 'Artists', value: String(uniqueArtists), from: '#a55eea', to: '#8854d0' },
                 { icon: Globe, label: 'Countries', value: String(uniqueCountries), from: '#26de81', to: '#20bf6b' },
@@ -369,7 +364,7 @@ export default function Analytics() {
                       </defs>
                       <CartesianGrid strokeDasharray="3 6" stroke="hsl(0 0% 14%)" vertical={false} />
                       <XAxis dataKey="month" tick={{ fill: 'hsl(0 0% 45%)', fontSize: 10, fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} />
-                      <YAxis tick={{ fill: 'hsl(0 0% 40%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${formatCompact(v)}`} width={58} />
+                      <YAxis tick={{ fill: 'hsl(0 0% 40%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatRevenue(v)} width={58} />
                       <Tooltip content={<CustomTooltip prefix="₹" />} />
                       <Legend content={<CustomLegend />} />
                       <Area type="monotone" dataKey="OTT" stroke="#f0932b" fill="url(#gradOttArea)" strokeWidth={2.5} dot={false}
@@ -413,7 +408,7 @@ export default function Analytics() {
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <div className="text-center">
                           <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">Total</p>
-                          <p className="text-base font-black font-display text-foreground mt-0.5">₹{formatCompact(totalRevenue)}</p>
+                          <p className="text-base font-black font-display text-foreground mt-0.5">{formatRevenue(totalRevenue)}</p>
                         </div>
                       </div>
                     </>
@@ -428,7 +423,7 @@ export default function Analytics() {
                         <span className="h-4 w-4 rounded-lg shadow-lg" style={{ background: PIE_COLORS[i], boxShadow: `0 0 12px ${PIE_COLORS[i]}50` }} />
                         <div>
                           <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">{s.name}</p>
-                          <p className="text-sm font-black font-mono text-foreground">₹{formatCompact(s.value)}</p>
+                          <p className="text-sm font-black font-mono text-foreground">{formatRevenue(s.value)}</p>
                         </div>
                       </div>
                     ))}
@@ -459,7 +454,7 @@ export default function Analytics() {
                     </defs>
                     <CartesianGrid strokeDasharray="3 6" stroke="hsl(0 0% 14%)" vertical={false} />
                     <XAxis dataKey="month" tick={{ fill: 'hsl(0 0% 45%)', fontSize: 10, fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} />
-                    <YAxis tick={{ fill: 'hsl(0 0% 40%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatCompact(v)} width={58} />
+                    <YAxis tick={{ fill: 'hsl(0 0% 40%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatStreams(v)} width={58} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend content={<CustomLegend />} />
                     <Area type="monotone" dataKey="OTT" stroke="#45aaf2" fill="url(#sOttArea)" strokeWidth={2.5} dot={false}
@@ -489,7 +484,7 @@ export default function Analytics() {
                         ))}
                       </defs>
                       <CartesianGrid strokeDasharray="3 6" stroke="hsl(0 0% 14%)" horizontal={false} />
-                      <XAxis type="number" tick={{ fill: 'hsl(0 0% 42%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${formatCompact(v)}`} />
+                      <XAxis type="number" tick={{ fill: 'hsl(0 0% 42%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatRevenue(v)} />
                       <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0 0% 68%)', fontSize: 11, fontWeight: 600 }} width={100} axisLine={false} tickLine={false} />
                       <Tooltip content={<BarTooltip prefix="₹" />} cursor={{ fill: 'hsl(0 0% 10%)', radius: 6 }} />
                       <Bar dataKey="value" name="Revenue" radius={[0, 10, 10, 0]} maxBarSize={24} animationDuration={1200} animationEasing="ease-out">
@@ -516,7 +511,7 @@ export default function Analytics() {
                         ))}
                       </defs>
                       <CartesianGrid strokeDasharray="3 6" stroke="hsl(0 0% 14%)" horizontal={false} />
-                      <XAxis type="number" tick={{ fill: 'hsl(0 0% 42%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatCompact(v)} />
+                      <XAxis type="number" tick={{ fill: 'hsl(0 0% 42%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatStreams(v)} />
                       <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0 0% 68%)', fontSize: 11, fontWeight: 600 }} width={100} axisLine={false} tickLine={false} />
                       <Tooltip content={<BarTooltip />} cursor={{ fill: 'hsl(0 0% 10%)', radius: 6 }} />
                       <Bar dataKey="value" name="Streams" radius={[0, 10, 10, 0]} maxBarSize={24} animationDuration={1200} animationEasing="ease-out">
@@ -535,7 +530,7 @@ export default function Analytics() {
                 <div className="px-6 pb-6 space-y-3">
                   {revenueByTrack.length === 0 && <EmptyState text="No track data" />}
                   {revenueByTrack.map((t, i) => (
-                    <RankRow key={t.name} rank={i + 1} name={t.name} value={`₹${formatCompact(t.value)}`} pct={revenueByTrack[0] ? (t.value / revenueByTrack[0].value) * 100 : 0} pal={PALETTE[i % PALETTE.length]} />
+                    <RankRow key={t.name} rank={i + 1} name={t.name} value={formatRevenue(t.value)} pct={revenueByTrack[0] ? (t.value / revenueByTrack[0].value) * 100 : 0} pal={PALETTE[i % PALETTE.length]} />
                   ))}
                 </div>
               </div>
@@ -544,7 +539,7 @@ export default function Analytics() {
                 <div className="px-6 pb-6 space-y-3">
                   {streamsByTrack.length === 0 && <EmptyState text="No track data" />}
                   {streamsByTrack.map((t, i) => (
-                    <RankRow key={t.name} rank={i + 1} name={t.name} value={formatCompact(t.value)} pct={streamsByTrack[0] ? (t.value / streamsByTrack[0].value) * 100 : 0} pal={PALETTE[(i + 4) % PALETTE.length]} />
+                    <RankRow key={t.name} rank={i + 1} name={t.name} value={formatStreams(t.value)} pct={streamsByTrack[0] ? (t.value / streamsByTrack[0].value) * 100 : 0} pal={PALETTE[(i + 4) % PALETTE.length]} />
                   ))}
                 </div>
               </div>
@@ -557,7 +552,7 @@ export default function Analytics() {
                 <div className="px-6 pb-6 space-y-3">
                   {revenueByArtist.length === 0 && <EmptyState text="No artist data" />}
                   {revenueByArtist.map((a, i) => (
-                    <RankRow key={a.name} rank={i + 1} name={a.name} value={`₹${formatCompact(a.value)}`} pct={revenueByArtist[0] ? (a.value / revenueByArtist[0].value) * 100 : 0} pal={PALETTE[(i + 5) % PALETTE.length]} />
+                    <RankRow key={a.name} rank={i + 1} name={a.name} value={formatRevenue(a.value)} pct={revenueByArtist[0] ? (a.value / revenueByArtist[0].value) * 100 : 0} pal={PALETTE[(i + 5) % PALETTE.length]} />
                   ))}
                 </div>
               </div>
@@ -566,7 +561,7 @@ export default function Analytics() {
                 <div className="px-6 pb-6 space-y-3">
                   {streamsByArtist.length === 0 && <EmptyState text="No artist data" />}
                   {streamsByArtist.map((a, i) => (
-                    <RankRow key={a.name} rank={i + 1} name={a.name} value={formatCompact(a.value)} pct={streamsByArtist[0] ? (a.value / streamsByArtist[0].value) * 100 : 0} pal={PALETTE[(i + 3) % PALETTE.length]} />
+                    <RankRow key={a.name} rank={i + 1} name={a.name} value={formatStreams(a.value)} pct={streamsByArtist[0] ? (a.value / streamsByArtist[0].value) * 100 : 0} pal={PALETTE[(i + 3) % PALETTE.length]} />
                   ))}
                 </div>
               </div>
@@ -630,7 +625,7 @@ export default function Analytics() {
                               <div className="flex-1 h-[5px] rounded-full bg-muted/30 overflow-hidden">
                                 <div className="h-full rounded-full transition-all duration-700" style={{ width: `${Math.max(pct, 5)}%`, background: `linear-gradient(90deg, ${PALETTE[i % PALETTE.length].from}, ${PALETTE[i % PALETTE.length].to})`, boxShadow: `0 0 6px ${PALETTE[i % PALETTE.length].from}40` }} />
                               </div>
-                              <span className="text-[9px] text-muted-foreground font-mono font-bold">{formatCompact(d.value)}</span>
+                              <span className="text-[9px] text-muted-foreground font-mono font-bold">{formatStreams(d.value)}</span>
                             </div>
                           </div>
                         </div>
@@ -658,7 +653,7 @@ export default function Analytics() {
                       </defs>
                       <CartesianGrid strokeDasharray="3 6" stroke="hsl(0 0% 14%)" horizontal vertical={false} />
                       <XAxis dataKey="name" tick={{ fill: 'hsl(0 0% 50%)', fontSize: 9, fontWeight: 600 }} axisLine={false} tickLine={false} angle={-45} textAnchor="end" interval={0} />
-                      <YAxis tick={{ fill: 'hsl(0 0% 40%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${formatCompact(v)}`} />
+                      <YAxis tick={{ fill: 'hsl(0 0% 40%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatRevenue(v)} />
                       <Tooltip content={<BarTooltip prefix="₹" />} cursor={{ fill: 'hsl(0 0% 9%)', radius: 4 }} />
                       <Bar dataKey="value" name="Revenue" radius={[8, 8, 0, 0]} maxBarSize={36} animationDuration={1000}>
                         {revenueByCountry.map((_, i) => <Cell key={i} fill={`url(#revCGrad${i})`} />)}
@@ -683,7 +678,7 @@ export default function Analytics() {
                       </defs>
                       <CartesianGrid strokeDasharray="3 6" stroke="hsl(0 0% 14%)" horizontal vertical={false} />
                       <XAxis dataKey="name" tick={{ fill: 'hsl(0 0% 50%)', fontSize: 9, fontWeight: 600 }} axisLine={false} tickLine={false} angle={-45} textAnchor="end" interval={0} />
-                      <YAxis tick={{ fill: 'hsl(0 0% 40%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatCompact(v)} />
+                      <YAxis tick={{ fill: 'hsl(0 0% 40%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatStreams(v)} />
                       <Tooltip content={<BarTooltip />} cursor={{ fill: 'hsl(0 0% 9%)', radius: 4 }} />
                       <Bar dataKey="value" name="Streams" radius={[8, 8, 0, 0]} maxBarSize={36} animationDuration={1000}>
                         {streamsByCountry.map((_, i) => <Cell key={i} fill={`url(#strCGrad${i})`} />)}
