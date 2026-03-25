@@ -161,7 +161,7 @@ export default function YouTubeReports() {
 
   const exportCSV = () => {
     const headers = ['Reporting Month', ...COLUMNS.map((c) => c.label)];
-    const rows = selectedEntries.map((e) => [e.reporting_month, ...COLUMNS.map((c) => String(e[c.key as keyof ReportEntry] ?? ''))]);
+    const rows = selectedEntries.map((e) => [e.reporting_month, ...COLUMNS.map((c) => c.key === 'net_generated_revenue' ? String(applyRevenueCut(Number(e[c.key]))) : String(e[c.key as keyof ReportEntry] ?? ''))]);
     const csv = [headers, ...rows].map((r) => r.map((v) => `"${v}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
