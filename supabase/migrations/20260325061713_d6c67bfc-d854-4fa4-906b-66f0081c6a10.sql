@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN hidden_cut_percent numeric NOT NULL DEFAULT 0;
