@@ -86,6 +86,7 @@ function App() {
                   <Route path="/admin/submissions" element={<ProtectedRoute requiredRole="admin"><AdminSubmissions /></ProtectedRoute>} />
                   <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
                   <Route path="/admin/labels" element={<ProtectedRoute requiredRole="admin"><AdminLabels /></ProtectedRoute>} />
+                  <Route path="/admin/sub-labels" element={<ProtectedRoute requiredRole="admin"><AdminSubLabels /></ProtectedRoute>} />
                   <Route path="/admin/content-requests" element={<ProtectedRoute requiredRole="admin"><AdminContentRequests /></ProtectedRoute>} />
                   <Route path="/admin/reports/ott" element={<ProtectedRoute requiredRole="admin"><AdminReports /></ProtectedRoute>} />
                   <Route path="/admin/reports/youtube" element={<ProtectedRoute requiredRole="admin"><AdminYouTubeReports /></ProtectedRoute>} />
