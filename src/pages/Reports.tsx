@@ -81,6 +81,7 @@ export default function Reports() {
   const [entryPageSize, setEntryPageSize] = useState<number | 'all'>(10);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [hiddenCut, setHiddenCut] = useState(0);
+  const [subLabelCut, setSubLabelCut] = useState(0);
 
   const { impersonatedUserId, isImpersonating } = useImpersonate();
 
@@ -89,6 +90,16 @@ export default function Reports() {
 
     const fetchReports = async () => {
       setLoading(true);
+
+      // Check if user is a sub-label and get parent's cut
+      const { data: subLabelData } = await supabase
+        .from('sub_labels')
+        .select('percentage_cut')
+        .eq('sub_user_id', user.id)
+        .maybeSingle();
+      if (subLabelData) {
+        setSubLabelCut(Number(subLabelData.percentage_cut) || 0);
+      }
 
       // Fetch hidden cut for non-admin users
       if (role !== 'admin') {
