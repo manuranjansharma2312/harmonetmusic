@@ -156,14 +156,16 @@ export default function Revenue() {
 
       setTotalRevenue(ottTotal + ytTotal);
 
-      // Fetch threshold
-      const { data: settings } = await supabase
-        .from('revenue_settings')
-        .select('withdrawal_threshold')
-        .limit(1)
-        .single();
+      // Fetch threshold (skip for sub-labels, they use parent-defined threshold)
+      if (!isSubLabel) {
+        const { data: settings } = await supabase
+          .from('revenue_settings')
+          .select('withdrawal_threshold')
+          .limit(1)
+          .single();
 
-      if (settings) setThreshold(Number(settings.withdrawal_threshold));
+        if (settings) setThreshold(Number(settings.withdrawal_threshold));
+      }
 
       // Fetch withdrawals
       const { data: wData } = await supabase
