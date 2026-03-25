@@ -396,7 +396,17 @@ export default function AdminPromotionTools() {
           {viewingOrder && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-muted-foreground">User:</span> <span className="font-medium">{viewingOrder.user_name} #{viewingOrder.user_display_id}</span></div>
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">User:</span> <span className="font-medium">{viewingOrder.user_name} #{viewingOrder.user_display_id}</span>
+                  {viewingOrder.user_type === 'sub_label' && viewingOrder.sub_label_name && (
+                    <div className="text-xs mt-0.5">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                        {viewingOrder.sub_label_name}
+                      </span>
+                      <span className="text-muted-foreground ml-1">↳ Under: {viewingOrder.parent_label_name}</span>
+                    </div>
+                  )}
+                </div>
                 <div className="flex items-center gap-1"><span className="text-muted-foreground">Service:</span> <PlatformIcon platform={viewingOrder.product_platform || ''} size={16} /> <span className="font-medium">{viewingOrder.product_name}</span></div>
                 <div><span className="text-muted-foreground">Quantity:</span> <span className="font-medium">{viewingOrder.quantity}</span></div>
                 <div><span className="text-muted-foreground">Amount:</span> <span className="font-medium">₹{viewingOrder.total_amount}</span></div>
