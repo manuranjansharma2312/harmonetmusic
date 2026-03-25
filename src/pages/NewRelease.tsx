@@ -319,6 +319,7 @@ export default function NewRelease() {
             spotify_link: track.primaryArtists[0]?.spotifyLink || null,
             apple_music_link: track.primaryArtists[0]?.appleMusicLink || null,
             is_new_artist_profile: track.primaryArtists.some(a => a.isNewProfile),
+            singer: track.singer || null,
             lyricist: track.lyricist || null,
             composer: track.composer || null,
             producer: track.producer || null,
