@@ -247,65 +247,33 @@ export default function UserDashboard() {
         <StatCard title="Revenue" value={totalRevenue} icon={DollarSign} color="hsla(140, 60%, 35%, 0.3)" />
       </div>
 
-      {/* Pending Songs & Releases */}
-      {(pendingSongs.length > 0 || pendingReleases.length > 0) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-          {pendingSongs.length > 0 && (
-            <GlassCard className="animate-fade-in">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-2">
-                  <Music className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                  Pending Songs
-                  <span className="ml-1 inline-flex items-center justify-center h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] px-1 rounded-full text-[10px] sm:text-xs font-bold bg-primary/20 text-primary">
-                    {pendingSongs.length}
-                  </span>
-                </h3>
-                <button onClick={() => navigate('/my-songs')} className="text-[10px] sm:text-xs text-primary hover:underline flex items-center gap-1">
-                  View All <ArrowRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                </button>
+      {/* Pending Releases */}
+      {pendingReleases.length > 0 && (
+        <GlassCard className="mb-4 sm:mb-6 animate-fade-in">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-2">
+              <Disc3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+              Pending Releases
+              <span className="ml-1 inline-flex items-center justify-center h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] px-1 rounded-full text-[10px] sm:text-xs font-bold bg-primary/20 text-primary">
+                {pendingReleases.length}
+              </span>
+            </h3>
+            <button onClick={() => navigate('/my-releases')} className="text-[10px] sm:text-xs text-primary hover:underline flex items-center gap-1">
+              View All <ArrowRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-2">
+            {pendingReleases.map(r => (
+              <div key={r.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-foreground truncate">{r.album_name || r.ep_name || 'Untitled'}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">{r.content_type}</p>
+                </div>
+                <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">{format(new Date(r.created_at), 'dd MMM')}</span>
               </div>
-              <div className="space-y-1.5 sm:space-y-2">
-                {pendingSongs.map(s => (
-                  <div key={s.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs sm:text-sm font-medium text-foreground truncate">{s.title}</p>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{s.artist}</p>
-                    </div>
-                    <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">{format(new Date(s.created_at), 'dd MMM')}</span>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-          )}
-
-          {pendingReleases.length > 0 && (
-            <GlassCard className="animate-fade-in">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-2">
-                  <Disc3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                  Pending Releases
-                  <span className="ml-1 inline-flex items-center justify-center h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] px-1 rounded-full text-[10px] sm:text-xs font-bold bg-primary/20 text-primary">
-                    {pendingReleases.length}
-                  </span>
-                </h3>
-                <button onClick={() => navigate('/my-releases')} className="text-[10px] sm:text-xs text-primary hover:underline flex items-center gap-1">
-                  View All <ArrowRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                </button>
-              </div>
-              <div className="space-y-1.5 sm:space-y-2">
-                {pendingReleases.map(r => (
-                  <div key={r.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs sm:text-sm font-medium text-foreground truncate">{r.album_name || r.ep_name || 'Untitled'}</p>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">{r.content_type}</p>
-                    </div>
-                    <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">{format(new Date(r.created_at), 'dd MMM')}</span>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-          )}
-        </div>
+            ))}
+          </div>
+        </GlassCard>
       )}
 
       {/* Revenue Trend + Song Status */}
