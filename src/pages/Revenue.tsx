@@ -97,11 +97,14 @@ export default function Revenue() {
       // Check if sub-label and get parent's cut
       const { data: subLabelData } = await supabase
         .from('sub_labels')
-        .select('percentage_cut')
+        .select('percentage_cut, withdrawal_threshold')
         .eq('sub_user_id', activeUserId!)
         .maybeSingle();
       if (subLabelData) {
         setSubLabelCut(Number(subLabelData.percentage_cut) || 0);
+        if (isSubLabel) {
+          setThreshold(Number(subLabelData.withdrawal_threshold) || 1000);
+        }
       }
       // When admin impersonates, we need to filter by user's ISRCs
       // because admin RLS sees all entries
