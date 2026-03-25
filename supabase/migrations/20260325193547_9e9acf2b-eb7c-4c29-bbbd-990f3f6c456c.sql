@@ -1,0 +1,4 @@
+UPDATE releases SET poster_url = 'https://nyjhfwypgjivyarsvmja.supabase.co/storage/v1/object/public/posters/demo%2Fposter1.png' WHERE id = '517b51a4-cef1-4276-b3d8-95c387eb5111';
+UPDATE releases SET poster_url = 'https://nyjhfwypgjivyarsvmja.supabase.co/storage/v1/object/public/posters/demo%2Fposter2.png' WHERE id = '937c8cb1-a721-48f7-b7f1-15d4fd1dbe5f';
+UPDATE releases SET poster_url = 'https://nyjhfwypgjivyarsvmja.supabase.co/storage/v1/object/public/posters/demo%2Fposter1.png' WHERE id = '556de934-ae5a-406f-b878-ae4e88fa5f7f';
+UPDATE tracks SET audio_url = 'https://nyjhfwypgjivyarsvmja.supabase.co/storage/v1/object/public/audio/demo%2Ftrack1.wav' WHERE release_id IN ('517b51a4-cef1-4276-b3d8-95c387eb5111', '937c8cb1-a721-48f7-b7f1-15d4fd1dbe5f', '556de934-ae5a-406f-b878-ae4e88fa5f7f');

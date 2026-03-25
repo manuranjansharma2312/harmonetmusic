@@ -325,6 +325,55 @@ export default function AdminSubmissions() {
     return decodeURIComponent(url.substring(idx + marker.length));
   };
 
+  const handleDownloadFile = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      toast.error('Failed to download file');
+    }
+  };
+
+  const handleBulkDownloadAudio = async () => {
+    const ids = Array.from(selected);
+    const selectedReleases = releases.filter(r => ids.includes(r.id));
+    let count = 0;
+    for (const release of selectedReleases) {
+      if (!release.tracks) continue;
+      for (const track of release.tracks) {
+        if (track.audio_url) {
+          const ext = track.audio_url.split('.').pop()?.split('?')[0] || 'mp3';
+          await handleDownloadFile(track.audio_url, `${track.song_title || 'track'}.${ext}`);
+          count++;
+        }
+      }
+    }
+    if (count === 0) toast.error('No audio files found in selected releases');
+    else toast.success(`Downloaded ${count} audio file(s)`);
+  };
+
+  const handleBulkDownloadPoster = async () => {
+    const ids = Array.from(selected);
+    const selectedReleases = releases.filter(r => ids.includes(r.id));
+    let count = 0;
+    for (const release of selectedReleases) {
+      if (release.poster_url) {
+        const name = getReleaseName(release);
+        const ext = release.poster_url.split('.').pop()?.split('?')[0] || 'jpg';
+        await handleDownloadFile(release.poster_url, `${name}-poster.${ext}`);
+        count++;
+      }
+    }
+    if (count === 0) toast.error('No poster images found in selected releases');
+    else toast.success(`Downloaded ${count} poster(s)`);
+  };
+
   const handleDeletePoster = async (releaseId: string, posterUrl: string) => {
     const path = getStoragePath(posterUrl, 'posters') || getStoragePath(posterUrl, 'covers');
     const bucket = posterUrl.includes('/posters/') ? 'posters' : 'covers';
@@ -466,6 +515,12 @@ export default function AdminSubmissions() {
         <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
           {selected.size > 0 && (
             <>
+              <Button variant="outline" size="sm" onClick={handleBulkDownloadAudio}>
+                <Download className="h-4 w-4" /> Download Audio ({selected.size})
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleBulkDownloadPoster}>
+                <Download className="h-4 w-4" /> Download Posters ({selected.size})
+              </Button>
               <Button variant="outline" size="sm" onClick={() => setConfirmBulkAction('audio')} disabled={bulkDeletingAudio}>
                 {bulkDeletingAudio ? <Loader2 className="h-4 w-4 animate-spin" /> : <VolumeX className="h-4 w-4" />}
                 Delete Audio ({selected.size})
@@ -670,7 +725,16 @@ export default function AdminSubmissions() {
                           <td className="py-2 px-3 hidden lg:table-cell"></td>
                           <td className="py-2 px-3">
                             {track.audio_url ? (
-                              <audio controls src={track.audio_url} className="h-8 max-w-[180px]" />
+                              <div className="flex items-center gap-1">
+                                <audio controls src={track.audio_url} className="h-8 max-w-[150px]" />
+                                <button
+                                  onClick={() => handleDownloadFile(track.audio_url!, `${track.song_title || 'track'}.${track.audio_url!.split('.').pop()?.split('?')[0] || 'mp3'}`)}
+                                  className="p-1 rounded hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all"
+                                  title="Download audio"
+                                >
+                                  <Download className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
                             ) : (
                               <span className="text-xs text-muted-foreground/50">No audio</span>
                             )}
@@ -723,6 +787,13 @@ export default function AdminSubmissions() {
                   <p className="text-xs font-medium text-muted-foreground mb-1">Poster</p>
                   <div className="relative inline-block">
                     <img src={viewRelease.poster_url} alt="Poster" className="h-32 w-32 rounded-lg object-cover border border-border" />
+                    <button
+                      onClick={() => handleDownloadFile(viewRelease.poster_url!, `${getReleaseName(viewRelease)}-poster.${viewRelease.poster_url!.split('.').pop()?.split('?')[0] || 'jpg'}`)}
+                      className="absolute -top-2 -left-2 p-1 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-all"
+                      title="Download poster"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                    </button>
                     <button
                       onClick={() => handleDeletePoster(viewRelease.id, viewRelease.poster_url!)}
                       className="absolute -top-2 -right-2 p-1 rounded-full bg-destructive text-destructive-foreground hover:opacity-90 transition-all"
@@ -830,6 +901,13 @@ export default function AdminSubmissions() {
                         {track.audio_url ? (
                           <div className="flex items-center gap-2 mt-1">
                             <audio controls src={track.audio_url} className="flex-1 h-8" />
+                            <button
+                              onClick={() => handleDownloadFile(track.audio_url!, `${track.song_title || 'track'}.${track.audio_url!.split('.').pop()?.split('?')[0] || 'mp3'}`)}
+                              className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-all"
+                              title="Download audio"
+                            >
+                              <Download className="h-3.5 w-3.5" />
+                            </button>
                             <button
                               onClick={() => handleDeleteAudio(track.id, track.audio_url!)}
                               className="p-1.5 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-all"
