@@ -292,15 +292,15 @@ export default function Analytics() {
     <DashboardLayout>
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight">Analytics</h1>
-            <p className="text-muted-foreground text-sm mt-1">YouTube + OTT combined · All amounts in ₹ INR</p>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold font-display tracking-tight">Analytics</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm mt-1">YouTube + OTT combined · All amounts in ₹ INR</p>
           </div>
-          <div className="flex gap-1 p-1 rounded-2xl bg-muted/25 border border-border/15 w-fit backdrop-blur-sm">
+          <div className="flex gap-1 p-1 rounded-2xl bg-muted/25 border border-border/15 w-full sm:w-fit backdrop-blur-sm overflow-x-auto scrollbar-none">
             {TIME_PERIODS.map((tp) => (
               <button key={tp.key} onClick={() => setPeriod(tp.key)}
-                className={`px-4 py-2 rounded-xl text-[11px] font-bold tracking-wide transition-all duration-300 ${
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[10px] sm:text-[11px] font-bold tracking-wide transition-all duration-300 whitespace-nowrap ${
                   period === tp.key
                     ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/25'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
