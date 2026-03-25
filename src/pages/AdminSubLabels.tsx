@@ -37,6 +37,7 @@ export default function AdminSubLabels() {
   const [subLabels, setSubLabels] = useState<SubLabel[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [viewSL, setViewSL] = useState<SubLabel | null>(null);
   const [deleteSL, setDeleteSL] = useState<SubLabel | null>(null);
   const [rejectSL, setRejectSL] = useState<SubLabel | null>(null);
@@ -64,14 +65,20 @@ export default function AdminSubLabels() {
   useEffect(() => { fetchAll(); }, []);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return subLabels;
-    const q = search.toLowerCase();
-    return subLabels.filter(sl =>
-      sl.sub_label_name.toLowerCase().includes(q) ||
-      sl.parent_label_name.toLowerCase().includes(q) ||
-      sl.email.toLowerCase().includes(q)
-    );
-  }, [subLabels, search]);
+    let result = subLabels;
+    if (statusFilter !== 'all') {
+      result = result.filter(sl => sl.status === statusFilter);
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(sl =>
+        sl.sub_label_name.toLowerCase().includes(q) ||
+        sl.parent_label_name.toLowerCase().includes(q) ||
+        sl.email.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [subLabels, search, statusFilter]);
 
   const updateStatus = async (sl: SubLabel, status: string, rejection_reason?: string) => {
     const { error } = await supabase.from('sub_labels').update({ status, rejection_reason: rejection_reason || null }).eq('id', sl.id);
@@ -167,14 +174,28 @@ export default function AdminSubLabels() {
             Approve, reject, suspend, and manage all sub labels.
           </p>
         </div>
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search sub labels..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
-          />
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); setPage(0); }}>
+            <SelectTrigger className="w-full sm:w-[140px]">
+              <SelectValue placeholder="Filter status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="suspended">Suspended</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search sub labels..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
       </div>
 
