@@ -43,6 +43,17 @@ const FIELD_LABELS: Record<string, string> = {
 
 const DATA_FIELDS = Object.keys(FIELD_LABELS);
 
+// Type-specific fields for export
+const TYPE_FIELDS: Record<string, string[]> = {
+  copyright_claim: ['song_title', 'copyright_company', 'video_link', 'isrc', 'transaction_id'],
+  instagram_link: ['song_title', 'isrc', 'instagram_audio_link', 'instagram_profile_link'],
+  content_id_merge: ['song_title', 'isrc', 'artist_name', 'official_artist_channel_link', 'release_topic_video_link'],
+  oac_apply: ['artist_name', 'channel_link', 'topic_channel_link', 'release_link_1', 'release_link_2', 'release_link_3'],
+  takedown: ['song_title', 'isrc', 'reason_for_takedown', 'transaction_id', 'payment_screenshot_url'],
+  playlist_pitching: ['song_title', 'reason_for_takedown'],
+  custom_support: ['song_title', 'reason_for_takedown'],
+};
+
 export default function AdminContentRequests() {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
