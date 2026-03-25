@@ -90,18 +90,19 @@ export default function Reports() {
 
     const fetchReports = async () => {
       setLoading(true);
+      const activeUserId = (isImpersonating && impersonatedUserId) ? impersonatedUserId : user.id;
 
       // Check if user is a sub-label and get parent's cut
       const { data: subLabelData } = await supabase
         .from('sub_labels')
         .select('percentage_cut')
-        .eq('sub_user_id', user.id)
+        .eq('sub_user_id', activeUserId)
         .maybeSingle();
       if (subLabelData) {
         setSubLabelCut(Number(subLabelData.percentage_cut) || 0);
       }
 
-      // Fetch hidden cut for non-admin users
+      // Fetch hidden cut
       if (role !== 'admin') {
         const { data: profileData } = await supabase
           .from('profiles')
@@ -119,9 +120,22 @@ export default function Reports() {
       }
 
       if (role === 'admin' && isImpersonating && impersonatedUserId) {
+        // Get sub-label user IDs for this parent user
+        const { data: subLabels } = await supabase
+          .from('sub_labels')
+          .select('sub_user_id')
+          .eq('parent_user_id', impersonatedUserId)
+          .eq('status', 'active');
+
+        const subUserIds = (subLabels || [])
+          .map(sl => sl.sub_user_id)
+          .filter(Boolean) as string[];
+
+        const allUserIds = [impersonatedUserId, ...subUserIds];
+
         const [{ data: trackRows }, { data: songRows }] = await Promise.all([
-          supabase.from('tracks').select('isrc').eq('user_id', impersonatedUserId),
-          supabase.from('songs').select('isrc').eq('user_id', impersonatedUserId),
+          supabase.from('tracks').select('isrc').in('user_id', allUserIds),
+          supabase.from('songs').select('isrc').in('user_id', allUserIds),
         ]);
 
         const ownedIsrcs = [...new Set(
