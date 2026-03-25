@@ -725,7 +725,16 @@ export default function AdminSubmissions() {
                           <td className="py-2 px-3 hidden lg:table-cell"></td>
                           <td className="py-2 px-3">
                             {track.audio_url ? (
-                              <audio controls src={track.audio_url} className="h-8 max-w-[180px]" />
+                              <div className="flex items-center gap-1">
+                                <audio controls src={track.audio_url} className="h-8 max-w-[150px]" />
+                                <button
+                                  onClick={() => handleDownloadFile(track.audio_url!, `${track.song_title || 'track'}.${track.audio_url!.split('.').pop()?.split('?')[0] || 'mp3'}`)}
+                                  className="p-1 rounded hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all"
+                                  title="Download audio"
+                                >
+                                  <Download className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
                             ) : (
                               <span className="text-xs text-muted-foreground/50">No audio</span>
                             )}
