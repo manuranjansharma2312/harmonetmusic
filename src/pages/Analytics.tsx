@@ -700,16 +700,16 @@ export default function Analytics() {
 function KpiCard({ icon: Icon, label, value, from, to }: { icon: any; label: string; value: string; from: string; to: string }) {
   return (
     <div className="rounded-2xl border border-border/15 bg-card/30 backdrop-blur-sm overflow-hidden group cursor-default animate-fade-in hover:border-border/30 transition-all duration-500">
-      <div className="relative p-5">
+      <div className="relative p-3 sm:p-5">
         <div className="absolute inset-0 opacity-[0.07] group-hover:opacity-[0.14] transition-opacity duration-500"
           style={{ background: `radial-gradient(ellipse at top right, ${from}, transparent 65%)` }} />
-        <div className="relative flex flex-col gap-3.5">
-          <div className="rounded-xl p-2.5 w-fit shadow-lg" style={{ background: `linear-gradient(135deg, ${from}25, ${to}12)`, boxShadow: `0 4px 12px ${from}15` }}>
-            <Icon className="h-4.5 w-4.5" style={{ color: from }} />
+        <div className="relative flex flex-col gap-2 sm:gap-3.5">
+          <div className="rounded-lg sm:rounded-xl p-2 sm:p-2.5 w-fit shadow-lg" style={{ background: `linear-gradient(135deg, ${from}25, ${to}12)`, boxShadow: `0 4px 12px ${from}15` }}>
+            <Icon className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" style={{ color: from }} />
           </div>
           <div>
-            <p className="text-xl sm:text-2xl font-black font-display leading-tight tracking-tight">{value}</p>
-            <p className="text-[9px] text-muted-foreground mt-1 font-bold uppercase tracking-[0.2em]">{label}</p>
+            <p className="text-base sm:text-xl lg:text-2xl font-black font-display leading-tight tracking-tight break-words">{value}</p>
+            <p className="text-[8px] sm:text-[9px] text-muted-foreground mt-0.5 sm:mt-1 font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em]">{label}</p>
           </div>
         </div>
       </div>
