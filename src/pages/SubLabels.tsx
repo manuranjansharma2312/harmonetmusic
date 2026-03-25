@@ -315,6 +315,7 @@ export default function SubLabels() {
               <Detail label="Email" value={viewSubLabel.email} />
               <Detail label="Phone" value={viewSubLabel.phone || '—'} />
               <Detail label="Percentage Cut" value={`${viewSubLabel.percentage_cut}%`} />
+              <Detail label="Withdrawal Threshold" value={`₹${viewSubLabel.withdrawal_threshold?.toLocaleString() || '1,000'}`} />
               <Detail label="Agreement Start" value={new Date(viewSubLabel.agreement_start_date).toLocaleDateString()} />
               <Detail label="Agreement End" value={new Date(viewSubLabel.agreement_end_date).toLocaleDateString()} />
               <Detail label="Status" value={viewSubLabel.status} />
