@@ -51,7 +51,10 @@ export default function MyLabels() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !labelName.trim()) return;
+    if (!user || !labelName.trim() || !b2bFile) {
+      if (!b2bFile) { toast.error('B2B document (PDF) is required'); return; }
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -136,7 +139,7 @@ export default function MyLabels() {
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">
-                B2B Document (PDF) <span className="text-xs text-muted-foreground">— optional</span>
+                B2B Document (PDF) *
               </label>
               <div className="relative">
                 <input type="file" accept=".pdf,application/pdf" onChange={(e) => setB2bFile(e.target.files?.[0] || null)} className="hidden" id="b2b-upload" />

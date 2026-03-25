@@ -107,7 +107,8 @@ export default function SubLabels() {
 
     const { sub_label_name, agreement_start_date, agreement_end_date, email, password, phone, percentage_cut } = formData;
 
-    if (!sub_label_name.trim() || !agreement_start_date || !agreement_end_date || !email.trim() || !password.trim()) {
+    if (!sub_label_name.trim() || !agreement_start_date || !agreement_end_date || !email.trim() || !password.trim() || !b2bFile) {
+      if (!b2bFile) { toast.error('B2B agreement (PDF) is required'); return; }
       toast.error('Please fill all required fields');
       return;
     }
@@ -244,7 +245,7 @@ export default function SubLabels() {
 
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">
-                B2B Agreement (PDF) <span className="text-xs text-muted-foreground">— optional</span>
+                B2B Agreement (PDF) *
               </label>
               <div className="relative">
                 <input type="file" accept=".pdf,application/pdf" onChange={(e) => setB2bFile(e.target.files?.[0] || null)} className="hidden" id="sub-b2b-upload" />
