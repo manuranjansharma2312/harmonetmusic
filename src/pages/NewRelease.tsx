@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { TrackForm, type TrackData } from '@/components/release/TrackForm';
 import { PosterCropModal } from '@/components/release/PosterCropModal';
 import { normalizeIsrc } from '@/lib/isrc';
+import { convertAudioTo24bit48kHz } from '@/lib/audioConversion';
 
 const CONTENT_TYPES = [
   { value: 'single', label: 'Single' },
