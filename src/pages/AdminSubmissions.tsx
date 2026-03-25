@@ -395,7 +395,7 @@ export default function AdminSubmissions() {
     fetchReleases();
   };
 
-
+  const fetchReleases = async () => {
     const { data: releasesData } = await supabase
       .from('releases')
       .select('*')
@@ -1405,3 +1405,4 @@ function Detail({ label, value, copyable }: { label: string; value: string; copy
     </div>
   );
 }
+
