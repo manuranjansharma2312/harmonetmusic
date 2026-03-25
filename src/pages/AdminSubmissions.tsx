@@ -620,7 +620,7 @@ export default function AdminSubmissions() {
 
                       {/* Expanded tracks */}
                       {isExpanded && release.tracks?.map((track) => (
-                        <tr key={track.id} className="bg-muted/10 border-b border-border/20">
+                        <tr key={track.id} className={`border-b border-border/20 ${track.status === 'rejected' ? 'bg-destructive/5' : 'bg-muted/10'}`}>
                           <td className="py-2 px-3"></td>
                           <td className="py-2 px-3"></td>
                           <td className="py-2 px-3" colSpan={2}>
@@ -629,6 +629,9 @@ export default function AdminSubmissions() {
                               <div>
                                 <p className="text-sm text-foreground">{track.song_title}</p>
                                 <p className="text-xs text-muted-foreground">{track.primary_artist} • {track.genre} • {track.audio_type}</p>
+                                {track.status === 'rejected' && track.rejection_reason && (
+                                  <p className="text-xs text-destructive mt-0.5 max-w-[250px] truncate" title={track.rejection_reason}>{track.rejection_reason}</p>
+                                )}
                               </div>
                             </div>
                           </td>
@@ -652,11 +655,23 @@ export default function AdminSubmissions() {
                             </div>
                           </td>
                           <td className="py-2 px-3 hidden md:table-cell"></td>
-                          <td className="py-2 px-3"></td>
+                          <td className="py-2 px-3">
+                            <select
+                              className="bg-transparent border border-border rounded px-2 py-1 text-xs cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
+                              value={track.status || 'pending'}
+                              onChange={(e) => handleTrackStatusChange(track.id, e.target.value)}
+                            >
+                              {STATUSES.map((s) => (
+                                <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                              ))}
+                            </select>
+                          </td>
                           <td className="py-2 px-3 hidden lg:table-cell"></td>
                           <td className="py-2 px-3">
-                            {track.audio_url && (
-                              <a href={track.audio_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">Play</a>
+                            {track.audio_url ? (
+                              <audio controls src={track.audio_url} className="h-8 max-w-[180px]" />
+                            ) : (
+                              <span className="text-xs text-muted-foreground/50">No audio</span>
                             )}
                           </td>
                         </tr>
