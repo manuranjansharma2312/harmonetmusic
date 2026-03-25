@@ -423,7 +423,7 @@ export default function Analytics() {
                         <span className="h-4 w-4 rounded-lg shadow-lg" style={{ background: PIE_COLORS[i], boxShadow: `0 0 12px ${PIE_COLORS[i]}50` }} />
                         <div>
                           <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">{s.name}</p>
-                          <p className="text-sm font-black font-mono text-foreground">₹{formatCompact(s.value)}</p>
+                          <p className="text-sm font-black font-mono text-foreground">{formatRevenue(s.value)}</p>
                         </div>
                       </div>
                     ))}
