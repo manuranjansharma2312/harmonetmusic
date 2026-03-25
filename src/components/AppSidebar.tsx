@@ -101,10 +101,10 @@ export function AppSidebar() {
   const userLinksBottom = [
     { to: '/poster-generator', label: 'Out Now Poster', icon: ImageIcon },
     { to: '/help-tutorials', label: 'Help Tutorials', icon: BookOpen },
-    { to: '/promotion-tools', label: 'Promotion Tools', icon: Megaphone },
+    // Hide Promotion Tools for sub-labels
+    ...(!effectiveIsSubLabel ? [{ to: '/promotion-tools', label: 'Promotion Tools', icon: Megaphone }] : []),
     { to: '/revenue', label: 'Revenue', icon: Wallet },
     { to: '/terms', label: 'Terms & Conditions', icon: FileText },
-    // Hide Bank Details for sub-labels (it's accessed from Revenue page, not sidebar, but keeping the profile link)
     { to: '/profile', label: 'My Profile', icon: UserCircle },
   ];
 
