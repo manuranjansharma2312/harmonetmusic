@@ -69,9 +69,11 @@ export function PosterCropModal({ open, imageSrc, onCropComplete, onCancel }: Po
     );
 
     canvas.toBlob(
-      (blob) => {
+      async (blob) => {
         if (!blob) return;
-        const file = new File([blob], 'poster-cropped.jpg', { type: 'image/jpeg' });
+        // Set 300 DPI metadata in JFIF header
+        const dpiBlob = await setJpegDpi(blob, 300);
+        const file = new File([dpiBlob], 'poster-cropped.jpg', { type: 'image/jpeg' });
         onCropComplete(file);
       },
       'image/jpeg',
