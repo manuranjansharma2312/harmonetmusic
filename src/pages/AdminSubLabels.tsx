@@ -340,6 +340,11 @@ export default function AdminSubLabels() {
                 <input className={inputClass} type="text" inputMode="decimal" value={editCut} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setEditCut(e.target.value); }} />
               </div>
               <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Withdrawal Threshold (₹)</label>
+                <input className={inputClass} type="text" inputMode="decimal" value={editThreshold} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setEditThreshold(e.target.value); }} />
+                <p className="text-xs text-muted-foreground mt-1">Minimum balance for sub-label to request withdrawal</p>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">Status</label>
                 <Select value={editStatus} onValueChange={setEditStatus}>
                   <SelectTrigger>
