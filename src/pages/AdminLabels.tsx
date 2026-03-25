@@ -155,7 +155,7 @@ export default function AdminLabels() {
         </GlassCard>
       ) : (
         <div className="space-y-3">
-          {labels.map((label) => (
+          {paginateItems(labels, page, pageSize).map((label) => (
             <GlassCard key={label.id} className="animate-fade-in">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
