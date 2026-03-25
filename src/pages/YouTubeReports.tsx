@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { formatRevenue } from '@/lib/formatNumbers';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
