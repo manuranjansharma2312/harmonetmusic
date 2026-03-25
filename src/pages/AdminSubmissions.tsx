@@ -407,6 +407,7 @@ export default function AdminSubmissions() {
         {filtered.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">No submissions found.</p>
         ) : (
+          <>
           <div className="overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6 pb-1">
             <table className="w-full min-w-[750px] text-sm">
               <thead>
