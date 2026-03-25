@@ -31,6 +31,7 @@ export interface TrackData {
   language: string;
   genre: string;
   primaryArtists: ArtistEntry[];
+  singer: string;
   lyricist: string;
   composer: string;
   producer: string;
@@ -57,6 +58,7 @@ const defaultTrackData: TrackData = {
   language: '',
   genre: '',
   primaryArtists: [{ name: '', spotifyLink: '', appleMusicLink: '', isNewProfile: false }],
+  singer: '',
   lyricist: '',
   composer: '',
   producer: '',
@@ -223,19 +225,23 @@ export function TrackForm({ genres, languages, isTransfer, initialData, onSubmit
         )}
       </div>
 
-      {/* Lyricist, Composer, Producer */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      {/* Singer, Lyricist, Composer, Producer */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-1">Lyricist</label>
-          <input className={inputClass} value={form.lyricist} onChange={(e) => update('lyricist', e.target.value)} placeholder="Lyricist name" />
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Singer *</label>
+          <input className={inputClass} value={form.singer} onChange={(e) => update('singer', e.target.value)} required placeholder="Singer name" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-1">Composer</label>
-          <input className={inputClass} value={form.composer} onChange={(e) => update('composer', e.target.value)} placeholder="Composer name" />
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Lyricist *</label>
+          <input className={inputClass} value={form.lyricist} onChange={(e) => update('lyricist', e.target.value)} required placeholder="Lyricist name" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-1">Producer</label>
-          <input className={inputClass} value={form.producer} onChange={(e) => update('producer', e.target.value)} placeholder="Producer name" />
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Composer *</label>
+          <input className={inputClass} value={form.composer} onChange={(e) => update('composer', e.target.value)} required placeholder="Composer name" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Producer *</label>
+          <input className={inputClass} value={form.producer} onChange={(e) => update('producer', e.target.value)} required placeholder="Producer name" />
         </div>
       </div>
 

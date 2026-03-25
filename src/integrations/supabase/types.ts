@@ -902,6 +902,7 @@ export type Database = {
           producer: string | null
           rejection_reason: string | null
           release_id: string
+          singer: string | null
           song_title: string
           spotify_link: string | null
           status: string
@@ -928,6 +929,7 @@ export type Database = {
           producer?: string | null
           rejection_reason?: string | null
           release_id: string
+          singer?: string | null
           song_title: string
           spotify_link?: string | null
           status?: string
@@ -954,6 +956,7 @@ export type Database = {
           producer?: string | null
           rejection_reason?: string | null
           release_id?: string
+          singer?: string | null
           song_title?: string
           spotify_link?: string | null
           status?: string

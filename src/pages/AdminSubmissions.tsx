@@ -37,6 +37,7 @@ type Track = {
   track_order: number;
   status: string;
   rejection_reason: string | null;
+  singer: string | null;
 };
 
 type Release = {
@@ -803,7 +804,8 @@ export default function AdminSubmissions() {
                         </div>
 
                         {/* Credits */}
-                        <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+                          <Detail label="Singer" value={(track as any).singer || '—'} />
                           <Detail label="Lyricist" value={track.lyricist || '—'} />
                           <Detail label="Composer" value={track.composer || '—'} />
                           <Detail label="Producer" value={track.producer || '—'} />
