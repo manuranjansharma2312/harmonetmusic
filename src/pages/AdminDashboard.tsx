@@ -521,7 +521,7 @@ export default function AdminDashboard() {
         </GlassCard>
       )}
 
-      {/* Pending Requests Grid */}
+      {/* Pending Requests Grid - 2x2 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <PendingListCard title="Pending Releases" icon={Disc3} items={pendingReleases} emptyText="No pending releases" onViewAll={() => navigate('/admin/submissions')}
           renderItem={(r) => (
@@ -531,16 +531,6 @@ export default function AdminDashboard() {
                 <p className="text-[10px] sm:text-xs text-muted-foreground capitalize">{r.content_type}</p>
               </div>
               <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">{format(new Date(r.created_at), 'dd MMM')}</span>
-            </div>
-          )}
-        />
-        <PendingListCard title="Pending Labels" icon={Tag} items={pendingLabels} emptyText="No pending labels" onViewAll={() => navigate('/admin/labels')}
-          renderItem={(l) => (
-            <div key={l.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-foreground truncate">{l.label_name}</p>
-              </div>
-              <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">{format(new Date(l.created_at), 'dd MMM')}</span>
             </div>
           )}
         />
@@ -555,33 +545,28 @@ export default function AdminDashboard() {
             </div>
           )}
         />
-      </div>
-
-      {/* Pending Withdrawals */}
-      {pendingWithdrawals.length > 0 && (
-        <GlassCard className="mb-4 sm:mb-6 animate-fade-in">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-2">
-              <Wallet className="h-4 w-4 text-primary" />
-              Pending Withdrawals
-            </h3>
-            <button onClick={() => navigate('/admin/revenue')} className="text-[10px] sm:text-xs text-primary hover:underline flex items-center gap-1">
-              View All <ArrowRight className="h-3 w-3" />
-            </button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
-            {pendingWithdrawals.map(w => (
-              <div key={w.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20">
-                <div className="min-w-0">
-                  <p className="text-xs sm:text-sm font-bold text-foreground">₹{Number(w.amount).toLocaleString()}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">{format(new Date(w.created_at), 'dd MMM yyyy')}</p>
-                </div>
-                <StatusBadge status="pending" />
+        <PendingListCard title="Pending Labels" icon={Tag} items={pendingLabels} emptyText="No pending labels" onViewAll={() => navigate('/admin/labels')}
+          renderItem={(l) => (
+            <div key={l.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-foreground truncate">{l.label_name}</p>
               </div>
-            ))}
-          </div>
-        </GlassCard>
-      )}
+              <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">{format(new Date(l.created_at), 'dd MMM')}</span>
+            </div>
+          )}
+        />
+        <PendingListCard title="Pending Withdrawals" icon={Wallet} items={pendingWithdrawals} emptyText="No pending withdrawals" onViewAll={() => navigate('/admin/revenue')}
+          renderItem={(w) => (
+            <div key={w.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-bold text-foreground">₹{Number(w.amount).toLocaleString()}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">{format(new Date(w.created_at), 'dd MMM yyyy')}</p>
+              </div>
+              <StatusBadge status="pending" />
+            </div>
+          )}
+        />
+      </div>
 
       {/* Recent Releases */}
       <GlassCard className="animate-fade-in">
