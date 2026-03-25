@@ -6,7 +6,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { formatRevenue } from '@/lib/formatNumbers';
 import {
-  Music, Clock, CheckCircle, XCircle, Loader2, Users, Disc3,
+  Disc3, Clock, CheckCircle, XCircle, Loader2, Users,
   Wallet, FileText, UsersRound, Tag, MessageSquare, ArrowRight
 } from 'lucide-react';
 import {
@@ -36,7 +36,6 @@ const tooltipStyle = {
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [songStats, setSongStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
   const [releaseStats, setReleaseStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
   const [userCount, setUserCount] = useState(0);
   const [labelCount, setLabelCount] = useState(0);
@@ -44,11 +43,11 @@ export default function AdminDashboard() {
   const [withdrawalStats, setWithdrawalStats] = useState({ pending: 0, paid: 0, totalAmount: 0 });
   const [contentRequestCount, setContentRequestCount] = useState(0);
   const [monthlyRevenue, setMonthlyRevenue] = useState<{ month: string; revenue: number; streams: number }[]>([]);
-  const [recentSongs, setRecentSongs] = useState<any[]>([]);
   const [topStores, setTopStores] = useState<{ name: string; value: number }[]>([]);
-  const [monthlySongs, setMonthlySongs] = useState<{ month: string; count: number }[]>([]);
+  const [monthlyReleases, setMonthlyReleases] = useState<{ month: string; count: number }[]>([]);
   const [pendingLabels, setPendingLabels] = useState<any[]>([]);
   const [pendingReleases, setPendingReleases] = useState<any[]>([]);
+  const [recentReleases, setRecentReleases] = useState<any[]>([]);
   const [pendingContentRequests, setPendingContentRequests] = useState<any[]>([]);
   const [pendingWithdrawals, setPendingWithdrawals] = useState<any[]>([]);
 
@@ -58,11 +57,11 @@ export default function AdminDashboard() {
 
   async function fetchAll() {
     const [
-      songsRes, releasesRes, profilesRes, labelsRes, subLabelsRes,
-      withdrawalsRes, contentRes, reportRes, recentSongsRes,
-      pendingLabelsRes, pendingReleasesRes, pendingContentRes, pendingWithdrawalsRes
+      releasesRes, profilesRes, labelsRes, subLabelsRes,
+      withdrawalsRes, contentRes, reportRes,
+      pendingLabelsRes, pendingReleasesRes, pendingContentRes, pendingWithdrawalsRes,
+      recentReleasesRes
     ] = await Promise.all([
-      supabase.from('songs').select('status'),
       supabase.from('releases').select('status'),
       supabase.from('profiles').select('id'),
       supabase.from('labels').select('id'),
@@ -70,22 +69,12 @@ export default function AdminDashboard() {
       supabase.from('withdrawal_requests').select('status, amount'),
       supabase.from('content_requests').select('id, status').eq('status', 'pending'),
       supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, store'),
-      supabase.from('songs').select('id, title, artist, status, created_at').order('created_at', { ascending: false }).limit(5),
       supabase.from('labels').select('id, label_name, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
       supabase.from('releases').select('id, album_name, ep_name, content_type, release_type, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
       supabase.from('content_requests').select('id, request_type, song_title, artist_name, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
       supabase.from('withdrawal_requests').select('id, amount, created_at, user_id').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
+      supabase.from('releases').select('id, album_name, ep_name, content_type, status, created_at').order('created_at', { ascending: false }).limit(5),
     ]);
-
-    if (songsRes.data) {
-      const d = songsRes.data;
-      setSongStats({
-        total: d.length,
-        pending: d.filter(s => s.status === 'pending').length,
-        approved: d.filter(s => s.status === 'approved').length,
-        rejected: d.filter(s => s.status === 'rejected').length,
-      });
-    }
 
     if (releasesRes.data) {
       const d = releasesRes.data;
@@ -115,6 +104,7 @@ export default function AdminDashboard() {
     setPendingReleases(pendingReleasesRes.data || []);
     setPendingContentRequests(pendingContentRes.data || []);
     setPendingWithdrawals(pendingWithdrawalsRes.data || []);
+    setRecentReleases(recentReleasesRes.data || []);
 
     if (reportRes.data && reportRes.data.length > 0) {
       const monthMap: Record<string, { revenue: number; streams: number }> = {};
@@ -149,23 +139,20 @@ export default function AdminDashboard() {
       );
     }
 
-    if (recentSongsRes.data) {
-      setRecentSongs(recentSongsRes.data);
-
-      const now = new Date();
-      const monthlyMap: Record<string, number> = {};
-      for (let i = 5; i >= 0; i--) {
-        monthlyMap[format(subMonths(now, i), 'MMM')] = 0;
-      }
-      const { data: allSongs } = await supabase.from('songs').select('created_at');
-      if (allSongs) {
-        allSongs.forEach((s: any) => {
-          const m = format(new Date(s.created_at), 'MMM');
-          if (monthlyMap[m] !== undefined) monthlyMap[m]++;
-        });
-      }
-      setMonthlySongs(Object.entries(monthlyMap).map(([month, count]) => ({ month, count })));
+    // Monthly releases chart (last 6 months)
+    const now = new Date();
+    const monthlyMap: Record<string, number> = {};
+    for (let i = 5; i >= 0; i--) {
+      monthlyMap[format(subMonths(now, i), 'MMM')] = 0;
     }
+    const { data: allReleases } = await supabase.from('releases').select('created_at');
+    if (allReleases) {
+      allReleases.forEach((r: any) => {
+        const m = format(new Date(r.created_at), 'MMM');
+        if (monthlyMap[m] !== undefined) monthlyMap[m]++;
+      });
+    }
+    setMonthlyReleases(Object.entries(monthlyMap).map(([month, count]) => ({ month, count })));
 
     setLoading(false);
   }
@@ -179,12 +166,6 @@ export default function AdminDashboard() {
       </DashboardLayout>
     );
   }
-
-  const statusData = [
-    { name: 'Pending', value: songStats.pending, color: CHART_COLORS[1] },
-    { name: 'Approved', value: songStats.approved, color: CHART_COLORS[2] },
-    { name: 'Rejected', value: songStats.rejected, color: CHART_COLORS[0] },
-  ].filter(d => d.value > 0);
 
   const releaseStatusData = [
     { name: 'Pending', value: releaseStats.pending, color: CHART_COLORS[1] },
@@ -207,29 +188,29 @@ export default function AdminDashboard() {
       {/* Top Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
         <StatCard title="Total Users" value={userCount} icon={Users} color="hsla(200, 70%, 40%, 0.3)" />
-        <StatCard title="Total Songs" value={songStats.total} icon={Music} />
-        <StatCard title="Total Releases" value={releaseStats.total} icon={Disc3} color="hsla(280, 60%, 40%, 0.3)" />
+        <StatCard title="Total Releases" value={releaseStats.total} icon={Disc3} />
+        <StatCard title="Pending" value={releaseStats.pending} icon={Clock} color="hsla(45, 80%, 40%, 0.3)" />
         <StatCard title="Labels" value={labelCount} icon={FileText} color="hsla(30, 80%, 40%, 0.3)" />
         <StatCard title="Sub Labels" value={subLabelCount} icon={UsersRound} color="hsla(200, 60%, 35%, 0.3)" />
-        <StatCard title="Pending Requests" value={contentRequestCount} icon={Clock} color="hsla(45, 80%, 40%, 0.3)" />
+        <StatCard title="Pending Requests" value={contentRequestCount} icon={MessageSquare} color="hsla(45, 80%, 40%, 0.3)" />
       </div>
 
       {/* Pending Requests Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        {/* Pending Songs */}
+        {/* Pending Releases */}
         <PendingListCard
-          title="Pending Songs"
-          icon={Music}
-          items={recentSongs.filter(s => s.status === 'pending')}
-          emptyText="No pending songs"
+          title="Pending Releases"
+          icon={Disc3}
+          items={pendingReleases}
+          emptyText="No pending releases"
           onViewAll={() => navigate('/admin/submissions')}
-          renderItem={(s) => (
-            <div key={s.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
+          renderItem={(r) => (
+            <div key={r.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
               <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-foreground truncate">{s.title}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{s.artist}</p>
+                <p className="text-xs sm:text-sm font-medium text-foreground truncate">{getReleaseName(r)}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground capitalize">{r.content_type}</p>
               </div>
-              <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">{format(new Date(s.created_at), 'dd MMM')}</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">{format(new Date(r.created_at), 'dd MMM')}</span>
             </div>
           )}
         />
@@ -247,24 +228,6 @@ export default function AdminDashboard() {
                 <p className="text-xs sm:text-sm font-medium text-foreground truncate">{l.label_name}</p>
               </div>
               <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">{format(new Date(l.created_at), 'dd MMM')}</span>
-            </div>
-          )}
-        />
-
-        {/* Pending Releases */}
-        <PendingListCard
-          title="Pending Releases"
-          icon={Disc3}
-          items={pendingReleases}
-          emptyText="No pending releases"
-          onViewAll={() => navigate('/admin/submissions')}
-          renderItem={(r) => (
-            <div key={r.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-foreground truncate">{getReleaseName(r)}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">{r.content_type}</p>
-              </div>
-              <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">{format(new Date(r.created_at), 'dd MMM')}</span>
             </div>
           )}
         />
@@ -314,34 +277,8 @@ export default function AdminDashboard() {
         </GlassCard>
       )}
 
-      {/* Charts Row: Song & Release Pies + Withdrawal Summary */}
+      {/* Charts Row: Release Status Pie + Withdrawal Summary */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <GlassCard className="animate-fade-in">
-          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Song Status</h3>
-          {statusData.length > 0 ? (
-            <div className="h-40 sm:h-52">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={statusData} cx="50%" cy="50%" innerRadius={35} outerRadius={60} dataKey="value" strokeWidth={0}>
-                    {statusData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                  </Pie>
-                  <Tooltip contentStyle={tooltipStyle} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground text-center py-12 sm:py-16">No song data</p>
-          )}
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-2">
-            {statusData.map(d => (
-              <div key={d.name} className="flex items-center gap-1 text-[10px] sm:text-xs">
-                <div className="h-2 w-2 rounded-full" style={{ background: d.color }} />
-                <span className="text-muted-foreground">{d.name}: {d.value}</span>
-              </div>
-            ))}
-          </div>
-        </GlassCard>
-
         <GlassCard className="animate-fade-in">
           <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Release Status</h3>
           {releaseStatusData.length > 0 ? (
@@ -368,7 +305,7 @@ export default function AdminDashboard() {
           </div>
         </GlassCard>
 
-        <GlassCard className="animate-fade-in md:col-span-2 lg:col-span-1">
+        <GlassCard className="animate-fade-in md:col-span-1 lg:col-span-2">
           <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Withdrawal Overview</h3>
           <div className="space-y-3 sm:space-y-4 mt-2 sm:mt-6">
             <div className="flex items-center justify-between p-2.5 sm:p-3 rounded-lg bg-muted/30">
@@ -426,7 +363,7 @@ export default function AdminDashboard() {
         </GlassCard>
       )}
 
-      {/* Streams by Store + Monthly Submissions */}
+      {/* Streams by Store + Monthly Releases */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
         {topStores.length > 0 && (
           <GlassCard className="animate-fade-in">
@@ -445,12 +382,12 @@ export default function AdminDashboard() {
           </GlassCard>
         )}
 
-        {monthlySongs.length > 0 && (
+        {monthlyReleases.length > 0 && (
           <GlassCard className="animate-fade-in">
-            <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Song Submissions (6 Months)</h3>
+            <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Release Submissions (6 Months)</h3>
             <div className="h-44 sm:h-56">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlySongs}>
+                <BarChart data={monthlyReleases}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 20%)" />
                   <XAxis dataKey="month" tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} />
                   <YAxis tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} width={30} />
@@ -463,29 +400,29 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      {/* Recent Song Submissions Table */}
+      {/* Recent Releases Table */}
       <GlassCard className="animate-fade-in">
-        <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Recent Song Submissions</h3>
-        {recentSongs.length > 0 ? (
+        <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Recent Releases</h3>
+        {recentReleases.length > 0 ? (
           <>
             {/* Desktop table */}
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border/50">
-                    <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Title</th>
-                    <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Artist</th>
+                    <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Release</th>
+                    <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Type</th>
                     <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Status</th>
                     <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Date</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {recentSongs.map((s: any) => (
-                    <tr key={s.id} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
-                      <td className="py-2.5 px-3 text-foreground font-medium truncate max-w-[200px]">{s.title}</td>
-                      <td className="py-2.5 px-3 text-muted-foreground truncate max-w-[150px]">{s.artist}</td>
-                      <td className="py-2.5 px-3"><StatusBadge status={s.status} /></td>
-                      <td className="py-2.5 px-3 text-muted-foreground text-xs">{format(new Date(s.created_at), 'dd MMM yyyy')}</td>
+                  {recentReleases.map((r: any) => (
+                    <tr key={r.id} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
+                      <td className="py-2.5 px-3 text-foreground font-medium truncate max-w-[200px]">{getReleaseName(r)}</td>
+                      <td className="py-2.5 px-3 text-muted-foreground capitalize text-xs">{r.content_type}</td>
+                      <td className="py-2.5 px-3"><StatusBadge status={r.status} /></td>
+                      <td className="py-2.5 px-3 text-muted-foreground text-xs">{format(new Date(r.created_at), 'dd MMM yyyy')}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -493,22 +430,22 @@ export default function AdminDashboard() {
             </div>
             {/* Mobile card list */}
             <div className="sm:hidden space-y-2">
-              {recentSongs.map((s: any) => (
-                <div key={s.id} className="p-3 rounded-lg bg-muted/20">
+              {recentReleases.map((r: any) => (
+                <div key={r.id} className="p-3 rounded-lg bg-muted/20">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-foreground truncate">{s.title}</p>
-                      <p className="text-xs text-muted-foreground truncate">{s.artist}</p>
+                      <p className="text-sm font-medium text-foreground truncate">{getReleaseName(r)}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{r.content_type}</p>
                     </div>
-                    <StatusBadge status={s.status} />
+                    <StatusBadge status={r.status} />
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-1.5">{format(new Date(s.created_at), 'dd MMM yyyy')}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1.5">{format(new Date(r.created_at), 'dd MMM yyyy')}</p>
                 </div>
               ))}
             </div>
           </>
         ) : (
-          <p className="text-xs text-muted-foreground text-center py-8">No recent submissions</p>
+          <p className="text-xs text-muted-foreground text-center py-8">No recent releases</p>
         )}
       </GlassCard>
     </DashboardLayout>

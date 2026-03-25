@@ -11,7 +11,7 @@ import { applyRevenueCutToAmount, calculateAvailableBalance, getEffectiveRevenue
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import {
-  Music, Clock, CheckCircle, XCircle, Loader2, Copy, X, BookOpen, ArrowRight,
+  Clock, CheckCircle, XCircle, Loader2, Copy, X, BookOpen, ArrowRight,
   Disc3, Wallet, DollarSign, BarChart3
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -48,14 +48,12 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [displayId, setDisplayId] = useState<number | null>(null);
 
-  const [songStats, setSongStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
   const [releaseStats, setReleaseStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [totalStreams, setTotalStreams] = useState(0);
   const [monthlyRevenue, setMonthlyRevenue] = useState<{ month: string; revenue: number; streams: number }[]>([]);
   const [topTracks, setTopTracks] = useState<{ name: string; streams: number }[]>([]);
   const [topStores, setTopStores] = useState<{ name: string; value: number }[]>([]);
-  const [recentSongs, setRecentSongs] = useState<any[]>([]);
   const [recentReleases, setRecentReleases] = useState<any[]>([]);
   const [withdrawalBalance, setWithdrawalBalance] = useState({ pending: 0, paid: 0 });
   const [hiddenCut, setHiddenCut] = useState(0);
@@ -81,7 +79,6 @@ export default function UserDashboard() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'youtube_report_entries' }, () => fetchAll())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawal_requests' }, () => fetchAll())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'releases' }, () => fetchAll())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'songs' }, () => fetchAll())
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
@@ -90,25 +87,13 @@ export default function UserDashboard() {
   async function fetchAll() {
     if (!effectiveUserId) return;
 
-    const [songsRes, releasesRes, profileRes, subLabelRes, withdrawalRes, recentRes, recentReleasesRes] = await Promise.all([
-      supabase.from('songs').select('status').eq('user_id', effectiveUserId),
+    const [releasesRes, profileRes, subLabelRes, withdrawalRes, recentReleasesRes] = await Promise.all([
       supabase.from('releases').select('status').eq('user_id', effectiveUserId),
       supabase.from('profiles').select('display_id, hidden_cut_percent').eq('user_id', effectiveUserId).single(),
       supabase.from('sub_labels').select('percentage_cut').eq('sub_user_id', effectiveUserId).maybeSingle(),
       supabase.from('withdrawal_requests').select('status, amount').eq('user_id', effectiveUserId),
-      supabase.from('songs').select('id, title, artist, status, created_at').eq('user_id', effectiveUserId).order('created_at', { ascending: false }).limit(5),
-      supabase.from('releases').select('id, album_name, ep_name, content_type, status, created_at').eq('user_id', effectiveUserId).order('created_at', { ascending: false }).limit(5),
+      supabase.from('releases').select('id, album_name, ep_name, content_type, status, created_at, poster_url').eq('user_id', effectiveUserId).order('created_at', { ascending: false }).limit(5),
     ]);
-
-    if (songsRes.data) {
-      const d = songsRes.data;
-      setSongStats({
-        total: d.length,
-        pending: d.filter(s => s.status === 'pending').length,
-        approved: d.filter(s => s.status === 'approved').length,
-        rejected: d.filter(s => s.status === 'rejected').length,
-      });
-    }
 
     if (releasesRes.data) {
       const d = releasesRes.data;
@@ -241,7 +226,6 @@ export default function UserDashboard() {
       setWithdrawalBalance(summarizeWithdrawals(withdrawalRes.data));
     }
 
-    setRecentSongs(recentRes.data || []);
     setRecentReleases(recentReleasesRes.data || []);
     setLoading(false);
   }
@@ -275,6 +259,12 @@ export default function UserDashboard() {
   ].filter(d => d.value > 0);
 
   const pendingReleases = recentReleases.filter(r => r.status === 'pending');
+
+  const getReleaseName = (r: any) => {
+    if (r.content_type === 'album') return r.album_name || 'Untitled Album';
+    if (r.content_type === 'ep') return r.ep_name || 'Untitled EP';
+    return r.album_name || r.ep_name || 'Untitled Single';
+  };
 
   return (
     <DashboardLayout>
@@ -346,8 +336,8 @@ export default function UserDashboard() {
             {pendingReleases.map(r => (
               <div key={r.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20">
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm font-medium text-foreground truncate">{r.album_name || r.ep_name || 'Untitled'}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">{r.content_type}</p>
+                  <p className="text-xs sm:text-sm font-medium text-foreground truncate">{getReleaseName(r)}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground capitalize">{r.content_type}</p>
                 </div>
                 <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">{format(new Date(r.created_at), 'dd MMM')}</span>
               </div>
@@ -451,7 +441,7 @@ export default function UserDashboard() {
         )}
       </div>
 
-      {/* Withdrawal Summary + Recent Songs */}
+      {/* Withdrawal Summary + Recent Releases */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <GlassCard className="animate-fade-in">
           <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Withdrawal Summary</h3>
@@ -474,27 +464,27 @@ export default function UserDashboard() {
         </GlassCard>
 
         <GlassCard className="lg:col-span-2 animate-fade-in">
-          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Recent Submissions</h3>
-          {recentSongs.length > 0 ? (
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Recent Releases</h3>
+          {recentReleases.length > 0 ? (
             <>
               {/* Desktop table */}
               <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border/50">
-                      <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Title</th>
-                      <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Artist</th>
+                      <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Release</th>
+                      <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Type</th>
                       <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Status</th>
                       <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Date</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {recentSongs.map((s: any) => (
-                      <tr key={s.id} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
-                        <td className="py-2.5 px-3 text-foreground font-medium truncate max-w-[180px]">{s.title}</td>
-                        <td className="py-2.5 px-3 text-muted-foreground truncate max-w-[120px]">{s.artist}</td>
-                        <td className="py-2.5 px-3"><StatusBadge status={s.status} /></td>
-                        <td className="py-2.5 px-3 text-muted-foreground text-xs">{format(new Date(s.created_at), 'dd MMM yyyy')}</td>
+                    {recentReleases.map((r: any) => (
+                      <tr key={r.id} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
+                        <td className="py-2.5 px-3 text-foreground font-medium truncate max-w-[180px]">{getReleaseName(r)}</td>
+                        <td className="py-2.5 px-3 text-muted-foreground capitalize text-xs">{r.content_type}</td>
+                        <td className="py-2.5 px-3"><StatusBadge status={r.status} /></td>
+                        <td className="py-2.5 px-3 text-muted-foreground text-xs">{format(new Date(r.created_at), 'dd MMM yyyy')}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -502,22 +492,22 @@ export default function UserDashboard() {
               </div>
               {/* Mobile card list */}
               <div className="sm:hidden space-y-2">
-                {recentSongs.map((s: any) => (
-                  <div key={s.id} className="p-2.5 rounded-lg bg-muted/20">
+                {recentReleases.map((r: any) => (
+                  <div key={r.id} className="p-2.5 rounded-lg bg-muted/20">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-medium text-foreground truncate">{s.title}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{s.artist}</p>
+                        <p className="text-xs font-medium text-foreground truncate">{getReleaseName(r)}</p>
+                        <p className="text-[10px] text-muted-foreground capitalize">{r.content_type}</p>
                       </div>
-                      <StatusBadge status={s.status} />
+                      <StatusBadge status={r.status} />
                     </div>
-                    <p className="text-[10px] text-muted-foreground mt-1">{format(new Date(s.created_at), 'dd MMM yyyy')}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">{format(new Date(r.created_at), 'dd MMM yyyy')}</p>
                   </div>
                 ))}
               </div>
             </>
           ) : (
-            <p className="text-xs text-muted-foreground text-center py-6 sm:py-8">No submissions yet</p>
+            <p className="text-xs text-muted-foreground text-center py-6 sm:py-8">No releases yet</p>
           )}
         </GlassCard>
       </div>
