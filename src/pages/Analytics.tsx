@@ -99,12 +99,6 @@ function aggregateByKey<T extends ReportEntry>(data: T[], key: keyof T, metric: 
   return Object.entries(map).sort(([, a], [, b]) => b - a).slice(0, limit).map(([name, value]) => ({ name, value: Math.round(value * 100) / 100 }));
 }
 
-function formatCompact(n: number): string {
-  if (n >= 10000000) return `${(n / 10000000).toFixed(2)}Cr`;
-  if (n >= 100000) return `${(n / 100000).toFixed(2)}L`;
-  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
-  return n.toLocaleString('en-IN', { maximumFractionDigits: 2 });
-}
 
 /* ── Tooltips ── */
 function CustomTooltip({ active, payload, label, prefix = '' }: any) {
