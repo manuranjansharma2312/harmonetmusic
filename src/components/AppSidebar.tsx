@@ -41,14 +41,17 @@ const adminReportLinks = [
   { to: '/admin/reports/ott', label: 'OTT Reports', icon: MonitorPlay },
 ];
 
+const adminSubLabelLinks = [
+  { to: '/admin/sub-labels', label: 'All Sub Labels', icon: UsersRound },
+  { to: '/admin/sub-label-withdrawals', label: 'Withdraw Requests', icon: Wallet },
+];
+
 const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/submissions', label: 'All Submissions', icon: ListMusic },
   { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
   { to: '/admin/labels', label: 'Labels', icon: Tag },
-  { to: '/admin/sub-labels', label: 'Sub Labels', icon: UsersRound },
-  { to: '/admin/sub-label-withdrawals', label: 'Sub Label Withdrawals', icon: Wallet },
   { to: '/admin/content-requests', label: 'Content Requests', icon: Headset },
   { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
   { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
@@ -69,6 +72,7 @@ export function AppSidebar() {
   const showUserView = isImpersonating || role !== 'admin';
   const [toolsOpen, setToolsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
+  const [adminSubLabelsOpen, setAdminSubLabelsOpen] = useState(false);
   const [impUserType, setImpUserType] = useState<string | null>(null);
   const [impIsSubLabel, setImpIsSubLabel] = useState(false);
 
@@ -205,6 +209,7 @@ export function AppSidebar() {
               ) : (
                 <>
                   {adminLinksTop.map(renderNavLink)}
+                  {renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}
                 </>
               )}
