@@ -390,6 +390,14 @@ export default function AdminUsers() {
             </table>
           </div>
         )}
+        <TablePagination
+          totalItems={filtered.length}
+          currentPage={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          itemLabel="users"
+        />
       </GlassCard>
 
       {/* View Profile Modal */}
