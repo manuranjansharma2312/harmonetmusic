@@ -220,7 +220,7 @@ export default function AdminReports() {
     const headers = ['Reporting Month', ...COLUMNS.map((c) => c.label)];
     const rows = filteredEntries.map((e) => [
       e.reporting_month,
-      ...COLUMNS.map((c) => String(e[c.key as keyof ReportEntry] ?? '')),
+      ...COLUMNS.map((c) => c.key === 'net_generated_revenue' ? String(applyUserCut(e)) : String(e[c.key as keyof ReportEntry] ?? '')),
     ]);
     const csv = [headers, ...rows].map((r) => r.map((v) => `"${v}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
