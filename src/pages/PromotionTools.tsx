@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { StatusBadge } from '@/components/StatusBadge';
-import { TablePagination } from '@/components/TablePagination';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -63,9 +63,8 @@ export default function PromotionTools() {
   // View order
   const [viewOrder, setViewOrder] = useState<Order | null>(null);
 
-  // Pagination
-  const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -168,7 +167,7 @@ export default function PromotionTools() {
     fetchOrders();
   };
 
-  const paginatedOrders = orders.slice((page - 1) * pageSize, page * pageSize);
+  const paginatedOrders = paginateItems(orders, page, pageSize);
 
   if (!isEnabled && !loading) {
     return (
@@ -229,9 +228,14 @@ export default function PromotionTools() {
                 ))}
               </TableBody>
             </Table>
-            {orders.length > pageSize && (
-              <TablePagination currentPage={page} onPageChange={setPage} pageSize={pageSize} onPageSizeChange={() => {}} totalItems={orders.length} />
-            )}
+            <TablePagination
+              totalItems={orders.length}
+              currentPage={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="orders"
+            />
           </CardContent>
         </Card>
       </div>

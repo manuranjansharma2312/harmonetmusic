@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { RichTextEditor } from '@/components/RichTextEditor';
 import { toast } from 'sonner';
 import { Plus, Trash2, Edit2, Eye, EyeOff, ChevronLeft } from 'lucide-react';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TutorialContent } from '@/components/TutorialContent';
@@ -31,6 +32,8 @@ export default function AdminTutorials() {
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [viewTutorial, setViewTutorial] = useState<Tutorial | null>(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const { data: tutorials = [], isLoading } = useQuery({
     queryKey: ['admin-tutorials'],
@@ -43,6 +46,8 @@ export default function AdminTutorials() {
       return data as Tutorial[];
     },
   });
+
+  const paginatedTutorials = useMemo(() => paginateItems(tutorials, page, pageSize), [tutorials, page, pageSize]);
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -161,36 +166,46 @@ export default function AdminTutorials() {
                 No tutorials created yet. Click "New Tutorial" to get started.
               </GlassCard>
             ) : (
-              <div className="grid gap-4">
-                {tutorials.map((tutorial) => (
-                  <GlassCard key={tutorial.id} className="p-4 sm:p-5">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-base">{tutorial.subject}</h3>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Created: {format(new Date(tutorial.created_at), 'dd MMM yyyy, hh:mm a')}
-                          {tutorial.updated_at !== tutorial.created_at && (
-                            <> · Updated: {format(new Date(tutorial.updated_at), 'dd MMM yyyy, hh:mm a')}</>
-                          )}
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                          {stripHtml(tutorial.content)}
-                        </p>
+              <div className="space-y-4">
+                <div className="grid gap-4">
+                  {paginatedTutorials.map((tutorial) => (
+                    <GlassCard key={tutorial.id} className="p-4 sm:p-5">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-base">{tutorial.subject}</h3>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Created: {format(new Date(tutorial.created_at), 'dd MMM yyyy, hh:mm a')}
+                            {tutorial.updated_at !== tutorial.created_at && (
+                              <> · Updated: {format(new Date(tutorial.updated_at), 'dd MMM yyyy, hh:mm a')}</>
+                            )}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                            {stripHtml(tutorial.content)}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <Button size="icon" variant="ghost" onClick={() => setViewTutorial(tutorial)} title="View">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button size="icon" variant="ghost" onClick={() => handleEdit(tutorial)} title="Edit">
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="text-destructive" onClick={() => setDeleteId(tutorial.id)} title="Delete">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <Button size="icon" variant="ghost" onClick={() => setViewTutorial(tutorial)} title="View">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="ghost" onClick={() => handleEdit(tutorial)} title="Edit">
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="text-destructive" onClick={() => setDeleteId(tutorial.id)} title="Delete">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </GlassCard>
-                ))}
+                    </GlassCard>
+                  ))}
+                </div>
+                <TablePagination
+                  totalItems={tutorials.length}
+                  currentPage={page}
+                  pageSize={pageSize}
+                  onPageChange={setPage}
+                  onPageSizeChange={setPageSize}
+                  itemLabel="tutorials"
+                />
               </div>
             )}
           </>

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -72,6 +73,8 @@ export default function AdminUsers() {
   const [editingCut, setEditingCut] = useState<{ userId: string; value: string } | null>(null);
   const { startImpersonating } = useImpersonate();
   const navigate = useNavigate();
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const fetchProfiles = async () => {
     const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
@@ -104,6 +107,9 @@ export default function AdminUsers() {
     }
     return true;
   });
+
+  const paginatedUsers = useMemo(() => paginateItems(filtered, page, pageSize), [filtered, page, pageSize]);
+  useEffect(() => { setPage(0); }, [search, statusFilter]);
 
   const handleVerification = async (userId: string, status: string) => {
     const { error } = await supabase.from('profiles').update({ verification_status: status }).eq('user_id', userId);
@@ -307,7 +313,7 @@ export default function AdminUsers() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((profile) => (
+                {paginatedUsers.map((profile) => (
                   <tr key={profile.id} className={`border-b border-border/30 table-row-hover ${selectedIds.has(profile.user_id) ? 'bg-primary/5' : ''}`}>
                     <td className="py-3 px-3">
                       <input
@@ -384,6 +390,14 @@ export default function AdminUsers() {
             </table>
           </div>
         )}
+        <TablePagination
+          totalItems={filtered.length}
+          currentPage={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          itemLabel="users"
+        />
       </GlassCard>
 
       {/* View Profile Modal */}

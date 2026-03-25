@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -8,6 +8,7 @@ import { Loader2, Search, BookOpen } from 'lucide-react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TutorialContent } from '@/components/TutorialContent';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 
 interface Tutorial {
   id: string;
@@ -19,6 +20,8 @@ interface Tutorial {
 export default function HelpTutorials() {
   const [search, setSearch] = useState('');
   const [viewTutorial, setViewTutorial] = useState<Tutorial | null>(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const { data: tutorials = [], isLoading } = useQuery({
     queryKey: ['tutorials'],
@@ -35,6 +38,8 @@ export default function HelpTutorials() {
   const filtered = tutorials.filter((t) =>
     t.subject.toLowerCase().includes(search.toLowerCase())
   );
+
+  const paginatedTutorials = useMemo(() => paginateItems(filtered, page, pageSize), [filtered, page, pageSize]);
 
   const stripHtml = (html: string) => {
     const tmp = document.createElement('div');
@@ -72,23 +77,33 @@ export default function HelpTutorials() {
             {search ? 'No tutorials match your search.' : 'No tutorials available yet.'}
           </GlassCard>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((tutorial) => (
-              <GlassCard
-                key={tutorial.id}
-                className="p-4 sm:p-5 cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all"
-                onClick={() => setViewTutorial(tutorial)}
-              >
-                <h3 className="font-semibold text-base line-clamp-2">{tutorial.subject}</h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {format(new Date(tutorial.created_at), 'dd MMM yyyy')}
-                </p>
-                <p className="text-sm text-muted-foreground mt-2 line-clamp-3">
-                  {stripHtml(tutorial.content)}
-                </p>
-                <span className="text-xs text-primary mt-3 inline-block font-medium">Read more →</span>
-              </GlassCard>
-            ))}
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {paginatedTutorials.map((tutorial) => (
+                <GlassCard
+                  key={tutorial.id}
+                  className="p-4 sm:p-5 cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all"
+                  onClick={() => setViewTutorial(tutorial)}
+                >
+                  <h3 className="font-semibold text-base line-clamp-2">{tutorial.subject}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {format(new Date(tutorial.created_at), 'dd MMM yyyy')}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2 line-clamp-3">
+                    {stripHtml(tutorial.content)}
+                  </p>
+                  <span className="text-xs text-primary mt-3 inline-block font-medium">Read more →</span>
+                </GlassCard>
+              ))}
+            </div>
+            <TablePagination
+              totalItems={filtered.length}
+              currentPage={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="tutorials"
+            />
           </div>
         )}
       </div>

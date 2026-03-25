@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -11,6 +11,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { toast } from 'sonner';
 import { Plus, Trash2, Edit2, Image as ImageIcon, X } from 'lucide-react';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { format } from 'date-fns';
 
 interface Notice {
@@ -33,6 +34,8 @@ export default function AdminNotices() {
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const { data: notices = [], isLoading } = useQuery({
     queryKey: ['admin-notices'],
@@ -45,6 +48,8 @@ export default function AdminNotices() {
       return data as Notice[];
     },
   });
+
+  const paginatedNotices = useMemo(() => paginateItems(notices, page, pageSize), [notices, page, pageSize]);
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
@@ -206,40 +211,50 @@ export default function AdminNotices() {
             No notices created yet.
           </GlassCard>
         ) : (
-          <div className="grid gap-4">
-            {notices.map((notice) => (
-              <GlassCard key={notice.id} className="p-4 sm:p-5 space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base truncate">{notice.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {format(new Date(notice.created_at), 'dd MMM yyyy, hh:mm a')}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <div className="flex items-center gap-2">
-                      <Label className="text-xs text-muted-foreground">Active</Label>
-                      <Switch
-                        checked={notice.is_active}
-                        onCheckedChange={(checked) => toggleMutation.mutate({ id: notice.id, is_active: checked })}
-                      />
+          <div className="space-y-4">
+            <div className="grid gap-4">
+              {paginatedNotices.map((notice) => (
+                <GlassCard key={notice.id} className="p-4 sm:p-5 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-base truncate">{notice.title}</h3>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {format(new Date(notice.created_at), 'dd MMM yyyy, hh:mm a')}
+                      </p>
                     </div>
-                    <Button size="icon" variant="ghost" onClick={() => handleEdit(notice)}>
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="text-destructive" onClick={() => setDeleteId(notice.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <div className="flex items-center gap-2">
+                        <Label className="text-xs text-muted-foreground">Active</Label>
+                        <Switch
+                          checked={notice.is_active}
+                          onCheckedChange={(checked) => toggleMutation.mutate({ id: notice.id, is_active: checked })}
+                        />
+                      </div>
+                      <Button size="icon" variant="ghost" onClick={() => handleEdit(notice)}>
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="text-destructive" onClick={() => setDeleteId(notice.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-                {notice.content && (
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-3">{notice.content}</p>
-                )}
-                {notice.image_url && (
-                  <img src={notice.image_url} alt="" className="max-h-40 rounded-lg border border-border" />
-                )}
-              </GlassCard>
-            ))}
+                  {notice.content && (
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-3">{notice.content}</p>
+                  )}
+                  {notice.image_url && (
+                    <img src={notice.image_url} alt="" className="max-h-40 rounded-lg border border-border" />
+                  )}
+                </GlassCard>
+              ))}
+            </div>
+            <TablePagination
+              totalItems={notices.length}
+              currentPage={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="notices"
+            />
           </div>
         )}
       </div>
