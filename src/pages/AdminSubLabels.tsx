@@ -114,6 +114,7 @@ export default function AdminSubLabels() {
 
   const handleEditSave = async () => {
     if (!editSL) return;
+    const newStatus = editStatus;
     const { error } = await supabase.from('sub_labels').update({
       sub_label_name: editSubLabelName.trim(),
       parent_label_name: editParentLabelName.trim(),
@@ -122,8 +123,20 @@ export default function AdminSubLabels() {
       agreement_start_date: editStart,
       agreement_end_date: editEnd,
       percentage_cut: parseFloat(editCut) || 0,
+      status: newStatus,
     }).eq('id', editSL.id);
     if (error) { toast.error(error.message); return; }
+
+    // Update profile verification_status if sub_user_id exists
+    if (editSL.sub_user_id) {
+      const verificationMap: Record<string, string> = {
+        active: 'verified', rejected: 'rejected', suspended: 'suspended', pending: 'pending',
+      };
+      await supabase.from('profiles').update({
+        verification_status: verificationMap[newStatus] || 'pending',
+      }).eq('user_id', editSL.sub_user_id);
+    }
+
     toast.success('Sub label updated');
     setEditSL(null);
     fetchAll();
