@@ -325,6 +325,55 @@ export default function AdminSubmissions() {
     return decodeURIComponent(url.substring(idx + marker.length));
   };
 
+  const handleDownloadFile = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      toast.error('Failed to download file');
+    }
+  };
+
+  const handleBulkDownloadAudio = async () => {
+    const ids = Array.from(selected);
+    const selectedReleases = releases.filter(r => ids.includes(r.id));
+    let count = 0;
+    for (const release of selectedReleases) {
+      if (!release.tracks) continue;
+      for (const track of release.tracks) {
+        if (track.audio_url) {
+          const ext = track.audio_url.split('.').pop()?.split('?')[0] || 'mp3';
+          await handleDownloadFile(track.audio_url, `${track.song_title || 'track'}.${ext}`);
+          count++;
+        }
+      }
+    }
+    if (count === 0) toast.error('No audio files found in selected releases');
+    else toast.success(`Downloaded ${count} audio file(s)`);
+  };
+
+  const handleBulkDownloadPoster = async () => {
+    const ids = Array.from(selected);
+    const selectedReleases = releases.filter(r => ids.includes(r.id));
+    let count = 0;
+    for (const release of selectedReleases) {
+      if (release.poster_url) {
+        const name = getReleaseName(release);
+        const ext = release.poster_url.split('.').pop()?.split('?')[0] || 'jpg';
+        await handleDownloadFile(release.poster_url, `${name}-poster.${ext}`);
+        count++;
+      }
+    }
+    if (count === 0) toast.error('No poster images found in selected releases');
+    else toast.success(`Downloaded ${count} poster(s)`);
+  };
+
   const handleDeletePoster = async (releaseId: string, posterUrl: string) => {
     const path = getStoragePath(posterUrl, 'posters') || getStoragePath(posterUrl, 'covers');
     const bucket = posterUrl.includes('/posters/') ? 'posters' : 'covers';
