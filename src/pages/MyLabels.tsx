@@ -139,7 +139,8 @@ export default function MyLabels() {
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">
-                B2B Document (PDF) <span className="text-xs text-muted-foreground">— optional</span>
+                B2B Document (PDF) *
+              </label>
               </label>
               <div className="relative">
                 <input type="file" accept=".pdf,application/pdf" onChange={(e) => setB2bFile(e.target.files?.[0] || null)} className="hidden" id="b2b-upload" />

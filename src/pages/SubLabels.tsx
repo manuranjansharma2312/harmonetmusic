@@ -245,7 +245,8 @@ export default function SubLabels() {
 
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">
-                B2B Agreement (PDF) <span className="text-xs text-muted-foreground">— optional</span>
+                B2B Agreement (PDF) *
+              </label>
               </label>
               <div className="relative">
                 <input type="file" accept=".pdf,application/pdf" onChange={(e) => setB2bFile(e.target.files?.[0] || null)} className="hidden" id="sub-b2b-upload" />
