@@ -8,6 +8,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/ui/button';
+import { CopyButton } from '@/components/CopyButton';
 import { useNavigate } from 'react-router-dom';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
