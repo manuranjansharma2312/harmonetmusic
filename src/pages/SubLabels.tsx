@@ -89,35 +89,6 @@ export default function SubLabels() {
     fetchParentLabel();
   }, [effectiveUserId]);
 
-  const updateSubWithdrawalStatus = async (id: string, newStatus: string) => {
-    try {
-      const { error } = await supabase
-        .from('withdrawal_requests')
-        .update({ status: newStatus })
-        .eq('id', id);
-      if (error) throw error;
-      toast.success(`Status updated to ${newStatus}`);
-      fetchSubLabelWithdrawals();
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to update status');
-    }
-  };
-
-  const filteredWithdrawals = useMemo(() => {
-    let result = subWithdrawals;
-    if (wStatusFilter !== 'all') result = result.filter(w => w.status === wStatusFilter);
-    if (wSearch.trim()) {
-      const q = wSearch.toLowerCase();
-      result = result.filter(w => w.sub_label_name?.toLowerCase().includes(q));
-    }
-    return result;
-  }, [subWithdrawals, wStatusFilter, wSearch]);
-
-  const paginatedWithdrawals = useMemo(
-    () => paginateItems(filteredWithdrawals, wPage, wPageSize),
-    [filteredWithdrawals, wPage, wPageSize]
-  );
-
   const formatCurrency = (val: number) =>
     `₹${val.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
