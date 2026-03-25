@@ -174,10 +174,9 @@ export default function AdminInvoices() {
     );
   }, [invoices, search]);
 
-  const totalPages = Math.ceil(filtered.length / pageSize);
-  const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const paged = useMemo(() => paginateItems(filtered, page, pageSize), [filtered, page, pageSize]);
 
-  useEffect(() => { setPage(1); }, [search, pageSize]);
+  useEffect(() => { setPage(0); }, [search]);
 
   const calcTotals = (amt: number, sharePercent: number, taxes: InvoiceTax[]) => {
     const harmonetShare = (amt * sharePercent) / 100;
