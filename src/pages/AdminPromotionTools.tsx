@@ -48,6 +48,10 @@ interface Order {
   product_platform?: string;
   user_display_id?: number;
   user_name?: string;
+  user_type?: string;
+  sub_label_name?: string;
+  parent_label_name?: string;
+  transaction_id?: string;
 }
 
 export default function AdminPromotionTools() {
