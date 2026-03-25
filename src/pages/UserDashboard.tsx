@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { WorldMapChart } from '@/components/WorldMapChart';
 import { useQuery } from '@tanstack/react-query';
 import { NoticePopup } from '@/components/NoticePopup';
 import { DashboardLayout } from '@/components/DashboardLayout';
