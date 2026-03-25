@@ -264,11 +264,6 @@ export default function MyProfile() {
         </GlassCard>
         )}
 
-        <GlassCard className="mt-6 animate-fade-in">
-          <p className="text-center text-xs text-muted-foreground">
-            To update your profile or bank details, please contact the admin.
-          </p>
-        </GlassCard>
       </div>
     </DashboardLayout>
   );
