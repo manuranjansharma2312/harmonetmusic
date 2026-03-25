@@ -265,13 +265,19 @@ export default function MyReleases() {
                         <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">
                           {track.track_order}
                         </div>
-                        <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">{track.song_title}</p>
                           <p className="text-xs text-muted-foreground truncate">
                             {track.primary_artist} • {track.genre}
                             {track.isrc && <> • ISRC: <span className="font-mono">{track.isrc}</span></>}
                           </p>
                         </div>
+                        <StatusBadge status={track.status} />
+                        {track.status === 'rejected' && track.rejection_reason && (
+                          <span className="text-xs text-destructive max-w-[150px] truncate" title={track.rejection_reason}>
+                            {track.rejection_reason}
+                          </span>
+                        )}
                         {track.audio_url && (
                           <audio controls src={track.audio_url} className="h-8 w-48 shrink-0" />
                         )}
