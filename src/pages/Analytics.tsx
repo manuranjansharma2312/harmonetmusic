@@ -327,7 +327,7 @@ export default function Analytics() {
         ) : (
           <>
             {/* ── KPI Cards ── */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
               {[
                 { icon: IndianRupee, label: 'Revenue', value: formatRevenue(totalRevenue), from: '#ff6b6b', to: '#ee5a24' },
                 { icon: Play, label: 'Streams', value: formatStreams(totalStreams), from: '#45aaf2', to: '#4834d4' },
