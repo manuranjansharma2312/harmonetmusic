@@ -259,76 +259,41 @@ export default function AdminSubmissions() {
     const data = selected.size > 0 ? filtered.filter((r) => selected.has(r.id)) : filtered;
     if (data.length === 0) { toast.error('No releases to export'); return; }
 
-    // Find max track count for dynamic columns
-    const maxTracks = Math.max(...data.map((r) => r.tracks?.length || 0), 1);
-
-    // Release-level headers
-    const releaseHeaders = [
+    const headers = [
       'Release Name', 'Release Type', 'Content Type', 'UPC', 'Status',
       'Release Date', 'Store Selection', 'Copyright ©', 'Phonogram ℗',
       'Poster URL', 'Rejection Reason',
       'Submitted By', 'User ID', 'User Email',
-    ];
-
-    // Track-level headers (repeated per track)
-    const trackFieldHeaders = [
-      'Song Title', 'ISRC', 'Primary Artist', 'New Artist Profile',
+      'Track #', 'Song Title', 'ISRC', 'Primary Artist', 'New Artist Profile',
       'Audio Type', 'Language', 'Genre',
       'Lyricist', 'Composer', 'Producer',
       'Spotify Link', 'Apple Music Link', 'Instagram Link',
       'Callertune Time', 'Audio URL',
     ];
 
-    const headers = [...releaseHeaders];
-    for (let i = 1; i <= maxTracks; i++) {
-      trackFieldHeaders.forEach((h) => headers.push(`Track ${i} - ${h}`));
-    }
-
-    const rows = data.map((r) => {
-      const releaseRow = [
-        getReleaseName(r),
-        r.release_type,
-        r.content_type,
-        r.upc || '',
-        r.status,
-        r.release_date,
-        r.store_selection,
-        r.copyright_line || '',
-        r.phonogram_line || '',
-        r.poster_url || '',
-        r.rejection_reason || '',
-        r.user_name || '',
-        r.user_display_id ? `#${r.user_display_id}` : '',
-        r.user_email || '',
+    const rows: string[][] = [];
+    data.forEach((r) => {
+      const releaseFields = [
+        getReleaseName(r), r.release_type, r.content_type, r.upc || '', r.status,
+        r.release_date, r.store_selection, r.copyright_line || '', r.phonogram_line || '',
+        r.poster_url || '', r.rejection_reason || '',
+        r.user_name || '', r.user_display_id ? `#${r.user_display_id}` : '', r.user_email || '',
       ];
 
-      const trackCells: string[] = [];
-      for (let i = 0; i < maxTracks; i++) {
-        const t = r.tracks?.[i];
-        if (t) {
-          trackCells.push(
-            t.song_title || '',
-            t.isrc || '',
-            t.primary_artist || '',
-            t.is_new_artist_profile ? 'Yes' : 'No',
-            t.audio_type || '',
-            t.language || '',
-            t.genre || '',
-            t.lyricist || '',
-            t.composer || '',
-            t.producer || '',
-            t.spotify_link || '',
-            t.apple_music_link || '',
-            t.instagram_link || '',
-            t.callertune_time || '',
-            t.audio_url || '',
-          );
-        } else {
-          trackCells.push(...Array(trackFieldHeaders.length).fill(''));
-        }
-      }
+      const tracks = r.tracks?.length ? r.tracks : [null];
+      tracks.forEach((t, i) => {
+        const trackFields = t ? [
+          String(t.track_order), t.song_title || '', t.isrc || '', t.primary_artist || '',
+          t.is_new_artist_profile ? 'Yes' : 'No',
+          t.audio_type || '', t.language || '', t.genre || '',
+          t.lyricist || '', t.composer || '', t.producer || '',
+          t.spotify_link || '', t.apple_music_link || '', t.instagram_link || '',
+          t.callertune_time || '', t.audio_url || '',
+        ] : Array(16).fill('');
 
-      return [...releaseRow, ...trackCells];
+        // First row has release info, subsequent rows have empty release columns
+        rows.push(i === 0 ? [...releaseFields, ...trackFields] : [...Array(14).fill(''), ...trackFields]);
+      });
     });
 
     const csvContent = [headers, ...rows]
