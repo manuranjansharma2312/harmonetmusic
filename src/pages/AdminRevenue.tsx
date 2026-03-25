@@ -170,9 +170,10 @@ export default function AdminRevenue() {
             <div className="relative flex-1 max-w-xs">
               <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 value={threshold}
-                onChange={(e) => setThreshold(e.target.value)}
+                onChange={(e) => setThreshold(e.target.value.replace(/[^0-9.]/g, ''))}
                 className="pl-9"
                 placeholder="Enter threshold amount"
               />

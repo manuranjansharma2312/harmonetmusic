@@ -119,6 +119,19 @@ export default function AdminReports() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [entryPage, setEntryPage] = useState(0);
   const [entryPageSize, setEntryPageSize] = useState<number | 'all'>(10);
+  const [userCutMap, setUserCutMap] = useState<Record<string, number>>({});
+
+  const applyUserCut = (entry: ReportEntry) => {
+    const cut = userCutMap[entry.user_id] || 0;
+    return Number(((Number(entry.net_generated_revenue) || 0) * (1 - cut / 100)).toFixed(4));
+  };
+
+  const fetchUserCuts = async () => {
+    const { data } = await supabase.from('profiles').select('user_id, hidden_cut_percent');
+    const map: Record<string, number> = {};
+    (data || []).forEach((p: any) => { map[p.user_id] = Number(p.hidden_cut_percent) || 0; });
+    setUserCutMap(map);
+  };
 
   const fetchMonths = async () => {
     setLoading(true);
@@ -154,7 +167,7 @@ export default function AdminReports() {
     setDetailLoading(false);
   };
 
-  useEffect(() => { fetchMonths(); }, []);
+  useEffect(() => { fetchMonths(); fetchUserCuts(); }, []);
 
   const handleViewMonth = (month: string) => {
     setSelectedMonth(month);
@@ -207,7 +220,7 @@ export default function AdminReports() {
     const headers = ['Reporting Month', ...COLUMNS.map((c) => c.label)];
     const rows = filteredEntries.map((e) => [
       e.reporting_month,
-      ...COLUMNS.map((c) => String(e[c.key as keyof ReportEntry] ?? '')),
+      ...COLUMNS.map((c) => c.key === 'net_generated_revenue' ? String(applyUserCut(e)) : String(e[c.key as keyof ReportEntry] ?? '')),
     ]);
     const csv = [headers, ...rows].map((r) => r.map((v) => `"${v}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -373,7 +386,7 @@ export default function AdminReports() {
                           {COLUMNS.map((col) => (
                             <TableCell key={col.key} className="whitespace-nowrap">
                               {col.key === 'net_generated_revenue'
-                                ? Number(entry[col.key]).toFixed(4)
+                                ? applyUserCut(entry).toFixed(4)
                                 : String(entry[col.key as keyof ReportEntry] ?? '-')}
                             </TableCell>
                           ))}
