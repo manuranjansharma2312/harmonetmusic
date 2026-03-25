@@ -51,7 +51,10 @@ export default function MyLabels() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !labelName.trim()) return;
+    if (!user || !labelName.trim() || !b2bFile) {
+      if (!b2bFile) { toast.error('B2B document (PDF) is required'); return; }
+      return;
+    }
 
     setSubmitting(true);
     try {
