@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { WorldMapChart } from '@/components/WorldMapChart';
 import { useQuery } from '@tanstack/react-query';
 import { NoticePopup } from '@/components/NoticePopup';
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -561,26 +562,14 @@ export default function UserDashboard() {
           )}
         </GlassCard>
 
-        {/* Country Distribution */}
+        {/* Country Distribution - World Map */}
         <GlassCard className="animate-fade-in">
           <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <Globe className="h-4 w-4 text-primary" />
             Top Countries
           </h3>
           {countryData.length > 0 ? (
-            <div className="h-48 sm:h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={countryData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 16%)" />
-                  <XAxis dataKey="name" tick={{ fill: 'hsl(0 0% 55%)', fontSize: 9 }} axisLine={{ stroke: 'hsl(0 0% 20%)' }} />
-                  <YAxis tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} width={45} axisLine={{ stroke: 'hsl(0 0% 20%)' }} />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Bar dataKey="streams" name="Streams" radius={[6, 6, 0, 0]}>
-                    {countryData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <WorldMapChart data={countryData} />
           ) : (
             <p className="text-xs text-muted-foreground text-center py-12">No country data yet</p>
           )}
