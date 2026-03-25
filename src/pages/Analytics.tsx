@@ -341,13 +341,13 @@ export default function Analytics() {
             </div>
 
             {/* ── Revenue Trend + Revenue Split ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-5">
               {/* Revenue Trend Area Chart */}
               <div className="lg:col-span-2 rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
-                <div className="p-6 pb-2">
+                <div className="p-4 sm:p-6 pb-2">
                   <SectionHeader icon={TrendingUp} title="Revenue Trend" subtitle="Monthly revenue by source" accent="#f0932b" />
                 </div>
-                <div className="h-[340px] px-3 pb-5">
+                <div className="h-[240px] sm:h-[300px] lg:h-[340px] px-1 sm:px-3 pb-3 sm:pb-5">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={revenueTrend} margin={{ top: 20, right: 20, left: 5, bottom: 0 }}>
                       <defs>
