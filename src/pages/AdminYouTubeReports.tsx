@@ -119,6 +119,12 @@ export default function AdminYouTubeReports() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [entryPage, setEntryPage] = useState(0);
   const [entryPageSize, setEntryPageSize] = useState<number | 'all'>(10);
+  const [userCutMap, setUserCutMap] = useState<Record<string, number>>({});
+
+  const applyUserCut = (entry: ReportEntry) => {
+    const cut = userCutMap[entry.user_id] || 0;
+    return Number(((Number(entry.net_generated_revenue) || 0) * (1 - cut / 100)).toFixed(4));
+  };
 
   const fetchMonths = async () => {
     setLoading(true);
