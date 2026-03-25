@@ -18,6 +18,8 @@ import AdminSubmissions from "./pages/AdminSubmissions";
 import AdminUsers from "./pages/AdminUsers";
 import MyProfile from "./pages/MyProfile";
 import MyLabels from "./pages/MyLabels";
+import SubLabels from "./pages/SubLabels";
+import AdminSubLabels from "./pages/AdminSubLabels";
 import AdminLabels from "./pages/AdminLabels";
 import AdminContentRequests from "./pages/AdminContentRequests";
 import CopyrightClaimRemoval from "./pages/CopyrightClaimRemoval";
