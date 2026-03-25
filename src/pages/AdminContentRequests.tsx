@@ -89,11 +89,18 @@ export default function AdminContentRequests() {
       const userIds = [...new Set(data.map((r: any) => r.user_id))];
       if (userIds.length > 0) {
         const { data: profiles } = await supabase.from('profiles').select('user_id, email, artist_name, record_label_name, user_type, display_id').in('user_id', userIds);
-        const infoMap: Record<string, { name: string; displayId?: number }> = {};
+        const { data: subLabelsData } = await supabase.from('sub_labels').select('sub_user_id, sub_label_name, parent_label_name');
+        const subLabelMap: Record<string, { sub_label_name: string; parent_label_name: string }> = {};
+        subLabelsData?.forEach((sl: any) => { if (sl.sub_user_id) subLabelMap[sl.sub_user_id] = { sub_label_name: sl.sub_label_name, parent_label_name: sl.parent_label_name }; });
+
+        const infoMap: Record<string, { name: string; displayId?: number; userType?: string; subLabelName?: string; parentLabelName?: string }> = {};
         profiles?.forEach((p: any) => {
           infoMap[p.user_id] = {
             name: p.user_type === 'label' ? (p.record_label_name || p.email) : (p.artist_name || p.email),
             displayId: p.display_id,
+            userType: p.user_type,
+            subLabelName: subLabelMap[p.user_id]?.sub_label_name,
+            parentLabelName: subLabelMap[p.user_id]?.parent_label_name,
           };
         });
         const missingIds = userIds.filter((id: string) => !infoMap[id]);
