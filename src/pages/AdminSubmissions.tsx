@@ -213,6 +213,38 @@ export default function AdminSubmissions() {
     fetchReleases();
   };
 
+  const handleTrackStatusChange = async (trackId: string, status: string) => {
+    if (status === 'rejected') {
+      setRejectTrackTarget(trackId);
+      return;
+    }
+    const { error } = await supabase.from('tracks').update({ status, rejection_reason: null } as any).eq('id', trackId);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`Track status changed to ${status}`);
+    fetchReleases();
+    if (viewRelease) {
+      setViewRelease((prev) => prev ? {
+        ...prev,
+        tracks: prev.tracks?.map((t) => t.id === trackId ? { ...t, status, rejection_reason: null } : t),
+      } : null);
+    }
+  };
+
+  const handleTrackRejectConfirm = async (reason: string) => {
+    if (!rejectTrackTarget) return;
+    const { error } = await supabase.from('tracks').update({ status: 'rejected', rejection_reason: reason } as any).eq('id', rejectTrackTarget);
+    if (error) { toast.error(error.message); return; }
+    toast.success('Track rejected');
+    setRejectTrackTarget(null);
+    fetchReleases();
+    if (viewRelease) {
+      setViewRelease((prev) => prev ? {
+        ...prev,
+        tracks: prev.tracks?.map((t) => t.id === rejectTrackTarget ? { ...t, status: 'rejected', rejection_reason: reason } : t),
+      } : null);
+    }
+  };
+
   const handleDelete = async () => {
     if (!deleteRelease) return;
     const { error } = await supabase.from('releases').delete().eq('id', deleteRelease.id);
