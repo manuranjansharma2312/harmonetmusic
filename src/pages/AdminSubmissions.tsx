@@ -222,6 +222,44 @@ export default function AdminSubmissions() {
     fetchReleases();
   };
 
+  // Extract storage path from public URL
+  const getStoragePath = (url: string, bucket: string) => {
+    const marker = `/storage/v1/object/public/${bucket}/`;
+    const idx = url.indexOf(marker);
+    if (idx === -1) return null;
+    return decodeURIComponent(url.substring(idx + marker.length));
+  };
+
+  const handleDeletePoster = async (releaseId: string, posterUrl: string) => {
+    const path = getStoragePath(posterUrl, 'posters') || getStoragePath(posterUrl, 'covers');
+    const bucket = posterUrl.includes('/posters/') ? 'posters' : 'covers';
+    if (path) {
+      await supabase.storage.from(bucket).remove([path]);
+    }
+    const { error } = await supabase.from('releases').update({ poster_url: null }).eq('id', releaseId);
+    if (error) { toast.error('Failed to delete poster'); return; }
+    toast.success('Poster deleted');
+    fetchReleases();
+    if (viewRelease?.id === releaseId) setViewRelease((prev) => prev ? { ...prev, poster_url: null } : null);
+  };
+
+  const handleDeleteAudio = async (trackId: string, audioUrl: string) => {
+    const path = getStoragePath(audioUrl, 'audio');
+    if (path) {
+      await supabase.storage.from('audio').remove([path]);
+    }
+    const { error } = await supabase.from('tracks').update({ audio_url: null }).eq('id', trackId);
+    if (error) { toast.error('Failed to delete audio'); return; }
+    toast.success('Audio deleted');
+    fetchReleases();
+    if (viewRelease) {
+      setViewRelease((prev) => prev ? {
+        ...prev,
+        tracks: prev.tracks?.map((t) => t.id === trackId ? { ...t, audio_url: null } : t),
+      } : null);
+    }
+  };
+
   const handleSaveUpc = async (releaseId: string) => {
     const upc = editingUpc[releaseId];
     if (upc === undefined) return;
