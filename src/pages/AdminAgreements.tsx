@@ -38,6 +38,8 @@ export default function AdminAgreements() {
   const [content, setContent] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<any>(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const { data: templates = [], isLoading } = useQuery({
     queryKey: ["agreement-templates"],
