@@ -260,16 +260,34 @@ export default function AdminSubLabels() {
       {/* Edit Modal */}
       {editSL && (
         <Dialog open={!!editSL} onOpenChange={() => setEditSL(null)}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Edit Sub Label</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">Agreement Start Date</label>
-                <input className={inputClass} type="date" value={editStart} onChange={(e) => setEditStart(e.target.value)} />
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Parent Label Name</label>
+                <input className={inputClass} type="text" value={editParentLabelName} onChange={(e) => setEditParentLabelName(e.target.value)} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">Agreement End Date</label>
-                <input className={inputClass} type="date" value={editEnd} onChange={(e) => setEditEnd(e.target.value)} />
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Sub Label Name</label>
+                <input className={inputClass} type="text" value={editSubLabelName} onChange={(e) => setEditSubLabelName(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Email</label>
+                <input className={inputClass} type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Phone</label>
+                <input className={inputClass} type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Agreement Start Date</label>
+                  <input className={inputClass} type="date" value={editStart} onChange={(e) => setEditStart(e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Agreement End Date</label>
+                  <input className={inputClass} type="date" value={editEnd} onChange={(e) => setEditEnd(e.target.value)} />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">Percentage Cut %</label>
