@@ -87,7 +87,6 @@ export default function SubLabels() {
   useEffect(() => {
     fetchSubLabels();
     fetchParentLabel();
-    fetchSubLabelWithdrawals();
   }, [effectiveUserId]);
 
   const updateSubWithdrawalStatus = async (id: string, newStatus: string) => {
