@@ -474,6 +474,7 @@ export default function NewRelease() {
           </div>
           <GlassCard glow className="w-full animate-fade-in">
             <TrackForm
+              key={editingTrackIndex ?? 'new'}
               genres={genres}
               languages={languages}
               isTransfer={releaseType === 'transfer'}
