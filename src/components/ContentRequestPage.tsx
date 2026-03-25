@@ -33,6 +33,10 @@ export function ContentRequestPage({ title, requestType, fields }: ContentReques
   const [submitting, setSubmitting] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [historyPage, setHistoryPage] = useState(0);
+  const [historyPageSize, setHistoryPageSize] = useState<number | 'all'>(10);
+
+  const paginatedHistory = useMemo(() => paginateItems(history, historyPage, historyPageSize), [history, historyPage, historyPageSize]);
 
   const fetchHistory = async () => {
     if (!user) return;
