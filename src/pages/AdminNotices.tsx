@@ -11,6 +11,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { toast } from 'sonner';
 import { Plus, Trash2, Edit2, Image as ImageIcon, X } from 'lucide-react';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { format } from 'date-fns';
 
 interface Notice {
