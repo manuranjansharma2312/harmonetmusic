@@ -6,6 +6,7 @@ import { StatCard } from '@/components/StatCard';
 import { GlassCard } from '@/components/GlassCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
+import { formatStreams, formatRevenue } from '@/lib/formatNumbers';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import {
