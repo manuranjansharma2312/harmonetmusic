@@ -134,7 +134,25 @@ export default function AdminContentRequests() {
     setRejectTarget(null);
   };
 
-  // Selection helpers
+  const handleDeleteScreenshot = async (itemId: string, screenshotUrl: string) => {
+    const marker = '/storage/v1/object/public/promotion-screenshots/';
+    const idx = screenshotUrl.indexOf(marker);
+    if (idx !== -1) {
+      const path = decodeURIComponent(screenshotUrl.substring(idx + marker.length));
+      await supabase.storage.from('promotion-screenshots').remove([path]);
+    }
+    const { error } = await supabase
+      .from('content_requests')
+      .update({ payment_screenshot_url: null })
+      .eq('id', itemId);
+    if (error) toast.error('Failed to delete screenshot');
+    else {
+      toast.success('Screenshot deleted');
+      fetchRequests();
+    }
+  };
+
+
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
@@ -321,7 +339,16 @@ export default function AdminContentRequests() {
                           <div key={field}>
                             <span className="text-xs text-muted-foreground">{FIELD_LABELS[field]}:</span>
                             {field === 'payment_screenshot_url' ? (
-                              <img src={item[field]} alt="Payment" className="max-h-32 rounded-lg border mt-1 object-contain" />
+                              <div className="relative inline-block mt-1">
+                                <img src={item[field]} alt="Payment" className="max-h-32 rounded-lg border object-contain" />
+                                <button
+                                  onClick={() => handleDeleteScreenshot(item.id, item[field])}
+                                  className="absolute -top-2 -right-2 p-1 rounded-full bg-destructive text-destructive-foreground hover:opacity-90 transition-all"
+                                  title="Delete screenshot"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
                             ) : (
                               <div className="flex items-center gap-1">
                                 <p className="text-sm text-foreground break-all">{item[field]}</p>

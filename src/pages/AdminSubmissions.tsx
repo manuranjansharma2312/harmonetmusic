@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Eye, Pencil, Trash2, Download, Search, ChevronDown, ChevronRight, Music, Save, Users } from 'lucide-react';
+import { Loader2, Eye, Pencil, Trash2, Download, Search, ChevronDown, ChevronRight, Music, Save, Users, Image, Volume2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
@@ -220,6 +220,44 @@ export default function AdminSubmissions() {
     toast.success(`${ids.length} releases deleted`);
     setSelected(new Set());
     fetchReleases();
+  };
+
+  // Extract storage path from public URL
+  const getStoragePath = (url: string, bucket: string) => {
+    const marker = `/storage/v1/object/public/${bucket}/`;
+    const idx = url.indexOf(marker);
+    if (idx === -1) return null;
+    return decodeURIComponent(url.substring(idx + marker.length));
+  };
+
+  const handleDeletePoster = async (releaseId: string, posterUrl: string) => {
+    const path = getStoragePath(posterUrl, 'posters') || getStoragePath(posterUrl, 'covers');
+    const bucket = posterUrl.includes('/posters/') ? 'posters' : 'covers';
+    if (path) {
+      await supabase.storage.from(bucket).remove([path]);
+    }
+    const { error } = await supabase.from('releases').update({ poster_url: null }).eq('id', releaseId);
+    if (error) { toast.error('Failed to delete poster'); return; }
+    toast.success('Poster deleted');
+    fetchReleases();
+    if (viewRelease?.id === releaseId) setViewRelease((prev) => prev ? { ...prev, poster_url: null } : null);
+  };
+
+  const handleDeleteAudio = async (trackId: string, audioUrl: string) => {
+    const path = getStoragePath(audioUrl, 'audio');
+    if (path) {
+      await supabase.storage.from('audio').remove([path]);
+    }
+    const { error } = await supabase.from('tracks').update({ audio_url: null }).eq('id', trackId);
+    if (error) { toast.error('Failed to delete audio'); return; }
+    toast.success('Audio deleted');
+    fetchReleases();
+    if (viewRelease) {
+      setViewRelease((prev) => prev ? {
+        ...prev,
+        tracks: prev.tracks?.map((t) => t.id === trackId ? { ...t, audio_url: null } : t),
+      } : null);
+    }
   };
 
   const handleSaveUpc = async (releaseId: string) => {
@@ -550,10 +588,26 @@ export default function AdminSubmissions() {
                 <Detail label="Submitted" value={new Date(viewRelease.created_at).toLocaleString()} />
               </div>
 
-              {viewRelease.poster_url && (
+              {viewRelease.poster_url ? (
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-1">Poster</p>
-                  <img src={viewRelease.poster_url} alt="Poster" className="h-32 w-32 rounded-lg object-cover border border-border" />
+                  <div className="relative inline-block">
+                    <img src={viewRelease.poster_url} alt="Poster" className="h-32 w-32 rounded-lg object-cover border border-border" />
+                    <button
+                      onClick={() => handleDeletePoster(viewRelease.id, viewRelease.poster_url!)}
+                      className="absolute -top-2 -right-2 p-1 rounded-full bg-destructive text-destructive-foreground hover:opacity-90 transition-all"
+                      title="Delete poster"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Poster</p>
+                  <div className="h-32 w-32 rounded-lg border border-dashed border-border flex items-center justify-center bg-muted/30">
+                    <Image className="h-8 w-8 text-muted-foreground/50" />
+                  </div>
                 </div>
               )}
 
@@ -622,8 +676,22 @@ export default function AdminSubmissions() {
                           <Detail label="Callertune" value={track.callertune_time || '—'} />
                         </div>
 
-                        {track.audio_url && (
-                          <audio controls src={track.audio_url} className="w-full h-8 mt-1" />
+                        {track.audio_url ? (
+                          <div className="flex items-center gap-2 mt-1">
+                            <audio controls src={track.audio_url} className="flex-1 h-8" />
+                            <button
+                              onClick={() => handleDeleteAudio(track.id, track.audio_url!)}
+                              className="p-1.5 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-all"
+                              title="Delete audio"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 mt-1 p-2 rounded-lg border border-dashed border-border bg-muted/20">
+                            <Volume2 className="h-4 w-4 text-muted-foreground/50" />
+                            <span className="text-xs text-muted-foreground/50">No audio file</span>
+                          </div>
                         )}
                       </div>
                     ))}
