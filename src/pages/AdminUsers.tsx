@@ -44,6 +44,7 @@ type Profile = {
   id_proof_back_url: string | null;
   verification_status: string;
   created_at: string;
+  hidden_cut_percent?: number;
 };
 
 const VerificationBadge = React.forwardRef<HTMLSpanElement, { status: string }>(
