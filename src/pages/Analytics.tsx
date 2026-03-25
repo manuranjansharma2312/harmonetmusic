@@ -434,10 +434,10 @@ export default function Analytics() {
 
             {/* ── Streams Trend ── */}
             <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
-              <div className="p-6 pb-2">
+              <div className="p-4 sm:p-6 pb-2">
                 <SectionHeader icon={Play} title="Streams Trend" subtitle="Monthly stream counts by source" accent="#45aaf2" />
               </div>
-              <div className="h-[320px] px-3 pb-5">
+              <div className="h-[240px] sm:h-[280px] lg:h-[320px] px-1 sm:px-3 pb-3 sm:pb-5">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={streamsTrend} margin={{ top: 20, right: 20, left: 5, bottom: 0 }}>
                     <defs>
