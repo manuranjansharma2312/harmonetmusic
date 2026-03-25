@@ -35,6 +35,8 @@ type Track = {
   instagram_link: string | null;
   callertune_time: string | null;
   track_order: number;
+  status: string;
+  rejection_reason: string | null;
 };
 
 type Release = {
