@@ -4,6 +4,7 @@ import { StatCard } from '@/components/StatCard';
 import { GlassCard } from '@/components/GlassCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
+import { formatRevenue } from '@/lib/formatNumbers';
 import {
   Music, Clock, CheckCircle, XCircle, Loader2, Users, Disc3,
   Wallet, FileText, UsersRound, Tag, MessageSquare, ArrowRight
@@ -395,7 +396,7 @@ export default function AdminDashboard() {
                 </div>
                 <span className="text-xs sm:text-sm text-muted-foreground">Total Paid</span>
               </div>
-              <span className="text-sm sm:text-lg font-bold text-foreground">₹{withdrawalStats.totalAmount.toLocaleString()}</span>
+              <span className="text-sm sm:text-lg font-bold text-foreground">{formatRevenue(withdrawalStats.totalAmount)}</span>
             </div>
           </div>
         </GlassCard>
