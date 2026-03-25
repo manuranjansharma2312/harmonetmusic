@@ -330,7 +330,6 @@ export default function Revenue() {
                   Your withdrawal limit is set by your Main Record Label.
                 </p>
               )}
-              </p>
             </div>
             <Button
               onClick={handleWithdraw}
