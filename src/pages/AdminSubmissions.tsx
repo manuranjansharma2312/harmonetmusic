@@ -1317,17 +1317,22 @@ export default function AdminSubmissions() {
               <p className="text-xs text-muted-foreground">
                 Supported columns: Release Name, Release Type, Content Type, UPC, Release Date, Status, Store Selection, Copyright, Phonogram, Track #, Song Title, ISRC, Primary Artist, Singer, Audio Type, Language, Genre, Lyricist, Composer, Producer, Spotify Link, Apple Music Link, Instagram Link, Callertune Time, New Artist Profile.
               </p>
-              <input
-                type="file"
-                accept=".csv,.txt"
-                className="block w-full text-sm text-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleImportCSV(file);
-                  e.target.value = '';
-                }}
-                disabled={importParsing || importing}
-              />
+              <div className="flex flex-wrap gap-2 items-center">
+                <input
+                  type="file"
+                  accept=".csv,.txt"
+                  className="block flex-1 min-w-0 text-sm text-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleImportCSV(file);
+                    e.target.value = '';
+                  }}
+                  disabled={importParsing || importing}
+                />
+                <Button variant="outline" size="sm" onClick={downloadDemoTemplate}>
+                  <Download className="h-3.5 w-3.5" /> Demo Template
+                </Button>
+              </div>
             </div>
 
             {importParsing && (
