@@ -73,6 +73,7 @@ export function AppSidebar() {
   const [toolsOpen, setToolsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
   const [adminSubLabelsOpen, setAdminSubLabelsOpen] = useState(false);
+  const [userSubLabelsOpen, setUserSubLabelsOpen] = useState(false);
   const [impUserType, setImpUserType] = useState<string | null>(null);
   const [impIsSubLabel, setImpIsSubLabel] = useState(false);
 
@@ -99,9 +100,14 @@ export function AppSidebar() {
     { to: '/submit', label: 'New Release', icon: Upload },
     { to: '/my-releases', label: 'My Releases', icon: ListMusic },
     { to: '/my-labels', label: 'My Labels', icon: Tag },
-    // Only show Sub Labels for record_label users who are NOT sub-labels
-    ...(effectiveUserType === 'record_label' && !effectiveIsSubLabel ? [{ to: '/sub-labels', label: 'Sub Labels', icon: UsersRound }] : []),
   ];
+
+  // Sub Labels collapsible links (only for record_label users who are NOT sub-labels)
+  const userSubLabelLinks = [
+    { to: '/sub-labels', label: 'All Sub Labels', icon: UsersRound },
+    { to: '/sub-labels/withdrawals', label: 'Withdraw Requests', icon: Wallet },
+  ];
+  const showUserSubLabels = effectiveUserType === 'record_label' && !effectiveIsSubLabel;
 
   const userLinksBottom = [
     { to: '/poster-generator', label: 'Out Now Poster', icon: ImageIcon },
@@ -202,6 +208,7 @@ export function AppSidebar() {
               {showUserView ? (
                 <>
                   {userLinksTop.map(renderNavLink)}
+                  {showUserSubLabels && renderCollapsibleGroup('Sub Labels', UsersRound, userSubLabelLinks, userSubLabelsOpen, setUserSubLabelsOpen)}
                   {renderCollapsibleGroup('Support', Headset, contentToolLinks, toolsOpen, setToolsOpen)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, reportLinks, reportsOpen, setReportsOpen)}
                   {userLinksBottom.map(renderNavLink)}

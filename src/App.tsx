@@ -21,6 +21,7 @@ import MyLabels from "./pages/MyLabels";
 import SubLabels from "./pages/SubLabels";
 import AdminSubLabels from "./pages/AdminSubLabels";
 import AdminSubLabelWithdrawals from "./pages/AdminSubLabelWithdrawals";
+import SubLabelWithdrawals from "./pages/SubLabelWithdrawals";
 import AdminLabels from "./pages/AdminLabels";
 import AdminContentRequests from "./pages/AdminContentRequests";
 import CopyrightClaimRemoval from "./pages/CopyrightClaimRemoval";
@@ -80,6 +81,7 @@ function App() {
                   <Route path="/my-releases" element={<ProtectedRoute><MyReleases /></ProtectedRoute>} />
                   <Route path="/my-labels" element={<ProtectedRoute><MyLabels /></ProtectedRoute>} />
                   <Route path="/sub-labels" element={<ProtectedRoute><SubLabels /></ProtectedRoute>} />
+                  <Route path="/sub-labels/withdrawals" element={<ProtectedRoute><SubLabelWithdrawals /></ProtectedRoute>} />
                   <Route path="/my-songs" element={<Navigate to="/my-releases" replace />} />
                   <Route path="/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
                   <Route path="/bank-details" element={<ProtectedRoute><BankDetails /></ProtectedRoute>} />
