@@ -417,6 +417,7 @@ export type Database = {
           display_id: number
           email: string
           facebook_link: string | null
+          hidden_cut_percent: number
           id: string
           id_proof_back_url: string | null
           id_proof_front_url: string | null
@@ -441,6 +442,7 @@ export type Database = {
           display_id?: number
           email: string
           facebook_link?: string | null
+          hidden_cut_percent?: number
           id?: string
           id_proof_back_url?: string | null
           id_proof_front_url?: string | null
@@ -465,6 +467,7 @@ export type Database = {
           display_id?: number
           email?: string
           facebook_link?: string | null
+          hidden_cut_percent?: number
           id?: string
           id_proof_back_url?: string | null
           id_proof_front_url?: string | null

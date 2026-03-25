@@ -80,6 +80,7 @@ export default function Reports() {
   const [entryPage, setEntryPage] = useState(0);
   const [entryPageSize, setEntryPageSize] = useState<number | 'all'>(10);
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [hiddenCut, setHiddenCut] = useState(0);
 
   const { impersonatedUserId, isImpersonating } = useImpersonate();
 
@@ -88,6 +89,23 @@ export default function Reports() {
 
     const fetchReports = async () => {
       setLoading(true);
+
+      // Fetch hidden cut for non-admin users
+      if (role !== 'admin') {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('hidden_cut_percent')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
+      } else if (isImpersonating && impersonatedUserId) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('hidden_cut_percent')
+          .eq('user_id', impersonatedUserId)
+          .maybeSingle();
+        setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
+      }
 
       if (role === 'admin' && isImpersonating && impersonatedUserId) {
         const [{ data: trackRows }, { data: songRows }] = await Promise.all([
@@ -130,6 +148,10 @@ export default function Reports() {
     fetchReports();
   }, [user, role, isImpersonating, impersonatedUserId]);
 
+  // Cut multiplier: apply for non-admin users or when impersonating
+  const cutMultiplier = (role !== 'admin' || isImpersonating) ? (1 - hiddenCut / 100) : 1;
+  const applyRevenueCut = (val: number) => Number((val * cutMultiplier).toFixed(4));
+
   const monthlyGroups = useMemo(() => {
     const groups: Record<string, { entries: ReportEntry[]; latestImport: string; totalRevenue: number }> = {};
     entries.forEach((e) => {
@@ -137,13 +159,13 @@ export default function Reports() {
         groups[e.reporting_month] = { entries: [], latestImport: e.imported_at, totalRevenue: 0 };
       }
       groups[e.reporting_month].entries.push(e);
-      groups[e.reporting_month].totalRevenue += Number(e.net_generated_revenue) || 0;
+      groups[e.reporting_month].totalRevenue += applyRevenueCut(Number(e.net_generated_revenue) || 0);
       if (e.imported_at > groups[e.reporting_month].latestImport) {
         groups[e.reporting_month].latestImport = e.imported_at;
       }
     });
     return Object.entries(groups).sort(([a], [b]) => parseMonthKey(b) - parseMonthKey(a));
-  }, [entries]);
+  }, [entries, cutMultiplier]);
 
   const filteredMonthlyGroups = useMemo(() => {
     if (!monthSearch.trim()) return monthlyGroups;
@@ -186,7 +208,7 @@ export default function Reports() {
     const headers = ['Reporting Month', ...COLUMNS.map((c) => c.label)];
     const rows = selectedEntries.map((e) => [
       e.reporting_month,
-      ...COLUMNS.map((c) => String(e[c.key as keyof ReportEntry] ?? '')),
+      ...COLUMNS.map((c) => c.key === 'net_generated_revenue' ? String(applyRevenueCut(Number(e[c.key]))) : String(e[c.key as keyof ReportEntry] ?? '')),
     ]);
     const csv = [headers, ...rows].map((r) => r.map((v) => `"${v}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -335,7 +357,7 @@ export default function Reports() {
                           {COLUMNS.map((col) => (
                             <TableCell key={col.key} className="whitespace-nowrap">
                               {col.key === 'net_generated_revenue'
-                                ? Number(entry[col.key]).toFixed(4)
+                                ? applyRevenueCut(Number(entry[col.key])).toFixed(4)
                                 : String(entry[col.key as keyof ReportEntry] ?? '-')}
                             </TableCell>
                           ))}

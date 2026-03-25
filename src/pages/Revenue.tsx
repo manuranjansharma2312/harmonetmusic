@@ -37,8 +37,10 @@ export default function Revenue() {
   const [withdrawing, setWithdrawing] = useState(false);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
+  const [hiddenCut, setHiddenCut] = useState(0);
 
-  const availableBalance = totalRevenue - paidWithdrawals - pendingWithdrawals;
+  const cutMultiplier = (role !== 'admin' || (impersonatedUserId && impersonatedUserId !== user?.id)) ? (1 - hiddenCut / 100) : 1;
+  const availableBalance = (totalRevenue * cutMultiplier) - paidWithdrawals - pendingWithdrawals;
   const progressPercent = threshold > 0 ? Math.min((availableBalance / threshold) * 100, 100) : 0;
   const canWithdraw = availableBalance >= threshold;
 
@@ -57,6 +59,14 @@ export default function Revenue() {
         .eq('user_id', activeUserId!)
         .maybeSingle();
       setHasBankDetails(!!bankData);
+
+      // Fetch hidden cut
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('hidden_cut_percent')
+        .eq('user_id', activeUserId!)
+        .maybeSingle();
+      setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
       // Fetch total revenue from OTT reports
       const { data: ottData } = await supabase
         .from('report_entries')
@@ -201,7 +211,7 @@ export default function Revenue() {
               <span className="text-sm font-medium text-muted-foreground">Total Earned</span>
             </div>
             <p className="text-3xl font-bold text-blue-400">
-              {loading ? '...' : formatCurrency(totalRevenue)}
+              {loading ? '...' : formatCurrency(totalRevenue * cutMultiplier)}
             </p>
           </GlassCard>
 

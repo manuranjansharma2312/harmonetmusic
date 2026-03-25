@@ -44,6 +44,7 @@ type Profile = {
   id_proof_back_url: string | null;
   verification_status: string;
   created_at: string;
+  hidden_cut_percent?: number;
 };
 
 const VerificationBadge = React.forwardRef<HTMLSpanElement, { status: string }>(
@@ -68,6 +69,7 @@ export default function AdminUsers() {
   const [editBankDetail, setEditBankDetail] = useState<any>(null);
   const [viewBankDetails, setViewBankDetails] = useState<any>(null);
   const [deleting, setDeleting] = useState(false);
+  const [editingCut, setEditingCut] = useState<{ userId: string; value: string } | null>(null);
   const { startImpersonating } = useImpersonate();
   const navigate = useNavigate();
 
@@ -114,6 +116,14 @@ export default function AdminUsers() {
     startImpersonating(profile.user_id, profile.email);
     toast.success(`Now viewing as ${profile.email}`);
     navigate('/dashboard');
+  };
+
+  const handleSaveHiddenCut = async (userId: string, percent: number) => {
+    const { error } = await supabase.from('profiles').update({ hidden_cut_percent: percent }).eq('user_id', userId);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`Hidden cut set to ${percent}%`);
+    setEditingCut(null);
+    fetchProfiles();
   };
 
   // Toggle selection
@@ -406,6 +416,37 @@ export default function AdminUsers() {
                 <VerificationBadge status={viewProfile.verification_status} />
               </div>
               <Row label="Joined" value={new Date(viewProfile.created_at).toLocaleDateString()} />
+
+              {/* Hidden Cut */}
+              <div className="pt-3 border-t border-border/50">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground font-medium">Hidden Cut %</span>
+                  {editingCut?.userId === viewProfile.user_id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={editingCut.value}
+                        onChange={(e) => setEditingCut({ ...editingCut, value: e.target.value.replace(/[^0-9.]/g, '') })}
+                        className="w-20 px-2 py-1 rounded bg-muted/50 border border-border text-foreground text-sm text-right"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => handleSaveHiddenCut(viewProfile.user_id, Number(editingCut.value) || 0)}
+                        className="text-xs px-2 py-1 rounded bg-primary/20 text-primary hover:bg-primary/30"
+                      >Save</button>
+                      <button onClick={() => setEditingCut(null)} className="text-xs text-muted-foreground hover:text-foreground">✕</button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setEditingCut({ userId: viewProfile.user_id, value: String(viewProfile.hidden_cut_percent || 0) })}
+                      className="text-foreground font-medium hover:text-primary transition-colors"
+                    >
+                      {viewProfile.hidden_cut_percent || 0}% <Pencil className="inline h-3 w-3 ml-1 opacity-50" />
+                    </button>
+                  )}
+                </div>
+              </div>
 
               {/* ID Proof section with delete buttons */}
               {(viewProfile.id_proof_front_url || viewProfile.id_proof_back_url) && (
