@@ -417,7 +417,7 @@ export default function Analytics() {
                   )}
                 </div>
                 {sourceSplit.length > 0 && (
-                  <div className="flex items-center justify-center gap-8 px-5 pb-6">
+                  <div className="flex items-center justify-center gap-4 sm:gap-8 px-3 sm:px-5 pb-4 sm:pb-6">
                     {sourceSplit.map((s, i) => (
                       <div key={s.name} className="flex items-center gap-3">
                         <span className="h-4 w-4 rounded-lg shadow-lg" style={{ background: PIE_COLORS[i], boxShadow: `0 0 12px ${PIE_COLORS[i]}50` }} />
