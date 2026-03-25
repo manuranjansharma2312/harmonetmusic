@@ -179,33 +179,43 @@ export default function AdminAgreements() {
             <p className="text-center text-muted-foreground py-8">No templates yet. Create your first one!</p>
           </GlassCard>
         ) : (
-          <div className="grid gap-4">
-            {templates.map((t: any) => (
-              <GlassCard key={t.id}>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-5 w-5 text-primary flex-shrink-0" />
-                    <div>
-                      <h3 className="font-semibold">{t.name}</h3>
-                      <p className="text-xs text-muted-foreground">
-                        Updated: {new Date(t.updated_at).toLocaleDateString()}
-                      </p>
+          <div className="space-y-4">
+            <div className="grid gap-4">
+              {paginatedTemplates.map((t: any) => (
+                <GlassCard key={t.id}>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+                      <div>
+                        <h3 className="font-semibold">{t.name}</h3>
+                        <p className="text-xs text-muted-foreground">
+                          Updated: {new Date(t.updated_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => setPreviewTemplate(t)}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => startEdit(t)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="destructive" onClick={() => setDeleteId(t.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => setPreviewTemplate(t)}>
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => startEdit(t)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={() => setDeleteId(t.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </GlassCard>
-            ))}
+                </GlassCard>
+              ))}
+            </div>
+            <TablePagination
+              totalItems={templates.length}
+              currentPage={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="templates"
+            />
           </div>
         )}
       </div>
