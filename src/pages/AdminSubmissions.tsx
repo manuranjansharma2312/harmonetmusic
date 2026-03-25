@@ -570,7 +570,14 @@ export default function AdminSubmissions() {
               </tbody>
             </table>
           </div>
-        )}
+          <TablePagination
+            totalItems={filtered.length}
+            currentPage={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="releases"
+          />
       </GlassCard>
 
       {/* View Release Detail Modal */}
