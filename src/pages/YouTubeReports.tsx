@@ -84,48 +84,57 @@ export default function YouTubeReports() {
 
   const { impersonatedUserId, isImpersonating } = useImpersonate();
 
+  const fetchReports = async () => {
+    if (!user) return;
+    setLoading(true);
+
+    // Check if user is a sub-label and get parent's cut
+    const { data: subLabelData } = await supabase
+      .from('sub_labels')
+      .select('percentage_cut')
+      .eq('sub_user_id', user.id)
+      .maybeSingle();
+    if (subLabelData) {
+      setSubLabelCut(Number(subLabelData.percentage_cut) || 0);
+    }
+
+    // Fetch hidden cut
+    if (role !== 'admin') {
+      const { data: profileData } = await supabase.from('profiles').select('hidden_cut_percent').eq('user_id', user.id).maybeSingle();
+      setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
+    } else if (isImpersonating && impersonatedUserId) {
+      const { data: profileData } = await supabase.from('profiles').select('hidden_cut_percent').eq('user_id', impersonatedUserId).maybeSingle();
+      setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
+    }
+
+    if (role === 'admin' && isImpersonating && impersonatedUserId) {
+      const [{ data: trackRows }, { data: songRows }] = await Promise.all([
+        supabase.from('tracks').select('isrc').eq('user_id', impersonatedUserId),
+        supabase.from('songs').select('isrc').eq('user_id', impersonatedUserId),
+      ]);
+      const ownedIsrcs = [...new Set(
+        [...(trackRows ?? []), ...(songRows ?? [])]
+          .map((row) => normalizeIsrc(row.isrc))
+          .filter((value): value is string => Boolean(value))
+      )];
+      if (ownedIsrcs.length === 0) { setEntries([]); setLoading(false); return; }
+      const { data } = await supabase.from('youtube_report_entries').select('*').in('isrc', ownedIsrcs).order('reporting_month', { ascending: false });
+      setEntries((data as ReportEntry[]) || []); setLoading(false); return;
+    }
+    const { data } = await supabase.from('youtube_report_entries').select('*').order('reporting_month', { ascending: false });
+    setEntries((data as ReportEntry[]) || []); setLoading(false);
+  };
+
   useEffect(() => {
     if (!user) return;
-    const fetchReports = async () => {
-      setLoading(true);
-
-      // Check if user is a sub-label and get parent's cut
-      const { data: subLabelData } = await supabase
-        .from('sub_labels')
-        .select('percentage_cut')
-        .eq('sub_user_id', user.id)
-        .maybeSingle();
-      if (subLabelData) {
-        setSubLabelCut(Number(subLabelData.percentage_cut) || 0);
-      }
-
-      // Fetch hidden cut
-      if (role !== 'admin') {
-        const { data: profileData } = await supabase.from('profiles').select('hidden_cut_percent').eq('user_id', user.id).maybeSingle();
-        setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
-      } else if (isImpersonating && impersonatedUserId) {
-        const { data: profileData } = await supabase.from('profiles').select('hidden_cut_percent').eq('user_id', impersonatedUserId).maybeSingle();
-        setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
-      }
-
-      if (role === 'admin' && isImpersonating && impersonatedUserId) {
-        const [{ data: trackRows }, { data: songRows }] = await Promise.all([
-          supabase.from('tracks').select('isrc').eq('user_id', impersonatedUserId),
-          supabase.from('songs').select('isrc').eq('user_id', impersonatedUserId),
-        ]);
-        const ownedIsrcs = [...new Set(
-          [...(trackRows ?? []), ...(songRows ?? [])]
-            .map((row) => normalizeIsrc(row.isrc))
-            .filter((value): value is string => Boolean(value))
-        )];
-        if (ownedIsrcs.length === 0) { setEntries([]); setLoading(false); return; }
-        const { data } = await supabase.from('youtube_report_entries').select('*').in('isrc', ownedIsrcs).order('reporting_month', { ascending: false });
-        setEntries((data as ReportEntry[]) || []); setLoading(false); return;
-      }
-      const { data } = await supabase.from('youtube_report_entries').select('*').order('reporting_month', { ascending: false });
-      setEntries((data as ReportEntry[]) || []); setLoading(false);
-    };
     fetchReports();
+
+    const channel = supabase
+      .channel('yt-reports-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'youtube_report_entries' }, () => fetchReports())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [user, role, isImpersonating, impersonatedUserId]);
 
   const effectiveCut = subLabelCut > 0 ? subLabelCut : hiddenCut;

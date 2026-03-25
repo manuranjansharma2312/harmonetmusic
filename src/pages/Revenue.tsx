@@ -51,6 +51,16 @@ export default function Revenue() {
   useEffect(() => {
     if (!activeUserId) return;
     fetchData();
+
+    // Realtime subscriptions for revenue & withdrawal changes
+    const channel = supabase
+      .channel('revenue-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'report_entries' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'youtube_report_entries' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawal_requests' }, () => fetchData())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [activeUserId]);
 
   async function fetchData() {

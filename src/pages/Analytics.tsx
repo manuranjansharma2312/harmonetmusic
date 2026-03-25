@@ -201,37 +201,47 @@ export default function Analytics() {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<TimePeriod>('all');
 
+  const fetchData = async () => {
+    if (!user) return;
+    setLoading(true);
+    const mapEntries = (arr: any[], source: 'ott' | 'youtube') =>
+      (arr || []).map((e: any) => ({ ...e, source, streams: e.streams || 0, downloads: e.downloads || 0, net_generated_revenue: e.net_generated_revenue || 0 }));
+
+    if (role === 'admin' && isImpersonating && impersonatedUserId) {
+      const [{ data: trackRows }, { data: songRows }] = await Promise.all([
+        supabase.from('tracks').select('isrc').eq('user_id', impersonatedUserId),
+        supabase.from('songs').select('isrc').eq('user_id', impersonatedUserId),
+      ]);
+      const ownedIsrcs = [...new Set([...(trackRows ?? []), ...(songRows ?? [])].map((row) => normalizeIsrc(row.isrc)).filter((v): v is string => Boolean(v)))];
+      if (ownedIsrcs.length === 0) { setOttEntries([]); setYtEntries([]); setLoading(false); return; }
+      const [{ data: ott }, { data: yt }] = await Promise.all([
+        supabase.from('report_entries').select('*').in('isrc', ownedIsrcs),
+        supabase.from('youtube_report_entries').select('*').in('isrc', ownedIsrcs),
+      ]);
+      setOttEntries(mapEntries(ott || [], 'ott'));
+      setYtEntries(mapEntries(yt || [], 'youtube'));
+    } else {
+      const [{ data: ott }, { data: yt }] = await Promise.all([
+        supabase.from('report_entries').select('*'),
+        supabase.from('youtube_report_entries').select('*'),
+      ]);
+      setOttEntries(mapEntries(ott || [], 'ott'));
+      setYtEntries(mapEntries(yt || [], 'youtube'));
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (!user) return;
-    const fetchData = async () => {
-      setLoading(true);
-      const mapEntries = (arr: any[], source: 'ott' | 'youtube') =>
-        (arr || []).map((e: any) => ({ ...e, source, streams: e.streams || 0, downloads: e.downloads || 0, net_generated_revenue: e.net_generated_revenue || 0 }));
-
-      if (role === 'admin' && isImpersonating && impersonatedUserId) {
-        const [{ data: trackRows }, { data: songRows }] = await Promise.all([
-          supabase.from('tracks').select('isrc').eq('user_id', impersonatedUserId),
-          supabase.from('songs').select('isrc').eq('user_id', impersonatedUserId),
-        ]);
-        const ownedIsrcs = [...new Set([...(trackRows ?? []), ...(songRows ?? [])].map((row) => normalizeIsrc(row.isrc)).filter((v): v is string => Boolean(v)))];
-        if (ownedIsrcs.length === 0) { setOttEntries([]); setYtEntries([]); setLoading(false); return; }
-        const [{ data: ott }, { data: yt }] = await Promise.all([
-          supabase.from('report_entries').select('*').in('isrc', ownedIsrcs),
-          supabase.from('youtube_report_entries').select('*').in('isrc', ownedIsrcs),
-        ]);
-        setOttEntries(mapEntries(ott || [], 'ott'));
-        setYtEntries(mapEntries(yt || [], 'youtube'));
-      } else {
-        const [{ data: ott }, { data: yt }] = await Promise.all([
-          supabase.from('report_entries').select('*'),
-          supabase.from('youtube_report_entries').select('*'),
-        ]);
-        setOttEntries(mapEntries(ott || [], 'ott'));
-        setYtEntries(mapEntries(yt || [], 'youtube'));
-      }
-      setLoading(false);
-    };
     fetchData();
+
+    const channel = supabase
+      .channel('analytics-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'report_entries' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'youtube_report_entries' }, () => fetchData())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [user, role, isImpersonating, impersonatedUserId]);
 
   const allEntries = useMemo(() => [...ottEntries, ...ytEntries], [ottEntries, ytEntries]);
