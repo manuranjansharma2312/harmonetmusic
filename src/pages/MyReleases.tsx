@@ -33,6 +33,9 @@ type Track = {
   callertune_time: string | null;
   track_order: number;
   is_new_artist_profile: boolean | null;
+  status: string;
+  rejection_reason: string | null;
+  singer: string | null;
 };
 
 type Release = {
