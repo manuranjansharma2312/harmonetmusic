@@ -325,6 +325,12 @@ export default function Revenue() {
               <p className="text-sm text-muted-foreground">
                 You need at least {formatCurrency(threshold)} to withdraw
               </p>
+              {isSubLabelUser && (
+                <p className="text-xs text-primary mt-1">
+                  Your withdrawal limit is set by your Main Record Label.
+                </p>
+              )}
+              </p>
             </div>
             <Button
               onClick={handleWithdraw}
