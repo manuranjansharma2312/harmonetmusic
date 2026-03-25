@@ -166,38 +166,47 @@ export default function AdminTutorials() {
                 No tutorials created yet. Click "New Tutorial" to get started.
               </GlassCard>
             ) : (
-              <div className="grid gap-4">
-                {tutorials.map((tutorial) => (
-                  <GlassCard key={tutorial.id} className="p-4 sm:p-5">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-base">{tutorial.subject}</h3>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Created: {format(new Date(tutorial.created_at), 'dd MMM yyyy, hh:mm a')}
-                          {tutorial.updated_at !== tutorial.created_at && (
-                            <> · Updated: {format(new Date(tutorial.updated_at), 'dd MMM yyyy, hh:mm a')}</>
-                          )}
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                          {stripHtml(tutorial.content)}
-                        </p>
+              <div className="space-y-4">
+                <div className="grid gap-4">
+                  {paginatedTutorials.map((tutorial) => (
+                    <GlassCard key={tutorial.id} className="p-4 sm:p-5">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-base">{tutorial.subject}</h3>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Created: {format(new Date(tutorial.created_at), 'dd MMM yyyy, hh:mm a')}
+                            {tutorial.updated_at !== tutorial.created_at && (
+                              <> · Updated: {format(new Date(tutorial.updated_at), 'dd MMM yyyy, hh:mm a')}</>
+                            )}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                            {stripHtml(tutorial.content)}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <Button size="icon" variant="ghost" onClick={() => setViewTutorial(tutorial)} title="View">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button size="icon" variant="ghost" onClick={() => handleEdit(tutorial)} title="Edit">
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="text-destructive" onClick={() => setDeleteId(tutorial.id)} title="Delete">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <Button size="icon" variant="ghost" onClick={() => setViewTutorial(tutorial)} title="View">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="ghost" onClick={() => handleEdit(tutorial)} title="Edit">
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="text-destructive" onClick={() => setDeleteId(tutorial.id)} title="Delete">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </GlassCard>
-                ))}
+                    </GlassCard>
+                  ))}
+                </div>
+                <TablePagination
+                  totalItems={tutorials.length}
+                  currentPage={page}
+                  pageSize={pageSize}
+                  onPageChange={setPage}
+                  onPageSizeChange={setPageSize}
+                  itemLabel="tutorials"
+                />
               </div>
-            )}
           </>
         )}
       </div>
