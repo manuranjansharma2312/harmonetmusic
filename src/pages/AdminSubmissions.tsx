@@ -533,7 +533,7 @@ export default function AdminSubmissions() {
 
                         {/* ISRC, Audio Type, Language, Genre — before artist */}
                         <div className="grid grid-cols-2 gap-2 text-xs">
-                          <Detail label="ISRC" value={track.isrc || '—'} />
+                          <Detail label="ISRC" value={track.isrc || '—'} copyable />
                           <Detail label="Audio Type" value={track.audio_type === 'with_vocal' ? 'With Vocal' : 'Instrumental'} />
                           <Detail label="Language" value={track.language || '—'} />
                           <Detail label="Genre" value={track.genre || '—'} />
