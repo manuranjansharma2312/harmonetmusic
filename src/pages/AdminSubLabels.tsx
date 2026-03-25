@@ -37,6 +37,7 @@ export default function AdminSubLabels() {
   const [subLabels, setSubLabels] = useState<SubLabel[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [viewSL, setViewSL] = useState<SubLabel | null>(null);
   const [deleteSL, setDeleteSL] = useState<SubLabel | null>(null);
   const [rejectSL, setRejectSL] = useState<SubLabel | null>(null);
