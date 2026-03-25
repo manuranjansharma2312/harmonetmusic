@@ -64,6 +64,13 @@ export default function AdminContentRequests() {
   const [userInfoMap, setUserInfoMap] = useState<Record<string, { name: string; displayId?: number }>>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
+
+  const paginated = useMemo(() => paginateItems(requests, page, pageSize), [requests, page, pageSize]);
+
+  // Reset page on filter change
+  useEffect(() => { setPage(0); }, [filterType, filterStatus]);
 
   const fetchRequests = async () => {
     let query = supabase
