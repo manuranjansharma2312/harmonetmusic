@@ -28,6 +28,7 @@ export default function Revenue() {
   const navigate = useNavigate();
 
   const [hasBankDetails, setHasBankDetails] = useState<boolean | null>(null);
+  const [parentBankMissing, setParentBankMissing] = useState(false);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [paidWithdrawals, setPaidWithdrawals] = useState(0);
   const [pendingWithdrawals, setPendingWithdrawals] = useState(0);
