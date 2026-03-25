@@ -735,17 +735,17 @@ function SectionHeader({ icon: Icon, title, subtitle, accent }: { icon: any; tit
 function RankRow({ rank, name, value, pct, pal }: { rank: number; name: string; value: string; pct: number; pal: { from: string; to: string } }) {
   const isTop3 = rank <= 3;
   return (
-    <div className="flex items-center gap-3.5 group py-1.5">
-      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-[11px] font-black shrink-0 border border-border/10 shadow-md ${isTop3 ? '' : ''}`}
+    <div className="flex items-center gap-2 sm:gap-3.5 group py-1 sm:py-1.5">
+      <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center text-[9px] sm:text-[11px] font-black shrink-0 border border-border/10 shadow-md`}
         style={{ background: `linear-gradient(135deg, ${pal.from}${isTop3 ? '30' : '18'}, ${pal.to}${isTop3 ? '15' : '08'})`, color: pal.from, boxShadow: isTop3 ? `0 4px 12px ${pal.from}20` : 'none' }}>
         {rank}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[13px] font-semibold text-foreground truncate mr-3 group-hover:text-primary transition-colors duration-300">{name}</span>
-          <span className="text-xs font-mono font-bold text-muted-foreground whitespace-nowrap">{value}</span>
+        <div className="flex items-center justify-between mb-1 sm:mb-2">
+          <span className="text-[11px] sm:text-[13px] font-semibold text-foreground truncate mr-2 sm:mr-3 group-hover:text-primary transition-colors duration-300">{name}</span>
+          <span className="text-[10px] sm:text-xs font-mono font-bold text-muted-foreground whitespace-nowrap">{value}</span>
         </div>
-        <div className="h-[6px] rounded-full bg-muted/30 overflow-hidden">
+        <div className="h-[4px] sm:h-[6px] rounded-full bg-muted/30 overflow-hidden">
           <div className="h-full rounded-full transition-all duration-1000 ease-out"
             style={{ width: `${Math.max(pct, 4)}%`, background: `linear-gradient(90deg, ${pal.from}, ${pal.to})`, boxShadow: `0 0 8px ${pal.from}30` }} />
         </div>
