@@ -900,9 +900,11 @@ export type Database = {
           phonogram_line: string | null
           primary_artist: string | null
           producer: string | null
+          rejection_reason: string | null
           release_id: string
           song_title: string
           spotify_link: string | null
+          status: string
           track_order: number
           user_id: string
         }
@@ -924,9 +926,11 @@ export type Database = {
           phonogram_line?: string | null
           primary_artist?: string | null
           producer?: string | null
+          rejection_reason?: string | null
           release_id: string
           song_title: string
           spotify_link?: string | null
+          status?: string
           track_order?: number
           user_id: string
         }
@@ -948,9 +952,11 @@ export type Database = {
           phonogram_line?: string | null
           primary_artist?: string | null
           producer?: string | null
+          rejection_reason?: string | null
           release_id?: string
           song_title?: string
           spotify_link?: string | null
+          status?: string
           track_order?: number
           user_id?: string
         }
