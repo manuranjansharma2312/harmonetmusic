@@ -524,38 +524,40 @@ export default function AdminSubmissions() {
 
   return (
     <DashboardLayout>
-      <div className="mb-6 sm:mb-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">All Submissions</h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">Manage all music releases and tracks.</p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-          {selected.size > 0 && (
-            <>
-              <Button variant="outline" size="sm" onClick={handleBulkDownloadAudio}>
-                <Download className="h-4 w-4" /> Download Audio ({selected.size})
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleBulkDownloadPoster}>
-                <Download className="h-4 w-4" /> Download Posters ({selected.size})
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setConfirmBulkAction('audio')} disabled={bulkDeletingAudio}>
-                {bulkDeletingAudio ? <Loader2 className="h-4 w-4 animate-spin" /> : <VolumeX className="h-4 w-4" />}
-                Delete Audio ({selected.size})
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setConfirmBulkAction('poster')} disabled={bulkDeletingPoster}>
-                {bulkDeletingPoster ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageOff className="h-4 w-4" />}
-                Delete Posters ({selected.size})
-              </Button>
-              <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={bulkDeleting}>
-                {bulkDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                Delete ({selected.size})
-              </Button>
-            </>
-          )}
-          <Button variant="outline" size="sm" onClick={exportCSV}>
+      <div className="mb-6 sm:mb-8 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">All Submissions</h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">Manage all music releases and tracks.</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={exportCSV} className="shrink-0 self-start sm:self-auto">
             <Download className="h-4 w-4" /> Export CSV
           </Button>
         </div>
+
+        {selected.size > 0 && (
+          <div className="flex flex-wrap gap-2 p-3 rounded-lg bg-muted/30 border border-border/50">
+            <span className="text-xs font-medium text-muted-foreground self-center mr-1">{selected.size} selected:</span>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleBulkDownloadAudio}>
+              <Download className="h-3.5 w-3.5" /> Audio
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleBulkDownloadPoster}>
+              <Download className="h-3.5 w-3.5" /> Posters
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setConfirmBulkAction('audio')} disabled={bulkDeletingAudio}>
+              {bulkDeletingAudio ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <VolumeX className="h-3.5 w-3.5" />}
+              Del Audio
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setConfirmBulkAction('poster')} disabled={bulkDeletingPoster}>
+              {bulkDeletingPoster ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageOff className="h-3.5 w-3.5" />}
+              Del Posters
+            </Button>
+            <Button variant="destructive" size="sm" className="h-8 text-xs" onClick={handleBulkDelete} disabled={bulkDeleting}>
+              {bulkDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+              Delete ({selected.size})
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Filters */}
