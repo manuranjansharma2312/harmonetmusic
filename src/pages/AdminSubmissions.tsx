@@ -425,7 +425,7 @@ export default function AdminSubmissions() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((release) => {
+                {paginated.map((release) => {
                   const isExpanded = expandedId === release.id;
                   return (
                     <>
