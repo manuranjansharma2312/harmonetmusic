@@ -708,7 +708,7 @@ function KpiCard({ icon: Icon, label, value, from, to }: { icon: any; label: str
             <Icon className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" style={{ color: from }} />
           </div>
           <div>
-            <p className="text-base sm:text-xl lg:text-2xl font-black font-display leading-tight tracking-tight break-words">{value}</p>
+            <p className="text-base sm:text-xl lg:text-2xl font-black font-display leading-tight tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{value}</p>
             <p className="text-[8px] sm:text-[9px] text-muted-foreground mt-0.5 sm:mt-1 font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em]">{label}</p>
           </div>
         </div>
