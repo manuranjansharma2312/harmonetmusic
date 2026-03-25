@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Eye, Pencil, Trash2, Download, Search, ChevronDown, ChevronRight, Music, Save, Users, Image, Volume2 } from 'lucide-react';
+import { Loader2, Eye, Pencil, Trash2, Download, Search, ChevronDown, ChevronRight, Music, Save, Users, Image, Volume2, ImageOff, VolumeX } from 'lucide-react';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -230,6 +230,57 @@ export default function AdminSubmissions() {
     fetchReleases();
   };
 
+  const [bulkDeletingAudio, setBulkDeletingAudio] = useState(false);
+  const [bulkDeletingPoster, setBulkDeletingPoster] = useState(false);
+  const [confirmBulkAction, setConfirmBulkAction] = useState<'audio' | 'poster' | null>(null);
+
+  const handleBulkDeleteAudio = async () => {
+    setBulkDeletingAudio(true);
+    const ids = Array.from(selected);
+    const selectedReleases = releases.filter(r => ids.includes(r.id));
+    let deletedCount = 0;
+
+    for (const release of selectedReleases) {
+      if (!release.tracks) continue;
+      for (const track of release.tracks) {
+        if (track.audio_url) {
+          const path = getStoragePath(track.audio_url, 'audio');
+          if (path) await supabase.storage.from('audio').remove([path]);
+          await supabase.from('tracks').update({ audio_url: null }).eq('id', track.id);
+          deletedCount++;
+        }
+      }
+    }
+
+    setBulkDeletingAudio(false);
+    setConfirmBulkAction(null);
+    toast.success(`Deleted audio files from ${deletedCount} tracks across ${ids.length} releases`);
+    setSelected(new Set());
+    fetchReleases();
+  };
+
+  const handleBulkDeletePoster = async () => {
+    setBulkDeletingPoster(true);
+    const ids = Array.from(selected);
+    const selectedReleases = releases.filter(r => ids.includes(r.id));
+    let deletedCount = 0;
+
+    for (const release of selectedReleases) {
+      if (release.poster_url) {
+        const path = getStoragePath(release.poster_url, 'posters');
+        if (path) await supabase.storage.from('posters').remove([path]);
+        await supabase.from('releases').update({ poster_url: null }).eq('id', release.id);
+        deletedCount++;
+      }
+    }
+
+    setBulkDeletingPoster(false);
+    setConfirmBulkAction(null);
+    toast.success(`Deleted poster images from ${deletedCount} releases`);
+    setSelected(new Set());
+    fetchReleases();
+  };
+
   // Extract storage path from public URL
   const getStoragePath = (url: string, bucket: string) => {
     const marker = `/storage/v1/object/public/${bucket}/`;
@@ -378,10 +429,20 @@ export default function AdminSubmissions() {
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
           {selected.size > 0 && (
-            <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={bulkDeleting}>
-              {bulkDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-              Delete ({selected.size})
-            </Button>
+            <>
+              <Button variant="outline" size="sm" onClick={() => setConfirmBulkAction('audio')} disabled={bulkDeletingAudio}>
+                {bulkDeletingAudio ? <Loader2 className="h-4 w-4 animate-spin" /> : <VolumeX className="h-4 w-4" />}
+                Delete Audio ({selected.size})
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setConfirmBulkAction('poster')} disabled={bulkDeletingPoster}>
+                {bulkDeletingPoster ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageOff className="h-4 w-4" />}
+                Delete Posters ({selected.size})
+              </Button>
+              <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={bulkDeleting}>
+                {bulkDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                Delete ({selected.size})
+              </Button>
+            </>
           )}
           <Button variant="outline" size="sm" onClick={exportCSV}>
             <Download className="h-4 w-4" /> Export CSV
@@ -730,6 +791,18 @@ export default function AdminSubmissions() {
           message={`Are you sure you want to delete "${getReleaseName(deleteRelease)}"? This will also delete all tracks.`}
           onConfirm={handleDelete}
           onCancel={() => setDeleteRelease(null)}
+        />
+      )}
+
+      {confirmBulkAction && (
+        <ConfirmDialog
+          title={confirmBulkAction === 'audio' ? 'Delete Audio Files' : 'Delete Poster Images'}
+          message={confirmBulkAction === 'audio'
+            ? `Are you sure you want to delete all audio files from ${selected.size} selected release(s)? The track records will remain but audio files will be permanently removed from storage.`
+            : `Are you sure you want to delete poster images from ${selected.size} selected release(s)? The release records will remain but poster files will be permanently removed from storage.`
+          }
+          onConfirm={confirmBulkAction === 'audio' ? handleBulkDeleteAudio : handleBulkDeletePoster}
+          onCancel={() => setConfirmBulkAction(null)}
         />
       )}
 
