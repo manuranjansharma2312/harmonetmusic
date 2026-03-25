@@ -117,15 +117,19 @@ export default function YouTubeReports() {
   }, [user, role, isImpersonating, impersonatedUserId]);
 
   const monthlyGroups = useMemo(() => {
+  const cutMultiplier = (role !== 'admin' || isImpersonating) ? (1 - hiddenCut / 100) : 1;
+  const applyRevenueCut = (val: number) => Number((val * cutMultiplier).toFixed(4));
+
+  const monthlyGroups = useMemo(() => {
     const groups: Record<string, { entries: ReportEntry[]; latestImport: string; totalRevenue: number }> = {};
     entries.forEach((e) => {
       if (!groups[e.reporting_month]) groups[e.reporting_month] = { entries: [], latestImport: e.imported_at, totalRevenue: 0 };
       groups[e.reporting_month].entries.push(e);
-      groups[e.reporting_month].totalRevenue += Number(e.net_generated_revenue) || 0;
+      groups[e.reporting_month].totalRevenue += applyRevenueCut(Number(e.net_generated_revenue) || 0);
       if (e.imported_at > groups[e.reporting_month].latestImport) groups[e.reporting_month].latestImport = e.imported_at;
     });
     return Object.entries(groups).sort(([a], [b]) => parseMonthKey(b) - parseMonthKey(a));
-  }, [entries]);
+  }, [entries, cutMultiplier]);
 
   const filteredMonthlyGroups = useMemo(() => {
     if (!monthSearch.trim()) return monthlyGroups;
