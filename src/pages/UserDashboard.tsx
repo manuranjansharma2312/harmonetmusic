@@ -244,8 +244,8 @@ export default function UserDashboard() {
         <StatCard title="Pending" value={releaseStats.pending} icon={Clock} color="hsla(45, 80%, 40%, 0.3)" />
         <StatCard title="Approved" value={releaseStats.approved} icon={CheckCircle} color="hsla(140, 60%, 30%, 0.3)" />
         <StatCard title="Rejected" value={releaseStats.rejected} icon={XCircle} color="hsla(0, 60%, 40%, 0.3)" />
-        <StatCard title="Total Streams" value={totalStreams} icon={BarChart3} color="hsla(200, 70%, 40%, 0.3)" />
-        <StatCard title="Revenue" value={totalRevenue} icon={DollarSign} color="hsla(140, 60%, 35%, 0.3)" />
+        <StatCard title="Total Streams" value={formatStreams(totalStreams)} icon={BarChart3} color="hsla(200, 70%, 40%, 0.3)" />
+        <StatCard title="Available Revenue" value={formatRevenue(totalRevenue - withdrawalBalance.pending - withdrawalBalance.paid)} icon={DollarSign} color="hsla(140, 60%, 35%, 0.3)" />
       </div>
 
       {/* Pending Releases */}
