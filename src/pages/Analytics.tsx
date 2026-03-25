@@ -653,7 +653,7 @@ export default function Analytics() {
                       </defs>
                       <CartesianGrid strokeDasharray="3 6" stroke="hsl(0 0% 14%)" horizontal vertical={false} />
                       <XAxis dataKey="name" tick={{ fill: 'hsl(0 0% 50%)', fontSize: 9, fontWeight: 600 }} axisLine={false} tickLine={false} angle={-45} textAnchor="end" interval={0} />
-                      <YAxis tick={{ fill: 'hsl(0 0% 40%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${formatCompact(v)}`} />
+                      <YAxis tick={{ fill: 'hsl(0 0% 40%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatRevenue(v)} />
                       <Tooltip content={<BarTooltip prefix="₹" />} cursor={{ fill: 'hsl(0 0% 9%)', radius: 4 }} />
                       <Bar dataKey="value" name="Revenue" radius={[8, 8, 0, 0]} maxBarSize={36} animationDuration={1000}>
                         {revenueByCountry.map((_, i) => <Cell key={i} fill={`url(#revCGrad${i})`} />)}
