@@ -102,7 +102,7 @@ export default function AdminContentRequests() {
   useEffect(() => {
     fetchRequests();
     setSelectedIds(new Set());
-  }, [filterType]);
+  }, [filterType, filterStatus]);
 
   const handleStatusChange = async (item: any, newStatus: string) => {
     if (newStatus === 'rejected') {
