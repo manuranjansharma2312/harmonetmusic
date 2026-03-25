@@ -191,7 +191,7 @@ export default function AdminSubLabels() {
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewSL(sl)} title="View">
                     <Eye className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditSL(sl); setEditStart(sl.agreement_start_date); setEditEnd(sl.agreement_end_date); setEditCut(String(sl.percentage_cut)); }} title="Edit">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditSL(sl); setEditSubLabelName(sl.sub_label_name); setEditParentLabelName(sl.parent_label_name); setEditEmail(sl.email); setEditPhone(sl.phone); setEditStart(sl.agreement_start_date); setEditEnd(sl.agreement_end_date); setEditCut(String(sl.percentage_cut)); }} title="Edit">
                     <Pencil className="h-4 w-4" />
                   </Button>
                   {sl.status === 'pending' && (
