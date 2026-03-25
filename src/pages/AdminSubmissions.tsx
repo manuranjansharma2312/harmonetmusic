@@ -66,6 +66,41 @@ type Release = {
   parent_label_name?: string;
 };
 
+type ParsedImportTrack = {
+  song_title: string;
+  isrc: string;
+  primary_artist: string;
+  singer: string;
+  audio_type: string;
+  language: string;
+  genre: string;
+  lyricist: string;
+  composer: string;
+  producer: string;
+  spotify_link: string;
+  apple_music_link: string;
+  instagram_link: string;
+  callertune_time: string;
+  is_new_artist_profile: boolean;
+  track_order: number;
+};
+
+type ParsedImportRelease = {
+  user_id: string;
+  user_identifier: string;
+  release_type: string;
+  content_type: string;
+  album_name: string;
+  ep_name: string;
+  upc: string;
+  release_date: string;
+  copyright_line: string;
+  phonogram_line: string;
+  store_selection: string;
+  status: string;
+  tracks: ParsedImportTrack[];
+};
+
 export default function AdminSubmissions() {
   const navigate = useNavigate();
   const [releases, setReleases] = useState<Release[]>([]);
