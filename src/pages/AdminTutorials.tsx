@@ -47,6 +47,8 @@ export default function AdminTutorials() {
     },
   });
 
+  const paginatedTutorials = useMemo(() => paginateItems(tutorials, page, pageSize), [tutorials, page, pageSize]);
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('tutorials').delete().eq('id', id);
