@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Send, History } from 'lucide-react';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 
 export interface FieldConfig {
   name: string;

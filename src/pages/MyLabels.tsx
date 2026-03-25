@@ -164,7 +164,7 @@ export default function MyLabels() {
         </GlassCard>
       ) : (
         <div className="space-y-3">
-          {labels.map((label) => (
+          {paginated.map((label) => (
             <GlassCard key={label.id} className="animate-fade-in">
               <div className="flex items-center gap-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -195,6 +195,14 @@ export default function MyLabels() {
               </div>
             </GlassCard>
           ))}
+          <TablePagination
+            totalItems={labels.length}
+            currentPage={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="labels"
+          />
         </div>
       )}
 
