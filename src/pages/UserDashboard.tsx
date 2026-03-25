@@ -63,6 +63,17 @@ export default function UserDashboard() {
   useEffect(() => {
     if (!effectiveUserId) return;
     fetchAll();
+
+    const channel = supabase
+      .channel('dashboard-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'report_entries' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'youtube_report_entries' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawal_requests' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'releases' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'songs' }, () => fetchAll())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [effectiveUserId]);
 
   async function fetchAll() {

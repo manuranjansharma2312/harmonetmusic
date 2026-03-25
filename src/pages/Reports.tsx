@@ -85,78 +85,65 @@ export default function Reports() {
 
   const { impersonatedUserId, isImpersonating } = useImpersonate();
 
-  useEffect(() => {
+  const fetchReports = async () => {
     if (!user) return;
+    setLoading(true);
+    const activeUserId = (isImpersonating && impersonatedUserId) ? impersonatedUserId : user.id;
 
-    const fetchReports = async () => {
-      setLoading(true);
-      const activeUserId = (isImpersonating && impersonatedUserId) ? impersonatedUserId : user.id;
+    // Check if user is a sub-label and get parent's cut
+    const { data: subLabelData } = await supabase
+      .from('sub_labels')
+      .select('percentage_cut')
+      .eq('sub_user_id', activeUserId)
+      .maybeSingle();
+    if (subLabelData) {
+      setSubLabelCut(Number(subLabelData.percentage_cut) || 0);
+    }
 
-      // Check if user is a sub-label and get parent's cut
-      const { data: subLabelData } = await supabase
-        .from('sub_labels')
-        .select('percentage_cut')
-        .eq('sub_user_id', activeUserId)
+    // Fetch hidden cut
+    if (role !== 'admin') {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('hidden_cut_percent')
+        .eq('user_id', user.id)
         .maybeSingle();
-      if (subLabelData) {
-        setSubLabelCut(Number(subLabelData.percentage_cut) || 0);
-      }
+      setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
+    } else if (isImpersonating && impersonatedUserId) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('hidden_cut_percent')
+        .eq('user_id', impersonatedUserId)
+        .maybeSingle();
+      setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
+    }
 
-      // Fetch hidden cut
-      if (role !== 'admin') {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('hidden_cut_percent')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
-      } else if (isImpersonating && impersonatedUserId) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('hidden_cut_percent')
-          .eq('user_id', impersonatedUserId)
-          .maybeSingle();
-        setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
-      }
+    if (role === 'admin' && isImpersonating && impersonatedUserId) {
+      // Get sub-label user IDs for this parent user
+      const { data: subLabels } = await supabase
+        .from('sub_labels')
+        .select('sub_user_id')
+        .eq('parent_user_id', impersonatedUserId)
+        .eq('status', 'active');
 
-      if (role === 'admin' && isImpersonating && impersonatedUserId) {
-        // Get sub-label user IDs for this parent user
-        const { data: subLabels } = await supabase
-          .from('sub_labels')
-          .select('sub_user_id')
-          .eq('parent_user_id', impersonatedUserId)
-          .eq('status', 'active');
+      const subUserIds = (subLabels || [])
+        .map(sl => sl.sub_user_id)
+        .filter(Boolean) as string[];
 
-        const subUserIds = (subLabels || [])
-          .map(sl => sl.sub_user_id)
-          .filter(Boolean) as string[];
+      const allUserIds = [impersonatedUserId, ...subUserIds];
 
-        const allUserIds = [impersonatedUserId, ...subUserIds];
+      const [{ data: trackRows }, { data: songRows }] = await Promise.all([
+        supabase.from('tracks').select('isrc').in('user_id', allUserIds),
+        supabase.from('songs').select('isrc').in('user_id', allUserIds),
+      ]);
 
-        const [{ data: trackRows }, { data: songRows }] = await Promise.all([
-          supabase.from('tracks').select('isrc').in('user_id', allUserIds),
-          supabase.from('songs').select('isrc').in('user_id', allUserIds),
-        ]);
+      const ownedIsrcs = [...new Set(
+        [...(trackRows ?? []), ...(songRows ?? [])]
+          .map((row) => normalizeIsrc(row.isrc))
+          .filter((value): value is string => Boolean(value))
+      )];
 
-        const ownedIsrcs = [...new Set(
-          [...(trackRows ?? []), ...(songRows ?? [])]
-            .map((row) => normalizeIsrc(row.isrc))
-            .filter((value): value is string => Boolean(value))
-        )];
-
-        if (ownedIsrcs.length === 0) {
-          setEntries([]);
-          setLoading(false);
-          return;
-        }
-
-        const { data } = await supabase
-          .from('report_entries')
-          .select('*')
-          .in('isrc', ownedIsrcs)
-          .order('reporting_month', { ascending: false });
-
-        setEntries((data as ReportEntry[]) || []);
+      if (ownedIsrcs.length === 0) {
+        setEntries([]);
         setLoading(false);
         return;
       }
@@ -164,13 +151,33 @@ export default function Reports() {
       const { data } = await supabase
         .from('report_entries')
         .select('*')
+        .in('isrc', ownedIsrcs)
         .order('reporting_month', { ascending: false });
 
       setEntries((data as ReportEntry[]) || []);
       setLoading(false);
-    };
+      return;
+    }
 
+    const { data } = await supabase
+      .from('report_entries')
+      .select('*')
+      .order('reporting_month', { ascending: false });
+
+    setEntries((data as ReportEntry[]) || []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (!user) return;
     fetchReports();
+
+    const channel = supabase
+      .channel('ott-reports-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'report_entries' }, () => fetchReports())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [user, role, isImpersonating, impersonatedUserId]);
 
   // For sub-labels: use parent's percentage_cut only (not admin hidden cut)
