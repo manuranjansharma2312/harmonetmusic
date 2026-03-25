@@ -326,12 +326,20 @@ export default function AdminContentRequests() {
                           {new Date(item.created_at).toLocaleDateString()}
                         </span>
                         {userInfoMap[item.user_id] && (
-                          <span className="text-xs text-muted-foreground">
-                            By: {userInfoMap[item.user_id].name}
+                          <div className="text-xs text-muted-foreground">
+                            <span>By: <span className="text-foreground font-medium">{userInfoMap[item.user_id].name}</span></span>
                             {userInfoMap[item.user_id].displayId && (
                               <span className="font-mono font-bold text-primary ml-1">(#{userInfoMap[item.user_id].displayId})</span>
                             )}
-                          </span>
+                            {userInfoMap[item.user_id].userType === 'sub_label' && userInfoMap[item.user_id].subLabelName && (
+                              <span className="block mt-0.5">
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary text-xs">
+                                  {userInfoMap[item.user_id].subLabelName}
+                                </span>
+                                <span className="text-muted-foreground ml-1">↳ Under: {userInfoMap[item.user_id].parentLabelName}</span>
+                              </span>
+                            )}
+                          </div>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
