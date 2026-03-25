@@ -50,6 +50,8 @@ type Release = {
   rejection_reason: string | null;
   created_at: string;
   tracks: Track[];
+  user_id: string;
+  submitted_by_label?: string;
 };
 
 
