@@ -8,7 +8,7 @@ import { formatRevenue, formatStreams } from '@/lib/formatNumbers';
 import {
   Disc3, Clock, CheckCircle, XCircle, Loader2, Users,
   Wallet, FileText, UsersRound, Tag, MessageSquare, ArrowRight,
-  TrendingUp, TrendingDown, Music, BarChart3, Activity, DollarSign
+  TrendingUp, TrendingDown, Music, BarChart3, Activity, DollarSign, Globe
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
