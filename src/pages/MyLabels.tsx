@@ -28,6 +28,10 @@ export default function MyLabels() {
   const [labelName, setLabelName] = useState('');
   const [b2bFile, setB2bFile] = useState<File | null>(null);
   const [deleteLabel, setDeleteLabel] = useState<Label | null>(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
+
+  const paginated = useMemo(() => paginateItems(labels, page, pageSize), [labels, page, pageSize]);
 
   const inputClass =
     'w-full px-4 py-3 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
