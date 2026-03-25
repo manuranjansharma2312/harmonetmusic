@@ -65,8 +65,22 @@ export default function Revenue() {
       const isSubLabelUser = profileData?.user_type === 'sub_label';
       
       if (isSubLabelUser) {
-        // Sub-labels don't need bank details at all - they're under parent label
-        setHasBankDetails(true);
+        // Sub-labels don't need their own bank details, but check if parent has them
+        const { data: subLabelInfo } = await supabase
+          .from('sub_labels')
+          .select('parent_user_id')
+          .eq('sub_user_id', activeUserId!)
+          .maybeSingle();
+        
+        if (subLabelInfo?.parent_user_id) {
+          const { data: parentBank } = await supabase
+            .from('bank_details')
+            .select('id')
+            .eq('user_id', subLabelInfo.parent_user_id)
+            .maybeSingle();
+          setParentBankMissing(!parentBank);
+        }
+        setHasBankDetails(true); // Don't gate sub-labels, but show warning
       } else {
         const { data: bankData } = await supabase
           .from('bank_details')
