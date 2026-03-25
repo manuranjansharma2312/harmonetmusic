@@ -3,6 +3,7 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useImpersonate } from '@/hooks/useImpersonate';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Loader2, Plus, Users, Upload, Eye, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,8 @@ const inputClass =
 
 export default function SubLabels() {
   const { user } = useAuth();
+  const { impersonatedUserId, isImpersonating } = useImpersonate();
+  const effectiveUserId = isImpersonating && impersonatedUserId ? impersonatedUserId : user?.id;
   const [subLabels, setSubLabels] = useState<SubLabel[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -53,22 +56,22 @@ export default function SubLabels() {
   const [b2bFile, setB2bFile] = useState<File | null>(null);
 
   const fetchSubLabels = async () => {
-    if (!user) return;
+    if (!effectiveUserId) return;
     const { data } = await supabase
       .from('sub_labels')
       .select('*')
-      .eq('parent_user_id', user.id)
+      .eq('parent_user_id', effectiveUserId)
       .order('created_at', { ascending: false });
     setSubLabels((data as SubLabel[]) || []);
     setLoading(false);
   };
 
   const fetchParentLabel = async () => {
-    if (!user) return;
+    if (!effectiveUserId) return;
     const { data } = await supabase
       .from('profiles')
       .select('record_label_name')
-      .eq('user_id', user.id)
+      .eq('user_id', effectiveUserId)
       .maybeSingle();
     setParentLabelName(data?.record_label_name || '');
   };
@@ -76,7 +79,7 @@ export default function SubLabels() {
   useEffect(() => {
     fetchSubLabels();
     fetchParentLabel();
-  }, [user]);
+  }, [effectiveUserId]);
 
   const resetForm = () => {
     setFormData({
@@ -107,7 +110,7 @@ export default function SubLabels() {
     try {
       let b2b_url: string | null = null;
       if (b2bFile) {
-        const path = `sub-labels/${user.id}/${Date.now()}-${b2bFile.name}`;
+        const path = `sub-labels/${effectiveUserId}/${Date.now()}-${b2bFile.name}`;
         const { error } = await supabase.storage.from('b2b-documents').upload(path, b2bFile);
         if (error) throw error;
         b2b_url = path;
