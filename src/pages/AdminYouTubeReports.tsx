@@ -126,6 +126,13 @@ export default function AdminYouTubeReports() {
     return Number(((Number(entry.net_generated_revenue) || 0) * (1 - cut / 100)).toFixed(4));
   };
 
+  const fetchUserCuts = async () => {
+    const { data } = await supabase.from('profiles').select('user_id, hidden_cut_percent');
+    const map: Record<string, number> = {};
+    (data || []).forEach((p: any) => { map[p.user_id] = Number(p.hidden_cut_percent) || 0; });
+    setUserCutMap(map);
+  };
+
   const fetchMonths = async () => {
     setLoading(true);
     const { data } = await supabase
@@ -160,7 +167,7 @@ export default function AdminYouTubeReports() {
     setDetailLoading(false);
   };
 
-  useEffect(() => { fetchMonths(); }, []);
+  useEffect(() => { fetchMonths(); fetchUserCuts(); }, []);
 
   const handleViewMonth = (month: string) => {
     setSelectedMonth(month);
