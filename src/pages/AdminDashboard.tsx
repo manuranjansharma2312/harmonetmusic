@@ -510,23 +510,14 @@ export default function AdminDashboard() {
         </GlassCard>
       </div>
 
-      {/* Country Distribution */}
+      {/* Country Distribution - World Map */}
       {countryData.length > 0 && (
         <GlassCard className="mb-4 sm:mb-6 animate-fade-in">
-          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Streams by Country (Top 8)</h3>
-          <div className="h-48 sm:h-56">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={countryData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 16%)" />
-                <XAxis dataKey="name" tick={{ fill: 'hsl(0 0% 55%)', fontSize: 9 }} axisLine={{ stroke: 'hsl(0 0% 20%)' }} />
-                <YAxis tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} width={50} axisLine={{ stroke: 'hsl(0 0% 20%)' }} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="streams" name="Streams" radius={[6, 6, 0, 0]}>
-                  {countryData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+            <Globe className="h-4 w-4 text-primary" />
+            Streams by Country
+          </h3>
+          <WorldMapChart data={countryData} />
         </GlassCard>
       )}
 
