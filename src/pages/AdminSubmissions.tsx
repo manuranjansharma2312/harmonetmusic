@@ -445,7 +445,7 @@ export default function AdminSubmissions() {
     toast.success('Demo template downloaded');
   };
 
-
+  const fetchReleases = async () => {
     const { data: releasesData } = await supabase
       .from('releases')
       .select('*')
