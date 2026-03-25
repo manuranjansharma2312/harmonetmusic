@@ -65,7 +65,7 @@ export default function Revenue() {
       
       const isSubLabel = profileData?.user_type === 'sub_label';
       setIsSubLabelUser(isSubLabel);
-      if (isSubLabelUser) {
+      if (isSubLabel) {
         // Sub-labels don't need their own bank details, but check if parent has them
         const { data: subLabelInfo } = await supabase
           .from('sub_labels')
