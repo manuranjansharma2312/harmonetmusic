@@ -252,18 +252,22 @@ export default function AdminRevenue() {
                         <StatusBadge status={w.status} />
                       </TableCell>
                       <TableCell>
-                        <Select
-                          value={w.status}
-                          onValueChange={(val) => updateStatus(w.id, val)}
-                        >
-                          <SelectTrigger className="w-[120px] h-8 text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="paid">Paid</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        {w.is_sub_label ? (
+                          <span className="text-xs text-muted-foreground italic">Managed by Main Label</span>
+                        ) : (
+                          <Select
+                            value={w.status}
+                            onValueChange={(val) => updateStatus(w.id, val)}
+                          >
+                            <SelectTrigger className="w-[120px] h-8 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="paid">Paid</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
