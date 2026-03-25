@@ -134,6 +134,7 @@ export default function NewRelease() {
             appleMusicLink: t.apple_music_link || '',
             isNewProfile: t.is_new_artist_profile || false,
           }],
+          singer: (t as any).singer || '',
           lyricist: t.lyricist || '',
           composer: t.composer || '',
           producer: t.producer || '',
