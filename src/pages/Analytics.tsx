@@ -512,7 +512,7 @@ export default function Analytics() {
                       </defs>
                       <CartesianGrid strokeDasharray="3 6" stroke="hsl(0 0% 14%)" horizontal={false} />
                       <XAxis type="number" tick={{ fill: 'hsl(0 0% 42%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatStreams(v)} />
-                      <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0 0% 68%)', fontSize: 11, fontWeight: 600 }} width={100} axisLine={false} tickLine={false} />
+                      <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0 0% 68%)', fontSize: 10, fontWeight: 600 }} width={80} axisLine={false} tickLine={false} />
                       <Tooltip content={<BarTooltip />} cursor={{ fill: 'hsl(0 0% 10%)', radius: 6 }} />
                       <Bar dataKey="value" name="Streams" radius={[0, 10, 10, 0]} maxBarSize={24} animationDuration={1200} animationEasing="ease-out">
                         {streamsByPlatform.map((_, i) => <Cell key={i} fill={`url(#strBarGrad${(i + 4) % PALETTE.length})`} />)}
