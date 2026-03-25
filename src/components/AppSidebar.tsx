@@ -100,9 +100,14 @@ export function AppSidebar() {
     { to: '/submit', label: 'New Release', icon: Upload },
     { to: '/my-releases', label: 'My Releases', icon: ListMusic },
     { to: '/my-labels', label: 'My Labels', icon: Tag },
-    // Only show Sub Labels for record_label users who are NOT sub-labels
-    ...(effectiveUserType === 'record_label' && !effectiveIsSubLabel ? [{ to: '/sub-labels', label: 'Sub Labels', icon: UsersRound }] : []),
   ];
+
+  // Sub Labels collapsible links (only for record_label users who are NOT sub-labels)
+  const userSubLabelLinks = [
+    { to: '/sub-labels', label: 'All Sub Labels', icon: UsersRound },
+    { to: '/sub-labels/withdrawals', label: 'Withdraw Requests', icon: Wallet },
+  ];
+  const showUserSubLabels = effectiveUserType === 'record_label' && !effectiveIsSubLabel;
 
   const userLinksBottom = [
     { to: '/poster-generator', label: 'Out Now Poster', icon: ImageIcon },
