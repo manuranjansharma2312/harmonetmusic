@@ -50,6 +50,7 @@ export default function AdminSubLabels() {
   const [editStart, setEditStart] = useState('');
   const [editEnd, setEditEnd] = useState('');
   const [editCut, setEditCut] = useState('');
+  const [editThreshold, setEditThreshold] = useState('');
   const [editSubLabelName, setEditSubLabelName] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('');
@@ -135,6 +136,7 @@ export default function AdminSubLabels() {
       agreement_start_date: editStart,
       agreement_end_date: editEnd,
       percentage_cut: parseFloat(editCut) || 0,
+      withdrawal_threshold: parseFloat(editThreshold) || 1000,
       status: newStatus,
     }).eq('id', editSL.id);
     if (error) { toast.error(error.message); return; }
@@ -254,7 +256,7 @@ export default function AdminSubLabels() {
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewSL(sl)} title="View">
                     <Eye className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditSL(sl); setEditSubLabelName(sl.sub_label_name); setEditParentLabelName(sl.parent_label_name); setEditEmail(sl.email); setEditPhone(sl.phone); setEditStart(sl.agreement_start_date); setEditEnd(sl.agreement_end_date); setEditCut(String(sl.percentage_cut)); setEditStatus(sl.status); }} title="Edit">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditSL(sl); setEditSubLabelName(sl.sub_label_name); setEditParentLabelName(sl.parent_label_name); setEditEmail(sl.email); setEditPhone(sl.phone); setEditStart(sl.agreement_start_date); setEditEnd(sl.agreement_end_date); setEditCut(String(sl.percentage_cut)); setEditThreshold(String(sl.withdrawal_threshold || 1000)); setEditStatus(sl.status); }} title="Edit">
                     <Pencil className="h-4 w-4" />
                   </Button>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteSL(sl)} title="Delete">
@@ -336,6 +338,11 @@ export default function AdminSubLabels() {
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">Percentage Cut %</label>
                 <input className={inputClass} type="text" inputMode="decimal" value={editCut} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setEditCut(e.target.value); }} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Withdrawal Threshold (₹)</label>
+                <input className={inputClass} type="text" inputMode="decimal" value={editThreshold} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setEditThreshold(e.target.value); }} />
+                <p className="text-xs text-muted-foreground mt-1">Minimum balance for sub-label to request withdrawal</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">Status</label>
