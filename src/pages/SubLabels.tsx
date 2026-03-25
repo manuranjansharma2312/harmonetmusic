@@ -440,18 +440,22 @@ export default function SubLabels() {
                       <TableCell>{format(new Date(w.created_at), 'dd MMM yyyy, hh:mm a')}</TableCell>
                       <TableCell><StatusBadge status={w.status} /></TableCell>
                       <TableCell>
-                        <Select
-                          value={w.status}
-                          onValueChange={(val) => updateSubWithdrawalStatus(w.id, val)}
-                        >
-                          <SelectTrigger className="w-[120px] h-8 text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="paid">Paid</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        {w.status === 'paid' ? (
+                          <span className="text-xs text-muted-foreground italic">Paid — Contact admin to edit</span>
+                        ) : (
+                          <Select
+                            value={w.status}
+                            onValueChange={(val) => updateSubWithdrawalStatus(w.id, val)}
+                          >
+                            <SelectTrigger className="w-[120px] h-8 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="paid">Paid</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
