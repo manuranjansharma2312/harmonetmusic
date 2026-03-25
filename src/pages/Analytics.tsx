@@ -335,9 +335,9 @@ export default function Analytics() {
             {/* ── KPI Cards ── */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
               {[
-                { icon: IndianRupee, label: 'Revenue', value: `₹${formatCompact(totalRevenue)}`, from: '#ff6b6b', to: '#ee5a24' },
-                { icon: Play, label: 'Streams', value: formatCompact(totalStreams), from: '#45aaf2', to: '#4834d4' },
-                { icon: Download, label: 'Downloads', value: formatCompact(totalDownloads), from: '#00d2d3', to: '#01a3a4' },
+                { icon: IndianRupee, label: 'Revenue', value: formatRevenue(totalRevenue), from: '#ff6b6b', to: '#ee5a24' },
+                { icon: Play, label: 'Streams', value: formatStreams(totalStreams), from: '#45aaf2', to: '#4834d4' },
+                { icon: Download, label: 'Downloads', value: formatStreams(totalDownloads), from: '#00d2d3', to: '#01a3a4' },
                 { icon: Music2, label: 'Tracks', value: String(uniqueTracks), from: '#f0932b', to: '#e55039' },
                 { icon: Users, label: 'Artists', value: String(uniqueArtists), from: '#a55eea', to: '#8854d0' },
                 { icon: Globe, label: 'Countries', value: String(uniqueCountries), from: '#26de81', to: '#20bf6b' },
