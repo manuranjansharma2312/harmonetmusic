@@ -65,14 +65,20 @@ export default function AdminSubLabels() {
   useEffect(() => { fetchAll(); }, []);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return subLabels;
-    const q = search.toLowerCase();
-    return subLabels.filter(sl =>
-      sl.sub_label_name.toLowerCase().includes(q) ||
-      sl.parent_label_name.toLowerCase().includes(q) ||
-      sl.email.toLowerCase().includes(q)
-    );
-  }, [subLabels, search]);
+    let result = subLabels;
+    if (statusFilter !== 'all') {
+      result = result.filter(sl => sl.status === statusFilter);
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(sl =>
+        sl.sub_label_name.toLowerCase().includes(q) ||
+        sl.parent_label_name.toLowerCase().includes(q) ||
+        sl.email.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [subLabels, search, statusFilter]);
 
   const updateStatus = async (sl: SubLabel, status: string, rejection_reason?: string) => {
     const { error } = await supabase.from('sub_labels').update({ status, rejection_reason: rejection_reason || null }).eq('id', sl.id);
