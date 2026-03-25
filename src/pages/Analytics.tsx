@@ -625,7 +625,7 @@ export default function Analytics() {
                               <div className="flex-1 h-[5px] rounded-full bg-muted/30 overflow-hidden">
                                 <div className="h-full rounded-full transition-all duration-700" style={{ width: `${Math.max(pct, 5)}%`, background: `linear-gradient(90deg, ${PALETTE[i % PALETTE.length].from}, ${PALETTE[i % PALETTE.length].to})`, boxShadow: `0 0 6px ${PALETTE[i % PALETTE.length].from}40` }} />
                               </div>
-                              <span className="text-[9px] text-muted-foreground font-mono font-bold">{formatCompact(d.value)}</span>
+                              <span className="text-[9px] text-muted-foreground font-mono font-bold">{formatStreams(d.value)}</span>
                             </div>
                           </div>
                         </div>
