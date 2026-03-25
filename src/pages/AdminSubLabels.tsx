@@ -37,6 +37,8 @@ const inputClass =
 
 export default function AdminSubLabels() {
   const [subLabels, setSubLabels] = useState<SubLabel[]>([]);
+  const { startImpersonating } = useImpersonate();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
