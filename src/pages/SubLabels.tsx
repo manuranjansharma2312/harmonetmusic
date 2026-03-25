@@ -73,33 +73,6 @@ export default function SubLabels() {
     setLoading(false);
   };
 
-  const fetchSubLabelWithdrawals = async () => {
-    if (!effectiveUserId) return;
-    // Get all active sub-label user IDs
-    const { data: subs } = await supabase
-      .from('sub_labels')
-      .select('sub_user_id, sub_label_name')
-      .eq('parent_user_id', effectiveUserId)
-      .eq('status', 'active');
-
-    const subUserIds = (subs || []).map(s => s.sub_user_id).filter(Boolean) as string[];
-    if (subUserIds.length === 0) { setSubWithdrawals([]); return; }
-
-    const nameMap = new Map<string, string>();
-    (subs || []).forEach(s => { if (s.sub_user_id) nameMap.set(s.sub_user_id, s.sub_label_name); });
-
-    const { data: wData } = await supabase
-      .from('withdrawal_requests')
-      .select('*')
-      .in('user_id', subUserIds)
-      .order('created_at', { ascending: false });
-
-    const enriched: SubLabelWithdrawal[] = (wData || []).map((w: any) => ({
-      ...w,
-      sub_label_name: nameMap.get(w.user_id) || 'Unknown',
-    }));
-    setSubWithdrawals(enriched);
-  };
 
   const fetchParentLabel = async () => {
     if (!effectiveUserId) return;
