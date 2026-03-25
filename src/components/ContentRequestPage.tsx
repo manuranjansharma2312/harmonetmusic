@@ -140,7 +140,7 @@ export function ContentRequestPage({ title, requestType, fields }: ContentReques
                   <p className="text-muted-foreground text-center py-8">No requests yet.</p>
                 ) : (
                   <div className="space-y-4">
-                    {history.map((item) => (
+                    {paginatedHistory.map((item) => (
                       <div key={item.id} className="border border-border rounded-lg p-4 space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">
@@ -166,6 +166,14 @@ export function ContentRequestPage({ title, requestType, fields }: ContentReques
                         )}
                       </div>
                     ))}
+                    <TablePagination
+                      totalItems={history.length}
+                      currentPage={historyPage}
+                      pageSize={historyPageSize}
+                      onPageChange={setHistoryPage}
+                      onPageSizeChange={setHistoryPageSize}
+                      itemLabel="requests"
+                    />
                   </div>
                 )}
               </div>
