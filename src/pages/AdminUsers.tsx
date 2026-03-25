@@ -68,6 +68,7 @@ export default function AdminUsers() {
   const [editBankDetail, setEditBankDetail] = useState<any>(null);
   const [viewBankDetails, setViewBankDetails] = useState<any>(null);
   const [deleting, setDeleting] = useState(false);
+  const [editingCut, setEditingCut] = useState<{ userId: string; value: string } | null>(null);
   const { startImpersonating } = useImpersonate();
   const navigate = useNavigate();
 
