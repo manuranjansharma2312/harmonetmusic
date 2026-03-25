@@ -194,7 +194,6 @@ export default function UserDashboard() {
     { name: 'Rejected', value: songStats.rejected, color: CHART_COLORS[0] },
   ].filter(d => d.value > 0);
 
-  const pendingSongs = recentSongs.filter(s => s.status === 'pending');
   const pendingReleases = recentReleases.filter(r => r.status === 'pending');
 
   return (
