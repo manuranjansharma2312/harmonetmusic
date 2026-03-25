@@ -620,11 +620,15 @@ export default function AdminSubmissions() {
   );
 }
 
-function Detail({ label, value }: { label: string; value: string }) {
+function Detail({ label, value, copyable }: { label: string; value: string; copyable?: boolean }) {
+  const showCopy = copyable && value && value !== '—';
   return (
     <div>
       <p className="text-muted-foreground text-xs">{label}</p>
-      <p className="text-foreground capitalize break-all">{value}</p>
+      <div className="flex items-center gap-1">
+        <p className="text-foreground capitalize break-all">{value}</p>
+        {showCopy && <CopyButton value={value} />}
+      </div>
     </div>
   );
 }

@@ -185,7 +185,10 @@ export default function AdminContentRequests() {
                             {field === 'payment_screenshot_url' ? (
                               <img src={item[field]} alt="Payment" className="max-h-32 rounded-lg border mt-1 object-contain" />
                             ) : (
-                              <p className="text-sm text-foreground break-all">{item[field]}</p>
+                              <div className="flex items-center gap-1">
+                                <p className="text-sm text-foreground break-all">{item[field]}</p>
+                                <CopyButton value={item[field]} />
+                              </div>
                             )}
                           </div>
                         ) : null
