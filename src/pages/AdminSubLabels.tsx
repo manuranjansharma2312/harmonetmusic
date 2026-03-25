@@ -43,6 +43,10 @@ export default function AdminSubLabels() {
   const [editStart, setEditStart] = useState('');
   const [editEnd, setEditEnd] = useState('');
   const [editCut, setEditCut] = useState('');
+  const [editSubLabelName, setEditSubLabelName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editParentLabelName, setEditParentLabelName] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
