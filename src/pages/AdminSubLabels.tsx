@@ -26,6 +26,7 @@ type SubLabel = {
   email: string;
   phone: string;
   percentage_cut: number;
+  withdrawal_threshold: number;
   b2b_url: string | null;
   status: string;
   rejection_reason: string | null;
