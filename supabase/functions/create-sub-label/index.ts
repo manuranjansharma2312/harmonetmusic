@@ -74,6 +74,7 @@ Deno.serve(async (req) => {
         email,
         phone: phone || "",
         percentage_cut: percentage_cut || 0,
+        withdrawal_threshold: withdrawal_threshold || 1000,
         b2b_url: b2b_url || null,
       });
 
