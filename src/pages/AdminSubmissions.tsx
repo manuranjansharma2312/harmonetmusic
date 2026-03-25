@@ -579,6 +579,8 @@ export default function AdminSubmissions() {
             onPageSizeChange={setPageSize}
             itemLabel="releases"
           />
+          </>
+        )}
       </GlassCard>
 
       {/* View Release Detail Modal */}
