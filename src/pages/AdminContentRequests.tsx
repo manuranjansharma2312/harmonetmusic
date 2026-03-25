@@ -43,6 +43,17 @@ const FIELD_LABELS: Record<string, string> = {
 
 const DATA_FIELDS = Object.keys(FIELD_LABELS);
 
+// Type-specific fields for export
+const TYPE_FIELDS: Record<string, string[]> = {
+  copyright_claim: ['song_title', 'copyright_company', 'video_link', 'isrc', 'transaction_id'],
+  instagram_link: ['song_title', 'isrc', 'instagram_audio_link', 'instagram_profile_link'],
+  content_id_merge: ['song_title', 'isrc', 'artist_name', 'official_artist_channel_link', 'release_topic_video_link'],
+  oac_apply: ['artist_name', 'channel_link', 'topic_channel_link', 'release_link_1', 'release_link_2', 'release_link_3'],
+  takedown: ['song_title', 'isrc', 'reason_for_takedown', 'transaction_id', 'payment_screenshot_url'],
+  playlist_pitching: ['song_title', 'reason_for_takedown'],
+  custom_support: ['song_title', 'reason_for_takedown'],
+};
+
 export default function AdminContentRequests() {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -143,7 +154,12 @@ export default function AdminContentRequests() {
       : requests;
     if (items.length === 0) { toast.error('No items to export'); return; }
 
-    const headers = ['Type', 'Status', 'User', 'User ID', 'Date', ...DATA_FIELDS.map(f => FIELD_LABELS[f]), 'Rejection Reason'];
+    // Determine which fields to export based on filter or item types
+    const exportFields = filterType !== 'all' && TYPE_FIELDS[filterType]
+      ? TYPE_FIELDS[filterType]
+      : DATA_FIELDS;
+
+    const headers = ['Type', 'Status', 'User', 'User ID', 'Date', ...exportFields.map(f => FIELD_LABELS[f] || f), 'Rejection Reason'];
     const rows = items.map(item => {
       const user = userInfoMap[item.user_id];
       return [
@@ -152,7 +168,7 @@ export default function AdminContentRequests() {
         user?.name || '',
         user?.displayId ? `#${user.displayId}` : '',
         new Date(item.created_at).toLocaleDateString(),
-        ...DATA_FIELDS.map(f => item[f] || ''),
+        ...exportFields.map(f => item[f] || ''),
         item.rejection_reason || '',
       ];
     });
@@ -161,14 +177,17 @@ export default function AdminContentRequests() {
       .map(row => row.map((cell: string) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
       .join('\n');
 
+    const typeName = filterType !== 'all'
+      ? (REQUEST_TYPES[filterType] || filterType).replace(/\s+/g, '-').toLowerCase()
+      : 'all-requests';
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `content-requests-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `${typeName}-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success(`Exported ${items.length} entries`);
+    toast.success(`Exported ${items.length} ${REQUEST_TYPES[filterType] || ''} entries`);
   };
 
   // Bulk delete
