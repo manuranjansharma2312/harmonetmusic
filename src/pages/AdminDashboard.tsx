@@ -396,7 +396,7 @@ export default function AdminDashboard() {
                 </div>
                 <span className="text-xs sm:text-sm text-muted-foreground">Total Paid</span>
               </div>
-              <span className="text-sm sm:text-lg font-bold text-foreground">₹{withdrawalStats.totalAmount.toLocaleString()}</span>
+              <span className="text-sm sm:text-lg font-bold text-foreground">{formatRevenue(withdrawalStats.totalAmount)}</span>
             </div>
           </div>
         </GlassCard>
