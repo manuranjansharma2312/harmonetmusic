@@ -51,15 +51,20 @@ export default function AdminLabels() {
     const userIds = [...new Set(labelsData.map(l => l.user_id))];
     if (userIds.length > 0) {
       const { data: profiles } = await supabase.from('profiles').select('user_id, email, artist_name, record_label_name, user_type, display_id').in('user_id', userIds);
+      const { data: subLabelsData } = await supabase.from('sub_labels').select('sub_user_id, sub_label_name, parent_label_name');
+      const slMap: Record<string, { sub_label_name: string; parent_label_name: string }> = {};
+      subLabelsData?.forEach((sl: any) => { if (sl.sub_user_id) slMap[sl.sub_user_id] = { sub_label_name: sl.sub_label_name, parent_label_name: sl.parent_label_name }; });
+
       const emailMap: Record<string, string> = {};
       const displayIdMap: Record<string, number> = {};
+      const typeMap: Record<string, string> = {};
       profiles?.forEach((p: any) => {
         emailMap[p.user_id] = p.user_type === 'label'
           ? (p.record_label_name || p.email)
           : (p.artist_name || p.email);
         if (p.display_id) displayIdMap[p.user_id] = p.display_id;
+        typeMap[p.user_id] = p.user_type;
       });
-      // Fallback for missing profiles
       const missingIds = userIds.filter(id => !emailMap[id]);
       if (missingIds.length > 0) {
         const { data: authEmails } = await supabase.rpc('get_auth_emails', { _user_ids: missingIds });
@@ -67,6 +72,8 @@ export default function AdminLabels() {
       }
       setUserEmails(emailMap);
       setUserDisplayIds(displayIdMap);
+      setUserTypes(typeMap);
+      setSubLabelInfo(slMap);
     }
     setLoading(false);
   };
