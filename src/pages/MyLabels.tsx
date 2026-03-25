@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +8,7 @@ import { Loader2, Upload, Plus, Trash2, Tag, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { toast } from 'sonner';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 
 type Label = {
   id: string;
