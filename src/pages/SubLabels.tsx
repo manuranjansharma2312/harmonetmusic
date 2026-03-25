@@ -86,7 +86,7 @@ export default function SubLabels() {
   const resetForm = () => {
     setFormData({
       sub_label_name: '', agreement_start_date: '', agreement_end_date: '',
-      email: '', password: '', phone: '', percentage_cut: '',
+      email: '', password: '', phone: '', percentage_cut: '', withdrawal_threshold: '1000',
     });
     setB2bFile(null);
     setShowForm(false);
