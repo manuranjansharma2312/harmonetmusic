@@ -230,6 +230,57 @@ export default function AdminSubmissions() {
     fetchReleases();
   };
 
+  const [bulkDeletingAudio, setBulkDeletingAudio] = useState(false);
+  const [bulkDeletingPoster, setBulkDeletingPoster] = useState(false);
+  const [confirmBulkAction, setConfirmBulkAction] = useState<'audio' | 'poster' | null>(null);
+
+  const handleBulkDeleteAudio = async () => {
+    setBulkDeletingAudio(true);
+    const ids = Array.from(selected);
+    const selectedReleases = releases.filter(r => ids.includes(r.id));
+    let deletedCount = 0;
+
+    for (const release of selectedReleases) {
+      if (!release.tracks) continue;
+      for (const track of release.tracks) {
+        if (track.audio_url) {
+          const path = getStoragePath(track.audio_url, 'audio');
+          if (path) await supabase.storage.from('audio').remove([path]);
+          await supabase.from('tracks').update({ audio_url: null }).eq('id', track.id);
+          deletedCount++;
+        }
+      }
+    }
+
+    setBulkDeletingAudio(false);
+    setConfirmBulkAction(null);
+    toast.success(`Deleted audio files from ${deletedCount} tracks across ${ids.length} releases`);
+    setSelected(new Set());
+    fetchReleases();
+  };
+
+  const handleBulkDeletePoster = async () => {
+    setBulkDeletingPoster(true);
+    const ids = Array.from(selected);
+    const selectedReleases = releases.filter(r => ids.includes(r.id));
+    let deletedCount = 0;
+
+    for (const release of selectedReleases) {
+      if (release.poster_url) {
+        const path = getStoragePath(release.poster_url, 'posters');
+        if (path) await supabase.storage.from('posters').remove([path]);
+        await supabase.from('releases').update({ poster_url: null }).eq('id', release.id);
+        deletedCount++;
+      }
+    }
+
+    setBulkDeletingPoster(false);
+    setConfirmBulkAction(null);
+    toast.success(`Deleted poster images from ${deletedCount} releases`);
+    setSelected(new Set());
+    fetchReleases();
+  };
+
   // Extract storage path from public URL
   const getStoragePath = (url: string, bucket: string) => {
     const marker = `/storage/v1/object/public/${bucket}/`;
