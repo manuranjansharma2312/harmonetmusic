@@ -239,10 +239,10 @@ export default function UserDashboard() {
 
       {/* Top Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
-        <StatCard title="Total Songs" value={songStats.total} icon={Music} />
-        <StatCard title="Pending" value={songStats.pending} icon={Clock} color="hsla(45, 80%, 40%, 0.3)" />
-        <StatCard title="Approved" value={songStats.approved} icon={CheckCircle} color="hsla(140, 60%, 30%, 0.3)" />
-        <StatCard title="Releases" value={releaseStats.total} icon={Disc3} color="hsla(280, 60%, 40%, 0.3)" />
+        <StatCard title="Total Releases" value={releaseStats.total} icon={Disc3} />
+        <StatCard title="Pending" value={releaseStats.pending} icon={Clock} color="hsla(45, 80%, 40%, 0.3)" />
+        <StatCard title="Approved" value={releaseStats.approved} icon={CheckCircle} color="hsla(140, 60%, 30%, 0.3)" />
+        <StatCard title="Rejected" value={releaseStats.rejected} icon={XCircle} color="hsla(0, 60%, 40%, 0.3)" />
         <StatCard title="Total Streams" value={totalStreams} icon={BarChart3} color="hsla(200, 70%, 40%, 0.3)" />
         <StatCard title="Revenue" value={totalRevenue} icon={DollarSign} color="hsla(140, 60%, 35%, 0.3)" />
       </div>
