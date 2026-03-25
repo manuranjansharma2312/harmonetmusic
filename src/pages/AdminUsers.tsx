@@ -90,6 +90,7 @@ export default function AdminUsers() {
   };
 
   const filtered = profiles.filter((p) => {
+    if (p.user_type === 'sub_label') return false;
     if (statusFilter !== 'all' && p.verification_status !== statusFilter) return false;
     if (search) {
       const q = search.toLowerCase();
