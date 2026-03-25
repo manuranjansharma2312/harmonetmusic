@@ -4,6 +4,7 @@ import { StatCard } from '@/components/StatCard';
 import { GlassCard } from '@/components/GlassCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
+import { formatRevenue } from '@/lib/formatNumbers';
 import {
   Music, Clock, CheckCircle, XCircle, Loader2, Users, Disc3,
   Wallet, FileText, UsersRound, Tag, MessageSquare, ArrowRight
