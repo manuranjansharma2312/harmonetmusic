@@ -58,6 +58,7 @@ export default function AdminContentRequests() {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
   const [rejectTarget, setRejectTarget] = useState<any | null>(null);
   const [userInfoMap, setUserInfoMap] = useState<Record<string, { name: string; displayId?: number }>>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
