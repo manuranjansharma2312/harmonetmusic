@@ -37,6 +37,7 @@ type Track = {
   track_order: number;
   status: string;
   rejection_reason: string | null;
+  singer: string | null;
 };
 
 type Release = {
