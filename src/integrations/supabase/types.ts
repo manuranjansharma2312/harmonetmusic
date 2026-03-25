@@ -803,6 +803,60 @@ export type Database = {
         }
         Relationships: []
       }
+      sub_labels: {
+        Row: {
+          agreement_end_date: string
+          agreement_start_date: string
+          b2b_url: string | null
+          created_at: string
+          email: string
+          id: string
+          parent_label_name: string
+          parent_user_id: string
+          percentage_cut: number
+          phone: string
+          rejection_reason: string | null
+          status: string
+          sub_label_name: string
+          sub_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          agreement_end_date: string
+          agreement_start_date: string
+          b2b_url?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          parent_label_name: string
+          parent_user_id: string
+          percentage_cut?: number
+          phone: string
+          rejection_reason?: string | null
+          status?: string
+          sub_label_name: string
+          sub_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agreement_end_date?: string
+          agreement_start_date?: string
+          b2b_url?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          parent_label_name?: string
+          parent_user_id?: string
+          percentage_cut?: number
+          phone?: string
+          rejection_reason?: string | null
+          status?: string
+          sub_label_name?: string
+          sub_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       terms_and_conditions: {
         Row: {
           content: string
