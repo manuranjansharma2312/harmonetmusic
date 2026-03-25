@@ -395,7 +395,7 @@ export default function AdminSubmissions() {
     fetchReleases();
   };
 
-
+  const fetchReleases = async () => {
     const { data: releasesData } = await supabase
       .from('releases')
       .select('*')
