@@ -134,7 +134,25 @@ export default function AdminContentRequests() {
     setRejectTarget(null);
   };
 
-  // Selection helpers
+  const handleDeleteScreenshot = async (itemId: string, screenshotUrl: string) => {
+    const marker = '/storage/v1/object/public/promotion-screenshots/';
+    const idx = screenshotUrl.indexOf(marker);
+    if (idx !== -1) {
+      const path = decodeURIComponent(screenshotUrl.substring(idx + marker.length));
+      await supabase.storage.from('promotion-screenshots').remove([path]);
+    }
+    const { error } = await supabase
+      .from('content_requests')
+      .update({ payment_screenshot_url: null })
+      .eq('id', itemId);
+    if (error) toast.error('Failed to delete screenshot');
+    else {
+      toast.success('Screenshot deleted');
+      fetchRequests();
+    }
+  };
+
+
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
