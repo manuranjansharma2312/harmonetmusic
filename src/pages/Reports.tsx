@@ -80,6 +80,7 @@ export default function Reports() {
   const [entryPage, setEntryPage] = useState(0);
   const [entryPageSize, setEntryPageSize] = useState<number | 'all'>(10);
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [hiddenCut, setHiddenCut] = useState(0);
 
   const { impersonatedUserId, isImpersonating } = useImpersonate();
 
