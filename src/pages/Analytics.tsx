@@ -530,7 +530,7 @@ export default function Analytics() {
                 <div className="px-6 pb-6 space-y-3">
                   {revenueByTrack.length === 0 && <EmptyState text="No track data" />}
                   {revenueByTrack.map((t, i) => (
-                    <RankRow key={t.name} rank={i + 1} name={t.name} value={`₹${formatCompact(t.value)}`} pct={revenueByTrack[0] ? (t.value / revenueByTrack[0].value) * 100 : 0} pal={PALETTE[i % PALETTE.length]} />
+                    <RankRow key={t.name} rank={i + 1} name={t.name} value={formatRevenue(t.value)} pct={revenueByTrack[0] ? (t.value / revenueByTrack[0].value) * 100 : 0} pal={PALETTE[i % PALETTE.length]} />
                   ))}
                 </div>
               </div>
