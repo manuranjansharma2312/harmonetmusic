@@ -53,6 +53,8 @@ export default function AdminAgreements() {
     },
   });
 
+  const paginatedTemplates = useMemo(() => paginateItems(templates, page, pageSize), [templates, page, pageSize]);
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (editing) {
