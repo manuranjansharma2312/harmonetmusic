@@ -61,12 +61,31 @@ const adminLinksTop = [
 
 export function AppSidebar() {
   const { role, signOut, user, userType, isSubLabel } = useAuth();
-  const { isImpersonating } = useImpersonate();
+  const { isImpersonating, impersonatedUserId } = useImpersonate();
   const { state, setOpenMobile, isMobile } = useSidebar();
   const collapsed = state === 'collapsed';
   const showUserView = isImpersonating || role !== 'admin';
   const [toolsOpen, setToolsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
+  const [impUserType, setImpUserType] = useState<string | null>(null);
+  const [impIsSubLabel, setImpIsSubLabel] = useState(false);
+
+  // Fetch impersonated user's profile when impersonating
+  useEffect(() => {
+    if (isImpersonating && impersonatedUserId) {
+      supabase.from('profiles').select('user_type').eq('user_id', impersonatedUserId).maybeSingle()
+        .then(({ data }) => {
+          setImpUserType(data?.user_type || null);
+          setImpIsSubLabel(data?.user_type === 'sub_label');
+        });
+    } else {
+      setImpUserType(null);
+      setImpIsSubLabel(false);
+    }
+  }, [isImpersonating, impersonatedUserId]);
+
+  const effectiveUserType = isImpersonating ? impUserType : userType;
+  const effectiveIsSubLabel = isImpersonating ? impIsSubLabel : isSubLabel;
 
   // Build user links dynamically based on user type
   const userLinksTop = [
@@ -75,7 +94,7 @@ export function AppSidebar() {
     { to: '/my-releases', label: 'My Releases', icon: ListMusic },
     { to: '/my-labels', label: 'My Labels', icon: Tag },
     // Only show Sub Labels for record_label users who are NOT sub-labels
-    ...(userType === 'record_label' && !isSubLabel ? [{ to: '/sub-labels', label: 'Sub Labels', icon: UsersRound }] : []),
+    ...(effectiveUserType === 'record_label' && !effectiveIsSubLabel ? [{ to: '/sub-labels', label: 'Sub Labels', icon: UsersRound }] : []),
   ];
 
   const userLinksBottom = [
