@@ -30,6 +30,8 @@ export default function AdminLabels() {
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'label' | 'b2b'; label: Label } | null>(null);
   const [userEmails, setUserEmails] = useState<Record<string, string>>({});
   const [userDisplayIds, setUserDisplayIds] = useState<Record<string, number>>({});
+  const [userTypes, setUserTypes] = useState<Record<string, string>>({});
+  const [subLabelInfo, setSubLabelInfo] = useState<Record<string, { sub_label_name: string; parent_label_name: string }>>({});
   const [rejectTarget, setRejectTarget] = useState<Label | null>(null);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
