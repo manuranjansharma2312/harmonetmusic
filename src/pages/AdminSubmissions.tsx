@@ -730,11 +730,31 @@ export default function AdminSubmissions() {
                   <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Tracks ({viewRelease.tracks.length})</p>
                   <div className="space-y-3">
                     {viewRelease.tracks.map((track) => (
-                      <div key={track.id} className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3">
-                        <div className="flex items-center gap-2">
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">{track.track_order}</span>
-                          <span className="font-medium text-foreground">{track.song_title}</span>
+                      <div key={track.id} className={`rounded-lg border p-4 space-y-3 ${track.status === 'rejected' ? 'border-destructive/50 bg-destructive/5' : 'border-border/50 bg-muted/20'}`}>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">{track.track_order}</span>
+                            <span className="font-medium text-foreground">{track.song_title}</span>
+                          </div>
+                          {(viewRelease.content_type === 'album' || viewRelease.content_type === 'ep') && (
+                            <div className="flex items-center gap-2">
+                              <select
+                                className="bg-transparent border border-border rounded px-2 py-1 text-xs cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
+                                value={track.status || 'pending'}
+                                onChange={(e) => handleTrackStatusChange(track.id, e.target.value)}
+                              >
+                                {STATUSES.map((s) => (
+                                  <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
                         </div>
+                        {track.status === 'rejected' && track.rejection_reason && (
+                          <div className="text-xs text-destructive bg-destructive/10 rounded-md px-3 py-2">
+                            <span className="font-medium">Rejection Reason:</span> {track.rejection_reason}
+                          </div>
+                        )}
 
                         {/* ISRC, Audio Type, Language, Genre — before artist */}
                         <div className="grid grid-cols-2 gap-2 text-xs">
