@@ -257,21 +257,92 @@ export default function AdminSubmissions() {
 
   const exportCSV = () => {
     const data = selected.size > 0 ? filtered.filter((r) => selected.has(r.id)) : filtered;
-    const headers = ['Release Name', 'Type', 'Content Type', 'UPC', 'Artist', 'Status', 'Release Date', 'User', 'Tracks', 'Store'];
-    const rows = data.map((r) => [
-      getReleaseName(r), r.release_type, r.content_type, r.upc || '',
-      r.tracks?.[0]?.primary_artist || '', r.status, r.release_date, r.user_email || '',
-      r.tracks?.length || 0, r.store_selection,
-    ].map((v) => `"${v}"`).join(','));
-    const csv = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+    if (data.length === 0) { toast.error('No releases to export'); return; }
+
+    // Find max track count for dynamic columns
+    const maxTracks = Math.max(...data.map((r) => r.tracks?.length || 0), 1);
+
+    // Release-level headers
+    const releaseHeaders = [
+      'Release Name', 'Release Type', 'Content Type', 'UPC', 'Status',
+      'Release Date', 'Store Selection', 'Copyright ©', 'Phonogram ℗',
+      'Poster URL', 'Rejection Reason',
+      'Submitted By', 'User ID', 'User Email',
+    ];
+
+    // Track-level headers (repeated per track)
+    const trackFieldHeaders = [
+      'Song Title', 'ISRC', 'Primary Artist', 'New Artist Profile',
+      'Audio Type', 'Language', 'Genre',
+      'Lyricist', 'Composer', 'Producer',
+      'Spotify Link', 'Apple Music Link', 'Instagram Link',
+      'Callertune Time', 'Audio URL',
+    ];
+
+    const headers = [...releaseHeaders];
+    for (let i = 1; i <= maxTracks; i++) {
+      trackFieldHeaders.forEach((h) => headers.push(`Track ${i} - ${h}`));
+    }
+
+    const rows = data.map((r) => {
+      const releaseRow = [
+        getReleaseName(r),
+        r.release_type,
+        r.content_type,
+        r.upc || '',
+        r.status,
+        r.release_date,
+        r.store_selection,
+        r.copyright_line || '',
+        r.phonogram_line || '',
+        r.poster_url || '',
+        r.rejection_reason || '',
+        r.user_name || '',
+        r.user_display_id ? `#${r.user_display_id}` : '',
+        r.user_email || '',
+      ];
+
+      const trackCells: string[] = [];
+      for (let i = 0; i < maxTracks; i++) {
+        const t = r.tracks?.[i];
+        if (t) {
+          trackCells.push(
+            t.song_title || '',
+            t.isrc || '',
+            t.primary_artist || '',
+            t.is_new_artist_profile ? 'Yes' : 'No',
+            t.audio_type || '',
+            t.language || '',
+            t.genre || '',
+            t.lyricist || '',
+            t.composer || '',
+            t.producer || '',
+            t.spotify_link || '',
+            t.apple_music_link || '',
+            t.instagram_link || '',
+            t.callertune_time || '',
+            t.audio_url || '',
+          );
+        } else {
+          trackCells.push(...Array(trackFieldHeaders.length).fill(''));
+        }
+      }
+
+      return [...releaseRow, ...trackCells];
+    });
+
+    const csvContent = [headers, ...rows]
+      .map((row) => row.map((cell: string) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `releases-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success('CSV exported');
+    toast.success(`Exported ${data.length} release(s)`);
   };
 
   const inputClass = 'px-4 py-2.5 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
