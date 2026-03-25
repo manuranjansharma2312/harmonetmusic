@@ -526,8 +526,6 @@ export default function AdminInvoices() {
     form.taxes
   );
 
-  const startItem = (page - 1) * pageSize + 1;
-  const endItem = Math.min(page * pageSize, filtered.length);
 
   return (
     <DashboardLayout>
