@@ -429,10 +429,20 @@ export default function AdminSubmissions() {
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
           {selected.size > 0 && (
-            <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={bulkDeleting}>
-              {bulkDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-              Delete ({selected.size})
-            </Button>
+            <>
+              <Button variant="outline" size="sm" onClick={() => setConfirmBulkAction('audio')} disabled={bulkDeletingAudio}>
+                {bulkDeletingAudio ? <Loader2 className="h-4 w-4 animate-spin" /> : <VolumeX className="h-4 w-4" />}
+                Delete Audio ({selected.size})
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setConfirmBulkAction('poster')} disabled={bulkDeletingPoster}>
+                {bulkDeletingPoster ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageOff className="h-4 w-4" />}
+                Delete Posters ({selected.size})
+              </Button>
+              <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={bulkDeleting}>
+                {bulkDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                Delete ({selected.size})
+              </Button>
+            </>
           )}
           <Button variant="outline" size="sm" onClick={exportCSV}>
             <Download className="h-4 w-4" /> Export CSV
