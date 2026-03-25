@@ -18,6 +18,8 @@ import AdminSubmissions from "./pages/AdminSubmissions";
 import AdminUsers from "./pages/AdminUsers";
 import MyProfile from "./pages/MyProfile";
 import MyLabels from "./pages/MyLabels";
+import SubLabels from "./pages/SubLabels";
+import AdminSubLabels from "./pages/AdminSubLabels";
 import AdminLabels from "./pages/AdminLabels";
 import AdminContentRequests from "./pages/AdminContentRequests";
 import CopyrightClaimRemoval from "./pages/CopyrightClaimRemoval";
@@ -76,6 +78,7 @@ function App() {
                   <Route path="/admin/genres-languages" element={<ProtectedRoute requiredRole="admin"><AdminGenresLanguages /></ProtectedRoute>} />
                   <Route path="/my-releases" element={<ProtectedRoute><MyReleases /></ProtectedRoute>} />
                   <Route path="/my-labels" element={<ProtectedRoute><MyLabels /></ProtectedRoute>} />
+                  <Route path="/sub-labels" element={<ProtectedRoute><SubLabels /></ProtectedRoute>} />
                   <Route path="/my-songs" element={<Navigate to="/my-releases" replace />} />
                   <Route path="/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
                   <Route path="/bank-details" element={<ProtectedRoute><BankDetails /></ProtectedRoute>} />
@@ -83,6 +86,7 @@ function App() {
                   <Route path="/admin/submissions" element={<ProtectedRoute requiredRole="admin"><AdminSubmissions /></ProtectedRoute>} />
                   <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
                   <Route path="/admin/labels" element={<ProtectedRoute requiredRole="admin"><AdminLabels /></ProtectedRoute>} />
+                  <Route path="/admin/sub-labels" element={<ProtectedRoute requiredRole="admin"><AdminSubLabels /></ProtectedRoute>} />
                   <Route path="/admin/content-requests" element={<ProtectedRoute requiredRole="admin"><AdminContentRequests /></ProtectedRoute>} />
                   <Route path="/admin/reports/ott" element={<ProtectedRoute requiredRole="admin"><AdminReports /></ProtectedRoute>} />
                   <Route path="/admin/reports/youtube" element={<ProtectedRoute requiredRole="admin"><AdminYouTubeReports /></ProtectedRoute>} />

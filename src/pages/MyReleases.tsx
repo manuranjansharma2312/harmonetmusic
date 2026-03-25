@@ -4,7 +4,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { StatusBadge } from '@/components/StatusBadge';
-import { Loader2, Music, ChevronDown, ChevronRight, Trash2, Eye, Pencil } from 'lucide-react';
+import { Loader2, Music, ChevronDown, ChevronRight, Trash2, Eye, Pencil, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -50,13 +50,15 @@ type Release = {
   rejection_reason: string | null;
   created_at: string;
   tracks: Track[];
+  user_id: string;
+  submitted_by_label?: string;
 };
 
 
 
 export default function MyReleases() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, userType, isSubLabel } = useAuth();
   const [releases, setReleases] = useState<Release[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -67,26 +69,66 @@ export default function MyReleases() {
 
   const fetchReleases = async () => {
     if (!user) return;
+
+    // Get own releases
     const { data: releasesData } = await supabase
       .from('releases')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
-    if (!releasesData) { setLoading(false); return; }
+    let allReleases = (releasesData || []) as any[];
 
-    const releaseIds = releasesData.map((r) => r.id);
+    // For record label users (not sub-labels), also fetch sub-label releases
+    let subLabelMap: Record<string, string> = {};
+    if (userType === 'record_label' && !isSubLabel) {
+      const { data: subLabelsData } = await supabase
+        .from('sub_labels')
+        .select('sub_user_id, sub_label_name')
+        .eq('parent_user_id', user.id)
+        .eq('status', 'active');
+
+      if (subLabelsData && subLabelsData.length > 0) {
+        const subUserIds = subLabelsData
+          .filter(sl => sl.sub_user_id)
+          .map(sl => sl.sub_user_id!);
+
+        subLabelsData.forEach(sl => {
+          if (sl.sub_user_id) subLabelMap[sl.sub_user_id] = sl.sub_label_name;
+        });
+
+        if (subUserIds.length > 0) {
+          const { data: subReleases } = await supabase
+            .from('releases')
+            .select('*')
+            .in('user_id', subUserIds)
+            .order('created_at', { ascending: false });
+
+          if (subReleases) {
+            allReleases = [...allReleases, ...subReleases];
+            // Sort by created_at descending
+            allReleases.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          }
+        }
+      }
+    }
+
+    const releaseIds = allReleases.map((r: any) => r.id);
     const { data: tracksData } = releaseIds.length > 0
       ? await supabase.from('tracks').select('*').in('release_id', releaseIds).order('track_order')
       : { data: [] };
 
     const tracksByRelease: Record<string, Track[]> = {};
-    tracksData?.forEach((t) => {
+    tracksData?.forEach((t: any) => {
       if (!tracksByRelease[t.release_id]) tracksByRelease[t.release_id] = [];
       tracksByRelease[t.release_id].push(t);
     });
 
-    setReleases(releasesData.map((r) => ({ ...r, tracks: tracksByRelease[r.id] || [] })));
+    setReleases(allReleases.map((r: any) => ({
+      ...r,
+      tracks: tracksByRelease[r.id] || [],
+      submitted_by_label: subLabelMap[r.user_id] || undefined,
+    })));
     setLoading(false);
   };
 
@@ -164,6 +206,11 @@ export default function MyReleases() {
                       <span className="text-xs px-2 py-0.5 rounded bg-muted/50 text-muted-foreground capitalize">{release.content_type}</span>
                       {release.release_type === 'transfer' && (
                         <span className="text-xs px-2 py-0.5 rounded bg-accent/50 text-accent-foreground">Transfer</span>
+                      )}
+                      {release.submitted_by_label && (
+                        <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary flex items-center gap-1">
+                          <Users className="h-3 w-3" /> {release.submitted_by_label}
+                        </span>
                       )}
                       <span className="text-xs text-muted-foreground">{release.tracks.length} track(s)</span>
                       <span className="text-xs text-muted-foreground">•</span>

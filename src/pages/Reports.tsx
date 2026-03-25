@@ -81,6 +81,7 @@ export default function Reports() {
   const [entryPageSize, setEntryPageSize] = useState<number | 'all'>(10);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [hiddenCut, setHiddenCut] = useState(0);
+  const [subLabelCut, setSubLabelCut] = useState(0);
 
   const { impersonatedUserId, isImpersonating } = useImpersonate();
 
@@ -89,6 +90,16 @@ export default function Reports() {
 
     const fetchReports = async () => {
       setLoading(true);
+
+      // Check if user is a sub-label and get parent's cut
+      const { data: subLabelData } = await supabase
+        .from('sub_labels')
+        .select('percentage_cut')
+        .eq('sub_user_id', user.id)
+        .maybeSingle();
+      if (subLabelData) {
+        setSubLabelCut(Number(subLabelData.percentage_cut) || 0);
+      }
 
       // Fetch hidden cut for non-admin users
       if (role !== 'admin') {
@@ -148,8 +159,10 @@ export default function Reports() {
     fetchReports();
   }, [user, role, isImpersonating, impersonatedUserId]);
 
-  // Cut multiplier: apply for non-admin users or when impersonating
-  const cutMultiplier = (role !== 'admin' || isImpersonating) ? (1 - hiddenCut / 100) : 1;
+  // For sub-labels: use parent's percentage_cut only (not admin hidden cut)
+  // For regular users: use admin hidden cut
+  const effectiveCut = subLabelCut > 0 ? subLabelCut : hiddenCut;
+  const cutMultiplier = (role !== 'admin' || isImpersonating) ? (1 - effectiveCut / 100) : 1;
   const applyRevenueCut = (val: number) => Number((val * cutMultiplier).toFixed(4));
 
   const monthlyGroups = useMemo(() => {

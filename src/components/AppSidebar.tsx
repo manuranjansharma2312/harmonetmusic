@@ -1,61 +1,22 @@
 import { useState } from 'react';
 import {
-  LayoutDashboard,
-  Upload,
-  ListMusic,
-  LogOut,
-  Shield,
-  Users,
-  UserCircle,
-  Tags,
-  Tag,
-  Headset,
-  ShieldAlert,
-  Instagram,
-  Merge,
-  Youtube,
-  Trash2,
-  ChevronDown,
-  MessageSquare,
-  BarChart3,
-  Music,
-  MonitorPlay,
-  Wallet,
-  FileText,
-  Receipt,
-  Image as ImageIcon,
-  Bell,
-  BookOpen,
-  FileSignature,
-  Megaphone,
-  Landmark,
-  CreditCard,
+  LayoutDashboard, Upload, ListMusic, LogOut, Shield, Users,
+  UserCircle, Tags, Tag, Headset, ShieldAlert, Instagram,
+  Merge, Youtube, Trash2, ChevronDown, MessageSquare,
+  BarChart3, MonitorPlay, Wallet, FileText, Receipt,
+  Image as ImageIcon, Bell, BookOpen, FileSignature,
+  Megaphone, Landmark, CreditCard, UsersRound,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { NavLink } from '@/components/NavLink';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarFooter,
-  SidebarHeader,
-  useSidebar,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
+  SidebarGroupLabel, SidebarMenu, SidebarMenuItem,
+  SidebarMenuButton, SidebarFooter, SidebarHeader, useSidebar,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-
-const userLinksTop = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/submit', label: 'New Release', icon: Upload },
-  { to: '/my-releases', label: 'My Releases', icon: ListMusic },
-  { to: '/my-labels', label: 'My Labels', icon: Tag },
-];
 
 const contentToolLinks = [
   { to: '/tools/copyright-claim', label: 'Copyright Claim Removal', icon: ShieldAlert },
@@ -79,21 +40,13 @@ const adminReportLinks = [
   { to: '/admin/reports/ott', label: 'OTT Reports', icon: MonitorPlay },
 ];
 
-const userLinksBottom = [
-  { to: '/poster-generator', label: 'Out Now Poster', icon: ImageIcon },
-  { to: '/help-tutorials', label: 'Help Tutorials', icon: BookOpen },
-  { to: '/promotion-tools', label: 'Promotion Tools', icon: Megaphone },
-  { to: '/revenue', label: 'Revenue', icon: Wallet },
-  { to: '/terms', label: 'Terms & Conditions', icon: FileText },
-  { to: '/profile', label: 'My Profile', icon: UserCircle },
-];
-
 const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/submissions', label: 'All Submissions', icon: ListMusic },
   { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
   { to: '/admin/labels', label: 'Labels', icon: Tag },
+  { to: '/admin/sub-labels', label: 'Sub Labels', icon: UsersRound },
   { to: '/admin/content-requests', label: 'Content Requests', icon: Headset },
   { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
   { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
@@ -107,13 +60,33 @@ const adminLinksTop = [
 ];
 
 export function AppSidebar() {
-  const { role, signOut, user } = useAuth();
+  const { role, signOut, user, userType, isSubLabel } = useAuth();
   const { isImpersonating } = useImpersonate();
   const { state, setOpenMobile, isMobile } = useSidebar();
   const collapsed = state === 'collapsed';
   const showUserView = isImpersonating || role !== 'admin';
   const [toolsOpen, setToolsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
+
+  // Build user links dynamically based on user type
+  const userLinksTop = [
+    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/submit', label: 'New Release', icon: Upload },
+    { to: '/my-releases', label: 'My Releases', icon: ListMusic },
+    { to: '/my-labels', label: 'My Labels', icon: Tag },
+    // Only show Sub Labels for record_label users who are NOT sub-labels
+    ...(userType === 'record_label' && !isSubLabel ? [{ to: '/sub-labels', label: 'Sub Labels', icon: UsersRound }] : []),
+  ];
+
+  const userLinksBottom = [
+    { to: '/poster-generator', label: 'Out Now Poster', icon: ImageIcon },
+    { to: '/help-tutorials', label: 'Help Tutorials', icon: BookOpen },
+    { to: '/promotion-tools', label: 'Promotion Tools', icon: Megaphone },
+    { to: '/revenue', label: 'Revenue', icon: Wallet },
+    { to: '/terms', label: 'Terms & Conditions', icon: FileText },
+    // Hide Bank Details for sub-labels (it's accessed from Revenue page, not sidebar, but keeping the profile link)
+    { to: '/profile', label: 'My Profile', icon: UserCircle },
+  ];
 
   const handleNavClick = () => {
     if (isMobile) {
