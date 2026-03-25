@@ -207,6 +207,7 @@ export default function AdminTutorials() {
                   itemLabel="tutorials"
                 />
               </div>
+            )}
           </>
         )}
       </div>
