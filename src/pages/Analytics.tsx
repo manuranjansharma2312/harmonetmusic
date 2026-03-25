@@ -396,7 +396,7 @@ export default function Analytics() {
                               <stop offset="100%" stopColor="#eb4d4b" />
                             </linearGradient>
                           </defs>
-                          <Pie data={sourceSplit} cx="50%" cy="50%" innerRadius={58} outerRadius={88} paddingAngle={5}
+                          <Pie data={sourceSplit} cx="50%" cy="50%" innerRadius={45} outerRadius={72} paddingAngle={5}
                             dataKey="value" stroke="none" labelLine={false}
                             style={{ filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.4))' }}>
                             {sourceSplit.map((_, i) => <Cell key={i} fill={`url(#pieGrad${i})`} />)}
