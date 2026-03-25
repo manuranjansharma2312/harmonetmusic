@@ -271,11 +271,13 @@ export default function AdminSubmissions() {
       'Callertune Time', 'Audio URL',
     ];
 
+    const fmt = (s: string) => s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
     const rows: string[][] = [];
     data.forEach((r) => {
       const releaseFields = [
-        getReleaseName(r), r.release_type, r.content_type, r.upc || '', r.status,
-        r.release_date, r.store_selection, r.copyright_line || '', r.phonogram_line || '',
+        getReleaseName(r), fmt(r.release_type), fmt(r.content_type), r.upc || '', fmt(r.status),
+        r.release_date, fmt(r.store_selection), r.copyright_line || '', r.phonogram_line || '',
         r.poster_url || '', r.rejection_reason || '',
         r.user_name || '', r.user_display_id ? `#${r.user_display_id}` : '', r.user_email || '',
       ];
@@ -285,13 +287,12 @@ export default function AdminSubmissions() {
         const trackFields = t ? [
           String(t.track_order), t.song_title || '', t.isrc || '', t.primary_artist || '',
           t.is_new_artist_profile ? 'Yes' : 'No',
-          t.audio_type || '', t.language || '', t.genre || '',
+          fmt(t.audio_type || ''), t.language || '', t.genre || '',
           t.lyricist || '', t.composer || '', t.producer || '',
           t.spotify_link || '', t.apple_music_link || '', t.instagram_link || '',
           t.callertune_time || '', t.audio_url || '',
         ] : Array(16).fill('');
 
-        // First row has release info, subsequent rows have empty release columns
         rows.push(i === 0 ? [...releaseFields, ...trackFields] : [...Array(14).fill(''), ...trackFields]);
       });
     });
