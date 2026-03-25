@@ -54,21 +54,38 @@ export default function Revenue() {
   async function fetchData() {
     setLoading(true);
     try {
-      // Check bank details first
-      const { data: bankData } = await supabase
-        .from('bank_details')
-        .select('id')
-        .eq('user_id', activeUserId!)
-        .maybeSingle();
-      setHasBankDetails(!!bankData);
-
-      // Fetch hidden cut
+      // Check bank details first (skip for sub-labels)
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('hidden_cut_percent')
+        .select('hidden_cut_percent, user_type')
         .eq('user_id', activeUserId!)
         .maybeSingle();
+      
+      const isSubLabelUser = profileData?.user_type === 'sub_label';
+      
+      if (!isSubLabelUser) {
+        const { data: bankData } = await supabase
+          .from('bank_details')
+          .select('id')
+          .eq('user_id', activeUserId!)
+          .maybeSingle();
+        setHasBankDetails(!!bankData);
+      } else {
+        setHasBankDetails(true); // Sub-labels skip bank check
+      }
+
+      // Fetch hidden cut
       setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
+
+      // Check if sub-label and get parent's cut
+      const { data: subLabelData } = await supabase
+        .from('sub_labels')
+        .select('percentage_cut')
+        .eq('sub_user_id', activeUserId!)
+        .maybeSingle();
+      if (subLabelData) {
+        setSubLabelCut(Number(subLabelData.percentage_cut) || 0);
+      }
       // Fetch total revenue from OTT reports
       const { data: ottData } = await supabase
         .from('report_entries')

@@ -127,7 +127,8 @@ export default function YouTubeReports() {
     fetchReports();
   }, [user, role, isImpersonating, impersonatedUserId]);
 
-  const cutMultiplier = (role !== 'admin' || isImpersonating) ? (1 - hiddenCut / 100) : 1;
+  const effectiveCut = subLabelCut > 0 ? subLabelCut : hiddenCut;
+  const cutMultiplier = (role !== 'admin' || isImpersonating) ? (1 - effectiveCut / 100) : 1;
   const applyRevenueCut = (val: number) => Number((val * cutMultiplier).toFixed(4));
 
   const monthlyGroups = useMemo(() => {
