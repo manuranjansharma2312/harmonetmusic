@@ -49,6 +49,8 @@ export default function AdminNotices() {
     },
   });
 
+  const paginatedNotices = useMemo(() => paginateItems(notices, page, pageSize), [notices, page, pageSize]);
+
   const toggleMutation = useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
       const { error } = await supabase.from('notices').update({ is_active }).eq('id', id);
