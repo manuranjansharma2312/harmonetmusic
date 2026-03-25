@@ -10,6 +10,7 @@ import { GlassCard } from "@/components/GlassCard";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, FileText, Copy, Eye } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { RichTextEditor } from "@/components/RichTextEditor";
