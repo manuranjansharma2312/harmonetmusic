@@ -3,7 +3,7 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { StatusBadge } from '@/components/StatusBadge';
-import { Loader2, Users, Eye, Trash2, FileText, Search, Pencil } from 'lucide-react';
+import { Loader2, Users, Eye, Trash2, FileText, Search, Pencil, LogIn } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
+import { useImpersonate } from '@/hooks/useImpersonate';
+import { useNavigate } from 'react-router-dom';
 
 type SubLabel = {
   id: string;
