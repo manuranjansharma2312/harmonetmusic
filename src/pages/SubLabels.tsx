@@ -15,15 +15,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { format } from 'date-fns';
 
-interface SubLabelWithdrawal {
-  id: string;
-  user_id: string;
-  amount: number;
-  status: string;
-  created_at: string;
-  sub_label_name?: string;
-}
-
 type SubLabel = {
   id: string;
   parent_label_name: string;
