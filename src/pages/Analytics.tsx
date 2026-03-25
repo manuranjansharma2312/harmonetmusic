@@ -546,10 +546,10 @@ export default function Analytics() {
             </div>
 
             {/* ── Top Artists ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-5">
               <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
-                <div className="p-6 pb-3"><SectionHeader icon={Users} title="Top Artists · Revenue" subtitle="Highest earning artists" accent="#a55eea" /></div>
-                <div className="px-6 pb-6 space-y-3">
+                <div className="p-4 sm:p-6 pb-3"><SectionHeader icon={Users} title="Top Artists · Revenue" subtitle="Highest earning artists" accent="#a55eea" /></div>
+                <div className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-2 sm:space-y-3">
                   {revenueByArtist.length === 0 && <EmptyState text="No artist data" />}
                   {revenueByArtist.map((a, i) => (
                     <RankRow key={a.name} rank={i + 1} name={a.name} value={formatRevenue(a.value)} pct={revenueByArtist[0] ? (a.value / revenueByArtist[0].value) * 100 : 0} pal={PALETTE[(i + 5) % PALETTE.length]} />
