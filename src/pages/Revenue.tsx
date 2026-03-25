@@ -59,6 +59,14 @@ export default function Revenue() {
         .eq('user_id', activeUserId!)
         .maybeSingle();
       setHasBankDetails(!!bankData);
+
+      // Fetch hidden cut
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('hidden_cut_percent')
+        .eq('user_id', activeUserId!)
+        .maybeSingle();
+      setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
       // Fetch total revenue from OTT reports
       const { data: ottData } = await supabase
         .from('report_entries')
