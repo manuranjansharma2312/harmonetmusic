@@ -72,6 +72,9 @@ export default function AdminContentRequests() {
     if (filterType !== 'all') {
       query = query.eq('request_type', filterType);
     }
+    if (filterStatus !== 'all') {
+      query = query.eq('status', filterStatus);
+    }
     const { data, error } = await query;
     if (!error && data) {
       setRequests(data);
