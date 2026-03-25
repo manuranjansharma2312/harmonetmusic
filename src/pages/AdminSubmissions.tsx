@@ -396,41 +396,50 @@ export default function AdminSubmissions() {
   };
 
   const downloadDemoTemplate = () => {
+    // Match export format exactly
     const headers = [
       'Release Name', 'Release Type', 'Content Type', 'UPC', 'Status',
       'Release Date', 'Store Selection', 'Copyright ©', 'Phonogram ℗',
-      'User ID', 'User Email',
-      'Track #', 'Song Title', 'ISRC', 'Primary Artist', 'Singer', 'New Artist Profile',
+      'Poster URL', 'Rejection Reason',
+      'Submitted By', 'User ID', 'User Email',
+      'Track #', 'Song Title', 'ISRC', 'Primary Artist', 'New Artist Profile',
       'Audio Type', 'Language', 'Genre',
-      'Lyricist', 'Composer', 'Producer',
-      'Spotify Link', 'Apple Music Link', 'Instagram Link', 'Callertune Time',
+      'Singer', 'Lyricist', 'Composer', 'Producer',
+      'Spotify Link', 'Apple Music Link', 'Instagram Link',
+      'Callertune Time', 'Audio URL',
     ];
     const row1 = [
       'My First Album', 'New Release', 'Album', '', 'Pending',
       '2026-04-01', 'Worldwide', '© 2026 Label Name', '℗ 2026 Label Name',
-      '#1', '',
-      '1', 'Track One', '', 'Artist Name', 'Singer Name', 'No',
+      '', '',
+      '', '#1', '',
+      '1', 'Track One', '', 'Artist Name', 'No',
       'With Vocal', 'Hindi', 'Pop',
-      'Lyricist Name', 'Composer Name', 'Producer Name',
-      '', '', '', '00:30',
+      'Singer Name', 'Lyricist Name', 'Composer Name', 'Producer Name',
+      '', '', '',
+      '00:30', '',
     ];
     const row2 = [
       'My First Album', 'New Release', 'Album', '', 'Pending',
       '2026-04-01', 'Worldwide', '© 2026 Label Name', '℗ 2026 Label Name',
-      '#1', '',
-      '2', 'Track Two', '', 'Artist Name', 'Singer Name', 'No',
-      'Instrumental', 'English', 'Rock',
-      'Lyricist Name', 'Composer Name', 'Producer Name',
-      '', '', '', '',
+      '', '',
+      '', '#1', '',
+      '2', 'Track Two', '', 'Another Artist', 'No',
+      'Instrumental', '', 'Rock',
+      'Singer Name', 'Lyricist Name', 'Composer Name', 'Producer Name',
+      '', '', '',
+      '', '',
     ];
     const row3 = [
       'My Single Song', 'New Release', 'Single', '', 'Approved',
       '2026-05-01', 'Instagram & Facebook Only', '© 2026 Label', '℗ 2026 Label',
-      '', 'user@example.com',
-      '1', 'Single Song Title', 'ISRC12345', 'Solo Artist', 'Solo Singer', 'Yes',
+      '', '',
+      '', '', 'user@example.com',
+      '1', 'Single Song Title', 'ISRC12345', 'Solo Artist', 'Yes',
       'With Vocal', 'English', 'Pop',
-      'Lyricist', 'Composer', 'Producer',
-      'https://open.spotify.com/...', 'https://music.apple.com/...', 'https://instagram.com/...', '01:15',
+      'Solo Singer', 'Lyricist', 'Composer', 'Producer',
+      'https://open.spotify.com/...', 'https://music.apple.com/...', 'https://instagram.com/...',
+      '01:15', '',
     ];
     const csvContent = [headers, row1, row2, row3]
       .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
@@ -824,7 +833,7 @@ export default function AdminSubmissions() {
       'Submitted By', 'User ID', 'User Email',
       'Track #', 'Song Title', 'ISRC', 'Primary Artist', 'New Artist Profile',
       'Audio Type', 'Language', 'Genre',
-      'Lyricist', 'Composer', 'Producer',
+      'Singer', 'Lyricist', 'Composer', 'Producer',
       'Spotify Link', 'Apple Music Link', 'Instagram Link',
       'Callertune Time', 'Audio URL',
     ];
@@ -846,10 +855,10 @@ export default function AdminSubmissions() {
           String(t.track_order), t.song_title || '', t.isrc || '', t.primary_artist || '',
           t.is_new_artist_profile ? 'Yes' : 'No',
           fmt(t.audio_type || ''), t.language || '', t.genre || '',
-          t.lyricist || '', t.composer || '', t.producer || '',
+          (t as any).singer || '', t.lyricist || '', t.composer || '', t.producer || '',
           t.spotify_link || '', t.apple_music_link || '', t.instagram_link || '',
           t.callertune_time || '', t.audio_url || '',
-        ] : Array(16).fill('');
+        ] : Array(17).fill('');
 
         rows.push([...releaseFields, ...trackFields]);
       });
