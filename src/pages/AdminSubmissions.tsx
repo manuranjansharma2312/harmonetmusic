@@ -101,11 +101,28 @@ export default function AdminSubmissions() {
       .select('user_id, email, artist_name, record_label_name, legal_name, display_id, user_type')
       .in('user_id', userIds);
 
+    // Fetch sub-label info for sub_label type users
+    const { data: subLabelsData } = await supabase
+      .from('sub_labels')
+      .select('sub_user_id, sub_label_name, parent_label_name');
+
+    const subLabelInfoMap: Record<string, { sub_label_name: string; parent_label_name: string }> = {};
+    subLabelsData?.forEach((sl) => {
+      if (sl.sub_user_id) {
+        subLabelInfoMap[sl.sub_user_id] = {
+          sub_label_name: sl.sub_label_name,
+          parent_label_name: sl.parent_label_name,
+        };
+      }
+    });
+
     const emailMap: Record<string, string> = {};
     const nameMap: Record<string, string> = {};
     const displayIdMap: Record<string, number> = {};
+    const userTypeMap: Record<string, string> = {};
     profiles?.forEach((p) => {
       emailMap[p.user_id] = p.email;
+      userTypeMap[p.user_id] = p.user_type;
       nameMap[p.user_id] = p.user_type === 'label'
         ? (p.record_label_name || p.legal_name || p.email)
         : (p.artist_name || p.legal_name || p.email);
@@ -135,6 +152,9 @@ export default function AdminSubmissions() {
         user_email: emailMap[r.user_id] || r.user_id.slice(0, 8),
         user_name: nameMap[r.user_id] || r.user_id.slice(0, 8),
         user_display_id: displayIdMap[r.user_id],
+        user_type: userTypeMap[r.user_id],
+        sub_label_name: subLabelInfoMap[r.user_id]?.sub_label_name,
+        parent_label_name: subLabelInfoMap[r.user_id]?.parent_label_name,
       }))
     );
     setLoading(false);
