@@ -833,7 +833,7 @@ export default function AdminSubmissions() {
       'Submitted By', 'User ID', 'User Email',
       'Track #', 'Song Title', 'ISRC', 'Primary Artist', 'New Artist Profile',
       'Audio Type', 'Language', 'Genre',
-      'Lyricist', 'Composer', 'Producer',
+      'Singer', 'Lyricist', 'Composer', 'Producer',
       'Spotify Link', 'Apple Music Link', 'Instagram Link',
       'Callertune Time', 'Audio URL',
     ];
