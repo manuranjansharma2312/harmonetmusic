@@ -503,12 +503,12 @@ export default function AdminSubmissions() {
                 <Detail label="Content Type" value={viewRelease.content_type} />
                 <Detail label="Status" value={viewRelease.status} />
                 <Detail label="Release Date" value={viewRelease.release_date} />
-                <Detail label="UPC" value={viewRelease.upc || '—'} />
+                <Detail label="UPC" value={viewRelease.upc || '—'} copyable />
                 <Detail label="Store" value={viewRelease.store_selection} />
-                <Detail label="© Line" value={viewRelease.copyright_line || '—'} />
-                <Detail label="℗ Line" value={viewRelease.phonogram_line || '—'} />
-                <Detail label="Submitted By" value={viewRelease.user_name || '—'} />
-                <Detail label="Email" value={viewRelease.user_email || '—'} />
+                <Detail label="© Line" value={viewRelease.copyright_line || '—'} copyable />
+                <Detail label="℗ Line" value={viewRelease.phonogram_line || '—'} copyable />
+                <Detail label="Submitted By" value={viewRelease.user_name || '—'} copyable />
+                <Detail label="Email" value={viewRelease.user_email || '—'} copyable />
                 <Detail label="User ID" value={viewRelease.user_display_id ? `#${viewRelease.user_display_id}` : '—'} />
                 <Detail label="Submitted" value={new Date(viewRelease.created_at).toLocaleString()} />
               </div>
