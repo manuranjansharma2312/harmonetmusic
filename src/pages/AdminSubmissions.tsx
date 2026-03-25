@@ -56,6 +56,9 @@ type Release = {
   user_email?: string;
   user_name?: string;
   user_display_id?: number;
+  user_type?: string;
+  sub_label_name?: string;
+  parent_label_name?: string;
 };
 
 export default function AdminSubmissions() {
