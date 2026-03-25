@@ -53,6 +53,7 @@ export default function SubLabels() {
     password: '',
     phone: '',
     percentage_cut: '',
+    withdrawal_threshold: '1000',
   });
   const [b2bFile, setB2bFile] = useState<File | null>(null);
 
