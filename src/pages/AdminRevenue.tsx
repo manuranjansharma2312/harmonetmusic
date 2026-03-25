@@ -68,9 +68,11 @@ export default function AdminRevenue() {
         const { data: profiles } = await supabase.from('profiles').select('user_id, email, artist_name, record_label_name, user_type, display_id').in('user_id', userIds);
         const emailMap = new Map<string, string>();
         const displayIdMap = new Map<string, number>();
+        const subLabelSet = new Set<string>();
         profiles?.forEach((p: any) => {
           emailMap.set(p.user_id, p.user_type === 'label' ? (p.record_label_name || p.email) : (p.artist_name || p.email));
           if (p.display_id) displayIdMap.set(p.user_id, p.display_id);
+          if (p.user_type === 'sub_label') subLabelSet.add(p.user_id);
         });
         const missingIds = userIds.filter(id => !emailMap.has(id));
         if (missingIds.length > 0) {
@@ -80,6 +82,7 @@ export default function AdminRevenue() {
         allW.forEach(w => {
           w.email = emailMap.get(w.user_id) || 'Unknown';
           w.display_id = displayIdMap.get(w.user_id);
+          w.is_sub_label = subLabelSet.has(w.user_id);
         });
       }
 
