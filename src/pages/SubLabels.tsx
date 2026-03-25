@@ -128,6 +128,7 @@ export default function SubLabels() {
           agreement_end_date,
           phone: phone.trim(),
           percentage_cut: parseFloat(percentage_cut) || 0,
+          withdrawal_threshold: parseFloat(formData.withdrawal_threshold) || 1000,
           b2b_url,
         },
       });
