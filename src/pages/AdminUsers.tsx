@@ -108,6 +108,9 @@ export default function AdminUsers() {
     return true;
   });
 
+  const paginatedUsers = useMemo(() => paginateItems(filtered, page, pageSize), [filtered, page, pageSize]);
+  useEffect(() => { setPage(0); }, [search, statusFilter]);
+
   const handleVerification = async (userId: string, status: string) => {
     const { error } = await supabase.from('profiles').update({ verification_status: status }).eq('user_id', userId);
     if (error) { toast.error(error.message); return; }
