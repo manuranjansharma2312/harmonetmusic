@@ -378,6 +378,14 @@ export default function AdminContentRequests() {
                 ))}
               </div>
             )}
+            <TablePagination
+              totalItems={requests.length}
+              currentPage={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="requests"
+            />
           </div>
         </GlassCard>
       </div>
