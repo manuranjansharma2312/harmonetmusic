@@ -187,8 +187,16 @@ export default function AdminLabels() {
                     </div>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    By: {userEmails[label.user_id] || label.user_id.slice(0, 8)} {userDisplayIds[label.user_id] ? <span className="font-mono font-bold text-primary">(#{userDisplayIds[label.user_id]})</span> : null} • {new Date(label.created_at).toLocaleDateString()}
+                    By: <span className="text-foreground font-medium">{userEmails[label.user_id] || label.user_id.slice(0, 8)}</span> {userDisplayIds[label.user_id] ? <span className="font-mono font-bold text-primary">(#{userDisplayIds[label.user_id]})</span> : null} • {new Date(label.created_at).toLocaleDateString()}
                   </p>
+                  {userTypes[label.user_id] === 'sub_label' && subLabelInfo[label.user_id] && (
+                    <div className="text-xs mt-0.5">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                        {subLabelInfo[label.user_id].sub_label_name}
+                      </span>
+                      <span className="text-muted-foreground ml-1">↳ Under: {subLabelInfo[label.user_id].parent_label_name}</span>
+                    </div>
+                  )}
                   {label.status === 'rejected' && label.rejection_reason && (
                     <p className="text-xs text-destructive mt-1">Reason: {label.rejection_reason}</p>
                   )}
