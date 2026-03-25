@@ -299,9 +299,11 @@ export default function NewRelease() {
           let audio_url = track._existingAudioUrl || null;
 
           if (track.audioFile) {
+            setSubmitStep(`Converting audio for track ${i + 1}...`);
+            const convertedAudio = await convertAudioTo24bit48kHz(track.audioFile);
             setSubmitStep(`Uploading audio for track ${i + 1} of ${tracks.length}...`);
-            const path = `${user.id}/${Date.now()}-${track.audioFile.name}`;
-            const { error } = await supabase.storage.from('audio').upload(path, track.audioFile);
+            const path = `${user.id}/${Date.now()}-${convertedAudio.name}`;
+            const { error } = await supabase.storage.from('audio').upload(path, convertedAudio);
             if (error) throw error;
             const { data: urlData } = supabase.storage.from('audio').getPublicUrl(path);
             audio_url = urlData.publicUrl;
