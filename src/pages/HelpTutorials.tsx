@@ -39,6 +39,8 @@ export default function HelpTutorials() {
     t.subject.toLowerCase().includes(search.toLowerCase())
   );
 
+  const paginatedTutorials = useMemo(() => paginateItems(filtered, page, pageSize), [filtered, page, pageSize]);
+
   const stripHtml = (html: string) => {
     const tmp = document.createElement('div');
     tmp.innerHTML = html;
