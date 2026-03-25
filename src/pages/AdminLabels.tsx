@@ -7,6 +7,7 @@ import { Loader2, Tag, FileText, Trash2, Pencil, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { toast } from 'sonner';
 
 type Label = {
