@@ -7,6 +7,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { formatStreams, formatRevenue } from '@/lib/formatNumbers';
+import { applyRevenueCutToAmount, calculateAvailableBalance, getEffectiveRevenueCutPercent, shouldApplyRevenueCut, summarizeWithdrawals } from '@/lib/revenueCalculations';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import {
@@ -41,7 +42,7 @@ const tooltipStyle = {
 };
 
 export default function UserDashboard() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const { isImpersonating, impersonatedUserId, impersonatedEmail, stopImpersonating } = useImpersonate();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -57,8 +58,18 @@ export default function UserDashboard() {
   const [recentSongs, setRecentSongs] = useState<any[]>([]);
   const [recentReleases, setRecentReleases] = useState<any[]>([]);
   const [withdrawalBalance, setWithdrawalBalance] = useState({ pending: 0, paid: 0 });
+  const [hiddenCut, setHiddenCut] = useState(0);
+  const [subLabelCut, setSubLabelCut] = useState(0);
+  const [isSubLabelUser, setIsSubLabelUser] = useState(false);
 
   const effectiveUserId = isImpersonating ? impersonatedUserId : user?.id;
+  const effectiveCut = getEffectiveRevenueCutPercent({ hiddenCut, subLabelCut, isSubLabel: isSubLabelUser });
+  const netRevenue = applyRevenueCutToAmount(
+    totalRevenue,
+    effectiveCut,
+    shouldApplyRevenueCut({ role, currentUserId: user?.id, activeUserId: effectiveUserId })
+  );
+  const availableRevenue = Math.max(calculateAvailableBalance(netRevenue, withdrawalBalance.paid, withdrawalBalance.pending), 0);
 
   useEffect(() => {
     if (!effectiveUserId) return;
@@ -79,12 +90,11 @@ export default function UserDashboard() {
   async function fetchAll() {
     if (!effectiveUserId) return;
 
-    const [songsRes, releasesRes, profileRes, reportRes, ytReportRes, withdrawalRes, recentRes, recentReleasesRes] = await Promise.all([
+    const [songsRes, releasesRes, profileRes, subLabelRes, withdrawalRes, recentRes, recentReleasesRes] = await Promise.all([
       supabase.from('songs').select('status').eq('user_id', effectiveUserId),
       supabase.from('releases').select('status').eq('user_id', effectiveUserId),
       supabase.from('profiles').select('display_id, hidden_cut_percent').eq('user_id', effectiveUserId).single(),
-      supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, store, track'),
-      supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams'),
+      supabase.from('sub_labels').select('percentage_cut').eq('sub_user_id', effectiveUserId).maybeSingle(),
       supabase.from('withdrawal_requests').select('status, amount').eq('user_id', effectiveUserId),
       supabase.from('songs').select('id, title, artist, status, created_at').eq('user_id', effectiveUserId).order('created_at', { ascending: false }).limit(5),
       supabase.from('releases').select('id, album_name, ep_name, content_type, status, created_at').eq('user_id', effectiveUserId).order('created_at', { ascending: false }).limit(5),
@@ -110,14 +120,69 @@ export default function UserDashboard() {
       });
     }
 
-    if (profileRes.data) {
-      setDisplayId((profileRes.data as any).display_id);
+    setDisplayId(profileRes.data ? (profileRes.data as any).display_id : null);
+
+    const hiddenCutPercent = profileRes.data ? Number((profileRes.data as any).hidden_cut_percent || 0) : 0;
+    const hasSubLabel = Boolean(subLabelRes.data);
+    const subLabelCutPercent = Number(subLabelRes.data?.percentage_cut || 0);
+    const effectiveCutPercent = getEffectiveRevenueCutPercent({
+      hiddenCut: hiddenCutPercent,
+      subLabelCut: subLabelCutPercent,
+      isSubLabel: hasSubLabel,
+    });
+    const shouldApplyCut = shouldApplyRevenueCut({ role, currentUserId: user?.id, activeUserId: effectiveUserId });
+
+    setHiddenCut(hiddenCutPercent);
+    setSubLabelCut(subLabelCutPercent);
+    setIsSubLabelUser(hasSubLabel);
+
+    let reportData: any[] = [];
+    let ytReportData: any[] = [];
+
+    if (role === 'admin' && isImpersonating && impersonatedUserId) {
+      const { data: subLabels } = await supabase
+        .from('sub_labels')
+        .select('sub_user_id')
+        .eq('parent_user_id', effectiveUserId)
+        .eq('status', 'active');
+
+      const subUserIds = (subLabels || [])
+        .map(sl => sl.sub_user_id)
+        .filter(Boolean) as string[];
+
+      const allUserIds = [effectiveUserId, ...subUserIds];
+
+      const [{ data: trackRows }, { data: songRows }] = await Promise.all([
+        supabase.from('tracks').select('isrc').in('user_id', allUserIds),
+        supabase.from('songs').select('isrc').in('user_id', allUserIds),
+      ]);
+
+      const ownedIsrcs = [...new Set(
+        [...(trackRows ?? []), ...(songRows ?? [])]
+          .map(row => (row.isrc || '').trim().toUpperCase())
+          .filter(Boolean)
+      )];
+
+      if (ownedIsrcs.length > 0) {
+        const [{ data: ottData }, { data: ytData }] = await Promise.all([
+          supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, store, track').in('isrc', ownedIsrcs),
+          supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, store, track').in('isrc', ownedIsrcs),
+        ]);
+
+        reportData = ottData || [];
+        ytReportData = ytData || [];
+      }
+    } else {
+      const [reportRes, ytReportRes] = await Promise.all([
+        supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, store, track'),
+        supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, store, track'),
+      ]);
+
+      reportData = reportRes.data || [];
+      ytReportData = ytReportRes.data || [];
     }
 
-    const hiddenCut = profileRes.data ? Number((profileRes.data as any).hidden_cut_percent || 0) : 0;
-    const cutMultiplier = (100 - hiddenCut) / 100;
-
-    const allReports = [...(reportRes.data || []), ...(ytReportRes.data || [])];
+    const allReports = [...reportData, ...ytReportData];
 
     if (allReports.length > 0) {
       let totalRev = 0;
@@ -127,9 +192,10 @@ export default function UserDashboard() {
       const trackMap: Record<string, number> = {};
 
       allReports.forEach((r: any) => {
-        const rev = Number(r.net_generated_revenue || 0) * cutMultiplier;
+        const grossRevenue = Number(r.net_generated_revenue || 0);
+        const rev = applyRevenueCutToAmount(grossRevenue, effectiveCutPercent, shouldApplyCut);
         const str = Number(r.streams || 0);
-        totalRev += rev;
+        totalRev += grossRevenue;
         totalStr += str;
 
         const month = r.reporting_month;
@@ -163,14 +229,16 @@ export default function UserDashboard() {
         Object.entries(trackMap).sort(([, a], [, b]) => b - a).slice(0, 5)
           .map(([name, streams]) => ({ name: name.length > 20 ? name.substring(0, 20) + '…' : name, streams }))
       );
+    } else {
+      setTotalRevenue(0);
+      setTotalStreams(0);
+      setMonthlyRevenue([]);
+      setTopStores([]);
+      setTopTracks([]);
     }
 
     if (withdrawalRes.data) {
-      const d = withdrawalRes.data;
-      setWithdrawalBalance({
-        pending: d.filter(w => w.status === 'pending').reduce((acc, w) => acc + Number(w.amount), 0),
-        paid: d.filter(w => w.status === 'paid').reduce((acc, w) => acc + Number(w.amount), 0),
-      });
+      setWithdrawalBalance(summarizeWithdrawals(withdrawalRes.data));
     }
 
     setRecentSongs(recentRes.data || []);
@@ -256,7 +324,7 @@ export default function UserDashboard() {
         <StatCard title="Approved" value={releaseStats.approved} icon={CheckCircle} color="hsla(140, 60%, 30%, 0.3)" />
         <StatCard title="Rejected" value={releaseStats.rejected} icon={XCircle} color="hsla(0, 60%, 40%, 0.3)" />
         <StatCard title="Total Streams" value={formatStreams(totalStreams)} icon={BarChart3} color="hsla(200, 70%, 40%, 0.3)" />
-        <StatCard title="Available Revenue" value={formatRevenue(totalRevenue - withdrawalBalance.pending - withdrawalBalance.paid)} icon={DollarSign} color="hsla(140, 60%, 35%, 0.3)" />
+        <StatCard title="Available Revenue" value={formatRevenue(availableRevenue)} icon={DollarSign} color="hsla(140, 60%, 35%, 0.3)" />
       </div>
 
       {/* Pending Releases */}
@@ -390,7 +458,7 @@ export default function UserDashboard() {
           <div className="space-y-2 sm:space-y-3">
             <div className="p-2.5 sm:p-3 rounded-lg bg-muted/30">
               <p className="text-[10px] sm:text-xs text-muted-foreground">Available Revenue</p>
-              <p className="text-lg sm:text-xl font-bold text-foreground mt-1">{formatRevenue(totalRevenue - withdrawalBalance.pending - withdrawalBalance.paid)}</p>
+                <p className="text-lg sm:text-xl font-bold text-foreground mt-1">{formatRevenue(availableRevenue)}</p>
             </div>
             <div className="flex gap-2 sm:gap-3">
               <div className="flex-1 p-2.5 sm:p-3 rounded-lg bg-muted/30">

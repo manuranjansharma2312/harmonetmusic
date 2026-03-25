@@ -16,6 +16,7 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell,
   AreaChart, Area, Legend,
 } from 'recharts';
+import { applyRevenueCutToAmount, getEffectiveRevenueCutPercent, shouldApplyRevenueCut } from '@/lib/revenueCalculations';
 
 /* ── Types ── */
 type TimePeriod = '30d' | '6m' | '12m' | 'all';
@@ -200,12 +201,28 @@ export default function Analytics() {
   const [ytEntries, setYtEntries] = useState<ReportEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<TimePeriod>('all');
+  const [hiddenCut, setHiddenCut] = useState(0);
+  const [subLabelCut, setSubLabelCut] = useState(0);
+  const [isSubLabelUser, setIsSubLabelUser] = useState(false);
+
+  const activeUserId = (role === 'admin' && isImpersonating && impersonatedUserId) ? impersonatedUserId : user?.id;
+  const effectiveCut = getEffectiveRevenueCutPercent({ hiddenCut, subLabelCut, isSubLabel: isSubLabelUser });
+  const shouldApplyCut = shouldApplyRevenueCut({ role, currentUserId: user?.id, activeUserId });
 
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
     const mapEntries = (arr: any[], source: 'ott' | 'youtube') =>
       (arr || []).map((e: any) => ({ ...e, source, streams: e.streams || 0, downloads: e.downloads || 0, net_generated_revenue: e.net_generated_revenue || 0 }));
+
+    const [{ data: profileData }, { data: subLabelData }] = await Promise.all([
+      supabase.from('profiles').select('hidden_cut_percent, user_type').eq('user_id', activeUserId).maybeSingle(),
+      supabase.from('sub_labels').select('percentage_cut').eq('sub_user_id', activeUserId).maybeSingle(),
+    ]);
+
+    setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
+    setSubLabelCut(Number(subLabelData?.percentage_cut) || 0);
+    setIsSubLabelUser(Boolean(subLabelData || profileData?.user_type === 'sub_label'));
 
     if (role === 'admin' && isImpersonating && impersonatedUserId) {
       const [{ data: trackRows }, { data: songRows }] = await Promise.all([
@@ -246,8 +263,15 @@ export default function Analytics() {
 
   const allEntries = useMemo(() => [...ottEntries, ...ytEntries], [ottEntries, ytEntries]);
   const filtered = useMemo(() => filterByPeriod(allEntries, period), [allEntries, period]);
+  const adjustedFiltered = useMemo(
+    () => filtered.map((entry) => ({
+      ...entry,
+      net_generated_revenue: applyRevenueCutToAmount(Number(entry.net_generated_revenue) || 0, effectiveCut, shouldApplyCut),
+    })),
+    [filtered, effectiveCut, shouldApplyCut]
+  );
 
-  const totalRevenue = useMemo(() => filtered.reduce((s, e) => s + (Number(e.net_generated_revenue) || 0), 0), [filtered]);
+  const totalRevenue = useMemo(() => adjustedFiltered.reduce((s, e) => s + (Number(e.net_generated_revenue) || 0), 0), [adjustedFiltered]);
   const totalStreams = useMemo(() => filtered.reduce((s, e) => s + (Number(e.streams) || 0), 0), [filtered]);
   const totalDownloads = useMemo(() => filtered.reduce((s, e) => s + (Number(e.downloads) || 0), 0), [filtered]);
   const uniqueTracks = useMemo(() => new Set(filtered.map((e) => e.track).filter(Boolean)).size, [filtered]);
@@ -259,10 +283,10 @@ export default function Analytics() {
 
   const revenueTrend = useMemo(() => {
     const map: Record<string, { ott: number; youtube: number }> = {};
-    filtered.forEach((e) => { if (!map[e.reporting_month]) map[e.reporting_month] = { ott: 0, youtube: 0 }; map[e.reporting_month][e.source] += Number(e.net_generated_revenue) || 0; });
+    adjustedFiltered.forEach((e) => { if (!map[e.reporting_month]) map[e.reporting_month] = { ott: 0, youtube: 0 }; map[e.reporting_month][e.source] += Number(e.net_generated_revenue) || 0; });
     return Object.entries(map).sort(([a], [b]) => (parseMonthToDate(a)?.getTime() || 0) - (parseMonthToDate(b)?.getTime() || 0))
       .map(([month, vals]) => ({ month: formatMonth(month), OTT: Math.round(vals.ott * 100) / 100, YouTube: Math.round(vals.youtube * 100) / 100 }));
-  }, [filtered, formatMonth]);
+  }, [adjustedFiltered, formatMonth]);
 
   const streamsTrend = useMemo(() => {
     const map: Record<string, { ott: number; youtube: number }> = {};
@@ -271,13 +295,13 @@ export default function Analytics() {
       .map(([month, vals]) => ({ month: formatMonth(month), OTT: vals.ott, YouTube: vals.youtube }));
   }, [filtered, formatMonth]);
 
-  const revenueByPlatform = useMemo(() => aggregateByKey(filtered, 'store', 'revenue'), [filtered]);
+  const revenueByPlatform = useMemo(() => aggregateByKey(adjustedFiltered, 'store', 'revenue'), [adjustedFiltered]);
   const streamsByPlatform = useMemo(() => aggregateByKey(filtered, 'store', 'streams'), [filtered]);
-  const revenueByTrack = useMemo(() => aggregateByKey(filtered, 'track', 'revenue'), [filtered]);
-  const revenueByArtist = useMemo(() => aggregateByKey(filtered, 'artist', 'revenue'), [filtered]);
+  const revenueByTrack = useMemo(() => aggregateByKey(adjustedFiltered, 'track', 'revenue'), [adjustedFiltered]);
+  const revenueByArtist = useMemo(() => aggregateByKey(adjustedFiltered, 'artist', 'revenue'), [adjustedFiltered]);
   const streamsByArtist = useMemo(() => aggregateByKey(filtered, 'artist', 'streams'), [filtered]);
   const streamsByTrack = useMemo(() => aggregateByKey(filtered, 'track', 'streams'), [filtered]);
-  const revenueByCountry = useMemo(() => aggregateByKey(filtered, 'country', 'revenue', 10), [filtered]);
+  const revenueByCountry = useMemo(() => aggregateByKey(adjustedFiltered, 'country', 'revenue', 10), [adjustedFiltered]);
   const streamsByCountry = useMemo(() => aggregateByKey(filtered, 'country', 'streams', 10), [filtered]);
 
   const worldMapData = useMemo(() => {
@@ -288,13 +312,13 @@ export default function Analytics() {
 
   const sourceSplit = useMemo(() => {
     let ott = 0, yt = 0;
-    filtered.forEach((e) => { if (e.source === 'ott') ott += Number(e.net_generated_revenue) || 0; else yt += Number(e.net_generated_revenue) || 0; });
+    adjustedFiltered.forEach((e) => { if (e.source === 'ott') ott += Number(e.net_generated_revenue) || 0; else yt += Number(e.net_generated_revenue) || 0; });
     const total = ott + yt;
     return [
       { name: 'OTT Platforms', value: Math.round(ott * 100) / 100, total },
       { name: 'YouTube', value: Math.round(yt * 100) / 100, total },
     ].filter((d) => d.value > 0);
-  }, [filtered]);
+  }, [adjustedFiltered]);
 
   const PIE_COLORS = ['#f0932b', '#eb4d4b'];
 
