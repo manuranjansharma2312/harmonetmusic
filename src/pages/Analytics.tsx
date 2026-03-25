@@ -561,7 +561,7 @@ export default function Analytics() {
                 <div className="px-6 pb-6 space-y-3">
                   {streamsByArtist.length === 0 && <EmptyState text="No artist data" />}
                   {streamsByArtist.map((a, i) => (
-                    <RankRow key={a.name} rank={i + 1} name={a.name} value={formatCompact(a.value)} pct={streamsByArtist[0] ? (a.value / streamsByArtist[0].value) * 100 : 0} pal={PALETTE[(i + 3) % PALETTE.length]} />
+                    <RankRow key={a.name} rank={i + 1} name={a.name} value={formatStreams(a.value)} pct={streamsByArtists[0] ? (a.value / streamsByArtist[0].value) * 100 : 0} pal={PALETTE[(i + 3) % PALETTE.length]} />
                   ))}
                 </div>
               </div>
