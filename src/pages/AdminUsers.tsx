@@ -583,8 +583,8 @@ export default function AdminUsers() {
           title={deleteConfirm.type === 'bulk' ? `Delete ${selectedIds.size} Users` : 'Delete User'}
           message={
             deleteConfirm.type === 'bulk'
-              ? `Are you sure you want to permanently delete ${selectedIds.size} selected user(s)? This will remove all their data, songs, and files. This action cannot be undone.`
-              : `Are you sure you want to permanently delete "${deleteConfirm.name}"? This will remove all their data, songs, and files. This action cannot be undone.`
+              ? `Are you sure you want to permanently delete ${selectedIds.size} selected user(s)? This will remove all their data, releases, and files. This action cannot be undone.`
+              : `Are you sure you want to permanently delete "${deleteConfirm.name}"? This will remove all their data, releases, and files. This action cannot be undone.`
           }
           onConfirm={() => {
             if (deleteConfirm.type === 'bulk') {
