@@ -28,6 +28,7 @@ export default function Revenue() {
   const navigate = useNavigate();
 
   const [hasBankDetails, setHasBankDetails] = useState<boolean | null>(null);
+  const [parentBankMissing, setParentBankMissing] = useState(false);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [paidWithdrawals, setPaidWithdrawals] = useState(0);
   const [pendingWithdrawals, setPendingWithdrawals] = useState(0);
@@ -64,8 +65,22 @@ export default function Revenue() {
       const isSubLabelUser = profileData?.user_type === 'sub_label';
       
       if (isSubLabelUser) {
-        // Sub-labels don't need bank details at all - they're under parent label
-        setHasBankDetails(true);
+        // Sub-labels don't need their own bank details, but check if parent has them
+        const { data: subLabelInfo } = await supabase
+          .from('sub_labels')
+          .select('parent_user_id')
+          .eq('sub_user_id', activeUserId!)
+          .maybeSingle();
+        
+        if (subLabelInfo?.parent_user_id) {
+          const { data: parentBank } = await supabase
+            .from('bank_details')
+            .select('id')
+            .eq('user_id', subLabelInfo.parent_user_id)
+            .maybeSingle();
+          setParentBankMissing(!parentBank);
+        }
+        setHasBankDetails(true); // Don't gate sub-labels, but show warning
       } else {
         const { data: bankData } = await supabase
           .from('bank_details')
@@ -242,6 +257,22 @@ export default function Revenue() {
             Track your earnings and request withdrawals
           </p>
         </div>
+
+        {parentBankMissing && (
+          <GlassCard className="p-4 border-amber-500/30 bg-amber-500/5">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-amber-500/10">
+                <AlertCircle className="h-5 w-5 text-amber-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Main Label Bank Details Missing</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Your main label hasn't added bank details yet. Withdrawals won't be processed until they do. Please contact your main label admin.
+                </p>
+              </div>
+            </div>
+          </GlassCard>
+        )}
 
         {/* Balance Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
