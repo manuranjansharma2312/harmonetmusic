@@ -41,14 +41,17 @@ const adminReportLinks = [
   { to: '/admin/reports/ott', label: 'OTT Reports', icon: MonitorPlay },
 ];
 
+const adminSubLabelLinks = [
+  { to: '/admin/sub-labels', label: 'All Sub Labels', icon: UsersRound },
+  { to: '/admin/sub-label-withdrawals', label: 'Withdraw Requests', icon: Wallet },
+];
+
 const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/submissions', label: 'All Submissions', icon: ListMusic },
   { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
   { to: '/admin/labels', label: 'Labels', icon: Tag },
-  { to: '/admin/sub-labels', label: 'Sub Labels', icon: UsersRound },
-  { to: '/admin/sub-label-withdrawals', label: 'Sub Label Withdrawals', icon: Wallet },
   { to: '/admin/content-requests', label: 'Content Requests', icon: Headset },
   { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
   { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
