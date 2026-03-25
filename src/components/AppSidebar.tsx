@@ -208,6 +208,7 @@ export function AppSidebar() {
               {showUserView ? (
                 <>
                   {userLinksTop.map(renderNavLink)}
+                  {showUserSubLabels && renderCollapsibleGroup('Sub Labels', UsersRound, userSubLabelLinks, userSubLabelsOpen, setUserSubLabelsOpen)}
                   {renderCollapsibleGroup('Support', Headset, contentToolLinks, toolsOpen, setToolsOpen)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, reportLinks, reportsOpen, setReportsOpen)}
                   {userLinksBottom.map(renderNavLink)}
