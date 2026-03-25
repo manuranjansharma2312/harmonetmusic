@@ -902,6 +902,13 @@ export default function AdminSubmissions() {
                           <div className="flex items-center gap-2 mt-1">
                             <audio controls src={track.audio_url} className="flex-1 h-8" />
                             <button
+                              onClick={() => handleDownloadFile(track.audio_url!, `${track.song_title || 'track'}.${track.audio_url!.split('.').pop()?.split('?')[0] || 'mp3'}`)}
+                              className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-all"
+                              title="Download audio"
+                            >
+                              <Download className="h-3.5 w-3.5" />
+                            </button>
+                            <button
                               onClick={() => handleDeleteAudio(track.id, track.audio_url!)}
                               className="p-1.5 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-all"
                               title="Delete audio"
