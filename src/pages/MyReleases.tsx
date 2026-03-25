@@ -88,7 +88,7 @@ export default function MyReleases() {
       const { data: subLabelsData } = await supabase
         .from('sub_labels')
         .select('sub_user_id, sub_label_name')
-        .eq('parent_user_id', user.id)
+        .eq('parent_user_id', effectiveUserId)
         .eq('status', 'active');
 
       if (subLabelsData && subLabelsData.length > 0) {
