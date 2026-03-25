@@ -79,7 +79,7 @@ export default function SubLabels() {
   useEffect(() => {
     fetchSubLabels();
     fetchParentLabel();
-  }, [user]);
+  }, [effectiveUserId]);
 
   const resetForm = () => {
     setFormData({
