@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -8,6 +8,7 @@ import { Loader2, Search, BookOpen } from 'lucide-react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TutorialContent } from '@/components/TutorialContent';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 
 interface Tutorial {
   id: string;
