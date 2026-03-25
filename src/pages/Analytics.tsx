@@ -10,6 +10,7 @@ import {
   IndianRupee, TrendingUp, Music2, Globe, Play, BarChart3,
   Download, Users, Disc3,
 } from 'lucide-react';
+import { formatStreams, formatRevenue } from '@/lib/formatNumbers';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
