@@ -1,0 +1,1 @@
+ALTER TABLE public.sub_labels ADD COLUMN withdrawal_threshold numeric NOT NULL DEFAULT 1000;

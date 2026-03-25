@@ -820,6 +820,7 @@ export type Database = {
           sub_label_name: string
           sub_user_id: string | null
           updated_at: string
+          withdrawal_threshold: number
         }
         Insert: {
           agreement_end_date: string
@@ -837,6 +838,7 @@ export type Database = {
           sub_label_name: string
           sub_user_id?: string | null
           updated_at?: string
+          withdrawal_threshold?: number
         }
         Update: {
           agreement_end_date?: string
@@ -854,6 +856,7 @@ export type Database = {
           sub_label_name?: string
           sub_user_id?: string | null
           updated_at?: string
+          withdrawal_threshold?: number
         }
         Relationships: []
       }

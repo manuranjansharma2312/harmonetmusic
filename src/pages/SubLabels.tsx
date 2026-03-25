@@ -20,6 +20,7 @@ type SubLabel = {
   email: string;
   phone: string;
   percentage_cut: number;
+  withdrawal_threshold: number;
   b2b_url: string | null;
   status: string;
   rejection_reason: string | null;
@@ -52,6 +53,7 @@ export default function SubLabels() {
     password: '',
     phone: '',
     percentage_cut: '',
+    withdrawal_threshold: '1000',
   });
   const [b2bFile, setB2bFile] = useState<File | null>(null);
 
@@ -84,7 +86,7 @@ export default function SubLabels() {
   const resetForm = () => {
     setFormData({
       sub_label_name: '', agreement_start_date: '', agreement_end_date: '',
-      email: '', password: '', phone: '', percentage_cut: '',
+      email: '', password: '', phone: '', percentage_cut: '', withdrawal_threshold: '1000',
     });
     setB2bFile(null);
     setShowForm(false);
@@ -126,6 +128,7 @@ export default function SubLabels() {
           agreement_end_date,
           phone: phone.trim(),
           percentage_cut: parseFloat(percentage_cut) || 0,
+          withdrawal_threshold: parseFloat(formData.withdrawal_threshold) || 1000,
           b2b_url,
         },
       });
@@ -197,6 +200,12 @@ export default function SubLabels() {
               </div>
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Withdrawal Threshold (₹)</label>
+              <input className={inputClass} type="text" inputMode="decimal" value={formData.withdrawal_threshold} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setFormData(p => ({ ...p, withdrawal_threshold: e.target.value })); }} placeholder="e.g. 1000" />
+              <p className="text-xs text-muted-foreground mt-1">Minimum balance required for sub-label to request withdrawal</p>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">Agreement Start Date *</label>
@@ -266,7 +275,9 @@ export default function SubLabels() {
                   <div className="flex flex-wrap items-center gap-2 mt-1">
                     <span className="text-xs text-muted-foreground">{sl.email}</span>
                     <span className="text-xs text-muted-foreground">•</span>
-                    <span className="text-xs text-muted-foreground">Cut: {sl.percentage_cut}%</span>
+                     <span className="text-xs text-muted-foreground">Cut: {sl.percentage_cut}%</span>
+                    <span className="text-xs text-muted-foreground">•</span>
+                    <span className="text-xs text-muted-foreground">Threshold: ₹{sl.withdrawal_threshold?.toLocaleString() || '1,000'}</span>
                     <span className="text-xs text-muted-foreground">•</span>
                     <span className="text-xs text-muted-foreground">
                       {new Date(sl.agreement_start_date).toLocaleDateString()} – {new Date(sl.agreement_end_date).toLocaleDateString()}
@@ -304,6 +315,7 @@ export default function SubLabels() {
               <Detail label="Email" value={viewSubLabel.email} />
               <Detail label="Phone" value={viewSubLabel.phone || '—'} />
               <Detail label="Percentage Cut" value={`${viewSubLabel.percentage_cut}%`} />
+              <Detail label="Withdrawal Threshold" value={`₹${viewSubLabel.withdrawal_threshold?.toLocaleString() || '1,000'}`} />
               <Detail label="Agreement Start" value={new Date(viewSubLabel.agreement_start_date).toLocaleDateString()} />
               <Detail label="Agreement End" value={new Date(viewSubLabel.agreement_end_date).toLocaleDateString()} />
               <Detail label="Status" value={viewSubLabel.status} />

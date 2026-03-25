@@ -40,6 +40,7 @@ export default function Revenue() {
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
   const [hiddenCut, setHiddenCut] = useState(0);
   const [subLabelCut, setSubLabelCut] = useState(0);
+  const [isSubLabelUser, setIsSubLabelUser] = useState(false);
 
   const effectiveCut = subLabelCut > 0 ? subLabelCut : hiddenCut;
   const cutMultiplier = (role !== 'admin' || (impersonatedUserId && impersonatedUserId !== user?.id)) ? (1 - effectiveCut / 100) : 1;
@@ -62,9 +63,9 @@ export default function Revenue() {
         .eq('user_id', activeUserId!)
         .maybeSingle();
       
-      const isSubLabelUser = profileData?.user_type === 'sub_label';
-      
-      if (isSubLabelUser) {
+      const isSubLabel = profileData?.user_type === 'sub_label';
+      setIsSubLabelUser(isSubLabel);
+      if (isSubLabel) {
         // Sub-labels don't need their own bank details, but check if parent has them
         const { data: subLabelInfo } = await supabase
           .from('sub_labels')
@@ -96,11 +97,14 @@ export default function Revenue() {
       // Check if sub-label and get parent's cut
       const { data: subLabelData } = await supabase
         .from('sub_labels')
-        .select('percentage_cut')
+        .select('percentage_cut, withdrawal_threshold')
         .eq('sub_user_id', activeUserId!)
         .maybeSingle();
       if (subLabelData) {
         setSubLabelCut(Number(subLabelData.percentage_cut) || 0);
+        if (isSubLabel) {
+          setThreshold(Number(subLabelData.withdrawal_threshold) || 1000);
+        }
       }
       // When admin impersonates, we need to filter by user's ISRCs
       // because admin RLS sees all entries
@@ -321,6 +325,11 @@ export default function Revenue() {
               <p className="text-sm text-muted-foreground">
                 You need at least {formatCurrency(threshold)} to withdraw
               </p>
+              {isSubLabelUser && (
+                <p className="text-xs text-primary mt-1">
+                  Your withdrawal limit is set by your Main Record Label.
+                </p>
+              )}
             </div>
             <Button
               onClick={handleWithdraw}

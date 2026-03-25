@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     const {
       email, password, sub_label_name, parent_label_name,
       agreement_start_date, agreement_end_date, phone,
-      percentage_cut, b2b_url,
+      percentage_cut, withdrawal_threshold, b2b_url,
     } = body;
 
     if (!email || !password || !sub_label_name || !agreement_start_date || !agreement_end_date) {
@@ -74,6 +74,7 @@ Deno.serve(async (req) => {
         email,
         phone: phone || "",
         percentage_cut: percentage_cut || 0,
+        withdrawal_threshold: withdrawal_threshold || 1000,
         b2b_url: b2b_url || null,
       });
 
