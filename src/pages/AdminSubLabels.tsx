@@ -242,14 +242,14 @@ export default function AdminSubLabels() {
                   </SelectContent>
                 </Select>
                 <div className="flex gap-1">
-                  {sl.sub_user_id && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
-                      startImpersonating(sl.sub_user_id!, sl.email);
+                  <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!sl.sub_user_id} onClick={() => {
+                    if (sl.sub_user_id) {
+                      startImpersonating(sl.sub_user_id, sl.email);
                       navigate('/dashboard');
-                    }} title="Login as User">
-                      <LogIn className="h-4 w-4 text-blue-500" />
-                    </Button>
-                  )}
+                    }
+                  }} title={sl.sub_user_id ? "Login as User" : "No account linked"}>
+                    <LogIn className={`h-4 w-4 ${sl.sub_user_id ? 'text-blue-500' : 'text-muted-foreground'}`} />
+                  </Button>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewSL(sl)} title="View">
                     <Eye className="h-4 w-4" />
                   </Button>
