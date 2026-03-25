@@ -386,7 +386,7 @@ export default function AdminReports() {
                           {COLUMNS.map((col) => (
                             <TableCell key={col.key} className="whitespace-nowrap">
                               {col.key === 'net_generated_revenue'
-                                ? Number(entry[col.key]).toFixed(4)
+                                ? applyUserCut(entry).toFixed(4)
                                 : String(entry[col.key as keyof ReportEntry] ?? '-')}
                             </TableCell>
                           ))}
