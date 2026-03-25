@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,6 +7,7 @@ import { Loader2, Tag, FileText, Trash2, Pencil, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { toast } from 'sonner';
 
 type Label = {
@@ -30,6 +31,8 @@ export default function AdminLabels() {
   const [userEmails, setUserEmails] = useState<Record<string, string>>({});
   const [userDisplayIds, setUserDisplayIds] = useState<Record<string, number>>({});
   const [rejectTarget, setRejectTarget] = useState<Label | null>(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const inputClass =
     'w-full px-3 py-2 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
@@ -152,7 +155,7 @@ export default function AdminLabels() {
         </GlassCard>
       ) : (
         <div className="space-y-3">
-          {labels.map((label) => (
+          {paginateItems(labels, page, pageSize).map((label) => (
             <GlassCard key={label.id} className="animate-fade-in">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
@@ -207,6 +210,9 @@ export default function AdminLabels() {
               </div>
             </GlassCard>
           ))}
+          <div className="rounded-lg bg-card/50 border border-border/50 overflow-hidden">
+            <TablePagination totalItems={labels.length} currentPage={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} itemLabel="labels" />
+          </div>
         </div>
       )}
 
