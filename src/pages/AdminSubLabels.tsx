@@ -289,9 +289,10 @@ export default function AdminSubLabels() {
       {/* Reject Modal */}
       {rejectSL && (
         <RejectReasonModal
+          open={!!rejectSL}
           title={`Reject "${rejectSL.sub_label_name}"`}
-          onSubmit={(reason) => { updateStatus(rejectSL, 'rejected', reason); setRejectSL(null); }}
-          onClose={() => setRejectSL(null)}
+          onConfirm={(reason) => { updateStatus(rejectSL, 'rejected', reason); setRejectSL(null); }}
+          onCancel={() => setRejectSL(null)}
         />
       )}
     </DashboardLayout>
