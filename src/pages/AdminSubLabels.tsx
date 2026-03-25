@@ -189,33 +189,27 @@ export default function AdminSubLabels() {
                   </div>
                 </div>
                 <StatusBadge status={sl.status === 'active' ? 'approved' : sl.status} />
-                <div className="flex gap-1 flex-wrap">
+                <Select value={sl.status} onValueChange={(val) => {
+                  if (val === 'rejected') { setRejectSL(sl); }
+                  else { updateStatus(sl, val); }
+                }}>
+                  <SelectTrigger className="w-[130px] h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="flex gap-1">
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewSL(sl)} title="View">
                     <Eye className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditSL(sl); setEditSubLabelName(sl.sub_label_name); setEditParentLabelName(sl.parent_label_name); setEditEmail(sl.email); setEditPhone(sl.phone); setEditStart(sl.agreement_start_date); setEditEnd(sl.agreement_end_date); setEditCut(String(sl.percentage_cut)); }} title="Edit">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditSL(sl); setEditSubLabelName(sl.sub_label_name); setEditParentLabelName(sl.parent_label_name); setEditEmail(sl.email); setEditPhone(sl.phone); setEditStart(sl.agreement_start_date); setEditEnd(sl.agreement_end_date); setEditCut(String(sl.percentage_cut)); setEditStatus(sl.status); }} title="Edit">
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  {sl.status === 'pending' && (
-                    <>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateStatus(sl, 'active')} title="Approve">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setRejectSL(sl)} title="Reject">
-                        <XCircle className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </>
-                  )}
-                  {sl.status === 'active' && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateStatus(sl, 'suspended')} title="Suspend">
-                      <Ban className="h-4 w-4 text-orange-500" />
-                    </Button>
-                  )}
-                  {sl.status === 'suspended' && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateStatus(sl, 'active')} title="Reactivate">
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                    </Button>
-                  )}
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteSL(sl)} title="Delete">
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
