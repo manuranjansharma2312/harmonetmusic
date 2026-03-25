@@ -188,13 +188,12 @@ export default function UserDashboard() {
     );
   }
 
-  const songStatusData = [
-    { name: 'Pending', value: songStats.pending, color: CHART_COLORS[1] },
-    { name: 'Approved', value: songStats.approved, color: CHART_COLORS[2] },
-    { name: 'Rejected', value: songStats.rejected, color: CHART_COLORS[0] },
+  const releaseStatusData = [
+    { name: 'Pending', value: releaseStats.pending, color: CHART_COLORS[1] },
+    { name: 'Approved', value: releaseStats.approved, color: CHART_COLORS[2] },
+    { name: 'Rejected', value: releaseStats.rejected, color: CHART_COLORS[0] },
   ].filter(d => d.value > 0);
 
-  const pendingSongs = recentSongs.filter(s => s.status === 'pending');
   const pendingReleases = recentReleases.filter(r => r.status === 'pending');
 
   return (
@@ -240,76 +239,44 @@ export default function UserDashboard() {
 
       {/* Top Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
-        <StatCard title="Total Songs" value={songStats.total} icon={Music} />
-        <StatCard title="Pending" value={songStats.pending} icon={Clock} color="hsla(45, 80%, 40%, 0.3)" />
-        <StatCard title="Approved" value={songStats.approved} icon={CheckCircle} color="hsla(140, 60%, 30%, 0.3)" />
-        <StatCard title="Releases" value={releaseStats.total} icon={Disc3} color="hsla(280, 60%, 40%, 0.3)" />
+        <StatCard title="Total Releases" value={releaseStats.total} icon={Disc3} />
+        <StatCard title="Pending" value={releaseStats.pending} icon={Clock} color="hsla(45, 80%, 40%, 0.3)" />
+        <StatCard title="Approved" value={releaseStats.approved} icon={CheckCircle} color="hsla(140, 60%, 30%, 0.3)" />
+        <StatCard title="Rejected" value={releaseStats.rejected} icon={XCircle} color="hsla(0, 60%, 40%, 0.3)" />
         <StatCard title="Total Streams" value={totalStreams} icon={BarChart3} color="hsla(200, 70%, 40%, 0.3)" />
         <StatCard title="Revenue" value={totalRevenue} icon={DollarSign} color="hsla(140, 60%, 35%, 0.3)" />
       </div>
 
-      {/* Pending Songs & Releases */}
-      {(pendingSongs.length > 0 || pendingReleases.length > 0) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-          {pendingSongs.length > 0 && (
-            <GlassCard className="animate-fade-in">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-2">
-                  <Music className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                  Pending Songs
-                  <span className="ml-1 inline-flex items-center justify-center h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] px-1 rounded-full text-[10px] sm:text-xs font-bold bg-primary/20 text-primary">
-                    {pendingSongs.length}
-                  </span>
-                </h3>
-                <button onClick={() => navigate('/my-songs')} className="text-[10px] sm:text-xs text-primary hover:underline flex items-center gap-1">
-                  View All <ArrowRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                </button>
+      {/* Pending Releases */}
+      {pendingReleases.length > 0 && (
+        <GlassCard className="mb-4 sm:mb-6 animate-fade-in">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-2">
+              <Disc3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+              Pending Releases
+              <span className="ml-1 inline-flex items-center justify-center h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] px-1 rounded-full text-[10px] sm:text-xs font-bold bg-primary/20 text-primary">
+                {pendingReleases.length}
+              </span>
+            </h3>
+            <button onClick={() => navigate('/my-releases')} className="text-[10px] sm:text-xs text-primary hover:underline flex items-center gap-1">
+              View All <ArrowRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-2">
+            {pendingReleases.map(r => (
+              <div key={r.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-foreground truncate">{r.album_name || r.ep_name || 'Untitled'}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">{r.content_type}</p>
+                </div>
+                <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">{format(new Date(r.created_at), 'dd MMM')}</span>
               </div>
-              <div className="space-y-1.5 sm:space-y-2">
-                {pendingSongs.map(s => (
-                  <div key={s.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs sm:text-sm font-medium text-foreground truncate">{s.title}</p>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{s.artist}</p>
-                    </div>
-                    <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">{format(new Date(s.created_at), 'dd MMM')}</span>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-          )}
-
-          {pendingReleases.length > 0 && (
-            <GlassCard className="animate-fade-in">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-2">
-                  <Disc3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                  Pending Releases
-                  <span className="ml-1 inline-flex items-center justify-center h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] px-1 rounded-full text-[10px] sm:text-xs font-bold bg-primary/20 text-primary">
-                    {pendingReleases.length}
-                  </span>
-                </h3>
-                <button onClick={() => navigate('/my-releases')} className="text-[10px] sm:text-xs text-primary hover:underline flex items-center gap-1">
-                  View All <ArrowRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                </button>
-              </div>
-              <div className="space-y-1.5 sm:space-y-2">
-                {pendingReleases.map(r => (
-                  <div key={r.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs sm:text-sm font-medium text-foreground truncate">{r.album_name || r.ep_name || 'Untitled'}</p>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">{r.content_type}</p>
-                    </div>
-                    <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">{format(new Date(r.created_at), 'dd MMM')}</span>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-          )}
-        </div>
+            ))}
+          </div>
+        </GlassCard>
       )}
 
-      {/* Revenue Trend + Song Status */}
+      {/* Revenue Trend + Release Status */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <GlassCard className="lg:col-span-2 animate-fade-in">
           <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Revenue Trend</h3>
@@ -337,21 +304,21 @@ export default function UserDashboard() {
         </GlassCard>
 
         <GlassCard className="animate-fade-in">
-          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Song Status</h3>
-          {songStatusData.length > 0 ? (
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Release Status</h3>
+          {releaseStatusData.length > 0 ? (
             <>
               <div className="h-36 sm:h-44">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={songStatusData} cx="50%" cy="50%" innerRadius={35} outerRadius={55} dataKey="value" strokeWidth={0}>
-                      {songStatusData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                    <Pie data={releaseStatusData} cx="50%" cy="50%" innerRadius={35} outerRadius={55} dataKey="value" strokeWidth={0}>
+                      {releaseStatusData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                     </Pie>
                     <Tooltip contentStyle={tooltipStyle} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
               <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mt-1">
-                {songStatusData.map(d => (
+                {releaseStatusData.map(d => (
                   <div key={d.name} className="flex items-center gap-1 text-[10px] sm:text-xs">
                     <div className="h-2 w-2 rounded-full" style={{ background: d.color }} />
                     <span className="text-muted-foreground">{d.name}: {d.value}</span>
@@ -360,7 +327,7 @@ export default function UserDashboard() {
               </div>
             </>
           ) : (
-            <p className="text-xs text-muted-foreground text-center py-12 sm:py-16">No songs yet</p>
+            <p className="text-xs text-muted-foreground text-center py-12 sm:py-16">No releases yet</p>
           )}
         </GlassCard>
       </div>
