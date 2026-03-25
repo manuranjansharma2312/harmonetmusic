@@ -371,7 +371,7 @@ export default function UserDashboard() {
           </div>
           <p className="text-lg sm:text-xl font-bold text-foreground">{releaseStats.total}</p>
           <div className="flex gap-2 mt-1.5">
-            <span className="text-[10px] text-emerald-400">{releaseStats.approved} live</span>
+            <span className="text-[10px] text-emerald-400">{releaseStats.approved} approved</span>
             <span className="text-[10px] text-yellow-400">{releaseStats.pending} pending</span>
           </div>
         </GlassCard>
