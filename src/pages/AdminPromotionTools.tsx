@@ -48,6 +48,10 @@ interface Order {
   product_platform?: string;
   user_display_id?: number;
   user_name?: string;
+  user_type?: string;
+  sub_label_name?: string;
+  parent_label_name?: string;
+  transaction_id?: string;
 }
 
 export default function AdminPromotionTools() {
@@ -115,6 +119,10 @@ export default function AdminPromotionTools() {
     const { data: profiles } = await supabase.from('profiles').select('user_id, display_id, artist_name, record_label_name, user_type').in('user_id', userIds);
     const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
 
+    const { data: subLabelsData } = await supabase.from('sub_labels').select('sub_user_id, sub_label_name, parent_label_name');
+    const slMap: Record<string, { sub_label_name: string; parent_label_name: string }> = {};
+    subLabelsData?.forEach((sl: any) => { if (sl.sub_user_id) slMap[sl.sub_user_id] = { sub_label_name: sl.sub_label_name, parent_label_name: sl.parent_label_name }; });
+
     setOrders(ordersData.map(o => {
       const profile = profileMap.get(o.user_id);
       const prod = productMap.get(o.product_id);
@@ -124,6 +132,9 @@ export default function AdminPromotionTools() {
         product_platform: prod?.platform || '',
         user_display_id: profile?.display_id,
         user_name: profile?.user_type === 'record_label' ? profile?.record_label_name : profile?.artist_name || 'Unknown',
+        user_type: profile?.user_type,
+        sub_label_name: slMap[o.user_id]?.sub_label_name,
+        parent_label_name: slMap[o.user_id]?.parent_label_name,
       };
     }));
   };
@@ -294,6 +305,14 @@ export default function AdminPromotionTools() {
                       <div>
                         <span className="font-medium">{o.user_name}</span>
                         {o.user_display_id && <span className="text-xs text-muted-foreground ml-1">#{o.user_display_id}</span>}
+                        {o.user_type === 'sub_label' && o.sub_label_name && (
+                          <div className="text-xs mt-0.5">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                              {o.sub_label_name}
+                            </span>
+                            <span className="text-muted-foreground ml-1">↳ Under: {o.parent_label_name}</span>
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -377,7 +396,17 @@ export default function AdminPromotionTools() {
           {viewingOrder && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-muted-foreground">User:</span> <span className="font-medium">{viewingOrder.user_name} #{viewingOrder.user_display_id}</span></div>
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">User:</span> <span className="font-medium">{viewingOrder.user_name} #{viewingOrder.user_display_id}</span>
+                  {viewingOrder.user_type === 'sub_label' && viewingOrder.sub_label_name && (
+                    <div className="text-xs mt-0.5">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                        {viewingOrder.sub_label_name}
+                      </span>
+                      <span className="text-muted-foreground ml-1">↳ Under: {viewingOrder.parent_label_name}</span>
+                    </div>
+                  )}
+                </div>
                 <div className="flex items-center gap-1"><span className="text-muted-foreground">Service:</span> <PlatformIcon platform={viewingOrder.product_platform || ''} size={16} /> <span className="font-medium">{viewingOrder.product_name}</span></div>
                 <div><span className="text-muted-foreground">Quantity:</span> <span className="font-medium">{viewingOrder.quantity}</span></div>
                 <div><span className="text-muted-foreground">Amount:</span> <span className="font-medium">₹{viewingOrder.total_amount}</span></div>

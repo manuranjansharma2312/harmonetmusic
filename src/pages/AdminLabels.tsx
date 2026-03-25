@@ -30,6 +30,8 @@ export default function AdminLabels() {
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'label' | 'b2b'; label: Label } | null>(null);
   const [userEmails, setUserEmails] = useState<Record<string, string>>({});
   const [userDisplayIds, setUserDisplayIds] = useState<Record<string, number>>({});
+  const [userTypes, setUserTypes] = useState<Record<string, string>>({});
+  const [subLabelInfo, setSubLabelInfo] = useState<Record<string, { sub_label_name: string; parent_label_name: string }>>({});
   const [rejectTarget, setRejectTarget] = useState<Label | null>(null);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
@@ -49,15 +51,20 @@ export default function AdminLabels() {
     const userIds = [...new Set(labelsData.map(l => l.user_id))];
     if (userIds.length > 0) {
       const { data: profiles } = await supabase.from('profiles').select('user_id, email, artist_name, record_label_name, user_type, display_id').in('user_id', userIds);
+      const { data: subLabelsData } = await supabase.from('sub_labels').select('sub_user_id, sub_label_name, parent_label_name');
+      const slMap: Record<string, { sub_label_name: string; parent_label_name: string }> = {};
+      subLabelsData?.forEach((sl: any) => { if (sl.sub_user_id) slMap[sl.sub_user_id] = { sub_label_name: sl.sub_label_name, parent_label_name: sl.parent_label_name }; });
+
       const emailMap: Record<string, string> = {};
       const displayIdMap: Record<string, number> = {};
+      const typeMap: Record<string, string> = {};
       profiles?.forEach((p: any) => {
         emailMap[p.user_id] = p.user_type === 'label'
           ? (p.record_label_name || p.email)
           : (p.artist_name || p.email);
         if (p.display_id) displayIdMap[p.user_id] = p.display_id;
+        typeMap[p.user_id] = p.user_type;
       });
-      // Fallback for missing profiles
       const missingIds = userIds.filter(id => !emailMap[id]);
       if (missingIds.length > 0) {
         const { data: authEmails } = await supabase.rpc('get_auth_emails', { _user_ids: missingIds });
@@ -65,6 +72,8 @@ export default function AdminLabels() {
       }
       setUserEmails(emailMap);
       setUserDisplayIds(displayIdMap);
+      setUserTypes(typeMap);
+      setSubLabelInfo(slMap);
     }
     setLoading(false);
   };
@@ -178,8 +187,16 @@ export default function AdminLabels() {
                     </div>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    By: {userEmails[label.user_id] || label.user_id.slice(0, 8)} {userDisplayIds[label.user_id] ? <span className="font-mono font-bold text-primary">(#{userDisplayIds[label.user_id]})</span> : null} • {new Date(label.created_at).toLocaleDateString()}
+                    By: <span className="text-foreground font-medium">{userEmails[label.user_id] || label.user_id.slice(0, 8)}</span> {userDisplayIds[label.user_id] ? <span className="font-mono font-bold text-primary">(#{userDisplayIds[label.user_id]})</span> : null} • {new Date(label.created_at).toLocaleDateString()}
                   </p>
+                  {userTypes[label.user_id] === 'sub_label' && subLabelInfo[label.user_id] && (
+                    <div className="text-xs mt-0.5">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                        {subLabelInfo[label.user_id].sub_label_name}
+                      </span>
+                      <span className="text-muted-foreground ml-1">↳ Under: {subLabelInfo[label.user_id].parent_label_name}</span>
+                    </div>
+                  )}
                   {label.status === 'rejected' && label.rejection_reason && (
                     <p className="text-xs text-destructive mt-1">Reason: {label.rejection_reason}</p>
                   )}

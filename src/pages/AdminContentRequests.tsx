@@ -61,7 +61,7 @@ export default function AdminContentRequests() {
   const [filterType, setFilterType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [rejectTarget, setRejectTarget] = useState<any | null>(null);
-  const [userInfoMap, setUserInfoMap] = useState<Record<string, { name: string; displayId?: number }>>({});
+  const [userInfoMap, setUserInfoMap] = useState<Record<string, { name: string; displayId?: number; userType?: string; subLabelName?: string; parentLabelName?: string }>>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [page, setPage] = useState(0);
@@ -89,11 +89,18 @@ export default function AdminContentRequests() {
       const userIds = [...new Set(data.map((r: any) => r.user_id))];
       if (userIds.length > 0) {
         const { data: profiles } = await supabase.from('profiles').select('user_id, email, artist_name, record_label_name, user_type, display_id').in('user_id', userIds);
-        const infoMap: Record<string, { name: string; displayId?: number }> = {};
+        const { data: subLabelsData } = await supabase.from('sub_labels').select('sub_user_id, sub_label_name, parent_label_name');
+        const subLabelMap: Record<string, { sub_label_name: string; parent_label_name: string }> = {};
+        subLabelsData?.forEach((sl: any) => { if (sl.sub_user_id) subLabelMap[sl.sub_user_id] = { sub_label_name: sl.sub_label_name, parent_label_name: sl.parent_label_name }; });
+
+        const infoMap: Record<string, { name: string; displayId?: number; userType?: string; subLabelName?: string; parentLabelName?: string }> = {};
         profiles?.forEach((p: any) => {
           infoMap[p.user_id] = {
             name: p.user_type === 'label' ? (p.record_label_name || p.email) : (p.artist_name || p.email),
             displayId: p.display_id,
+            userType: p.user_type,
+            subLabelName: subLabelMap[p.user_id]?.sub_label_name,
+            parentLabelName: subLabelMap[p.user_id]?.parent_label_name,
           };
         });
         const missingIds = userIds.filter((id: string) => !infoMap[id]);
@@ -319,12 +326,20 @@ export default function AdminContentRequests() {
                           {new Date(item.created_at).toLocaleDateString()}
                         </span>
                         {userInfoMap[item.user_id] && (
-                          <span className="text-xs text-muted-foreground">
-                            By: {userInfoMap[item.user_id].name}
+                          <div className="text-xs text-muted-foreground">
+                            <span>By: <span className="text-foreground font-medium">{userInfoMap[item.user_id].name}</span></span>
                             {userInfoMap[item.user_id].displayId && (
                               <span className="font-mono font-bold text-primary ml-1">(#{userInfoMap[item.user_id].displayId})</span>
                             )}
-                          </span>
+                            {userInfoMap[item.user_id].userType === 'sub_label' && userInfoMap[item.user_id].subLabelName && (
+                              <span className="block mt-0.5">
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary text-xs">
+                                  {userInfoMap[item.user_id].subLabelName}
+                                </span>
+                                <span className="text-muted-foreground ml-1">↳ Under: {userInfoMap[item.user_id].parentLabelName}</span>
+                              </span>
+                            )}
+                          </div>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
