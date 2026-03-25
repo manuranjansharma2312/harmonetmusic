@@ -539,7 +539,7 @@ export default function Analytics() {
                 <div className="px-6 pb-6 space-y-3">
                   {streamsByTrack.length === 0 && <EmptyState text="No track data" />}
                   {streamsByTrack.map((t, i) => (
-                    <RankRow key={t.name} rank={i + 1} name={t.name} value={formatCompact(t.value)} pct={streamsByTrack[0] ? (t.value / streamsByTrack[0].value) * 100 : 0} pal={PALETTE[(i + 4) % PALETTE.length]} />
+                    <RankRow key={t.name} rank={i + 1} name={t.name} value={formatStreams(t.value)} pct={streamsByTrack[0] ? (t.value / streamsByTrack[0].value) * 100 : 0} pal={PALETTE[(i + 4) % PALETTE.length]} />
                   ))}
                 </div>
               </div>
