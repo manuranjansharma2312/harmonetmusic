@@ -159,8 +159,10 @@ export default function Reports() {
     fetchReports();
   }, [user, role, isImpersonating, impersonatedUserId]);
 
-  // Cut multiplier: apply for non-admin users or when impersonating
-  const cutMultiplier = (role !== 'admin' || isImpersonating) ? (1 - hiddenCut / 100) : 1;
+  // For sub-labels: use parent's percentage_cut only (not admin hidden cut)
+  // For regular users: use admin hidden cut
+  const effectiveCut = subLabelCut > 0 ? subLabelCut : hiddenCut;
+  const cutMultiplier = (role !== 'admin' || isImpersonating) ? (1 - effectiveCut / 100) : 1;
   const applyRevenueCut = (val: number) => Number((val * cutMultiplier).toFixed(4));
 
   const monthlyGroups = useMemo(() => {

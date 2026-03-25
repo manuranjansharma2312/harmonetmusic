@@ -207,6 +207,11 @@ export default function MyReleases() {
                       {release.release_type === 'transfer' && (
                         <span className="text-xs px-2 py-0.5 rounded bg-accent/50 text-accent-foreground">Transfer</span>
                       )}
+                      {release.submitted_by_label && (
+                        <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary flex items-center gap-1">
+                          <Users className="h-3 w-3" /> {release.submitted_by_label}
+                        </span>
+                      )}
                       <span className="text-xs text-muted-foreground">{release.tracks.length} track(s)</span>
                       <span className="text-xs text-muted-foreground">•</span>
                       <span className="text-xs text-muted-foreground">{new Date(release.release_date).toLocaleDateString()}</span>
