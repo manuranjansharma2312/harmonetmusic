@@ -4,8 +4,12 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { toast } from 'sonner';
 import { CopyButton } from '@/components/CopyButton';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { Download, Trash2 } from 'lucide-react';
 
 const REQUEST_TYPES: Record<string, string> = {
   copyright_claim: 'Copyright Claim Removal',
@@ -45,6 +49,8 @@ export default function AdminContentRequests() {
   const [filterType, setFilterType] = useState('all');
   const [rejectTarget, setRejectTarget] = useState<any | null>(null);
   const [userInfoMap, setUserInfoMap] = useState<Record<string, { name: string; displayId?: number }>>({});
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const fetchRequests = async () => {
     let query = supabase
@@ -57,7 +63,6 @@ export default function AdminContentRequests() {
     const { data, error } = await query;
     if (!error && data) {
       setRequests(data);
-      // Fetch user info
       const userIds = [...new Set(data.map((r: any) => r.user_id))];
       if (userIds.length > 0) {
         const { data: profiles } = await supabase.from('profiles').select('user_id, email, artist_name, record_label_name, user_type, display_id').in('user_id', userIds);
@@ -81,6 +86,7 @@ export default function AdminContentRequests() {
 
   useEffect(() => {
     fetchRequests();
+    setSelectedIds(new Set());
   }, [filterType]);
 
   const handleStatusChange = async (item: any, newStatus: string) => {
@@ -113,10 +119,92 @@ export default function AdminContentRequests() {
     setRejectTarget(null);
   };
 
+  // Selection helpers
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === requests.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(requests.map(r => r.id)));
+    }
+  };
+
+  // Export CSV
+  const exportCSV = () => {
+    const items = selectedIds.size > 0
+      ? requests.filter(r => selectedIds.has(r.id))
+      : requests;
+    if (items.length === 0) { toast.error('No items to export'); return; }
+
+    const headers = ['Type', 'Status', 'User', 'User ID', 'Date', ...DATA_FIELDS.map(f => FIELD_LABELS[f]), 'Rejection Reason'];
+    const rows = items.map(item => {
+      const user = userInfoMap[item.user_id];
+      return [
+        REQUEST_TYPES[item.request_type] || item.request_type,
+        item.status,
+        user?.name || '',
+        user?.displayId ? `#${user.displayId}` : '',
+        new Date(item.created_at).toLocaleDateString(),
+        ...DATA_FIELDS.map(f => item[f] || ''),
+        item.rejection_reason || '',
+      ];
+    });
+
+    const csvContent = [headers, ...rows]
+      .map(row => row.map((cell: string) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `content-requests-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${items.length} entries`);
+  };
+
+  // Bulk delete
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedIds);
+    const { error } = await supabase
+      .from('content_requests')
+      .delete()
+      .in('id', ids);
+    if (error) toast.error('Failed to delete');
+    else {
+      toast.success(`Deleted ${ids.length} request(s)`);
+      setSelectedIds(new Set());
+      fetchRequests();
+    }
+    setShowDeleteConfirm(false);
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-foreground">Content Management Requests</h1>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <h1 className="text-2xl font-bold text-foreground">Content Management Requests</h1>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={exportCSV}>
+              <Download className="h-4 w-4 mr-1" />
+              {selectedIds.size > 0 ? `Export ${selectedIds.size} Selected` : 'Export All CSV'}
+            </Button>
+            {selectedIds.size > 0 && (
+              <Button size="sm" variant="destructive" onClick={() => setShowDeleteConfirm(true)}>
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete {selectedIds.size}
+              </Button>
+            )}
+          </div>
+        </div>
 
         <div className="flex gap-2 flex-wrap">
           <button
@@ -144,14 +232,29 @@ export default function AdminContentRequests() {
               <p className="text-muted-foreground text-center py-8">No requests found.</p>
             ) : (
               <div className="space-y-4">
+                {/* Select All */}
+                <div className="flex items-center gap-2 pb-2 border-b border-border">
+                  <Checkbox
+                    checked={selectedIds.size === requests.length && requests.length > 0}
+                    onCheckedChange={toggleSelectAll}
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    {selectedIds.size > 0 ? `${selectedIds.size} of ${requests.length} selected` : 'Select all'}
+                  </span>
+                </div>
+
                 {requests.map((item) => (
-                  <div key={item.id} className="border border-border rounded-lg p-4 space-y-3">
+                  <div key={item.id} className={`border rounded-lg p-4 space-y-3 transition-colors ${selectedIds.has(item.id) ? 'border-primary bg-primary/5' : 'border-border'}`}>
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
+                        <Checkbox
+                          checked={selectedIds.has(item.id)}
+                          onCheckedChange={() => toggleSelect(item.id)}
+                        />
                         <span className="text-xs font-medium px-2 py-1 rounded bg-accent text-accent-foreground">
                           {REQUEST_TYPES[item.request_type] || item.request_type}
                         </span>
-                      <span className="text-sm text-muted-foreground">
+                        <span className="text-sm text-muted-foreground">
                           {new Date(item.created_at).toLocaleDateString()}
                         </span>
                         {userInfoMap[item.user_id] && (
@@ -215,6 +318,15 @@ export default function AdminContentRequests() {
         onConfirm={handleRejectConfirm}
         onCancel={() => setRejectTarget(null)}
       />
+
+      {showDeleteConfirm && (
+        <ConfirmDialog
+          title="Delete Selected Requests"
+          message={`Are you sure you want to permanently delete ${selectedIds.size} selected request(s)? This action cannot be undone.`}
+          onConfirm={handleBulkDelete}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
     </DashboardLayout>
   );
 }
