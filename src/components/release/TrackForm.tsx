@@ -46,23 +46,23 @@ interface TrackFormProps {
   onCancel: () => void;
 }
 
+const defaultTrackData: TrackData = {
+  songTitle: '',
+  isrc: '',
+  audioFile: null,
+  audioType: 'with_vocal',
+  language: '',
+  genre: '',
+  primaryArtists: [{ name: '', spotifyLink: '', appleMusicLink: '', isNewProfile: false }],
+  lyricist: '',
+  composer: '',
+  producer: '',
+  instagramLink: '',
+  callertuneTime: '',
+};
+
 export function TrackForm({ genres, languages, isTransfer, initialData, onSubmit, onCancel }: TrackFormProps) {
-  const [form, setForm] = useState<TrackData>(
-    initialData || {
-      songTitle: '',
-      isrc: '',
-      audioFile: null,
-      audioType: 'with_vocal',
-      language: '',
-      genre: '',
-      primaryArtists: [{ name: '', spotifyLink: '', appleMusicLink: '', isNewProfile: false }],
-      lyricist: '',
-      composer: '',
-      producer: '',
-      instagramLink: '',
-      callertuneTime: '',
-    }
-  );
+  const [form, setForm] = useState<TrackData>(initialData || defaultTrackData);
 
   const update = (field: keyof TrackData, value: any) => setForm((p) => ({ ...p, [field]: value }));
 
