@@ -50,6 +50,7 @@ export default function AdminSubLabels() {
   const [editStart, setEditStart] = useState('');
   const [editEnd, setEditEnd] = useState('');
   const [editCut, setEditCut] = useState('');
+  const [editThreshold, setEditThreshold] = useState('');
   const [editSubLabelName, setEditSubLabelName] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('');
