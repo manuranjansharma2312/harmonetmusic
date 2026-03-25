@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Eye, Pencil, Trash2, Download, Search, ChevronDown, ChevronRight, Music, Save } from 'lucide-react';
+import { Loader2, Eye, Pencil, Trash2, Download, Search, ChevronDown, ChevronRight, Music, Save, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
@@ -56,6 +56,9 @@ type Release = {
   user_email?: string;
   user_name?: string;
   user_display_id?: number;
+  user_type?: string;
+  sub_label_name?: string;
+  parent_label_name?: string;
 };
 
 export default function AdminSubmissions() {
@@ -98,11 +101,28 @@ export default function AdminSubmissions() {
       .select('user_id, email, artist_name, record_label_name, legal_name, display_id, user_type')
       .in('user_id', userIds);
 
+    // Fetch sub-label info for sub_label type users
+    const { data: subLabelsData } = await supabase
+      .from('sub_labels')
+      .select('sub_user_id, sub_label_name, parent_label_name');
+
+    const subLabelInfoMap: Record<string, { sub_label_name: string; parent_label_name: string }> = {};
+    subLabelsData?.forEach((sl) => {
+      if (sl.sub_user_id) {
+        subLabelInfoMap[sl.sub_user_id] = {
+          sub_label_name: sl.sub_label_name,
+          parent_label_name: sl.parent_label_name,
+        };
+      }
+    });
+
     const emailMap: Record<string, string> = {};
     const nameMap: Record<string, string> = {};
     const displayIdMap: Record<string, number> = {};
+    const userTypeMap: Record<string, string> = {};
     profiles?.forEach((p) => {
       emailMap[p.user_id] = p.email;
+      userTypeMap[p.user_id] = p.user_type;
       nameMap[p.user_id] = p.user_type === 'label'
         ? (p.record_label_name || p.legal_name || p.email)
         : (p.artist_name || p.legal_name || p.email);
@@ -132,6 +152,9 @@ export default function AdminSubmissions() {
         user_email: emailMap[r.user_id] || r.user_id.slice(0, 8),
         user_name: nameMap[r.user_id] || r.user_id.slice(0, 8),
         user_display_id: displayIdMap[r.user_id],
+        user_type: userTypeMap[r.user_id],
+        sub_label_name: subLabelInfoMap[r.user_id]?.sub_label_name,
+        parent_label_name: subLabelInfoMap[r.user_id]?.parent_label_name,
       }))
     );
     setLoading(false);
@@ -374,7 +397,16 @@ export default function AdminSubmissions() {
                                 <span className="font-mono font-bold text-primary">(#{release.user_display_id})</span>
                               )}
                             </div>
-                            <p className="text-muted-foreground">{release.user_display_id ? (release.user_email || '—') : 'No profile'}</p>
+                            {release.user_type === 'sub_label' && release.sub_label_name ? (
+                              <div className="mt-0.5">
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                                  <Users className="h-3 w-3" /> {release.sub_label_name}
+                                </span>
+                                <p className="text-muted-foreground mt-0.5">↳ Under: {release.parent_label_name}</p>
+                              </div>
+                            ) : (
+                              <p className="text-muted-foreground">{release.user_display_id ? (release.user_email || '—') : 'No profile'}</p>
+                            )}
                           </div>
                         </td>
                         <td className="py-3 px-3">
