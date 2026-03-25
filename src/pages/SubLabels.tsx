@@ -56,22 +56,22 @@ export default function SubLabels() {
   const [b2bFile, setB2bFile] = useState<File | null>(null);
 
   const fetchSubLabels = async () => {
-    if (!user) return;
+    if (!effectiveUserId) return;
     const { data } = await supabase
       .from('sub_labels')
       .select('*')
-      .eq('parent_user_id', user.id)
+      .eq('parent_user_id', effectiveUserId)
       .order('created_at', { ascending: false });
     setSubLabels((data as SubLabel[]) || []);
     setLoading(false);
   };
 
   const fetchParentLabel = async () => {
-    if (!user) return;
+    if (!effectiveUserId) return;
     const { data } = await supabase
       .from('profiles')
       .select('record_label_name')
-      .eq('user_id', user.id)
+      .eq('user_id', effectiveUserId)
       .maybeSingle();
     setParentLabelName(data?.record_label_name || '');
   };
