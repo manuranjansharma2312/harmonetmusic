@@ -119,6 +119,10 @@ export default function AdminPromotionTools() {
     const { data: profiles } = await supabase.from('profiles').select('user_id, display_id, artist_name, record_label_name, user_type').in('user_id', userIds);
     const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
 
+    const { data: subLabelsData } = await supabase.from('sub_labels').select('sub_user_id, sub_label_name, parent_label_name');
+    const slMap: Record<string, { sub_label_name: string; parent_label_name: string }> = {};
+    subLabelsData?.forEach((sl: any) => { if (sl.sub_user_id) slMap[sl.sub_user_id] = { sub_label_name: sl.sub_label_name, parent_label_name: sl.parent_label_name }; });
+
     setOrders(ordersData.map(o => {
       const profile = profileMap.get(o.user_id);
       const prod = productMap.get(o.product_id);
@@ -128,6 +132,9 @@ export default function AdminPromotionTools() {
         product_platform: prod?.platform || '',
         user_display_id: profile?.display_id,
         user_name: profile?.user_type === 'record_label' ? profile?.record_label_name : profile?.artist_name || 'Unknown',
+        user_type: profile?.user_type,
+        sub_label_name: slMap[o.user_id]?.sub_label_name,
+        parent_label_name: slMap[o.user_id]?.parent_label_name,
       };
     }));
   };
