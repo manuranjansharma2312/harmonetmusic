@@ -276,7 +276,7 @@ export default function UserDashboard() {
         </GlassCard>
       )}
 
-      {/* Revenue Trend + Song Status */}
+      {/* Revenue Trend + Release Status */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <GlassCard className="lg:col-span-2 animate-fade-in">
           <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Revenue Trend</h3>
@@ -304,21 +304,21 @@ export default function UserDashboard() {
         </GlassCard>
 
         <GlassCard className="animate-fade-in">
-          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Song Status</h3>
-          {songStatusData.length > 0 ? (
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Release Status</h3>
+          {releaseStatusData.length > 0 ? (
             <>
               <div className="h-36 sm:h-44">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={songStatusData} cx="50%" cy="50%" innerRadius={35} outerRadius={55} dataKey="value" strokeWidth={0}>
-                      {songStatusData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                    <Pie data={releaseStatusData} cx="50%" cy="50%" innerRadius={35} outerRadius={55} dataKey="value" strokeWidth={0}>
+                      {releaseStatusData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                     </Pie>
                     <Tooltip contentStyle={tooltipStyle} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
               <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mt-1">
-                {songStatusData.map(d => (
+                {releaseStatusData.map(d => (
                   <div key={d.name} className="flex items-center gap-1 text-[10px] sm:text-xs">
                     <div className="h-2 w-2 rounded-full" style={{ background: d.color }} />
                     <span className="text-muted-foreground">{d.name}: {d.value}</span>
@@ -327,7 +327,7 @@ export default function UserDashboard() {
               </div>
             </>
           ) : (
-            <p className="text-xs text-muted-foreground text-center py-12 sm:py-16">No songs yet</p>
+            <p className="text-xs text-muted-foreground text-center py-12 sm:py-16">No releases yet</p>
           )}
         </GlassCard>
       </div>
