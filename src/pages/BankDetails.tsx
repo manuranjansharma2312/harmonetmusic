@@ -31,6 +31,7 @@ export default function BankDetails() {
   const [bankDetail, setBankDetail] = useState<BankDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isSubLabel, setIsSubLabel] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'bank_transfer' | 'wise'>('bank_transfer');
   const [form, setForm] = useState({
     account_holder_name: '',
@@ -49,12 +50,12 @@ export default function BankDetails() {
   useEffect(() => {
     if (!effectiveUserId) return;
     (async () => {
-      const { data } = await supabase
-        .from('bank_details')
-        .select('*')
-        .eq('user_id', effectiveUserId)
-        .maybeSingle();
-      setBankDetail(data as BankDetail | null);
+      const [bankRes, profileRes] = await Promise.all([
+        supabase.from('bank_details').select('*').eq('user_id', effectiveUserId).maybeSingle(),
+        supabase.from('profiles').select('user_type').eq('user_id', effectiveUserId).maybeSingle(),
+      ]);
+      setBankDetail(bankRes.data as BankDetail | null);
+      setIsSubLabel(profileRes.data?.user_type === 'sub_label');
       setLoading(false);
     })();
   }, [effectiveUserId]);

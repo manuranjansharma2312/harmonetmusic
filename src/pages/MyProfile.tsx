@@ -195,7 +195,8 @@ export default function MyProfile() {
           </GlassCard>
         </div>
 
-        {/* Bank Details Section */}
+        {/* Bank Details Section - hidden for sub-labels */}
+        {profile.user_type !== 'sub_label' && (
         <GlassCard className="mt-6 animate-fade-in">
           <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
             <Landmark className="h-4 w-4" /> Bank Details
@@ -261,6 +262,7 @@ export default function MyProfile() {
             </div>
           )}
         </GlassCard>
+        )}
 
         <GlassCard className="mt-6 animate-fade-in">
           <p className="text-center text-xs text-muted-foreground">
