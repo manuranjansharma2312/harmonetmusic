@@ -32,6 +32,8 @@ const inputClass =
 
 export default function SubLabels() {
   const { user } = useAuth();
+  const { impersonatedUserId, isImpersonating } = useImpersonate();
+  const effectiveUserId = isImpersonating && impersonatedUserId ? impersonatedUserId : user?.id;
   const [subLabels, setSubLabels] = useState<SubLabel[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
