@@ -281,6 +281,7 @@ export default function AdminSubLabels() {
               <Detail label="Email" value={viewSL.email} />
               <Detail label="Phone" value={viewSL.phone || '—'} />
               <Detail label="Percentage Cut" value={`${viewSL.percentage_cut}%`} />
+              <Detail label="Withdrawal Threshold" value={`₹${viewSL.withdrawal_threshold?.toLocaleString() || '1,000'}`} />
               <Detail label="Agreement Start" value={new Date(viewSL.agreement_start_date).toLocaleDateString()} />
               <Detail label="Agreement End" value={new Date(viewSL.agreement_end_date).toLocaleDateString()} />
               <Detail label="Status" value={viewSL.status} />
