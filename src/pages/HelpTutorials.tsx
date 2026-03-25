@@ -77,23 +77,33 @@ export default function HelpTutorials() {
             {search ? 'No tutorials match your search.' : 'No tutorials available yet.'}
           </GlassCard>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((tutorial) => (
-              <GlassCard
-                key={tutorial.id}
-                className="p-4 sm:p-5 cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all"
-                onClick={() => setViewTutorial(tutorial)}
-              >
-                <h3 className="font-semibold text-base line-clamp-2">{tutorial.subject}</h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {format(new Date(tutorial.created_at), 'dd MMM yyyy')}
-                </p>
-                <p className="text-sm text-muted-foreground mt-2 line-clamp-3">
-                  {stripHtml(tutorial.content)}
-                </p>
-                <span className="text-xs text-primary mt-3 inline-block font-medium">Read more →</span>
-              </GlassCard>
-            ))}
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {paginatedTutorials.map((tutorial) => (
+                <GlassCard
+                  key={tutorial.id}
+                  className="p-4 sm:p-5 cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all"
+                  onClick={() => setViewTutorial(tutorial)}
+                >
+                  <h3 className="font-semibold text-base line-clamp-2">{tutorial.subject}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {format(new Date(tutorial.created_at), 'dd MMM yyyy')}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2 line-clamp-3">
+                    {stripHtml(tutorial.content)}
+                  </p>
+                  <span className="text-xs text-primary mt-3 inline-block font-medium">Read more →</span>
+                </GlassCard>
+              ))}
+            </div>
+            <TablePagination
+              totalItems={filtered.length}
+              currentPage={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="tutorials"
+            />
           </div>
         )}
       </div>
