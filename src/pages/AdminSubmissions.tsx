@@ -86,6 +86,13 @@ export default function AdminSubmissions() {
   const [editingIsrc, setEditingIsrc] = useState<Record<string, string>>({});
   const [editingUpc, setEditingUpc] = useState<Record<string, string>>({});
 
+  // CSV Import
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importParsedData, setImportParsedData] = useState<ParsedImportRelease[]>([]);
+  const [importErrors, setImportErrors] = useState<string[]>([]);
+  const [importing, setImporting] = useState(false);
+  const [importParsing, setImportParsing] = useState(false);
+
   const fetchReleases = async () => {
     const { data: releasesData } = await supabase
       .from('releases')
