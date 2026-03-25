@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { setJpegDpi } from '@/lib/imageConversion';
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import {
