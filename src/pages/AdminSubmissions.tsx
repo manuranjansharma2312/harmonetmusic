@@ -128,7 +128,274 @@ export default function AdminSubmissions() {
   const [importing, setImporting] = useState(false);
   const [importParsing, setImportParsing] = useState(false);
 
-  const fetchReleases = async () => {
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuotes) {
+        if (ch === '"' && line[i + 1] === '"') { current += '"'; i++; }
+        else if (ch === '"') { inQuotes = false; }
+        else { current += ch; }
+      } else {
+        if (ch === '"') { inQuotes = true; }
+        else if (ch === ',') { result.push(current.trim()); current = ''; }
+        else { current += ch; }
+      }
+    }
+    result.push(current.trim());
+    return result;
+  };
+
+  const handleImportCSV = async (file: File) => {
+    setImportParsing(true);
+    setImportErrors([]);
+    setImportParsedData([]);
+
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).filter((l) => l.trim());
+    if (lines.length < 2) {
+      setImportErrors(['CSV file is empty or has no data rows.']);
+      setImportParsing(false);
+      return;
+    }
+
+    const headers = parseCSVLine(lines[0]).map((h) => h.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim());
+
+    // Find column indices
+    const col = (names: string[]) => headers.findIndex((h) => names.some((n) => h.includes(n)));
+    const iUserID = col(['user id', 'display id', 'userid']);
+    const iUserEmail = col(['user email', 'email']);
+    const iReleaseType = col(['release type']);
+    const iContentType = col(['content type']);
+    const iReleaseName = col(['release name', 'album name']);
+    const iUpc = col(['upc']);
+    const iReleaseDate = col(['release date']);
+    const iCopyright = col(['copyright']);
+    const iPhonogram = col(['phonogram']);
+    const iStore = col(['store selection', 'store']);
+    const iStatus = col(['status']);
+    const iTrackNo = col(['track']);
+    const iSongTitle = col(['song title']);
+    const iIsrc = col(['isrc']);
+    const iPrimaryArtist = col(['primary artist', 'artist']);
+    const iNewArtist = col(['new artist']);
+    const iAudioType = col(['audio type']);
+    const iLanguage = col(['language']);
+    const iGenre = col(['genre']);
+    const iLyricist = col(['lyricist']);
+    const iComposer = col(['composer']);
+    const iProducer = col(['producer']);
+    const iSpotify = col(['spotify']);
+    const iApple = col(['apple']);
+    const iInstagram = col(['instagram']);
+    const iCallertune = col(['callertune']);
+    const iSinger = col(['singer']);
+
+    // We need at least user identifier and song title
+    if (iUserID === -1 && iUserEmail === -1) {
+      setImportErrors(['CSV must have a "User ID" or "User Email" column.']);
+      setImportParsing(false);
+      return;
+    }
+    if (iSongTitle === -1) {
+      setImportErrors(['CSV must have a "Song Title" column.']);
+      setImportParsing(false);
+      return;
+    }
+
+    // Parse rows
+    const dataRows = lines.slice(1).map((l) => parseCSVLine(l));
+    const g = (row: string[], idx: number) => (idx >= 0 ? row[idx] || '' : '');
+
+    // Collect unique user identifiers and resolve to user_ids
+    const identifiers = new Set<string>();
+    dataRows.forEach((row) => {
+      const uid = g(row, iUserID).replace('#', '').trim();
+      const email = g(row, iUserEmail).trim();
+      if (uid) identifiers.add(`id:${uid}`);
+      else if (email) identifiers.add(`email:${email}`);
+    });
+
+    // Fetch all profiles to map display_id and email to user_id
+    const { data: allProfiles } = await supabase
+      .from('profiles')
+      .select('user_id, display_id, email');
+
+    const displayIdToUserId: Record<string, string> = {};
+    const emailToUserId: Record<string, string> = {};
+    allProfiles?.forEach((p) => {
+      displayIdToUserId[String(p.display_id)] = p.user_id;
+      emailToUserId[p.email.toLowerCase()] = p.user_id;
+    });
+
+    // Group rows into releases
+    const errors: string[] = [];
+    const releasesMap = new Map<string, ParsedImportRelease>();
+
+    dataRows.forEach((row, rowIdx) => {
+      const lineNum = rowIdx + 2;
+      const rawId = g(row, iUserID).replace('#', '').trim();
+      const rawEmail = g(row, iUserEmail).trim().toLowerCase();
+
+      let userId = '';
+      let userIdentifier = '';
+      if (rawId) {
+        userId = displayIdToUserId[rawId] || '';
+        userIdentifier = `#${rawId}`;
+        if (!userId) errors.push(`Row ${lineNum}: User ID #${rawId} not found.`);
+      } else if (rawEmail) {
+        userId = emailToUserId[rawEmail] || '';
+        userIdentifier = rawEmail;
+        if (!userId) errors.push(`Row ${lineNum}: Email "${rawEmail}" not found.`);
+      } else {
+        errors.push(`Row ${lineNum}: No User ID or Email provided.`);
+        return;
+      }
+
+      if (!userId) return;
+
+      const songTitle = g(row, iSongTitle);
+      if (!songTitle) { errors.push(`Row ${lineNum}: Song Title is empty.`); return; }
+
+      const contentType = g(row, iContentType).toLowerCase().replace(/ /g, '_') || 'single';
+      const releaseName = g(row, iReleaseName) || songTitle;
+      const releaseDate = g(row, iReleaseDate) || new Date().toISOString().split('T')[0];
+
+      // Create a unique key per release (user + release name + content type + release date)
+      const releaseKey = `${userId}|${releaseName}|${contentType}|${releaseDate}`;
+
+      if (!releasesMap.has(releaseKey)) {
+        const rawStatus = g(row, iStatus).toLowerCase().replace(/ /g, '_');
+        const status = ['pending', 'processing', 'approved', 'rejected', 'takedown'].includes(rawStatus) ? rawStatus : 'pending';
+        const rawReleaseType = g(row, iReleaseType).toLowerCase().replace(/ /g, '_');
+        const releaseType = ['new_release', 'transfer'].includes(rawReleaseType) ? rawReleaseType : 'new_release';
+        const rawStore = g(row, iStore).toLowerCase().replace(/ /g, '_');
+        const storeSelection = ['worldwide', 'instagram_facebook'].includes(rawStore) ? rawStore : 'worldwide';
+
+        releasesMap.set(releaseKey, {
+          user_id: userId,
+          user_identifier: userIdentifier,
+          release_type: releaseType,
+          content_type: contentType,
+          album_name: contentType === 'album' ? releaseName : '',
+          ep_name: contentType === 'ep' ? releaseName : '',
+          upc: g(row, iUpc),
+          release_date: releaseDate,
+          copyright_line: g(row, iCopyright),
+          phonogram_line: g(row, iPhonogram),
+          store_selection: storeSelection,
+          status,
+          tracks: [],
+        });
+      }
+
+      const release = releasesMap.get(releaseKey)!;
+      const trackOrder = parseInt(g(row, iTrackNo)) || release.tracks.length + 1;
+      const rawAudioType = g(row, iAudioType).toLowerCase().replace(/ /g, '_');
+      const audioType = ['with_vocal', 'instrumental'].includes(rawAudioType) ? rawAudioType : 'with_vocal';
+
+      release.tracks.push({
+        song_title: songTitle,
+        isrc: g(row, iIsrc),
+        primary_artist: g(row, iPrimaryArtist),
+        singer: g(row, iSinger),
+        audio_type: audioType,
+        language: g(row, iLanguage),
+        genre: g(row, iGenre),
+        lyricist: g(row, iLyricist),
+        composer: g(row, iComposer),
+        producer: g(row, iProducer),
+        spotify_link: g(row, iSpotify),
+        apple_music_link: g(row, iApple),
+        instagram_link: g(row, iInstagram),
+        callertune_time: g(row, iCallertune),
+        is_new_artist_profile: g(row, iNewArtist).toLowerCase() === 'yes',
+        track_order: trackOrder,
+      });
+    });
+
+    setImportParsedData(Array.from(releasesMap.values()));
+    setImportErrors(errors);
+    setImportParsing(false);
+  };
+
+  const handleConfirmImport = async () => {
+    if (importParsedData.length === 0) return;
+    setImporting(true);
+
+    let successCount = 0;
+    const errors: string[] = [];
+
+    for (const rel of importParsedData) {
+      const { data: releaseData, error: releaseError } = await supabase
+        .from('releases')
+        .insert({
+          user_id: rel.user_id,
+          release_type: rel.release_type,
+          content_type: rel.content_type,
+          album_name: rel.album_name || null,
+          ep_name: rel.ep_name || null,
+          upc: rel.upc || null,
+          release_date: rel.release_date,
+          copyright_line: rel.copyright_line || null,
+          phonogram_line: rel.phonogram_line || null,
+          store_selection: rel.store_selection,
+          status: rel.status,
+        })
+        .select('id')
+        .single();
+
+      if (releaseError || !releaseData) {
+        errors.push(`Failed to create release for ${rel.user_identifier}: ${releaseError?.message}`);
+        continue;
+      }
+
+      const tracksToInsert = rel.tracks.map((t) => ({
+        release_id: releaseData.id,
+        user_id: rel.user_id,
+        song_title: t.song_title,
+        isrc: t.isrc || null,
+        primary_artist: t.primary_artist || null,
+        singer: t.singer || null,
+        audio_type: t.audio_type,
+        language: t.language || null,
+        genre: t.genre || null,
+        lyricist: t.lyricist || null,
+        composer: t.composer || null,
+        producer: t.producer || null,
+        spotify_link: t.spotify_link || null,
+        apple_music_link: t.apple_music_link || null,
+        instagram_link: t.instagram_link || null,
+        callertune_time: t.callertune_time || null,
+        is_new_artist_profile: t.is_new_artist_profile,
+        track_order: t.track_order,
+        status: rel.status,
+      }));
+
+      const { error: tracksError } = await supabase.from('tracks').insert(tracksToInsert);
+      if (tracksError) {
+        errors.push(`Failed to insert tracks for ${rel.user_identifier}: ${tracksError.message}`);
+      } else {
+        successCount++;
+      }
+    }
+
+    setImporting(false);
+    setShowImportModal(false);
+    setImportParsedData([]);
+    setImportErrors([]);
+
+    if (errors.length > 0) {
+      toast.error(`Import completed with ${errors.length} error(s). ${successCount} release(s) imported.`);
+    } else {
+      toast.success(`Successfully imported ${successCount} release(s)!`);
+    }
+    fetchReleases();
+  };
+
+
     const { data: releasesData } = await supabase
       .from('releases')
       .select('*')
