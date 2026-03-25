@@ -397,7 +397,16 @@ export default function AdminSubmissions() {
                                 <span className="font-mono font-bold text-primary">(#{release.user_display_id})</span>
                               )}
                             </div>
-                            <p className="text-muted-foreground">{release.user_display_id ? (release.user_email || '—') : 'No profile'}</p>
+                            {release.user_type === 'sub_label' && release.sub_label_name ? (
+                              <div className="mt-0.5">
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                                  <Users className="h-3 w-3" /> {release.sub_label_name}
+                                </span>
+                                <p className="text-muted-foreground mt-0.5">↳ Under: {release.parent_label_name}</p>
+                              </div>
+                            ) : (
+                              <p className="text-muted-foreground">{release.user_display_id ? (release.user_email || '—') : 'No profile'}</p>
+                            )}
                           </div>
                         </td>
                         <td className="py-3 px-3">
