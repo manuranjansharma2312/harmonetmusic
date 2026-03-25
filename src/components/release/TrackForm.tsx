@@ -67,6 +67,10 @@ const defaultTrackData: TrackData = {
 export function TrackForm({ genres, languages, isTransfer, initialData, onSubmit, onCancel }: TrackFormProps) {
   const [form, setForm] = useState<TrackData>(initialData || defaultTrackData);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const update = (field: keyof TrackData, value: any) => setForm((p) => ({ ...p, [field]: value }));
 
   const handleCallertuneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
