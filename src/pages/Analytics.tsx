@@ -408,7 +408,7 @@ export default function Analytics() {
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <div className="text-center">
                           <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">Total</p>
-                          <p className="text-base font-black font-display text-foreground mt-0.5">₹{formatCompact(totalRevenue)}</p>
+                          <p className="text-base font-black font-display text-foreground mt-0.5">{formatRevenue(totalRevenue)}</p>
                         </div>
                       </div>
                     </>
