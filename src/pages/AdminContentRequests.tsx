@@ -304,7 +304,7 @@ export default function AdminContentRequests() {
                   </span>
                 </div>
 
-                {requests.map((item) => (
+                {paginated.map((item) => (
                   <div key={item.id} className={`border rounded-lg p-4 space-y-3 transition-colors ${selectedIds.has(item.id) ? 'border-primary bg-primary/5' : 'border-border'}`}>
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
