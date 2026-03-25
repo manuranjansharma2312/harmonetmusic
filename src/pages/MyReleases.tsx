@@ -393,8 +393,13 @@ export default function MyReleases() {
                         <Detail label="Producer" value={track.producer || '—'} />
                       </div>
 
+                      <Detail label="Singer" value={track.singer || '—'} />
                       <Detail label="Instagram Profile Link" value={track.instagram_link || '—'} />
                       <Detail label="Callertune Time (MM:SS)" value={track.callertune_time || '—'} />
+                      <Detail label="Track Status" value={track.status} />
+                      {track.status === 'rejected' && track.rejection_reason && (
+                        <Detail label="Rejection Reason" value={track.rejection_reason} />
+                      )}
                     </div>
                   ))}
                 </div>

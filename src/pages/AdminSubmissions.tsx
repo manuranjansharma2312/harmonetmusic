@@ -492,7 +492,7 @@ export default function AdminSubmissions() {
           t.callertune_time || '', t.audio_url || '',
         ] : Array(16).fill('');
 
-        rows.push(i === 0 ? [...releaseFields, ...trackFields] : [...Array(14).fill(''), ...trackFields]);
+        rows.push([...releaseFields, ...trackFields]);
       });
     });
 
