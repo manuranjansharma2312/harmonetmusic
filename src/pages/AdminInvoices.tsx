@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Dialog as ConfirmDialogWrapper, DialogContent as ConfirmContent, DialogHeader as ConfirmHeader, DialogTitle as ConfirmTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Plus, Trash2, Download, Eye, Pencil, X, FileText, Search, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import { Plus, Trash2, Download, Eye, Pencil, X, FileText, Search, Settings } from 'lucide-react';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 import jsPDF from 'jspdf';
