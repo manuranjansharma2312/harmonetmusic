@@ -290,17 +290,17 @@ export default function Analytics() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-8">
+      <div className="space-y-4 sm:space-y-6 lg:space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight">Analytics</h1>
-            <p className="text-muted-foreground text-sm mt-1">YouTube + OTT combined · All amounts in ₹ INR</p>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold font-display tracking-tight">Analytics</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm mt-1">YouTube + OTT combined · All amounts in ₹ INR</p>
           </div>
-          <div className="flex gap-1 p-1 rounded-2xl bg-muted/25 border border-border/15 w-fit backdrop-blur-sm">
+          <div className="flex gap-1 p-1 rounded-2xl bg-muted/25 border border-border/15 w-full sm:w-fit backdrop-blur-sm overflow-x-auto scrollbar-none">
             {TIME_PERIODS.map((tp) => (
               <button key={tp.key} onClick={() => setPeriod(tp.key)}
-                className={`px-4 py-2 rounded-xl text-[11px] font-bold tracking-wide transition-all duration-300 ${
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[10px] sm:text-[11px] font-bold tracking-wide transition-all duration-300 whitespace-nowrap ${
                   period === tp.key
                     ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/25'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
@@ -311,7 +311,7 @@ export default function Analytics() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <GlassCard key={i} className="h-[120px] animate-pulse"><div /></GlassCard>
             ))}
@@ -327,7 +327,7 @@ export default function Analytics() {
         ) : (
           <>
             {/* ── KPI Cards ── */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
               {[
                 { icon: IndianRupee, label: 'Revenue', value: formatRevenue(totalRevenue), from: '#ff6b6b', to: '#ee5a24' },
                 { icon: Play, label: 'Streams', value: formatStreams(totalStreams), from: '#45aaf2', to: '#4834d4' },
@@ -341,13 +341,13 @@ export default function Analytics() {
             </div>
 
             {/* ── Revenue Trend + Revenue Split ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-5">
               {/* Revenue Trend Area Chart */}
               <div className="lg:col-span-2 rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
-                <div className="p-6 pb-2">
+                <div className="p-4 sm:p-6 pb-2">
                   <SectionHeader icon={TrendingUp} title="Revenue Trend" subtitle="Monthly revenue by source" accent="#f0932b" />
                 </div>
-                <div className="h-[340px] px-3 pb-5">
+                <div className="h-[240px] sm:h-[300px] lg:h-[340px] px-1 sm:px-3 pb-3 sm:pb-5">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={revenueTrend} margin={{ top: 20, right: 20, left: 5, bottom: 0 }}>
                       <defs>
@@ -378,10 +378,10 @@ export default function Analytics() {
 
               {/* Revenue Split Donut */}
               <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
-                <div className="p-6 pb-2">
+                <div className="p-4 sm:p-6 pb-2">
                   <SectionHeader icon={Disc3} title="Revenue Split" subtitle="OTT vs YouTube share" accent="#eb4d4b" />
                 </div>
-                <div className="h-[240px] flex items-center justify-center relative">
+                <div className="h-[200px] sm:h-[240px] flex items-center justify-center relative">
                   {sourceSplit.length > 0 ? (
                     <>
                       <ResponsiveContainer width="100%" height="100%">
@@ -396,7 +396,7 @@ export default function Analytics() {
                               <stop offset="100%" stopColor="#eb4d4b" />
                             </linearGradient>
                           </defs>
-                          <Pie data={sourceSplit} cx="50%" cy="50%" innerRadius={58} outerRadius={88} paddingAngle={5}
+                          <Pie data={sourceSplit} cx="50%" cy="50%" innerRadius={45} outerRadius={72} paddingAngle={5}
                             dataKey="value" stroke="none" labelLine={false}
                             style={{ filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.4))' }}>
                             {sourceSplit.map((_, i) => <Cell key={i} fill={`url(#pieGrad${i})`} />)}
@@ -417,7 +417,7 @@ export default function Analytics() {
                   )}
                 </div>
                 {sourceSplit.length > 0 && (
-                  <div className="flex items-center justify-center gap-8 px-5 pb-6">
+                  <div className="flex items-center justify-center gap-4 sm:gap-8 px-3 sm:px-5 pb-4 sm:pb-6">
                     {sourceSplit.map((s, i) => (
                       <div key={s.name} className="flex items-center gap-3">
                         <span className="h-4 w-4 rounded-lg shadow-lg" style={{ background: PIE_COLORS[i], boxShadow: `0 0 12px ${PIE_COLORS[i]}50` }} />
@@ -434,10 +434,10 @@ export default function Analytics() {
 
             {/* ── Streams Trend ── */}
             <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
-              <div className="p-6 pb-2">
+              <div className="p-4 sm:p-6 pb-2">
                 <SectionHeader icon={Play} title="Streams Trend" subtitle="Monthly stream counts by source" accent="#45aaf2" />
               </div>
-              <div className="h-[320px] px-3 pb-5">
+              <div className="h-[240px] sm:h-[280px] lg:h-[320px] px-1 sm:px-3 pb-3 sm:pb-5">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={streamsTrend} margin={{ top: 20, right: 20, left: 5, bottom: 0 }}>
                     <defs>
@@ -467,14 +467,14 @@ export default function Analytics() {
             </div>
 
             {/* ── Revenue & Streams by Platform ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-5">
               <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
-                <div className="p-6 pb-2">
+                <div className="p-4 sm:p-6 pb-2">
                   <SectionHeader icon={BarChart3} title="Revenue by Platform" subtitle="Top performing stores" accent="#f0932b" />
                 </div>
-                <div className="h-[320px] px-3 pb-5 mt-2">
+                <div className="h-[260px] sm:h-[290px] lg:h-[320px] px-1 sm:px-3 pb-3 sm:pb-5 mt-2">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={revenueByPlatform} layout="vertical" margin={{ top: 0, right: 24, left: 5, bottom: 0 }}>
+                    <BarChart data={revenueByPlatform} layout="vertical" margin={{ top: 0, right: 16, left: 0, bottom: 0 }}>
                       <defs>
                         {PALETTE.map((p, i) => (
                           <linearGradient key={`rpg${i}`} id={`revBarGrad${i}`} x1="0" y1="0" x2="1" y2="0">
@@ -485,7 +485,7 @@ export default function Analytics() {
                       </defs>
                       <CartesianGrid strokeDasharray="3 6" stroke="hsl(0 0% 14%)" horizontal={false} />
                       <XAxis type="number" tick={{ fill: 'hsl(0 0% 42%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatRevenue(v)} />
-                      <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0 0% 68%)', fontSize: 11, fontWeight: 600 }} width={100} axisLine={false} tickLine={false} />
+                      <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0 0% 68%)', fontSize: 10, fontWeight: 600 }} width={80} axisLine={false} tickLine={false} />
                       <Tooltip content={<BarTooltip prefix="₹" />} cursor={{ fill: 'hsl(0 0% 10%)', radius: 6 }} />
                       <Bar dataKey="value" name="Revenue" radius={[0, 10, 10, 0]} maxBarSize={24} animationDuration={1200} animationEasing="ease-out">
                         {revenueByPlatform.map((_, i) => <Cell key={i} fill={`url(#revBarGrad${i % PALETTE.length})`} />)}
@@ -496,12 +496,12 @@ export default function Analytics() {
               </div>
 
               <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
-                <div className="p-6 pb-2">
+                <div className="p-4 sm:p-6 pb-2">
                   <SectionHeader icon={Play} title="Streams by Platform" subtitle="Top streaming stores" accent="#45aaf2" />
                 </div>
-                <div className="h-[320px] px-3 pb-5 mt-2">
+                <div className="h-[260px] sm:h-[290px] lg:h-[320px] px-1 sm:px-3 pb-3 sm:pb-5 mt-2">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={streamsByPlatform} layout="vertical" margin={{ top: 0, right: 24, left: 5, bottom: 0 }}>
+                    <BarChart data={streamsByPlatform} layout="vertical" margin={{ top: 0, right: 16, left: 0, bottom: 0 }}>
                       <defs>
                         {PALETTE.map((p, i) => (
                           <linearGradient key={`spg${i}`} id={`strBarGrad${i}`} x1="0" y1="0" x2="1" y2="0">
@@ -512,7 +512,7 @@ export default function Analytics() {
                       </defs>
                       <CartesianGrid strokeDasharray="3 6" stroke="hsl(0 0% 14%)" horizontal={false} />
                       <XAxis type="number" tick={{ fill: 'hsl(0 0% 42%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatStreams(v)} />
-                      <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0 0% 68%)', fontSize: 11, fontWeight: 600 }} width={100} axisLine={false} tickLine={false} />
+                      <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(0 0% 68%)', fontSize: 10, fontWeight: 600 }} width={80} axisLine={false} tickLine={false} />
                       <Tooltip content={<BarTooltip />} cursor={{ fill: 'hsl(0 0% 10%)', radius: 6 }} />
                       <Bar dataKey="value" name="Streams" radius={[0, 10, 10, 0]} maxBarSize={24} animationDuration={1200} animationEasing="ease-out">
                         {streamsByPlatform.map((_, i) => <Cell key={i} fill={`url(#strBarGrad${(i + 4) % PALETTE.length})`} />)}
@@ -524,10 +524,10 @@ export default function Analytics() {
             </div>
 
             {/* ── Top Tracks ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-5">
               <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
-                <div className="p-6 pb-3"><SectionHeader icon={Music2} title="Top Tracks · Revenue" subtitle="Highest earning tracks" accent="#fed330" /></div>
-                <div className="px-6 pb-6 space-y-3">
+                <div className="p-4 sm:p-6 pb-3"><SectionHeader icon={Music2} title="Top Tracks · Revenue" subtitle="Highest earning tracks" accent="#fed330" /></div>
+                <div className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-2 sm:space-y-3">
                   {revenueByTrack.length === 0 && <EmptyState text="No track data" />}
                   {revenueByTrack.map((t, i) => (
                     <RankRow key={t.name} rank={i + 1} name={t.name} value={formatRevenue(t.value)} pct={revenueByTrack[0] ? (t.value / revenueByTrack[0].value) * 100 : 0} pal={PALETTE[i % PALETTE.length]} />
@@ -535,8 +535,8 @@ export default function Analytics() {
                 </div>
               </div>
               <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
-                <div className="p-6 pb-3"><SectionHeader icon={Music2} title="Top Tracks · Streams" subtitle="Most streamed tracks" accent="#45aaf2" /></div>
-                <div className="px-6 pb-6 space-y-3">
+                <div className="p-4 sm:p-6 pb-3"><SectionHeader icon={Music2} title="Top Tracks · Streams" subtitle="Most streamed tracks" accent="#45aaf2" /></div>
+                <div className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-2 sm:space-y-3">
                   {streamsByTrack.length === 0 && <EmptyState text="No track data" />}
                   {streamsByTrack.map((t, i) => (
                     <RankRow key={t.name} rank={i + 1} name={t.name} value={formatStreams(t.value)} pct={streamsByTrack[0] ? (t.value / streamsByTrack[0].value) * 100 : 0} pal={PALETTE[(i + 4) % PALETTE.length]} />
@@ -546,10 +546,10 @@ export default function Analytics() {
             </div>
 
             {/* ── Top Artists ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-5">
               <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
-                <div className="p-6 pb-3"><SectionHeader icon={Users} title="Top Artists · Revenue" subtitle="Highest earning artists" accent="#a55eea" /></div>
-                <div className="px-6 pb-6 space-y-3">
+                <div className="p-4 sm:p-6 pb-3"><SectionHeader icon={Users} title="Top Artists · Revenue" subtitle="Highest earning artists" accent="#a55eea" /></div>
+                <div className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-2 sm:space-y-3">
                   {revenueByArtist.length === 0 && <EmptyState text="No artist data" />}
                   {revenueByArtist.map((a, i) => (
                     <RankRow key={a.name} rank={i + 1} name={a.name} value={formatRevenue(a.value)} pct={revenueByArtist[0] ? (a.value / revenueByArtist[0].value) * 100 : 0} pal={PALETTE[(i + 5) % PALETTE.length]} />
@@ -557,8 +557,8 @@ export default function Analytics() {
                 </div>
               </div>
               <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
-                <div className="p-6 pb-3"><SectionHeader icon={Users} title="Top Artists · Streams" subtitle="Most streamed artists" accent="#26de81" /></div>
-                <div className="px-6 pb-6 space-y-3">
+                <div className="p-4 sm:p-6 pb-3"><SectionHeader icon={Users} title="Top Artists · Streams" subtitle="Most streamed artists" accent="#26de81" /></div>
+                <div className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-2 sm:space-y-3">
                   {streamsByArtist.length === 0 && <EmptyState text="No artist data" />}
                   {streamsByArtist.map((a, i) => (
                     <RankRow key={a.name} rank={i + 1} name={a.name} value={formatStreams(a.value)} pct={streamsByArtist[0] ? (a.value / streamsByArtist[0].value) * 100 : 0} pal={PALETTE[(i + 3) % PALETTE.length]} />
@@ -571,8 +571,8 @@ export default function Analytics() {
             <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden relative">
               <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/[0.03] via-transparent to-emerald-500/[0.03] pointer-events-none" />
               <div className="relative">
-                <div className="p-6 pb-0"><SectionHeader icon={Globe} title="Global Streams Distribution" subtitle="Streams intensity across countries" accent="#00d2d3" /></div>
-                <div className="mt-4 flex justify-center overflow-hidden px-4">
+                <div className="p-4 sm:p-6 pb-0"><SectionHeader icon={Globe} title="Global Streams Distribution" subtitle="Streams intensity across countries" accent="#00d2d3" /></div>
+                <div className="mt-2 sm:mt-4 flex justify-center overflow-hidden px-2 sm:px-4">
                   {worldMapData.length > 0 ? (
                     <div className="w-full max-w-4xl [&_svg]:w-full [&_svg]:h-auto">
                       <WorldMap
@@ -609,12 +609,12 @@ export default function Analytics() {
                   )}
                 </div>
                 {worldMapData.length > 0 && (
-                  <div className="p-6 pt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="p-3 sm:p-6 pt-3 sm:pt-5 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                     {worldMapData.sort((a, b) => b.value - a.value).slice(0, 8).map((d, i) => {
                       const maxVal = worldMapData.reduce((m, x) => Math.max(m, x.value), 0);
                       const pct = maxVal > 0 ? (d.value / maxVal) * 100 : 0;
                       return (
-                        <div key={d.country} className="flex items-center gap-3 px-3.5 py-3 rounded-xl bg-gradient-to-r from-muted/25 to-transparent border border-border/10 hover:border-border/25 transition-all duration-300 group">
+                        <div key={d.country} className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3.5 py-2 sm:py-3 rounded-xl bg-gradient-to-r from-muted/25 to-transparent border border-border/10 hover:border-border/25 transition-all duration-300 group">
                           <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0"
                             style={{ background: `linear-gradient(135deg, ${PALETTE[i % PALETTE.length].from}30, ${PALETTE[i % PALETTE.length].to}15)`, color: PALETTE[i % PALETTE.length].from }}>
                             {i + 1}
@@ -637,12 +637,12 @@ export default function Analytics() {
             </div>
 
             {/* ── Country Bar Charts ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-5">
               <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
-                <div className="p-6 pb-2"><SectionHeader icon={Globe} title="Revenue by Country" subtitle="Geographic revenue breakdown" accent="#f0932b" /></div>
-                <div className="h-[360px] px-3 pb-5 mt-2">
+                <div className="p-4 sm:p-6 pb-2"><SectionHeader icon={Globe} title="Revenue by Country" subtitle="Geographic revenue breakdown" accent="#f0932b" /></div>
+                <div className="h-[280px] sm:h-[320px] lg:h-[360px] px-1 sm:px-3 pb-3 sm:pb-5 mt-2">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={revenueByCountry} margin={{ top: 10, right: 16, left: 5, bottom: 40 }}>
+                    <BarChart data={revenueByCountry} margin={{ top: 10, right: 12, left: 0, bottom: 40 }}>
                       <defs>
                         {revenueByCountry.map((_, i) => (
                           <linearGradient key={`rcg${i}`} id={`revCGrad${i}`} x1="0" y1="0" x2="0" y2="1">
@@ -664,10 +664,10 @@ export default function Analytics() {
               </div>
 
               <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
-                <div className="p-6 pb-2"><SectionHeader icon={Globe} title="Streams by Country" subtitle="Geographic streams breakdown" accent="#00d2d3" /></div>
-                <div className="h-[360px] px-3 pb-5 mt-2">
+                <div className="p-4 sm:p-6 pb-2"><SectionHeader icon={Globe} title="Streams by Country" subtitle="Geographic streams breakdown" accent="#00d2d3" /></div>
+                <div className="h-[280px] sm:h-[320px] lg:h-[360px] px-1 sm:px-3 pb-3 sm:pb-5 mt-2">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={streamsByCountry} margin={{ top: 10, right: 16, left: 5, bottom: 40 }}>
+                    <BarChart data={streamsByCountry} margin={{ top: 10, right: 12, left: 0, bottom: 40 }}>
                       <defs>
                         {streamsByCountry.map((_, i) => (
                           <linearGradient key={`scg${i}`} id={`strCGrad${i}`} x1="0" y1="0" x2="0" y2="1">
@@ -700,16 +700,16 @@ export default function Analytics() {
 function KpiCard({ icon: Icon, label, value, from, to }: { icon: any; label: string; value: string; from: string; to: string }) {
   return (
     <div className="rounded-2xl border border-border/15 bg-card/30 backdrop-blur-sm overflow-hidden group cursor-default animate-fade-in hover:border-border/30 transition-all duration-500">
-      <div className="relative p-5">
+      <div className="relative p-3 sm:p-5">
         <div className="absolute inset-0 opacity-[0.07] group-hover:opacity-[0.14] transition-opacity duration-500"
           style={{ background: `radial-gradient(ellipse at top right, ${from}, transparent 65%)` }} />
-        <div className="relative flex flex-col gap-3.5">
-          <div className="rounded-xl p-2.5 w-fit shadow-lg" style={{ background: `linear-gradient(135deg, ${from}25, ${to}12)`, boxShadow: `0 4px 12px ${from}15` }}>
-            <Icon className="h-4.5 w-4.5" style={{ color: from }} />
+        <div className="relative flex flex-col gap-2 sm:gap-3.5">
+          <div className="rounded-lg sm:rounded-xl p-2 sm:p-2.5 w-fit shadow-lg" style={{ background: `linear-gradient(135deg, ${from}25, ${to}12)`, boxShadow: `0 4px 12px ${from}15` }}>
+            <Icon className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" style={{ color: from }} />
           </div>
           <div>
-            <p className="text-xl sm:text-2xl font-black font-display leading-tight tracking-tight">{value}</p>
-            <p className="text-[9px] text-muted-foreground mt-1 font-bold uppercase tracking-[0.2em]">{label}</p>
+            <p className="text-base sm:text-xl lg:text-2xl font-black font-display leading-tight tracking-tight break-words">{value}</p>
+            <p className="text-[8px] sm:text-[9px] text-muted-foreground mt-0.5 sm:mt-1 font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em]">{label}</p>
           </div>
         </div>
       </div>
@@ -735,17 +735,17 @@ function SectionHeader({ icon: Icon, title, subtitle, accent }: { icon: any; tit
 function RankRow({ rank, name, value, pct, pal }: { rank: number; name: string; value: string; pct: number; pal: { from: string; to: string } }) {
   const isTop3 = rank <= 3;
   return (
-    <div className="flex items-center gap-3.5 group py-1.5">
-      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-[11px] font-black shrink-0 border border-border/10 shadow-md ${isTop3 ? '' : ''}`}
+    <div className="flex items-center gap-2 sm:gap-3.5 group py-1 sm:py-1.5">
+      <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl flex items-center justify-center text-[9px] sm:text-[11px] font-black shrink-0 border border-border/10 shadow-md`}
         style={{ background: `linear-gradient(135deg, ${pal.from}${isTop3 ? '30' : '18'}, ${pal.to}${isTop3 ? '15' : '08'})`, color: pal.from, boxShadow: isTop3 ? `0 4px 12px ${pal.from}20` : 'none' }}>
         {rank}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[13px] font-semibold text-foreground truncate mr-3 group-hover:text-primary transition-colors duration-300">{name}</span>
-          <span className="text-xs font-mono font-bold text-muted-foreground whitespace-nowrap">{value}</span>
+        <div className="flex items-center justify-between mb-1 sm:mb-2">
+          <span className="text-[11px] sm:text-[13px] font-semibold text-foreground truncate mr-2 sm:mr-3 group-hover:text-primary transition-colors duration-300">{name}</span>
+          <span className="text-[10px] sm:text-xs font-mono font-bold text-muted-foreground whitespace-nowrap">{value}</span>
         </div>
-        <div className="h-[6px] rounded-full bg-muted/30 overflow-hidden">
+        <div className="h-[4px] sm:h-[6px] rounded-full bg-muted/30 overflow-hidden">
           <div className="h-full rounded-full transition-all duration-1000 ease-out"
             style={{ width: `${Math.max(pct, 4)}%`, background: `linear-gradient(90deg, ${pal.from}, ${pal.to})`, boxShadow: `0 0 8px ${pal.from}30` }} />
         </div>
