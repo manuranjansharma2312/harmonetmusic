@@ -57,6 +57,13 @@ export default function SubLabels() {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
+  // Sub-label withdrawals state
+  const [subWithdrawals, setSubWithdrawals] = useState<SubLabelWithdrawal[]>([]);
+  const [wPage, setWPage] = useState(0);
+  const [wPageSize, setWPageSize] = useState<number | 'all'>(10);
+  const [wSearch, setWSearch] = useState('');
+  const [wStatusFilter, setWStatusFilter] = useState<string>('all');
+
   // Form state
   const [formData, setFormData] = useState({
     sub_label_name: '',
