@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Upload, Music2, Plus } from 'lucide-react';
 
@@ -35,6 +36,8 @@ export interface TrackData {
   producer: string;
   instagramLink: string;
   callertuneTime: string;
+  _existingAudioUrl?: string;
+  _trackId?: string;
 }
 
 interface TrackFormProps {
@@ -63,6 +66,10 @@ const defaultTrackData: TrackData = {
 
 export function TrackForm({ genres, languages, isTransfer, initialData, onSubmit, onCancel }: TrackFormProps) {
   const [form, setForm] = useState<TrackData>(initialData || defaultTrackData);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const update = (field: keyof TrackData, value: any) => setForm((p) => ({ ...p, [field]: value }));
 
@@ -102,12 +109,19 @@ export function TrackForm({ genres, languages, isTransfer, initialData, onSubmit
 
       {/* Audio File */}
       <div>
-        <label className="block text-sm font-medium text-muted-foreground mb-1">Audio File *</label>
+        <label className="block text-sm font-medium text-muted-foreground mb-1">Audio File {!form._existingAudioUrl ? '*' : ''}</label>
+        {form._existingAudioUrl && !form.audioFile && (
+          <div className="flex items-center gap-2 mb-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+            <Volume2 className="h-4 w-4 text-primary shrink-0" />
+            <span className="text-xs text-foreground truncate">Current audio file uploaded</span>
+            <audio src={form._existingAudioUrl} controls className="h-8 max-w-[200px]" />
+          </div>
+        )}
         <div className="relative">
           <input type="file" accept=".mp3,.wav,audio/mpeg,audio/wav" onChange={(e) => update('audioFile', e.target.files?.[0] || null)} className="hidden" id="track-audio-upload" />
           <label htmlFor="track-audio-upload" className={`${inputClass} flex min-w-0 cursor-pointer items-center gap-2`}>
             <Upload className="h-4 w-4 shrink-0" />
-            <span className="truncate">{form.audioFile?.name || 'Choose audio file'}</span>
+            <span className="truncate">{form.audioFile?.name || (form._existingAudioUrl ? 'Replace audio file (optional)' : 'Choose audio file')}</span>
           </label>
         </div>
       </div>
