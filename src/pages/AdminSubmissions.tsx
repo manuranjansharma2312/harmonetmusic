@@ -179,6 +179,11 @@ export default function AdminSubmissions() {
     });
   }, [releases, search, statusFilter]);
 
+  const paginated = useMemo(() => paginateItems(filtered, page, pageSize), [filtered, page, pageSize]);
+
+  // Reset page on filter change
+  useEffect(() => { setPage(0); }, [search, statusFilter]);
+
   const getReleaseName = (r: Release) => {
     if (r.content_type === 'album') return r.album_name || 'Untitled Album';
     if (r.content_type === 'ep') return r.ep_name || 'Untitled EP';
