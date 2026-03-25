@@ -228,9 +228,14 @@ export default function PromotionTools() {
                 ))}
               </TableBody>
             </Table>
-            {orders.length > pageSize && (
-              <TablePagination currentPage={page} onPageChange={setPage} pageSize={pageSize} onPageSizeChange={() => {}} totalItems={orders.length} />
-            )}
+            <TablePagination
+              totalItems={orders.length}
+              currentPage={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="orders"
+            />
           </CardContent>
         </Card>
       </div>
