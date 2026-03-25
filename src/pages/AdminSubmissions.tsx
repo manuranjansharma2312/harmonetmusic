@@ -794,6 +794,18 @@ export default function AdminSubmissions() {
         />
       )}
 
+      {confirmBulkAction && (
+        <ConfirmDialog
+          title={confirmBulkAction === 'audio' ? 'Delete Audio Files' : 'Delete Poster Images'}
+          message={confirmBulkAction === 'audio'
+            ? `Are you sure you want to delete all audio files from ${selected.size} selected release(s)? The track records will remain but audio files will be permanently removed from storage.`
+            : `Are you sure you want to delete poster images from ${selected.size} selected release(s)? The release records will remain but poster files will be permanently removed from storage.`
+          }
+          onConfirm={confirmBulkAction === 'audio' ? handleBulkDeleteAudio : handleBulkDeletePoster}
+          onCancel={() => setConfirmBulkAction(null)}
+        />
+      )}
+
       <RejectReasonModal
         open={!!rejectTarget}
         title="Reject Release"
