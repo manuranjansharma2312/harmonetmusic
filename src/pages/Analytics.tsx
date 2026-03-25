@@ -311,7 +311,7 @@ export default function Analytics() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <GlassCard key={i} className="h-[120px] animate-pulse"><div /></GlassCard>
             ))}
