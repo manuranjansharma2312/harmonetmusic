@@ -58,6 +58,7 @@ export default function AdminContentRequests() {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
   const [rejectTarget, setRejectTarget] = useState<any | null>(null);
   const [userInfoMap, setUserInfoMap] = useState<Record<string, { name: string; displayId?: number }>>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -70,6 +71,9 @@ export default function AdminContentRequests() {
       .order('created_at', { ascending: false });
     if (filterType !== 'all') {
       query = query.eq('request_type', filterType);
+    }
+    if (filterStatus !== 'all') {
+      query = query.eq('status', filterStatus);
     }
     const { data, error } = await query;
     if (!error && data) {
@@ -98,7 +102,7 @@ export default function AdminContentRequests() {
   useEffect(() => {
     fetchRequests();
     setSelectedIds(new Set());
-  }, [filterType]);
+  }, [filterType, filterStatus]);
 
   const handleStatusChange = async (item: any, newStatus: string) => {
     if (newStatus === 'rejected') {
@@ -230,7 +234,7 @@ export default function AdminContentRequests() {
             onClick={() => setFilterType('all')}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filterType === 'all' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
           >
-            All
+            All Types
           </button>
           {Object.entries(REQUEST_TYPES).map(([key, label]) => (
             <button
@@ -239,6 +243,18 @@ export default function AdminContentRequests() {
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filterType === key ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
             >
               {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex gap-2 flex-wrap">
+          {['all', 'pending', 'applied', 'rejected'].map((s) => (
+            <button
+              key={s}
+              onClick={() => setFilterStatus(s)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filterStatus === s ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+            >
+              {s === 'all' ? 'All Status' : s.charAt(0).toUpperCase() + s.slice(1)}
             </button>
           ))}
         </div>
