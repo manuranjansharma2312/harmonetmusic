@@ -238,12 +238,12 @@ export default function MyReleases() {
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewRelease(release)}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                    {release.status === 'pending' && (
+                    {release.status === 'pending' && !release.submitted_by_label && (
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/submit?edit=${release.id}`)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
                     )}
-                    {release.status === 'pending' && (
+                    {release.status === 'pending' && !release.submitted_by_label && (
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteRelease(release)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
