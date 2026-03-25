@@ -20,6 +20,7 @@ interface WithdrawalRow {
   created_at: string;
   email?: string;
   display_id?: number;
+  is_sub_label?: boolean;
 }
 
 export default function AdminRevenue() {
