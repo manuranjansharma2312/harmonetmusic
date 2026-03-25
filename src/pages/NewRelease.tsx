@@ -7,7 +7,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
-import { Loader2, Upload, Plus, Trash2, Music, CheckCircle2 } from 'lucide-react';
+import { Loader2, Upload, Plus, Trash2, Music, CheckCircle2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { TrackForm, type TrackData } from '@/components/release/TrackForm';
@@ -648,7 +648,7 @@ export default function NewRelease() {
                       </div>
                       <div className="flex gap-2">
                         <Button variant="ghost" size="icon" onClick={() => { setEditingTrackIndex(i); setShowTrackForm(true); }}>
-                          <Music className="h-4 w-4" />
+                          <Pencil className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => handleRemoveTrack(i)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
