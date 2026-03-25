@@ -867,6 +867,13 @@ export default function AdminSubmissions() {
         onConfirm={handleRejectConfirm}
         onCancel={() => setRejectTarget(null)}
       />
+
+      <RejectReasonModal
+        open={!!rejectTrackTarget}
+        title="Reject Track"
+        onConfirm={handleTrackRejectConfirm}
+        onCancel={() => setRejectTrackTarget(null)}
+      />
     </DashboardLayout>
   );
 }
