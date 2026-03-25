@@ -63,9 +63,8 @@ export default function PromotionTools() {
   // View order
   const [viewOrder, setViewOrder] = useState<Order | null>(null);
 
-  // Pagination
-  const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   useEffect(() => { fetchAll(); }, []);
 
