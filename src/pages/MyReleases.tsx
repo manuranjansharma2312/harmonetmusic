@@ -3,6 +3,7 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useImpersonate } from '@/hooks/useImpersonate';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Loader2, Music, ChevronDown, ChevronRight, Trash2, Eye, Pencil, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -59,6 +60,8 @@ type Release = {
 export default function MyReleases() {
   const navigate = useNavigate();
   const { user, userType, isSubLabel } = useAuth();
+  const { isImpersonating, impersonatedUserId } = useImpersonate();
+  const effectiveUserId = isImpersonating ? impersonatedUserId : user?.id;
   const [releases, setReleases] = useState<Release[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -68,13 +71,13 @@ export default function MyReleases() {
   const [releasePageSize, setReleasePageSize] = useState<number | 'all'>(10);
 
   const fetchReleases = async () => {
-    if (!user) return;
+    if (!effectiveUserId) return;
 
     // Get own releases
     const { data: releasesData } = await supabase
       .from('releases')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', effectiveUserId)
       .order('created_at', { ascending: false });
 
     let allReleases = (releasesData || []) as any[];
@@ -85,7 +88,7 @@ export default function MyReleases() {
       const { data: subLabelsData } = await supabase
         .from('sub_labels')
         .select('sub_user_id, sub_label_name')
-        .eq('parent_user_id', user.id)
+        .eq('parent_user_id', effectiveUserId)
         .eq('status', 'active');
 
       if (subLabelsData && subLabelsData.length > 0) {
@@ -132,7 +135,7 @@ export default function MyReleases() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchReleases(); }, [user]);
+  useEffect(() => { fetchReleases(); }, [effectiveUserId]);
 
   const getReleaseName = (r: Release) => {
     if (r.content_type === 'album') return r.album_name || 'Untitled Album';
@@ -235,12 +238,12 @@ export default function MyReleases() {
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewRelease(release)}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                    {release.status === 'pending' && (
+                    {release.status === 'pending' && !release.submitted_by_label && (
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/submit?edit=${release.id}`)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
                     )}
-                    {release.status === 'pending' && (
+                    {release.status === 'pending' && !release.submitted_by_label && (
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteRelease(release)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
