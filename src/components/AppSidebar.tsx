@@ -8,6 +8,7 @@ import {
   Megaphone, Landmark, CreditCard, UsersRound,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { NavLink } from '@/components/NavLink';
