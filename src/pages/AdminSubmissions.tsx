@@ -77,6 +77,7 @@ export default function AdminSubmissions() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<string | null>(null);
+  const [rejectTrackTarget, setRejectTrackTarget] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
