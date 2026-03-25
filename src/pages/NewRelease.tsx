@@ -281,6 +281,8 @@ export default function NewRelease() {
             store_selection: storeSelection,
             copyright_line: copyrightLine || null,
             phonogram_line: phonogramLine || null,
+            status: 'pending',
+            rejection_reason: null,
           })
           .eq('id', editReleaseId);
 
