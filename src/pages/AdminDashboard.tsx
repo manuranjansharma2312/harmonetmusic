@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { WorldMapChart } from '@/components/WorldMapChart';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { StatusBadge } from '@/components/StatusBadge';
