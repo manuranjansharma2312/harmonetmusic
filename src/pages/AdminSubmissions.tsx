@@ -588,10 +588,26 @@ export default function AdminSubmissions() {
                 <Detail label="Submitted" value={new Date(viewRelease.created_at).toLocaleString()} />
               </div>
 
-              {viewRelease.poster_url && (
+              {viewRelease.poster_url ? (
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-1">Poster</p>
-                  <img src={viewRelease.poster_url} alt="Poster" className="h-32 w-32 rounded-lg object-cover border border-border" />
+                  <div className="relative inline-block">
+                    <img src={viewRelease.poster_url} alt="Poster" className="h-32 w-32 rounded-lg object-cover border border-border" />
+                    <button
+                      onClick={() => handleDeletePoster(viewRelease.id, viewRelease.poster_url!)}
+                      className="absolute -top-2 -right-2 p-1 rounded-full bg-destructive text-destructive-foreground hover:opacity-90 transition-all"
+                      title="Delete poster"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Poster</p>
+                  <div className="h-32 w-32 rounded-lg border border-dashed border-border flex items-center justify-center bg-muted/30">
+                    <Image className="h-8 w-8 text-muted-foreground/50" />
+                  </div>
                 </div>
               )}
 
