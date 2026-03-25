@@ -110,7 +110,7 @@ export default function SubLabels() {
     try {
       let b2b_url: string | null = null;
       if (b2bFile) {
-        const path = `sub-labels/${user.id}/${Date.now()}-${b2bFile.name}`;
+        const path = `sub-labels/${effectiveUserId}/${Date.now()}-${b2bFile.name}`;
         const { error } = await supabase.storage.from('b2b-documents').upload(path, b2bFile);
         if (error) throw error;
         b2b_url = path;
