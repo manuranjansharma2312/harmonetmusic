@@ -63,15 +63,16 @@ export default function Revenue() {
       
       const isSubLabelUser = profileData?.user_type === 'sub_label';
       
-      if (!isSubLabelUser) {
+      if (isSubLabelUser) {
+        // Sub-labels don't need bank details at all - they're under parent label
+        setHasBankDetails(true);
+      } else {
         const { data: bankData } = await supabase
           .from('bank_details')
           .select('id')
           .eq('user_id', activeUserId!)
           .maybeSingle();
         setHasBankDetails(!!bankData);
-      } else {
-        setHasBankDetails(true); // Sub-labels skip bank check
       }
 
       // Fetch hidden cut
