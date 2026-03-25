@@ -245,6 +245,7 @@ export default function AdminRevenue() {
                       <TableCell className="text-sm">
                         {w.email || 'Unknown'}
                         {w.display_id && <span className="ml-1 font-mono font-bold text-primary text-xs">(#{w.display_id})</span>}
+                        {w.is_sub_label && <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">Sub Label</span>}
                       </TableCell>
                       <TableCell className="font-medium">{formatCurrency(Number(w.amount))}</TableCell>
                       <TableCell>{format(new Date(w.created_at), 'dd MMM yyyy, hh:mm a')}</TableCell>
