@@ -855,10 +855,10 @@ export default function AdminSubmissions() {
           String(t.track_order), t.song_title || '', t.isrc || '', t.primary_artist || '',
           t.is_new_artist_profile ? 'Yes' : 'No',
           fmt(t.audio_type || ''), t.language || '', t.genre || '',
-          t.lyricist || '', t.composer || '', t.producer || '',
+          (t as any).singer || '', t.lyricist || '', t.composer || '', t.producer || '',
           t.spotify_link || '', t.apple_music_link || '', t.instagram_link || '',
           t.callertune_time || '', t.audio_url || '',
-        ] : Array(16).fill('');
+        ] : Array(17).fill('');
 
         rows.push([...releaseFields, ...trackFields]);
       });
