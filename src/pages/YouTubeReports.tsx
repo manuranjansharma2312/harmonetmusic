@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { normalizeIsrc } from '@/lib/isrc';
+import { applyRevenueCutToAmount, getEffectiveRevenueCutPercent, shouldApplyRevenueCut } from '@/lib/revenueCalculations';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Eye, BarChart3, Filter, X, Download, Search } from 'lucide-react';
@@ -81,8 +82,10 @@ export default function YouTubeReports() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [hiddenCut, setHiddenCut] = useState(0);
   const [subLabelCut, setSubLabelCut] = useState(0);
+  const [isSubLabelUser, setIsSubLabelUser] = useState(false);
 
   const { impersonatedUserId, isImpersonating } = useImpersonate();
+  const activeUserId = (isImpersonating && impersonatedUserId) ? impersonatedUserId : user?.id;
 
   const fetchReports = async () => {
     if (!user) return;
@@ -92,11 +95,10 @@ export default function YouTubeReports() {
     const { data: subLabelData } = await supabase
       .from('sub_labels')
       .select('percentage_cut')
-      .eq('sub_user_id', user.id)
+      .eq('sub_user_id', activeUserId)
       .maybeSingle();
-    if (subLabelData) {
-      setSubLabelCut(Number(subLabelData.percentage_cut) || 0);
-    }
+    setSubLabelCut(Number(subLabelData?.percentage_cut) || 0);
+    setIsSubLabelUser(Boolean(subLabelData));
 
     // Fetch hidden cut
     if (role !== 'admin') {
@@ -108,9 +110,21 @@ export default function YouTubeReports() {
     }
 
     if (role === 'admin' && isImpersonating && impersonatedUserId) {
+      const { data: subLabels } = await supabase
+        .from('sub_labels')
+        .select('sub_user_id')
+        .eq('parent_user_id', impersonatedUserId)
+        .eq('status', 'active');
+
+      const subUserIds = (subLabels || [])
+        .map(sl => sl.sub_user_id)
+        .filter(Boolean) as string[];
+
+      const allUserIds = [impersonatedUserId, ...subUserIds];
+
       const [{ data: trackRows }, { data: songRows }] = await Promise.all([
-        supabase.from('tracks').select('isrc').eq('user_id', impersonatedUserId),
-        supabase.from('songs').select('isrc').eq('user_id', impersonatedUserId),
+        supabase.from('tracks').select('isrc').in('user_id', allUserIds),
+        supabase.from('songs').select('isrc').in('user_id', allUserIds),
       ]);
       const ownedIsrcs = [...new Set(
         [...(trackRows ?? []), ...(songRows ?? [])]
@@ -137,9 +151,9 @@ export default function YouTubeReports() {
     return () => { supabase.removeChannel(channel); };
   }, [user, role, isImpersonating, impersonatedUserId]);
 
-  const effectiveCut = subLabelCut > 0 ? subLabelCut : hiddenCut;
-  const cutMultiplier = (role !== 'admin' || isImpersonating) ? (1 - effectiveCut / 100) : 1;
-  const applyRevenueCut = (val: number) => Number((val * cutMultiplier).toFixed(4));
+  const effectiveCut = getEffectiveRevenueCutPercent({ hiddenCut, subLabelCut, isSubLabel: isSubLabelUser });
+  const shouldApplyCut = shouldApplyRevenueCut({ role, currentUserId: user?.id, activeUserId });
+  const applyRevenueCut = (val: number) => applyRevenueCutToAmount(val, effectiveCut, shouldApplyCut);
 
   const monthlyGroups = useMemo(() => {
     const groups: Record<string, { entries: ReportEntry[]; latestImport: string; totalRevenue: number }> = {};
@@ -150,7 +164,7 @@ export default function YouTubeReports() {
       if (e.imported_at > groups[e.reporting_month].latestImport) groups[e.reporting_month].latestImport = e.imported_at;
     });
     return Object.entries(groups).sort(([a], [b]) => parseMonthKey(b) - parseMonthKey(a));
-  }, [entries, cutMultiplier]);
+  }, [entries, effectiveCut, shouldApplyCut]);
 
   const filteredMonthlyGroups = useMemo(() => {
     if (!monthSearch.trim()) return monthlyGroups;

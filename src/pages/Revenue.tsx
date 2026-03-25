@@ -13,6 +13,7 @@ import { Wallet, IndianRupee, ArrowDownToLine, Clock, CheckCircle2, AlertCircle,
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { applyRevenueCutToAmount, calculateAvailableBalance, getEffectiveRevenueCutPercent, shouldApplyRevenueCut, summarizeWithdrawals } from '@/lib/revenueCalculations';
 
 interface WithdrawalRequest {
   id: string;
@@ -42,10 +43,14 @@ export default function Revenue() {
   const [subLabelCut, setSubLabelCut] = useState(0);
   const [isSubLabelUser, setIsSubLabelUser] = useState(false);
 
-  const effectiveCut = subLabelCut > 0 ? subLabelCut : hiddenCut;
-  const cutMultiplier = (role !== 'admin' || (impersonatedUserId && impersonatedUserId !== user?.id)) ? (1 - effectiveCut / 100) : 1;
-  const availableBalance = (totalRevenue * cutMultiplier) - paidWithdrawals - pendingWithdrawals;
-  const progressPercent = threshold > 0 ? Math.min((availableBalance / threshold) * 100, 100) : 0;
+  const effectiveCut = getEffectiveRevenueCutPercent({ hiddenCut, subLabelCut, isSubLabel: isSubLabelUser });
+  const netRevenue = applyRevenueCutToAmount(
+    totalRevenue,
+    effectiveCut,
+    shouldApplyRevenueCut({ role, currentUserId: user?.id, activeUserId })
+  );
+  const availableBalance = calculateAvailableBalance(netRevenue, paidWithdrawals, pendingWithdrawals);
+  const progressPercent = threshold > 0 ? Math.min((Math.max(availableBalance, 0) / threshold) * 100, 100) : 0;
   const canWithdraw = availableBalance >= threshold;
 
   useEffect(() => {
@@ -115,6 +120,8 @@ export default function Revenue() {
         if (isSubLabel) {
           setThreshold(Number(subLabelData.withdrawal_threshold) || 1000);
         }
+      } else {
+        setSubLabelCut(0);
       }
       // When admin impersonates, we need to filter by user's ISRCs
       // because admin RLS sees all entries
@@ -187,14 +194,8 @@ export default function Revenue() {
       const allWithdrawals = (wData || []) as WithdrawalRequest[];
       setWithdrawals(allWithdrawals);
 
-      const paid = allWithdrawals
-        .filter(w => w.status === 'paid')
-        .reduce((sum, w) => sum + Number(w.amount), 0);
+      const { paid, pending } = summarizeWithdrawals(allWithdrawals);
       setPaidWithdrawals(paid);
-
-      const pending = allWithdrawals
-        .filter(w => w.status === 'pending')
-        .reduce((sum, w) => sum + Number(w.amount), 0);
       setPendingWithdrawals(pending);
     } catch (err) {
       console.error('Error fetching revenue data:', err);
@@ -209,7 +210,7 @@ export default function Revenue() {
     try {
       const { error } = await supabase.from('withdrawal_requests').insert({
         user_id: activeUserId,
-        amount: availableBalance,
+        amount: Math.max(availableBalance, 0),
         status: 'pending',
       });
       if (error) throw error;
@@ -312,7 +313,7 @@ export default function Revenue() {
               <span className="text-sm font-medium text-muted-foreground">Total Earned</span>
             </div>
             <p className="text-3xl font-bold text-blue-400">
-              {loading ? '...' : formatCurrency(totalRevenue * cutMultiplier)}
+              {loading ? '...' : formatCurrency(netRevenue)}
             </p>
           </GlassCard>
 

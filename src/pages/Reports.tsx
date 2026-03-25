@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { normalizeIsrc } from '@/lib/isrc';
+import { applyRevenueCutToAmount, getEffectiveRevenueCutPercent, shouldApplyRevenueCut } from '@/lib/revenueCalculations';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Eye, BarChart3, Filter, X, Download, Search } from 'lucide-react';
@@ -82,13 +83,14 @@ export default function Reports() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [hiddenCut, setHiddenCut] = useState(0);
   const [subLabelCut, setSubLabelCut] = useState(0);
+  const [isSubLabelUser, setIsSubLabelUser] = useState(false);
 
   const { impersonatedUserId, isImpersonating } = useImpersonate();
+  const activeUserId = (isImpersonating && impersonatedUserId) ? impersonatedUserId : user?.id;
 
   const fetchReports = async () => {
     if (!user) return;
     setLoading(true);
-    const activeUserId = (isImpersonating && impersonatedUserId) ? impersonatedUserId : user.id;
 
     // Check if user is a sub-label and get parent's cut
     const { data: subLabelData } = await supabase
@@ -96,9 +98,8 @@ export default function Reports() {
       .select('percentage_cut')
       .eq('sub_user_id', activeUserId)
       .maybeSingle();
-    if (subLabelData) {
-      setSubLabelCut(Number(subLabelData.percentage_cut) || 0);
-    }
+    setSubLabelCut(Number(subLabelData?.percentage_cut) || 0);
+    setIsSubLabelUser(Boolean(subLabelData));
 
     // Fetch hidden cut
     if (role !== 'admin') {
@@ -182,9 +183,9 @@ export default function Reports() {
 
   // For sub-labels: use parent's percentage_cut only (not admin hidden cut)
   // For regular users: use admin hidden cut
-  const effectiveCut = subLabelCut > 0 ? subLabelCut : hiddenCut;
-  const cutMultiplier = (role !== 'admin' || isImpersonating) ? (1 - effectiveCut / 100) : 1;
-  const applyRevenueCut = (val: number) => Number((val * cutMultiplier).toFixed(4));
+  const effectiveCut = getEffectiveRevenueCutPercent({ hiddenCut, subLabelCut, isSubLabel: isSubLabelUser });
+  const shouldApplyCut = shouldApplyRevenueCut({ role, currentUserId: user?.id, activeUserId });
+  const applyRevenueCut = (val: number) => applyRevenueCutToAmount(val, effectiveCut, shouldApplyCut);
 
   const monthlyGroups = useMemo(() => {
     const groups: Record<string, { entries: ReportEntry[]; latestImport: string; totalRevenue: number }> = {};
@@ -199,7 +200,7 @@ export default function Reports() {
       }
     });
     return Object.entries(groups).sort(([a], [b]) => parseMonthKey(b) - parseMonthKey(a));
-  }, [entries, cutMultiplier]);
+  }, [entries, effectiveCut, shouldApplyCut]);
 
   const filteredMonthlyGroups = useMemo(() => {
     if (!monthSearch.trim()) return monthlyGroups;
