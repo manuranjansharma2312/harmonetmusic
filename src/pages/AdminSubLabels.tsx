@@ -113,6 +113,10 @@ export default function AdminSubLabels() {
   const handleEditSave = async () => {
     if (!editSL) return;
     const { error } = await supabase.from('sub_labels').update({
+      sub_label_name: editSubLabelName.trim(),
+      parent_label_name: editParentLabelName.trim(),
+      email: editEmail.trim(),
+      phone: editPhone.trim(),
       agreement_start_date: editStart,
       agreement_end_date: editEnd,
       percentage_cut: parseFloat(editCut) || 0,
