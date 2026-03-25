@@ -302,6 +302,20 @@ export default function AdminSubLabels() {
                 <label className="block text-sm font-medium text-muted-foreground mb-1">Percentage Cut %</label>
                 <input className={inputClass} type="text" inputMode="decimal" value={editCut} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setEditCut(e.target.value); }} />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Status</label>
+                <Select value={editStatus} onValueChange={setEditStatus}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setEditSL(null)}>Cancel</Button>
