@@ -305,6 +305,14 @@ export default function AdminPromotionTools() {
                       <div>
                         <span className="font-medium">{o.user_name}</span>
                         {o.user_display_id && <span className="text-xs text-muted-foreground ml-1">#{o.user_display_id}</span>}
+                        {o.user_type === 'sub_label' && o.sub_label_name && (
+                          <div className="text-xs mt-0.5">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                              {o.sub_label_name}
+                            </span>
+                            <span className="text-muted-foreground ml-1">↳ Under: {o.parent_label_name}</span>
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
