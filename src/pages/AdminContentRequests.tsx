@@ -61,7 +61,7 @@ export default function AdminContentRequests() {
   const [filterType, setFilterType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [rejectTarget, setRejectTarget] = useState<any | null>(null);
-  const [userInfoMap, setUserInfoMap] = useState<Record<string, { name: string; displayId?: number }>>({});
+  const [userInfoMap, setUserInfoMap] = useState<Record<string, { name: string; displayId?: number; userType?: string; subLabelName?: string; parentLabelName?: string }>>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [page, setPage] = useState(0);
