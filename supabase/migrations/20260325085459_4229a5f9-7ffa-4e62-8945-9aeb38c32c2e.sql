@@ -1,0 +1,2 @@
+ALTER TABLE profiles DROP CONSTRAINT profiles_user_type_check;
+ALTER TABLE profiles ADD CONSTRAINT profiles_user_type_check CHECK (user_type = ANY (ARRAY['artist'::text, 'record_label'::text, 'sub_label'::text]));
