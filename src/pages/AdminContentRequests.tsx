@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
@@ -10,6 +10,7 @@ import { CopyButton } from '@/components/CopyButton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Download, Trash2 } from 'lucide-react';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 
 const REQUEST_TYPES: Record<string, string> = {
   copyright_claim: 'Copyright Claim Removal',
