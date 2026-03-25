@@ -73,6 +73,7 @@ export function AppSidebar() {
   const [toolsOpen, setToolsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
   const [adminSubLabelsOpen, setAdminSubLabelsOpen] = useState(false);
+  const [userSubLabelsOpen, setUserSubLabelsOpen] = useState(false);
   const [impUserType, setImpUserType] = useState<string | null>(null);
   const [impIsSubLabel, setImpIsSubLabel] = useState(false);
 
