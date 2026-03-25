@@ -31,6 +31,7 @@ export interface TrackData {
   language: string;
   genre: string;
   primaryArtists: ArtistEntry[];
+  singer: string;
   lyricist: string;
   composer: string;
   producer: string;
