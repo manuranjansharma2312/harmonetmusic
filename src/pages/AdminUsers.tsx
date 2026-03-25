@@ -313,7 +313,7 @@ export default function AdminUsers() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((profile) => (
+                {paginatedUsers.map((profile) => (
                   <tr key={profile.id} className={`border-b border-border/30 table-row-hover ${selectedIds.has(profile.user_id) ? 'bg-primary/5' : ''}`}>
                     <td className="py-3 px-3">
                       <input
