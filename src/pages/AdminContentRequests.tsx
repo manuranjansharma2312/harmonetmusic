@@ -5,6 +5,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
 import { toast } from 'sonner';
+import { CopyButton } from '@/components/CopyButton';
 
 const REQUEST_TYPES: Record<string, string> = {
   copyright_claim: 'Copyright Claim Removal',
