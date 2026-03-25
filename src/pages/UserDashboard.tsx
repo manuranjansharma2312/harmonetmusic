@@ -188,10 +188,10 @@ export default function UserDashboard() {
     );
   }
 
-  const songStatusData = [
-    { name: 'Pending', value: songStats.pending, color: CHART_COLORS[1] },
-    { name: 'Approved', value: songStats.approved, color: CHART_COLORS[2] },
-    { name: 'Rejected', value: songStats.rejected, color: CHART_COLORS[0] },
+  const releaseStatusData = [
+    { name: 'Pending', value: releaseStats.pending, color: CHART_COLORS[1] },
+    { name: 'Approved', value: releaseStats.approved, color: CHART_COLORS[2] },
+    { name: 'Rejected', value: releaseStats.rejected, color: CHART_COLORS[0] },
   ].filter(d => d.value > 0);
 
   const pendingReleases = recentReleases.filter(r => r.status === 'pending');
