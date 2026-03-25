@@ -31,6 +31,7 @@ export default function BankDetails() {
   const [bankDetail, setBankDetail] = useState<BankDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isSubLabel, setIsSubLabel] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'bank_transfer' | 'wise'>('bank_transfer');
   const [form, setForm] = useState({
     account_holder_name: '',
@@ -49,12 +50,12 @@ export default function BankDetails() {
   useEffect(() => {
     if (!effectiveUserId) return;
     (async () => {
-      const { data } = await supabase
-        .from('bank_details')
-        .select('*')
-        .eq('user_id', effectiveUserId)
-        .maybeSingle();
-      setBankDetail(data as BankDetail | null);
+      const [bankRes, profileRes] = await Promise.all([
+        supabase.from('bank_details').select('*').eq('user_id', effectiveUserId).maybeSingle(),
+        supabase.from('profiles').select('user_type').eq('user_id', effectiveUserId).maybeSingle(),
+      ]);
+      setBankDetail(bankRes.data as BankDetail | null);
+      setIsSubLabel(profileRes.data?.user_type === 'sub_label');
       setLoading(false);
     })();
   }, [effectiveUserId]);
@@ -114,7 +115,19 @@ export default function BankDetails() {
     );
   }
 
-  // Read-only view when details exist
+  // Sub-label users don't need bank details
+  if (isSubLabel) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center max-w-md mx-auto p-8">
+            <p className="text-muted-foreground">Bank details are managed by your parent label. This section is not available for sub-label accounts.</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   if (bankDetail) {
     return (
       <DashboardLayout>

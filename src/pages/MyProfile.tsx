@@ -84,7 +84,8 @@ export default function MyProfile() {
             <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">My Profile</h1>
             <p className="text-muted-foreground mt-1 text-sm sm:text-base">Profile not found.</p>
           </div>
-          {/* Still show bank details section if they exist */}
+          {/* Show bank details section only for non-sub-label users */}
+          {profile?.user_type !== 'sub_label' && (
           <GlassCard className="animate-fade-in">
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
               <Landmark className="h-4 w-4" /> Bank Details
@@ -117,6 +118,7 @@ export default function MyProfile() {
               </div>
             )}
           </GlassCard>
+          )}
         </div>
       </DashboardLayout>
     );
@@ -193,7 +195,8 @@ export default function MyProfile() {
           </GlassCard>
         </div>
 
-        {/* Bank Details Section */}
+        {/* Bank Details Section - hidden for sub-labels */}
+        {profile.user_type !== 'sub_label' && (
         <GlassCard className="mt-6 animate-fade-in">
           <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
             <Landmark className="h-4 w-4" /> Bank Details
@@ -259,6 +262,7 @@ export default function MyProfile() {
             </div>
           )}
         </GlassCard>
+        )}
 
         <GlassCard className="mt-6 animate-fade-in">
           <p className="text-center text-xs text-muted-foreground">
