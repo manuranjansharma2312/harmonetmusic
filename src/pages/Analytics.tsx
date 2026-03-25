@@ -364,7 +364,7 @@ export default function Analytics() {
                       </defs>
                       <CartesianGrid strokeDasharray="3 6" stroke="hsl(0 0% 14%)" vertical={false} />
                       <XAxis dataKey="month" tick={{ fill: 'hsl(0 0% 45%)', fontSize: 10, fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} />
-                      <YAxis tick={{ fill: 'hsl(0 0% 40%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${formatCompact(v)}`} width={58} />
+                      <YAxis tick={{ fill: 'hsl(0 0% 40%)', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatRevenue(v)} width={58} />
                       <Tooltip content={<CustomTooltip prefix="₹" />} />
                       <Legend content={<CustomLegend />} />
                       <Area type="monotone" dataKey="OTT" stroke="#f0932b" fill="url(#gradOttArea)" strokeWidth={2.5} dot={false}
