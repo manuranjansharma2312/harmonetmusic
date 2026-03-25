@@ -93,7 +93,7 @@ export default function NewRelease() {
       if (!isAdmin) query = query.eq('user_id', user.id);
       const { data: release } = await query.single();
 
-      if (!release || (!isAdmin && release.status !== 'pending')) {
+      if (!release || (!isAdmin && release.status !== 'pending' && release.status !== 'rejected')) {
         toast.error('Release not found or cannot be edited.');
         navigate(isAdmin ? '/admin/submissions' : '/my-releases');
         return;
