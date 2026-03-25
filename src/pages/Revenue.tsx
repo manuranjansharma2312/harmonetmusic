@@ -258,6 +258,22 @@ export default function Revenue() {
           </p>
         </div>
 
+        {parentBankMissing && (
+          <GlassCard className="p-4 border-amber-500/30 bg-amber-500/5">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-amber-500/10">
+                <AlertCircle className="h-5 w-5 text-amber-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Main Label Bank Details Missing</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Your main label hasn't added bank details yet. Withdrawals won't be processed until they do. Please contact your main label admin.
+                </p>
+              </div>
+            </div>
+          </GlassCard>
+        )}
+
         {/* Balance Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <GlassCard className="p-6">
