@@ -139,9 +139,9 @@ export default function NewRelease() {
           producer: t.producer || '',
           instagramLink: t.instagram_link || '',
           callertuneTime: t.callertune_time || '',
-          _existingAudioUrl: t.audio_url,
+          _existingAudioUrl: t.audio_url || undefined,
           _trackId: t.id,
-        } as TrackData & { _existingAudioUrl?: string; _trackId?: string })));
+        })));
       }
 
       setLoadingEdit(false);
