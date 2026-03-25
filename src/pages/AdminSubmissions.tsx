@@ -1302,6 +1302,93 @@ export default function AdminSubmissions() {
         onConfirm={handleTrackRejectConfirm}
         onCancel={() => setRejectTrackTarget(null)}
       />
+
+      {/* Import CSV Modal */}
+      <Dialog open={showImportModal} onOpenChange={(v) => { if (!v) { setShowImportModal(false); setImportParsedData([]); setImportErrors([]); } }}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Import Releases from CSV</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Upload a CSV file with release & track data. Required columns: <strong>User ID</strong> (display ID like #1) or <strong>User Email</strong>, and <strong>Song Title</strong>.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Supported columns: Release Name, Release Type, Content Type, UPC, Release Date, Status, Store Selection, Copyright, Phonogram, Track #, Song Title, ISRC, Primary Artist, Singer, Audio Type, Language, Genre, Lyricist, Composer, Producer, Spotify Link, Apple Music Link, Instagram Link, Callertune Time, New Artist Profile.
+              </p>
+              <input
+                type="file"
+                accept=".csv,.txt"
+                className="block w-full text-sm text-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImportCSV(file);
+                  e.target.value = '';
+                }}
+                disabled={importParsing || importing}
+              />
+            </div>
+
+            {importParsing && (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" /> Parsing CSV...
+              </div>
+            )}
+
+            {importErrors.length > 0 && (
+              <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 max-h-40 overflow-y-auto">
+                <p className="text-sm font-medium text-destructive mb-1">Warnings / Errors ({importErrors.length})</p>
+                {importErrors.map((err, i) => (
+                  <p key={i} className="text-xs text-destructive/80">{err}</p>
+                ))}
+              </div>
+            )}
+
+            {importParsedData.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-foreground">
+                  Preview: {importParsedData.length} release(s), {importParsedData.reduce((a, r) => a + r.tracks.length, 0)} track(s)
+                </p>
+                <div className="overflow-x-auto max-h-60 border border-border rounded-lg">
+                  <table className="w-full text-xs min-w-[600px]">
+                    <thead>
+                      <tr className="bg-muted/50 border-b border-border">
+                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">User</th>
+                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Type</th>
+                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Release Name</th>
+                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Tracks</th>
+                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Status</th>
+                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {importParsedData.map((rel, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-3 text-foreground">{rel.user_identifier}</td>
+                          <td className="py-2 px-3 capitalize text-foreground">{rel.content_type}</td>
+                          <td className="py-2 px-3 text-foreground">{rel.album_name || rel.ep_name || rel.tracks[0]?.song_title || '—'}</td>
+                          <td className="py-2 px-3 text-foreground">{rel.tracks.length}</td>
+                          <td className="py-2 px-3 capitalize text-foreground">{rel.status}</td>
+                          <td className="py-2 px-3 text-foreground">{rel.release_date}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowImportModal(false); setImportParsedData([]); setImportErrors([]); }}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmImport} disabled={importParsedData.length === 0 || importing}>
+              {importing ? <><Loader2 className="h-4 w-4 animate-spin" /> Importing...</> : `Import ${importParsedData.length} Release(s)`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
