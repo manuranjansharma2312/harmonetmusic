@@ -211,7 +211,7 @@ export default function Revenue() {
               <span className="text-sm font-medium text-muted-foreground">Total Earned</span>
             </div>
             <p className="text-3xl font-bold text-blue-400">
-              {loading ? '...' : formatCurrency(totalRevenue)}
+              {loading ? '...' : formatCurrency(totalRevenue * cutMultiplier)}
             </p>
           </GlassCard>
 
