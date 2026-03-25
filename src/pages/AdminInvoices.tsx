@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Dialog as ConfirmDialogWrapper, DialogContent as ConfirmContent, DialogHeader as ConfirmHeader, DialogTitle as ConfirmTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Plus, Trash2, Download, Eye, Pencil, X, FileText, Search, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import { Plus, Trash2, Download, Eye, Pencil, X, FileText, Search, Settings } from 'lucide-react';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 import jsPDF from 'jspdf';
@@ -96,8 +97,8 @@ export default function AdminInvoices() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
   const [search, setSearch] = useState('');
   const [logoBase64, setLogoBase64] = useState('');
   const [companyDetailsOpen, setCompanyDetailsOpen] = useState(false);
@@ -173,10 +174,9 @@ export default function AdminInvoices() {
     );
   }, [invoices, search]);
 
-  const totalPages = Math.ceil(filtered.length / pageSize);
-  const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const paged = useMemo(() => paginateItems(filtered, page, pageSize), [filtered, page, pageSize]);
 
-  useEffect(() => { setPage(1); }, [search, pageSize]);
+  useEffect(() => { setPage(0); }, [search]);
 
   const calcTotals = (amt: number, sharePercent: number, taxes: InvoiceTax[]) => {
     const harmonetShare = (amt * sharePercent) / 100;
@@ -526,8 +526,6 @@ export default function AdminInvoices() {
     form.taxes
   );
 
-  const startItem = (page - 1) * pageSize + 1;
-  const endItem = Math.min(page * pageSize, filtered.length);
 
   return (
     <DashboardLayout>
@@ -608,51 +606,14 @@ export default function AdminInvoices() {
             </Table>
           </div>
 
-          {/* Pagination */}
-          {filtered.length > 0 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-border">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>Showing {startItem}–{endItem} of {filtered.length}</span>
-                <Select value={String(pageSize)} onValueChange={v => setPageSize(Number(v))}>
-                  <SelectTrigger className="w-[70px] h-8 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="25">25</SelectItem>
-                    <SelectItem value="50">50</SelectItem>
-                  </SelectContent>
-                </Select>
-                <span>per page</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Button variant="outline" size="icon" className="h-8 w-8" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                  let pageNum: number;
-                  if (totalPages <= 5) pageNum = i + 1;
-                  else if (page <= 3) pageNum = i + 1;
-                  else if (page >= totalPages - 2) pageNum = totalPages - 4 + i;
-                  else pageNum = page - 2 + i;
-                  return (
-                    <Button
-                      key={pageNum}
-                      variant={pageNum === page ? 'default' : 'outline'}
-                      size="icon"
-                      className="h-8 w-8 text-xs"
-                      onClick={() => setPage(pageNum)}
-                    >
-                      {pageNum}
-                    </Button>
-                  );
-                })}
-                <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
+          <TablePagination
+            totalItems={filtered.length}
+            currentPage={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="invoices"
+          />
         </GlassCard>
       </div>
 

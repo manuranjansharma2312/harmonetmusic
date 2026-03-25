@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
@@ -10,6 +10,7 @@ import { CopyButton } from '@/components/CopyButton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Download, Trash2 } from 'lucide-react';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 
 const REQUEST_TYPES: Record<string, string> = {
   copyright_claim: 'Copyright Claim Removal',
@@ -63,6 +64,13 @@ export default function AdminContentRequests() {
   const [userInfoMap, setUserInfoMap] = useState<Record<string, { name: string; displayId?: number }>>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
+
+  const paginated = useMemo(() => paginateItems(requests, page, pageSize), [requests, page, pageSize]);
+
+  // Reset page on filter change
+  useEffect(() => { setPage(0); }, [filterType, filterStatus]);
 
   const fetchRequests = async () => {
     let query = supabase
@@ -296,7 +304,7 @@ export default function AdminContentRequests() {
                   </span>
                 </div>
 
-                {requests.map((item) => (
+                {paginated.map((item) => (
                   <div key={item.id} className={`border rounded-lg p-4 space-y-3 transition-colors ${selectedIds.has(item.id) ? 'border-primary bg-primary/5' : 'border-border'}`}>
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
@@ -370,6 +378,14 @@ export default function AdminContentRequests() {
                 ))}
               </div>
             )}
+            <TablePagination
+              totalItems={requests.length}
+              currentPage={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="requests"
+            />
           </div>
         </GlassCard>
       </div>

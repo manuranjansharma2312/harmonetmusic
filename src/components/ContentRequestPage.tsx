@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Send, History } from 'lucide-react';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 
 export interface FieldConfig {
   name: string;
@@ -32,6 +33,10 @@ export function ContentRequestPage({ title, requestType, fields }: ContentReques
   const [submitting, setSubmitting] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [historyPage, setHistoryPage] = useState(0);
+  const [historyPageSize, setHistoryPageSize] = useState<number | 'all'>(10);
+
+  const paginatedHistory = useMemo(() => paginateItems(history, historyPage, historyPageSize), [history, historyPage, historyPageSize]);
 
   const fetchHistory = async () => {
     if (!user) return;
@@ -135,7 +140,7 @@ export function ContentRequestPage({ title, requestType, fields }: ContentReques
                   <p className="text-muted-foreground text-center py-8">No requests yet.</p>
                 ) : (
                   <div className="space-y-4">
-                    {history.map((item) => (
+                    {paginatedHistory.map((item) => (
                       <div key={item.id} className="border border-border rounded-lg p-4 space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">
@@ -161,6 +166,14 @@ export function ContentRequestPage({ title, requestType, fields }: ContentReques
                         )}
                       </div>
                     ))}
+                    <TablePagination
+                      totalItems={history.length}
+                      currentPage={historyPage}
+                      pageSize={historyPageSize}
+                      onPageChange={setHistoryPage}
+                      onPageSizeChange={setHistoryPageSize}
+                      itemLabel="requests"
+                    />
                   </div>
                 )}
               </div>
