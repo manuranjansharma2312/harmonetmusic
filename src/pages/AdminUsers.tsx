@@ -117,6 +117,14 @@ export default function AdminUsers() {
     navigate('/dashboard');
   };
 
+  const handleSaveHiddenCut = async (userId: string, percent: number) => {
+    const { error } = await supabase.from('profiles').update({ hidden_cut_percent: percent }).eq('user_id', userId);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`Hidden cut set to ${percent}%`);
+    setEditingCut(null);
+    fetchProfiles();
+  };
+
   // Toggle selection
   const toggleSelect = (userId: string) => {
     setSelectedIds((prev) => {
