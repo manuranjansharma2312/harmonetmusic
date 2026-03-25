@@ -571,7 +571,17 @@ export default function AdminSubmissions() {
 
                         {/* Additional info */}
                         <div className="grid grid-cols-2 gap-2 text-xs">
-                          <Detail label="Instagram" value={track.instagram_link || '—'} />
+                          {track.instagram_link && track.instagram_link !== '—' ? (
+                            <div>
+                              <p className="text-muted-foreground text-xs">Instagram</p>
+                              <div className="flex items-center gap-1">
+                                <a href={track.instagram_link} target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary break-all">{track.instagram_link}</a>
+                                <CopyButton value={track.instagram_link} />
+                              </div>
+                            </div>
+                          ) : (
+                            <Detail label="Instagram" value="—" />
+                          )}
                           <Detail label="Callertune" value={track.callertune_time || '—'} />
                         </div>
 
