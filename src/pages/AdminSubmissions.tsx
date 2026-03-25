@@ -395,6 +395,56 @@ export default function AdminSubmissions() {
     fetchReleases();
   };
 
+  const downloadDemoTemplate = () => {
+    const headers = [
+      'Release Name', 'Release Type', 'Content Type', 'UPC', 'Status',
+      'Release Date', 'Store Selection', 'Copyright ©', 'Phonogram ℗',
+      'User ID', 'User Email',
+      'Track #', 'Song Title', 'ISRC', 'Primary Artist', 'Singer', 'New Artist Profile',
+      'Audio Type', 'Language', 'Genre',
+      'Lyricist', 'Composer', 'Producer',
+      'Spotify Link', 'Apple Music Link', 'Instagram Link', 'Callertune Time',
+    ];
+    const row1 = [
+      'My First Album', 'New Release', 'Album', '', 'Pending',
+      '2026-04-01', 'Worldwide', '© 2026 Label Name', '℗ 2026 Label Name',
+      '#1', '',
+      '1', 'Track One', '', 'Artist Name', 'Singer Name', 'No',
+      'With Vocal', 'Hindi', 'Pop',
+      'Lyricist Name', 'Composer Name', 'Producer Name',
+      '', '', '', '00:30',
+    ];
+    const row2 = [
+      'My First Album', 'New Release', 'Album', '', 'Pending',
+      '2026-04-01', 'Worldwide', '© 2026 Label Name', '℗ 2026 Label Name',
+      '#1', '',
+      '2', 'Track Two', '', 'Artist Name', 'Singer Name', 'No',
+      'Instrumental', 'English', 'Rock',
+      'Lyricist Name', 'Composer Name', 'Producer Name',
+      '', '', '', '',
+    ];
+    const row3 = [
+      'My Single Song', 'New Release', 'Single', '', 'Approved',
+      '2026-05-01', 'Instagram & Facebook Only', '© 2026 Label', '℗ 2026 Label',
+      '', 'user@example.com',
+      '1', 'Single Song Title', 'ISRC12345', 'Solo Artist', 'Solo Singer', 'Yes',
+      'With Vocal', 'English', 'Pop',
+      'Lyricist', 'Composer', 'Producer',
+      'https://open.spotify.com/...', 'https://music.apple.com/...', 'https://instagram.com/...', '01:15',
+    ];
+    const csvContent = [headers, row1, row2, row3]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'import-releases-template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Demo template downloaded');
+  };
+
   const fetchReleases = async () => {
     const { data: releasesData } = await supabase
       .from('releases')
@@ -1317,17 +1367,22 @@ export default function AdminSubmissions() {
               <p className="text-xs text-muted-foreground">
                 Supported columns: Release Name, Release Type, Content Type, UPC, Release Date, Status, Store Selection, Copyright, Phonogram, Track #, Song Title, ISRC, Primary Artist, Singer, Audio Type, Language, Genre, Lyricist, Composer, Producer, Spotify Link, Apple Music Link, Instagram Link, Callertune Time, New Artist Profile.
               </p>
-              <input
-                type="file"
-                accept=".csv,.txt"
-                className="block w-full text-sm text-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleImportCSV(file);
-                  e.target.value = '';
-                }}
-                disabled={importParsing || importing}
-              />
+              <div className="flex flex-wrap gap-2 items-center">
+                <input
+                  type="file"
+                  accept=".csv,.txt"
+                  className="block flex-1 min-w-0 text-sm text-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleImportCSV(file);
+                    e.target.value = '';
+                  }}
+                  disabled={importParsing || importing}
+                />
+                <Button variant="outline" size="sm" onClick={downloadDemoTemplate}>
+                  <Download className="h-3.5 w-3.5" /> Demo Template
+                </Button>
+              </div>
             </div>
 
             {importParsing && (
