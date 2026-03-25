@@ -664,10 +664,10 @@ export default function Analytics() {
               </div>
 
               <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
-                <div className="p-6 pb-2"><SectionHeader icon={Globe} title="Streams by Country" subtitle="Geographic streams breakdown" accent="#00d2d3" /></div>
-                <div className="h-[360px] px-3 pb-5 mt-2">
+                <div className="p-4 sm:p-6 pb-2"><SectionHeader icon={Globe} title="Streams by Country" subtitle="Geographic streams breakdown" accent="#00d2d3" /></div>
+                <div className="h-[280px] sm:h-[320px] lg:h-[360px] px-1 sm:px-3 pb-3 sm:pb-5 mt-2">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={streamsByCountry} margin={{ top: 10, right: 16, left: 5, bottom: 40 }}>
+                    <BarChart data={streamsByCountry} margin={{ top: 10, right: 12, left: 0, bottom: 40 }}>
                       <defs>
                         {streamsByCountry.map((_, i) => (
                           <linearGradient key={`scg${i}`} id={`strCGrad${i}`} x1="0" y1="0" x2="0" y2="1">
