@@ -31,6 +31,8 @@ export default function AdminLabels() {
   const [userEmails, setUserEmails] = useState<Record<string, string>>({});
   const [userDisplayIds, setUserDisplayIds] = useState<Record<string, number>>({});
   const [rejectTarget, setRejectTarget] = useState<Label | null>(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const inputClass =
     'w-full px-3 py-2 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
