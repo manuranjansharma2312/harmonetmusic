@@ -90,6 +90,23 @@ export default function Reports() {
     const fetchReports = async () => {
       setLoading(true);
 
+      // Fetch hidden cut for non-admin users
+      if (role !== 'admin') {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('hidden_cut_percent')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
+      } else if (isImpersonating && impersonatedUserId) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('hidden_cut_percent')
+          .eq('user_id', impersonatedUserId)
+          .maybeSingle();
+        setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
+      }
+
       if (role === 'admin' && isImpersonating && impersonatedUserId) {
         const [{ data: trackRows }, { data: songRows }] = await Promise.all([
           supabase.from('tracks').select('isrc').eq('user_id', impersonatedUserId),
