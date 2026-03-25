@@ -676,8 +676,22 @@ export default function AdminSubmissions() {
                           <Detail label="Callertune" value={track.callertune_time || '—'} />
                         </div>
 
-                        {track.audio_url && (
-                          <audio controls src={track.audio_url} className="w-full h-8 mt-1" />
+                        {track.audio_url ? (
+                          <div className="flex items-center gap-2 mt-1">
+                            <audio controls src={track.audio_url} className="flex-1 h-8" />
+                            <button
+                              onClick={() => handleDeleteAudio(track.id, track.audio_url!)}
+                              className="p-1.5 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-all"
+                              title="Delete audio"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 mt-1 p-2 rounded-lg border border-dashed border-border bg-muted/20">
+                            <Volume2 className="h-4 w-4 text-muted-foreground/50" />
+                            <span className="text-xs text-muted-foreground/50">No audio file</span>
+                          </div>
                         )}
                       </div>
                     ))}
