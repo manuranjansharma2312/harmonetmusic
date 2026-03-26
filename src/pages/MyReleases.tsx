@@ -217,7 +217,7 @@ export default function MyReleases() {
     a.download = `my-releases-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success(`Exported ${releases.length} release(s)`);
+    toast.success(`Exported ${data.length} release(s)`);
   };
 
   const handleDelete = async () => {
