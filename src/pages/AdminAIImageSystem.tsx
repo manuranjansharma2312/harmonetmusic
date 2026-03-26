@@ -55,7 +55,7 @@ export default function AdminAIImageSystem() {
   const [activeUsers, setActiveUsers] = useState(0);
 
   // Settings
-  const [aiSettings, setAiSettings] = useState({ credits_per_image: 1, api_provider: 'openai' });
+  const [aiSettings, setAiSettings] = useState({ credits_per_image: 1, api_provider: 'openai', is_enabled: true, free_credits: 0 });
   const [settingsLoading, setSettingsLoading] = useState(false);
 
   const profileMap = useMemo(() => {
