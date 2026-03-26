@@ -218,12 +218,20 @@ export default function Analytics() {
 
     const [{ data: profileData }, { data: subLabelData }] = await Promise.all([
       supabase.from('profiles').select('hidden_cut_percent, user_type').eq('user_id', activeUserId).maybeSingle(),
-      supabase.from('sub_labels').select('percentage_cut').eq('sub_user_id', activeUserId).maybeSingle(),
+      supabase.from('sub_labels').select('percentage_cut, parent_user_id').eq('sub_user_id', activeUserId).maybeSingle(),
     ]);
 
-    setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
+    const isSubLabel = Boolean(subLabelData || profileData?.user_type === 'sub_label');
     setSubLabelCut(Number(subLabelData?.percentage_cut) || 0);
-    setIsSubLabelUser(Boolean(subLabelData || profileData?.user_type === 'sub_label'));
+    setIsSubLabelUser(isSubLabel);
+
+    // For sub-labels, fetch parent's hidden cut for stacked calculation
+    if (isSubLabel && subLabelData?.parent_user_id) {
+      const { data: parentProfile } = await supabase.from('profiles').select('hidden_cut_percent').eq('user_id', subLabelData.parent_user_id).maybeSingle();
+      setHiddenCut(Number(parentProfile?.hidden_cut_percent) || 0);
+    } else {
+      setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
+    }
 
     if (role === 'admin' && isImpersonating && impersonatedUserId) {
       const [{ data: trackRows }, { data: songRows }] = await Promise.all([

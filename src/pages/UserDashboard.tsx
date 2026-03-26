@@ -101,7 +101,7 @@ export default function UserDashboard() {
       const [releasesRes, profileRes, subLabelRes, withdrawalRes, recentReleasesRes] = await Promise.all([
         supabase.from('releases').select('status').eq('user_id', effectiveUserId),
         supabase.from('profiles').select('display_id, hidden_cut_percent').eq('user_id', effectiveUserId).single(),
-        supabase.from('sub_labels').select('percentage_cut').eq('sub_user_id', effectiveUserId).maybeSingle(),
+        supabase.from('sub_labels').select('percentage_cut, parent_user_id').eq('sub_user_id', effectiveUserId).maybeSingle(),
         supabase.from('withdrawal_requests').select('status, amount').eq('user_id', effectiveUserId),
         supabase.from('releases').select('id, album_name, ep_name, content_type, status, created_at, poster_url').eq('user_id', effectiveUserId).order('created_at', { ascending: false }).limit(5),
       ]);
@@ -118,9 +118,20 @@ export default function UserDashboard() {
 
       setDisplayId(profileRes.data ? (profileRes.data as any).display_id : null);
 
-      const hiddenCutPercent = profileRes.data ? Number((profileRes.data as any).hidden_cut_percent || 0) : 0;
       const hasSubLabel = Boolean(subLabelRes.data);
       const subLabelCutPercent = Number(subLabelRes.data?.percentage_cut || 0);
+
+      // For sub-labels, fetch PARENT's hidden cut for stacked calculation
+      let hiddenCutPercent = profileRes.data ? Number((profileRes.data as any).hidden_cut_percent || 0) : 0;
+      if (hasSubLabel && subLabelRes.data?.parent_user_id) {
+        const { data: parentProfile } = await supabase
+          .from('profiles')
+          .select('hidden_cut_percent')
+          .eq('user_id', subLabelRes.data.parent_user_id)
+          .maybeSingle();
+        hiddenCutPercent = Number(parentProfile?.hidden_cut_percent || 0);
+      }
+
       const effectiveCutPercent = getEffectiveRevenueCutPercent({
         hiddenCut: hiddenCutPercent,
         subLabelCut: subLabelCutPercent,
