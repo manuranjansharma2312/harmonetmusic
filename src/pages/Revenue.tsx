@@ -348,7 +348,7 @@ export default function Revenue() {
             </div>
             <Button
               onClick={handleWithdraw}
-              disabled={!canWithdraw || withdrawing || loading}
+              disabled={!canWithdraw || withdrawing || loading || showBankDetailsNotice}
               className="gap-2"
             >
               <ArrowDownToLine className="h-4 w-4" />
