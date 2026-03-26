@@ -62,6 +62,7 @@ const adminLinksTop = [
   { to: '/admin/agreements', label: 'Agreements', icon: FileSignature },
   { to: '/admin/promotion-tools', label: 'Promotion Tools', icon: Megaphone },
   { to: '/admin/payment-settings', label: 'Payment Settings', icon: CreditCard },
+  { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
 ];
 
 export function AppSidebar() {
@@ -116,6 +117,7 @@ export function AppSidebar() {
     ...(!effectiveIsSubLabel ? [{ to: '/promotion-tools', label: 'Promotion Tools', icon: Megaphone }] : []),
     { to: '/revenue', label: 'Revenue', icon: Wallet },
     { to: '/terms', label: 'Terms & Conditions', icon: FileText },
+    { to: '/contact-support', label: 'Contact Support', icon: Headset },
     { to: '/profile', label: 'My Profile', icon: UserCircle },
   ];
 

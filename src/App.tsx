@@ -51,6 +51,8 @@ import AdminPromotionTools from "./pages/AdminPromotionTools";
 import AdminPaymentSettings from "./pages/AdminPaymentSettings";
 import PromotionTools from "./pages/PromotionTools";
 import BankDetails from "./pages/BankDetails";
+import ContactSupport from "./pages/ContactSupport";
+import AdminContactSupport from "./pages/AdminContactSupport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -109,8 +111,10 @@ function App() {
                   <Route path="/admin/agreements/generate" element={<ProtectedRoute requiredRole="admin"><AdminAgreementGenerator /></ProtectedRoute>} />
                   <Route path="/admin/promotion-tools" element={<ProtectedRoute requiredRole="admin"><AdminPromotionTools /></ProtectedRoute>} />
                   <Route path="/admin/payment-settings" element={<ProtectedRoute requiredRole="admin"><AdminPaymentSettings /></ProtectedRoute>} />
+                  <Route path="/admin/contact-support" element={<ProtectedRoute requiredRole="admin"><AdminContactSupport /></ProtectedRoute>} />
                   <Route path="/promotion-tools" element={<ProtectedRoute><PromotionTools /></ProtectedRoute>} />
                   <Route path="/terms" element={<ProtectedRoute><TermsConditions /></ProtectedRoute>} />
+                  <Route path="/contact-support" element={<ProtectedRoute><ContactSupport /></ProtectedRoute>} />
                   <Route path="/tools/copyright-claim" element={<ProtectedRoute><CopyrightClaimRemoval /></ProtectedRoute>} />
                   <Route path="/tools/instagram-link" element={<ProtectedRoute><InstagramLinkToSong /></ProtectedRoute>} />
                   <Route path="/tools/content-id-merge" element={<ProtectedRoute><ContentIdMerge /></ProtectedRoute>} />
