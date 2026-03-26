@@ -192,17 +192,27 @@ export default function AdminAIImageSystem() {
   const addManualCredits = async () => {
     const creditsNum = Number(manualForm.credits);
     if (!manualForm.userId || creditsNum <= 0) { toast.error('Select user and enter credits'); return; }
-    const { data: existing } = await supabase.from('ai_credits').select('*').eq('user_id', manualForm.userId).maybeSingle();
-    if (existing) {
-      await supabase.from('ai_credits').update({ total_credits: (existing as any).total_credits + creditsNum, updated_at: new Date().toISOString() }).eq('user_id', manualForm.userId);
-    } else {
-      await supabase.from('ai_credits').insert({ user_id: manualForm.userId, total_credits: creditsNum, used_credits: 0 });
+    try {
+      const { data: existing, error: fetchErr } = await supabase.from('ai_credits').select('*').eq('user_id', manualForm.userId).maybeSingle();
+      if (fetchErr) { toast.error('Failed to fetch user credits: ' + fetchErr.message); return; }
+      
+      if (existing) {
+        const { error: updateErr } = await supabase.from('ai_credits').update({ total_credits: (existing as any).total_credits + creditsNum, updated_at: new Date().toISOString() }).eq('user_id', manualForm.userId);
+        if (updateErr) { toast.error('Failed to update credits: ' + updateErr.message); return; }
+      } else {
+        const { error: insertErr } = await supabase.from('ai_credits').insert({ user_id: manualForm.userId, total_credits: creditsNum, used_credits: 0 });
+        if (insertErr) { toast.error('Failed to add credits: ' + insertErr.message); return; }
+      }
+      const { error: txErr } = await supabase.from('ai_credit_transactions').insert({ user_id: manualForm.userId, credits: creditsNum, type: 'manual_addition', note: manualForm.note || 'Manually added by admin' });
+      if (txErr) { toast.error('Credits added but transaction log failed: ' + txErr.message); }
+      
+      toast.success(`${creditsNum} credits added successfully`);
+      setManualCreditModal(false);
+      setManualForm({ userId: '', credits: '', note: '' });
+      await Promise.all([fetchCredits(), fetchTransactions(), fetchUsageStats()]);
+    } catch (e: any) {
+      toast.error('Error adding credits: ' + (e?.message || 'Unknown error'));
     }
-    await supabase.from('ai_credit_transactions').insert({ user_id: manualForm.userId, credits: creditsNum, type: 'manual_addition', note: manualForm.note || 'Manually added by admin' });
-    toast.success(`${creditsNum} credits added`);
-    setManualCreditModal(false);
-    setManualForm({ userId: '', credits: '', note: '' });
-    fetchCredits(); fetchTransactions(); fetchUsageStats();
   };
 
   const addImageSize = () => {
