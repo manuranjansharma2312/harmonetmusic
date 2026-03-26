@@ -275,6 +275,12 @@ export default function MyReleases() {
               <GlassCard key={release.id} className="animate-fade-in">
                 {/* Release header */}
                 <div className="flex items-center gap-4">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toggleSelect(release.id); }}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    {selected.has(release.id) ? <CheckSquare className="h-5 w-5 text-primary" /> : <Square className="h-5 w-5" />}
+                  </button>
                   <button onClick={() => setExpandedId(isExpanded ? null : release.id)} className="text-muted-foreground hover:text-foreground">
                     {isExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
                   </button>
