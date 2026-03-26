@@ -205,10 +205,20 @@ export default function AdminAIImageSystem() {
     fetchCredits(); fetchTransactions(); fetchUsageStats();
   };
 
+  const addImageSize = () => {
+    if (!newSize.label || !newSize.width || !newSize.height) { toast.error('Fill all size fields'); return; }
+    setAiSettings(s => ({ ...s, image_sizes: [...s.image_sizes, { label: newSize.label, width: Number(newSize.width), height: Number(newSize.height) }] }));
+    setNewSize({ label: '', width: '', height: '' });
+  };
+
+  const removeImageSize = (idx: number) => {
+    setAiSettings(s => ({ ...s, image_sizes: s.image_sizes.filter((_, i) => i !== idx) }));
+  };
+
   const saveSettings = async () => {
     setSettingsLoading(true);
     const { data: settingsRow } = await supabase.from('ai_settings').select('id').limit(1).single();
-    await supabase.from('ai_settings').update({ credits_per_image: aiSettings.credits_per_image, api_provider: aiSettings.api_provider, is_enabled: aiSettings.is_enabled, free_credits: aiSettings.free_credits, updated_at: new Date().toISOString(), updated_by: user?.id }).eq('id', settingsRow?.id || '');
+    await supabase.from('ai_settings').update({ credits_per_image: aiSettings.credits_per_image, api_provider: aiSettings.api_provider, is_enabled: aiSettings.is_enabled, free_credits: aiSettings.free_credits, image_sizes: aiSettings.image_sizes as any, updated_at: new Date().toISOString(), updated_by: user?.id }).eq('id', settingsRow?.id || '');
     toast.success('Settings saved');
     setSettingsLoading(false);
   };
