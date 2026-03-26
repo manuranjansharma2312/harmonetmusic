@@ -94,6 +94,12 @@ export function AppSidebar() {
     }
   }, [isImpersonating, impersonatedUserId]);
 
+  // Check if AI Image system is enabled
+  useEffect(() => {
+    supabase.from('ai_settings').select('is_enabled').limit(1).maybeSingle()
+      .then(({ data }) => { setAiEnabled((data as any)?.is_enabled ?? false); });
+  }, []);
+
   const effectiveUserType = isImpersonating ? impUserType : userType;
   const effectiveIsSubLabel = isImpersonating ? impIsSubLabel : isSubLabel;
 
