@@ -177,7 +177,15 @@ export default function AIImageGeneration() {
       const imageUrl = data?.image_url;
       if (!imageUrl) { toast.error('No image generated. Try a different prompt.'); return; }
 
-      setGeneratedImage(imageUrl);
+      // Add Harmonet Music watermark to generated image
+      let watermarkedUrl: string;
+      try {
+        watermarkedUrl = await addWatermark(imageUrl);
+      } catch {
+        watermarkedUrl = imageUrl; // Fallback to original if watermark fails
+      }
+
+      setGeneratedImage(watermarkedUrl);
 
       // Deduct credits only if not lifetime free
       if (!isLifetimeFree) {
