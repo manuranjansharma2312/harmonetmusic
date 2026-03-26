@@ -524,7 +524,7 @@ export default function AdminAIImageSystem() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Credits *</Label><Input type="number" min={1} value={manualForm.credits} onChange={e => setManualForm(f => ({ ...f, credits: e.target.value }))} /></div>
+            <div><Label>Credits *</Label><Input type="text" inputMode="numeric" value={manualForm.credits} onChange={e => setManualForm(f => ({ ...f, credits: e.target.value.replace(/[^0-9]/g, '') }))} /></div>
             <div><Label>Note (Optional)</Label><Textarea value={manualForm.note} onChange={e => setManualForm(f => ({ ...f, note: e.target.value }))} placeholder="Reason for adding credits..." /></div>
           </div>
           <DialogFooter>
