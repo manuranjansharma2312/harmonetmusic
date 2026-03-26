@@ -10,13 +10,16 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { prompt } = await req.json();
+    const { prompt, width, height } = await req.json();
     if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
       return new Response(JSON.stringify({ error: "Prompt is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Build size instruction for the prompt
+    const sizeInstruction = width && height ? ` Generate the image at exactly ${width}x${height} pixels resolution.` : "";
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -34,7 +37,7 @@ serve(async (req) => {
         messages: [
           {
             role: "user",
-            content: prompt.trim(),
+            content: prompt.trim() + sizeInstruction,
           },
         ],
         modalities: ["image", "text"],

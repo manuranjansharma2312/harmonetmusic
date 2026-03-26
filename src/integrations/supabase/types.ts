@@ -219,6 +219,7 @@ export type Database = {
           credits_per_image: number
           free_credits: number
           id: string
+          image_sizes: Json
           is_enabled: boolean
           updated_at: string
           updated_by: string | null
@@ -228,6 +229,7 @@ export type Database = {
           credits_per_image?: number
           free_credits?: number
           id?: string
+          image_sizes?: Json
           is_enabled?: boolean
           updated_at?: string
           updated_by?: string | null
@@ -237,6 +239,7 @@ export type Database = {
           credits_per_image?: number
           free_credits?: number
           id?: string
+          image_sizes?: Json
           is_enabled?: boolean
           updated_at?: string
           updated_by?: string | null

@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { StatusBadge } from '@/components/StatusBadge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -49,6 +50,8 @@ export default function AIImageGeneration() {
   const [generating, setGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [creditsPerImage, setCreditsPerImage] = useState(1);
+  const [imageSizes, setImageSizes] = useState<{ label: string; width: number; height: number }[]>([]);
+  const [selectedSize, setSelectedSize] = useState('');
 
   // Payment settings (QR code etc)
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
@@ -62,7 +65,7 @@ export default function AIImageGeneration() {
       supabase.from('ai_plan_orders').select('*, ai_plans(name, credits, price)').eq('user_id', user.id).order('created_at', { ascending: false }),
       supabase.from('ai_generated_images').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
       supabase.from('promotion_settings').select('qr_code_url, taxes').limit(1).maybeSingle(),
-      supabase.from('ai_settings').select('free_credits, credits_per_image').limit(1).maybeSingle(),
+      supabase.from('ai_settings').select('free_credits, credits_per_image, image_sizes').limit(1).maybeSingle(),
     ]);
     if (plansRes.data) setPlans(plansRes.data as any);
     if (ordersRes.data) setOrders(ordersRes.data as any);
@@ -72,6 +75,9 @@ export default function AIImageGeneration() {
     // Handle credits & free credits auto-provisioning
     const freeCredits = (aiSettingsRes.data as any)?.free_credits || 0;
     setCreditsPerImage((aiSettingsRes.data as any)?.credits_per_image || 1);
+    const sizes = (aiSettingsRes.data as any)?.image_sizes || [];
+    setImageSizes(sizes);
+    if (sizes.length > 0 && !selectedSize) setSelectedSize(`${sizes[0].width}x${sizes[0].height}`);
     if (credRes.data) {
       setTotalCredits((credRes.data as any).total_credits);
       setUsedCredits((credRes.data as any).used_credits);
@@ -135,7 +141,8 @@ export default function AIImageGeneration() {
     setGenerating(true);
     setGeneratedImage(null);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-ai-poster', { body: { prompt: prompt.trim() } });
+      const sizeObj = imageSizes.find(s => `${s.width}x${s.height}` === selectedSize);
+      const { data, error } = await supabase.functions.invoke('generate-ai-poster', { body: { prompt: prompt.trim(), width: sizeObj?.width, height: sizeObj?.height } });
       if (error) { toast.error('Generation failed. Please try again.'); return; }
       if (data?.error) { toast.error(data.error); return; }
       const imageUrl = data?.image_url;
@@ -208,8 +215,21 @@ export default function AIImageGeneration() {
                       disabled={generating}
                     />
                     <p className="text-xs text-muted-foreground mt-1">Cost: {creditsPerImage} credit{creditsPerImage > 1 ? 's' : ''} per generation</p>
-                    <p className="text-xs text-orange-500 mt-1">⚠️ Generated posters are automatically deleted after 24 hours. Download them before they expire!</p>
+                    <p className="text-xs text-amber-500 mt-1">⚠️ Generated posters are automatically deleted after 24 hours. Download them before they expire!</p>
                   </div>
+                  {imageSizes.length > 0 && (
+                    <div>
+                      <Label>Image Size *</Label>
+                      <Select value={selectedSize} onValueChange={setSelectedSize}>
+                        <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
+                        <SelectContent>
+                          {imageSizes.map((s, i) => (
+                            <SelectItem key={i} value={`${s.width}x${s.height}`}>{s.label} ({s.width}×{s.height})</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   <Button onClick={generateImage} disabled={generating || !prompt.trim() || remaining < creditsPerImage} className="w-full" size="lg">
                     {generating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</> : <><Sparkles className="h-4 w-4 mr-2" />Generate Poster</>}
                   </Button>

@@ -55,8 +55,9 @@ export default function AdminAIImageSystem() {
   const [activeUsers, setActiveUsers] = useState(0);
 
   // Settings
-  const [aiSettings, setAiSettings] = useState({ credits_per_image: 1, api_provider: 'openai', is_enabled: true, free_credits: 0 });
+  const [aiSettings, setAiSettings] = useState<{ credits_per_image: number; api_provider: string; is_enabled: boolean; free_credits: number; image_sizes: { label: string; width: number; height: number }[] }>({ credits_per_image: 1, api_provider: 'openai', is_enabled: true, free_credits: 0, image_sizes: [] });
   const [settingsLoading, setSettingsLoading] = useState(false);
+  const [newSize, setNewSize] = useState({ label: '', width: '', height: '' });
 
   const profileMap = useMemo(() => {
     const m: Record<string, Profile> = {};
@@ -107,7 +108,7 @@ export default function AdminAIImageSystem() {
 
   const fetchSettings = async () => {
     const { data } = await supabase.from('ai_settings').select('*').limit(1).maybeSingle();
-    if (data) setAiSettings({ credits_per_image: (data as any).credits_per_image, api_provider: (data as any).api_provider, is_enabled: (data as any).is_enabled, free_credits: (data as any).free_credits });
+    if (data) setAiSettings({ credits_per_image: (data as any).credits_per_image, api_provider: (data as any).api_provider, is_enabled: (data as any).is_enabled, free_credits: (data as any).free_credits, image_sizes: (data as any).image_sizes || [] });
   };
 
   useEffect(() => {
@@ -204,10 +205,20 @@ export default function AdminAIImageSystem() {
     fetchCredits(); fetchTransactions(); fetchUsageStats();
   };
 
+  const addImageSize = () => {
+    if (!newSize.label || !newSize.width || !newSize.height) { toast.error('Fill all size fields'); return; }
+    setAiSettings(s => ({ ...s, image_sizes: [...s.image_sizes, { label: newSize.label, width: Number(newSize.width), height: Number(newSize.height) }] }));
+    setNewSize({ label: '', width: '', height: '' });
+  };
+
+  const removeImageSize = (idx: number) => {
+    setAiSettings(s => ({ ...s, image_sizes: s.image_sizes.filter((_, i) => i !== idx) }));
+  };
+
   const saveSettings = async () => {
     setSettingsLoading(true);
     const { data: settingsRow } = await supabase.from('ai_settings').select('id').limit(1).single();
-    await supabase.from('ai_settings').update({ credits_per_image: aiSettings.credits_per_image, api_provider: aiSettings.api_provider, is_enabled: aiSettings.is_enabled, free_credits: aiSettings.free_credits, updated_at: new Date().toISOString(), updated_by: user?.id }).eq('id', settingsRow?.id || '');
+    await supabase.from('ai_settings').update({ credits_per_image: aiSettings.credits_per_image, api_provider: aiSettings.api_provider, is_enabled: aiSettings.is_enabled, free_credits: aiSettings.free_credits, image_sizes: aiSettings.image_sizes as any, updated_at: new Date().toISOString(), updated_by: user?.id }).eq('id', settingsRow?.id || '');
     toast.success('Settings saved');
     setSettingsLoading(false);
   };
@@ -433,6 +444,28 @@ export default function AdminAIImageSystem() {
                   <Label>Credits Per Image</Label>
                   <Input type="number" min={1} value={aiSettings.credits_per_image} onChange={e => setAiSettings(s => ({ ...s, credits_per_image: Number(e.target.value) }))} />
                 </div>
+
+                {/* Image Sizes */}
+                <div className="space-y-3 pt-2 border-t">
+                  <Label className="text-base">Image Size Options</Label>
+                  <p className="text-xs text-muted-foreground">Define available size presets that users can choose from when generating posters.</p>
+                  
+                  {aiSettings.image_sizes.map((size, idx) => (
+                    <div key={idx} className="flex items-center gap-2 rounded-lg border p-2">
+                      <span className="flex-1 text-sm font-medium">{size.label}</span>
+                      <span className="text-xs text-muted-foreground">{size.width}×{size.height}</span>
+                      <Button variant="ghost" size="icon" onClick={() => removeImageSize(idx)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    </div>
+                  ))}
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <Input placeholder="Label (e.g. Square)" value={newSize.label} onChange={e => setNewSize(s => ({ ...s, label: e.target.value }))} />
+                    <Input type="number" placeholder="Width" value={newSize.width} onChange={e => setNewSize(s => ({ ...s, width: e.target.value }))} />
+                    <Input type="number" placeholder="Height" value={newSize.height} onChange={e => setNewSize(s => ({ ...s, height: e.target.value }))} />
+                  </div>
+                  <Button variant="outline" size="sm" onClick={addImageSize}><Plus className="h-4 w-4 mr-1" />Add Size</Button>
+                </div>
+
                 <Button onClick={saveSettings} disabled={settingsLoading}>{settingsLoading ? 'Saving...' : 'Save Settings'}</Button>
               </CardContent>
             </Card>
