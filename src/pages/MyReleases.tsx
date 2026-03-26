@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { StatusBadge } from '@/components/StatusBadge';
-import { Loader2, Music, ChevronDown, ChevronRight, Trash2, Eye, Pencil, Users, Download } from 'lucide-react';
+import { Loader2, Music, ChevronDown, ChevronRight, Trash2, Eye, Pencil, Users, Download, CheckSquare, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -72,6 +72,23 @@ export default function MyReleases() {
   const [deleteRelease, setDeleteRelease] = useState<Release | null>(null);
   const [releasePage, setReleasePage] = useState(0);
   const [releasePageSize, setReleasePageSize] = useState<number | 'all'>(10);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.size === releases.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(releases.map((r) => r.id)));
+    }
+  };
 
   const fetchReleases = async () => {
     if (!effectiveUserId) return;
@@ -147,7 +164,8 @@ export default function MyReleases() {
   };
 
   const exportCSV = () => {
-    if (releases.length === 0) { toast.error('No releases to export'); return; }
+    const data = selected.size > 0 ? releases.filter((r) => selected.has(r.id)) : releases;
+    if (data.length === 0) { toast.error('No releases to export'); return; }
 
     const headers = [
       'Release Name', 'Release Type', 'Content Type', 'UPC', 'Status',
@@ -164,7 +182,7 @@ export default function MyReleases() {
     const fmt = (s: string) => s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
     const rows: string[][] = [];
-    releases.forEach((r) => {
+    data.forEach((r) => {
       const releaseFields = [
         getReleaseName(r), fmt(r.release_type), fmt(r.content_type), r.upc || '', fmt(r.status),
         r.release_date, fmt(r.store_selection), r.copyright_line || '', r.phonogram_line || '',
@@ -199,7 +217,7 @@ export default function MyReleases() {
     a.download = `my-releases-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success(`Exported ${releases.length} release(s)`);
+    toast.success(`Exported ${data.length} release(s)`);
   };
 
   const handleDelete = async () => {
@@ -235,7 +253,7 @@ export default function MyReleases() {
         </div>
         {releases.length > 0 && (
           <Button variant="outline" size="sm" onClick={exportCSV}>
-            <Download className="h-4 w-4" /> Export CSV
+            <Download className="h-4 w-4" /> Export {selected.size > 0 ? `${selected.size} Selected` : 'All'} CSV
           </Button>
         )}
       </div>
@@ -257,6 +275,12 @@ export default function MyReleases() {
               <GlassCard key={release.id} className="animate-fade-in">
                 {/* Release header */}
                 <div className="flex items-center gap-4">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toggleSelect(release.id); }}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    {selected.has(release.id) ? <CheckSquare className="h-5 w-5 text-primary" /> : <Square className="h-5 w-5" />}
+                  </button>
                   <button onClick={() => setExpandedId(isExpanded ? null : release.id)} className="text-muted-foreground hover:text-foreground">
                     {isExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
                   </button>
