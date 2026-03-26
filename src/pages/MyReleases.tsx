@@ -72,6 +72,23 @@ export default function MyReleases() {
   const [deleteRelease, setDeleteRelease] = useState<Release | null>(null);
   const [releasePage, setReleasePage] = useState(0);
   const [releasePageSize, setReleasePageSize] = useState<number | 'all'>(10);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.size === releases.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(releases.map((r) => r.id)));
+    }
+  };
 
   const fetchReleases = async () => {
     if (!effectiveUserId) return;
