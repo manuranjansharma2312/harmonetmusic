@@ -12,6 +12,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useImpersonate } from '@/hooks/useImpersonate';
 import { toast } from 'sonner';
 import { Sparkles, CreditCard, History, Image as ImageIcon, Upload, CheckCircle, Loader2, Download, Wand2, X, Paperclip } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
