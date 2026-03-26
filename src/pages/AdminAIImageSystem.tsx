@@ -355,7 +355,12 @@ export default function AdminAIImageSystem() {
           <TabsContent value="credits">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>User Credits</CardTitle>
+                <div className="flex items-center gap-3">
+                  <CardTitle>User Credits</CardTitle>
+                  {aiSettings.lifetime_free_enabled && (
+                    <Badge className="bg-green-600 text-white">Lifetime Free Active — All users have unlimited credits</Badge>
+                  )}
+                </div>
                 <Button size="sm" onClick={() => setManualCreditModal(true)}><Plus className="h-4 w-4 mr-1" />Add Credits</Button>
               </CardHeader>
               <CardContent>
@@ -373,9 +378,9 @@ export default function AdminAIImageSystem() {
                       {credits.map(c => (
                         <TableRow key={c.id}>
                           <TableCell>{getUserName(c.user_id)}</TableCell>
-                          <TableCell>{c.total_credits}</TableCell>
+                          <TableCell>{aiSettings.lifetime_free_enabled && (aiSettings.lifetime_free_all_users || aiSettings.lifetime_free_user_ids.includes(c.user_id)) ? <span className="text-green-600 font-bold">Unlimited</span> : c.total_credits}</TableCell>
                           <TableCell>{c.used_credits}</TableCell>
-                          <TableCell className="font-semibold">{c.total_credits - c.used_credits}</TableCell>
+                          <TableCell className="font-semibold">{aiSettings.lifetime_free_enabled && (aiSettings.lifetime_free_all_users || aiSettings.lifetime_free_user_ids.includes(c.user_id)) ? <span className="text-green-600 font-bold">Unlimited</span> : c.total_credits - c.used_credits}</TableCell>
                         </TableRow>
                       ))}
                       {credits.length === 0 && <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">No credit records</TableCell></TableRow>}
