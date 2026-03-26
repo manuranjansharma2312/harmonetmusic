@@ -1,6 +1,6 @@
 /**
- * Adds the Harmonet Music logo as a watermark to a base64 image.
- * Places a subtle dark gradient banner at the bottom with the logo centered.
+ * Adds the Harmonet Music logo as a small, always-visible watermark
+ * in the bottom-right corner — similar to how Gemini brands its outputs.
  */
 export async function addWatermark(imageDataUrl: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -19,20 +19,34 @@ export async function addWatermark(imageDataUrl: string): Promise<string> {
         // Draw the generated image
         ctx.drawImage(img, 0, 0);
 
-        // Dark gradient banner at the bottom for logo visibility
-        const bannerHeight = Math.round(img.height * 0.12);
-        const gradient = ctx.createLinearGradient(0, img.height - bannerHeight * 1.5, 0, img.height);
-        gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
-        gradient.addColorStop(0.4, 'rgba(0, 0, 0, 0.5)');
-        gradient.addColorStop(1, 'rgba(0, 0, 0, 0.75)');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, img.height - bannerHeight * 1.5, img.width, bannerHeight * 1.5);
-
-        // Calculate logo size — 30% of image width, centered in the banner
-        const logoWidth = Math.round(img.width * 0.30);
+        // Small logo in bottom-right corner (like Gemini style)
+        const logoWidth = Math.round(img.width * 0.18);
         const logoHeight = Math.round((logo.height / logo.width) * logoWidth);
-        const x = (img.width - logoWidth) / 2;
-        const y = img.height - bannerHeight / 2 - logoHeight / 2;
+        const margin = Math.round(img.width * 0.025);
+        const x = img.width - logoWidth - margin;
+        const y = img.height - logoHeight - margin;
+
+        // Pill-shaped frosted background for visibility on ANY image
+        const padX = Math.round(logoWidth * 0.12);
+        const padY = Math.round(logoHeight * 0.2);
+        const bgX = x - padX;
+        const bgY = y - padY;
+        const bgW = logoWidth + padX * 2;
+        const bgH = logoHeight + padY * 2;
+        const bgRadius = Math.round(bgH * 0.3);
+
+        // Dark semi-transparent backdrop
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+        ctx.beginPath();
+        ctx.roundRect(bgX, bgY, bgW, bgH, bgRadius);
+        ctx.fill();
+
+        // Subtle light border for extra pop
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(bgX, bgY, bgW, bgH, bgRadius);
+        ctx.stroke();
 
         // Draw logo at full opacity
         ctx.drawImage(logo, x, y, logoWidth, logoHeight);
