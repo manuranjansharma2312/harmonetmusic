@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { WorldMapChart } from '@/components/WorldMapChart';
 import { useQuery } from '@tanstack/react-query';
 import { NoticePopup } from '@/components/NoticePopup';
@@ -79,6 +79,9 @@ export default function UserDashboard() {
   const [hiddenCut, setHiddenCut] = useState(0);
   const [subLabelCut, setSubLabelCut] = useState(0);
   const [isSubLabelUser, setIsSubLabelUser] = useState(false);
+  const refreshTimeoutRef = useRef<number | null>(null);
+  const isFetchingRef = useRef(false);
+  const shouldRefetchRef = useRef(false);
 
   const effectiveUserId = isImpersonating ? impersonatedUserId : user?.id;
   const effectiveCut = getEffectiveRevenueCutPercent({ hiddenCut, subLabelCut, isSubLabel: isSubLabelUser });
@@ -89,173 +92,219 @@ export default function UserDashboard() {
   );
   const availableRevenue = Math.max(calculateAvailableBalance(netRevenue, withdrawalBalance.paid, withdrawalBalance.pending), 0);
 
+  const fetchAll = useCallback(async () => {
+    if (!effectiveUserId) return;
+    if (isFetchingRef.current) {
+      shouldRefetchRef.current = true;
+      return;
+    }
+
+    isFetchingRef.current = true;
+
+    try {
+      const [releasesRes, profileRes, subLabelRes, withdrawalRes, recentReleasesRes] = await Promise.all([
+        supabase.from('releases').select('status').eq('user_id', effectiveUserId),
+        supabase.from('profiles').select('display_id, hidden_cut_percent').eq('user_id', effectiveUserId).single(),
+        supabase.from('sub_labels').select('percentage_cut').eq('sub_user_id', effectiveUserId).maybeSingle(),
+        supabase.from('withdrawal_requests').select('status, amount').eq('user_id', effectiveUserId),
+        supabase.from('releases').select('id, album_name, ep_name, content_type, status, created_at, poster_url').eq('user_id', effectiveUserId).order('created_at', { ascending: false }).limit(5),
+      ]);
+
+      if (releasesRes.data) {
+        const d = releasesRes.data;
+        setReleaseStats({
+          total: d.length,
+          pending: d.filter((s) => s.status === 'pending').length,
+          approved: d.filter((s) => s.status === 'approved').length,
+          rejected: d.filter((s) => s.status === 'rejected').length,
+        });
+      }
+
+      setDisplayId(profileRes.data ? (profileRes.data as any).display_id : null);
+
+      const hiddenCutPercent = profileRes.data ? Number((profileRes.data as any).hidden_cut_percent || 0) : 0;
+      const hasSubLabel = Boolean(subLabelRes.data);
+      const subLabelCutPercent = Number(subLabelRes.data?.percentage_cut || 0);
+      const effectiveCutPercent = getEffectiveRevenueCutPercent({
+        hiddenCut: hiddenCutPercent,
+        subLabelCut: subLabelCutPercent,
+        isSubLabel: hasSubLabel,
+      });
+      const shouldApplyCut = shouldApplyRevenueCut({ role, currentUserId: user?.id, activeUserId: effectiveUserId });
+
+      setHiddenCut(hiddenCutPercent);
+      setSubLabelCut(subLabelCutPercent);
+      setIsSubLabelUser(hasSubLabel);
+
+      let reportData: any[] = [];
+      let ytReportData: any[] = [];
+
+      if (role === 'admin' && isImpersonating && impersonatedUserId) {
+        const { data: subLabels } = await supabase
+          .from('sub_labels')
+          .select('sub_user_id')
+          .eq('parent_user_id', effectiveUserId)
+          .eq('status', 'active');
+
+        const subUserIds = (subLabels || []).map((sl) => sl.sub_user_id).filter(Boolean) as string[];
+        const allUserIds = [effectiveUserId, ...subUserIds];
+
+        const [{ data: trackRows }, { data: songRows }] = await Promise.all([
+          supabase.from('tracks').select('isrc').in('user_id', allUserIds),
+          supabase.from('songs').select('isrc').in('user_id', allUserIds),
+        ]);
+
+        const ownedIsrcs = [...new Set(
+          [...(trackRows ?? []), ...(songRows ?? [])]
+            .map((row) => (row.isrc || '').trim().toUpperCase())
+            .filter(Boolean),
+        )];
+
+        if (ownedIsrcs.length > 0) {
+          const [{ data: ottData }, { data: ytData }] = await Promise.all([
+            supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country').in('isrc', ownedIsrcs),
+            supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country').in('isrc', ownedIsrcs),
+          ]);
+          reportData = ottData || [];
+          ytReportData = ytData || [];
+        }
+      } else {
+        const [reportRes, ytReportRes] = await Promise.all([
+          supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country').eq('user_id', effectiveUserId),
+          supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country').eq('user_id', effectiveUserId),
+        ]);
+        reportData = reportRes.data || [];
+        ytReportData = ytReportRes.data || [];
+      }
+
+      const allReports = [...reportData, ...ytReportData];
+
+      if (allReports.length > 0) {
+        let totalRev = 0;
+        let totalStr = 0;
+        let totalDl = 0;
+        const monthMap: Record<string, { revenue: number; streams: number }> = {};
+        const storeMap: Record<string, number> = {};
+        const trackMap: Record<string, number> = {};
+        const countryMap: Record<string, number> = {};
+
+        allReports.forEach((r: any) => {
+          const grossRevenue = Number(r.net_generated_revenue || 0);
+          const rev = applyRevenueCutToAmount(grossRevenue, effectiveCutPercent, shouldApplyCut);
+          const str = Number(r.streams || 0);
+          const dl = Number(r.downloads || 0);
+          totalRev += grossRevenue;
+          totalStr += str;
+          totalDl += dl;
+
+          const month = r.reporting_month;
+          if (!monthMap[month]) monthMap[month] = { revenue: 0, streams: 0 };
+          monthMap[month].revenue += rev;
+          monthMap[month].streams += str;
+
+          if (r.store) storeMap[r.store] = (storeMap[r.store] || 0) + str;
+          if (r.track) trackMap[r.track] = (trackMap[r.track] || 0) + str;
+          if (r.country) countryMap[r.country] = (countryMap[r.country] || 0) + str;
+        });
+
+        setTotalRevenue(Math.round(totalRev * 100) / 100);
+        setTotalStreams(totalStr);
+        setTotalDownloads(totalDl);
+
+        setMonthlyRevenue(
+          Object.entries(monthMap)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .slice(-8)
+            .map(([month, data]) => ({
+              month: month.length > 7 ? month.substring(0, 7) : month,
+              revenue: Math.round(data.revenue * 100) / 100,
+              streams: data.streams,
+            })),
+        );
+
+        setTopStores(
+          Object.entries(storeMap)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 6)
+            .map(([name, value]) => ({ name, value, color: STORE_COLORS[name] || CHART_COLORS[0] })),
+        );
+
+        setTopTracks(
+          Object.entries(trackMap)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 5)
+            .map(([name, streams]) => ({ name: name.length > 22 ? `${name.substring(0, 22)}…` : name, streams })),
+        );
+
+        setCountryData(
+          Object.entries(countryMap)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 6)
+            .map(([name, streams]) => ({ name, streams })),
+        );
+      } else {
+        setTotalRevenue(0);
+        setTotalStreams(0);
+        setTotalDownloads(0);
+        setMonthlyRevenue([]);
+        setTopStores([]);
+        setTopTracks([]);
+        setCountryData([]);
+      }
+
+      if (withdrawalRes.data) {
+        setWithdrawalBalance(summarizeWithdrawals(withdrawalRes.data));
+      }
+
+      setRecentReleases(recentReleasesRes.data || []);
+    } catch (error) {
+      console.error('Failed to load dashboard', error);
+      toast.error('Failed to load dashboard data. Please refresh and try again.');
+    } finally {
+      setLoading(false);
+      isFetchingRef.current = false;
+
+      if (shouldRefetchRef.current) {
+        shouldRefetchRef.current = false;
+        void fetchAll();
+      }
+    }
+  }, [effectiveUserId, impersonatedUserId, isImpersonating, role, user?.id]);
+
+  const scheduleFetchAll = useCallback(() => {
+    if (refreshTimeoutRef.current !== null) {
+      window.clearTimeout(refreshTimeoutRef.current);
+    }
+
+    refreshTimeoutRef.current = window.setTimeout(() => {
+      refreshTimeoutRef.current = null;
+      void fetchAll();
+    }, 250);
+  }, [fetchAll]);
+
   useEffect(() => {
     if (!effectiveUserId) return;
-    fetchAll();
+
+    setLoading(true);
+    void fetchAll();
 
     const channel = supabase
-      .channel('dashboard-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'report_entries' }, () => fetchAll())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'youtube_report_entries' }, () => fetchAll())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawal_requests' }, () => fetchAll())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'releases' }, () => fetchAll())
+      .channel(`dashboard-realtime-${effectiveUserId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'report_entries' }, scheduleFetchAll)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'youtube_report_entries' }, scheduleFetchAll)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawal_requests' }, scheduleFetchAll)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'releases' }, scheduleFetchAll)
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
-  }, [effectiveUserId]);
-
-  async function fetchAll() {
-    if (!effectiveUserId) return;
-
-    const [releasesRes, profileRes, subLabelRes, withdrawalRes, recentReleasesRes] = await Promise.all([
-      supabase.from('releases').select('status').eq('user_id', effectiveUserId),
-      supabase.from('profiles').select('display_id, hidden_cut_percent').eq('user_id', effectiveUserId).single(),
-      supabase.from('sub_labels').select('percentage_cut').eq('sub_user_id', effectiveUserId).maybeSingle(),
-      supabase.from('withdrawal_requests').select('status, amount').eq('user_id', effectiveUserId),
-      supabase.from('releases').select('id, album_name, ep_name, content_type, status, created_at, poster_url').eq('user_id', effectiveUserId).order('created_at', { ascending: false }).limit(5),
-    ]);
-
-    if (releasesRes.data) {
-      const d = releasesRes.data;
-      setReleaseStats({
-        total: d.length,
-        pending: d.filter(s => s.status === 'pending').length,
-        approved: d.filter(s => s.status === 'approved').length,
-        rejected: d.filter(s => s.status === 'rejected').length,
-      });
-    }
-
-    setDisplayId(profileRes.data ? (profileRes.data as any).display_id : null);
-
-    const hiddenCutPercent = profileRes.data ? Number((profileRes.data as any).hidden_cut_percent || 0) : 0;
-    const hasSubLabel = Boolean(subLabelRes.data);
-    const subLabelCutPercent = Number(subLabelRes.data?.percentage_cut || 0);
-    const effectiveCutPercent = getEffectiveRevenueCutPercent({
-      hiddenCut: hiddenCutPercent,
-      subLabelCut: subLabelCutPercent,
-      isSubLabel: hasSubLabel,
-    });
-    const shouldApplyCut = shouldApplyRevenueCut({ role, currentUserId: user?.id, activeUserId: effectiveUserId });
-
-    setHiddenCut(hiddenCutPercent);
-    setSubLabelCut(subLabelCutPercent);
-    setIsSubLabelUser(hasSubLabel);
-
-    let reportData: any[] = [];
-    let ytReportData: any[] = [];
-
-    if (role === 'admin' && isImpersonating && impersonatedUserId) {
-      const { data: subLabels } = await supabase
-        .from('sub_labels')
-        .select('sub_user_id')
-        .eq('parent_user_id', effectiveUserId)
-        .eq('status', 'active');
-
-      const subUserIds = (subLabels || []).map(sl => sl.sub_user_id).filter(Boolean) as string[];
-      const allUserIds = [effectiveUserId, ...subUserIds];
-
-      const [{ data: trackRows }, { data: songRows }] = await Promise.all([
-        supabase.from('tracks').select('isrc').in('user_id', allUserIds),
-        supabase.from('songs').select('isrc').in('user_id', allUserIds),
-      ]);
-
-      const ownedIsrcs = [...new Set(
-        [...(trackRows ?? []), ...(songRows ?? [])]
-          .map(row => (row.isrc || '').trim().toUpperCase())
-          .filter(Boolean)
-      )];
-
-      if (ownedIsrcs.length > 0) {
-        const [{ data: ottData }, { data: ytData }] = await Promise.all([
-          supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country').in('isrc', ownedIsrcs),
-          supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country').in('isrc', ownedIsrcs),
-        ]);
-        reportData = ottData || [];
-        ytReportData = ytData || [];
+    return () => {
+      if (refreshTimeoutRef.current !== null) {
+        window.clearTimeout(refreshTimeoutRef.current);
+        refreshTimeoutRef.current = null;
       }
-    } else {
-      const [reportRes, ytReportRes] = await Promise.all([
-        supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country'),
-        supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country'),
-      ]);
-      reportData = reportRes.data || [];
-      ytReportData = ytReportRes.data || [];
-    }
 
-    const allReports = [...reportData, ...ytReportData];
-
-    if (allReports.length > 0) {
-      let totalRev = 0;
-      let totalStr = 0;
-      let totalDl = 0;
-      const monthMap: Record<string, { revenue: number; streams: number }> = {};
-      const storeMap: Record<string, number> = {};
-      const trackMap: Record<string, number> = {};
-      const countryMap: Record<string, number> = {};
-
-      allReports.forEach((r: any) => {
-        const grossRevenue = Number(r.net_generated_revenue || 0);
-        const rev = applyRevenueCutToAmount(grossRevenue, effectiveCutPercent, shouldApplyCut);
-        const str = Number(r.streams || 0);
-        const dl = Number(r.downloads || 0);
-        totalRev += grossRevenue;
-        totalStr += str;
-        totalDl += dl;
-
-        const month = r.reporting_month;
-        if (!monthMap[month]) monthMap[month] = { revenue: 0, streams: 0 };
-        monthMap[month].revenue += rev;
-        monthMap[month].streams += str;
-
-        if (r.store) storeMap[r.store] = (storeMap[r.store] || 0) + str;
-        if (r.track) trackMap[r.track] = (trackMap[r.track] || 0) + str;
-        if (r.country) countryMap[r.country] = (countryMap[r.country] || 0) + str;
-      });
-
-      setTotalRevenue(Math.round(totalRev * 100) / 100);
-      setTotalStreams(totalStr);
-      setTotalDownloads(totalDl);
-
-      setMonthlyRevenue(
-        Object.entries(monthMap).sort(([a], [b]) => a.localeCompare(b)).slice(-8)
-          .map(([month, data]) => ({
-            month: month.length > 7 ? month.substring(0, 7) : month,
-            revenue: Math.round(data.revenue * 100) / 100,
-            streams: data.streams,
-          }))
-      );
-
-      setTopStores(
-        Object.entries(storeMap).sort(([, a], [, b]) => b - a).slice(0, 6)
-          .map(([name, value]) => ({ name, value, color: STORE_COLORS[name] || CHART_COLORS[0] }))
-      );
-
-      setTopTracks(
-        Object.entries(trackMap).sort(([, a], [, b]) => b - a).slice(0, 5)
-          .map(([name, streams]) => ({ name: name.length > 22 ? name.substring(0, 22) + '…' : name, streams }))
-      );
-
-      setCountryData(
-        Object.entries(countryMap).sort(([, a], [, b]) => b - a).slice(0, 6)
-          .map(([name, streams]) => ({ name, streams }))
-      );
-    } else {
-      setTotalRevenue(0);
-      setTotalStreams(0);
-      setTotalDownloads(0);
-      setMonthlyRevenue([]);
-      setTopStores([]);
-      setTopTracks([]);
-      setCountryData([]);
-    }
-
-    if (withdrawalRes.data) {
-      setWithdrawalBalance(summarizeWithdrawals(withdrawalRes.data));
-    }
-
-    setRecentReleases(recentReleasesRes.data || []);
-    setLoading(false);
-  }
+      supabase.removeChannel(channel);
+    };
+  }, [effectiveUserId, fetchAll, scheduleFetchAll]);
 
   const copyUserId = () => {
     if (displayId) {
@@ -269,6 +318,20 @@ export default function UserDashboard() {
     navigate('/admin/users');
   };
 
+  const releaseStatusData = useMemo(
+    () =>
+      [
+        { name: 'Pending', value: releaseStats.pending, color: CHART_COLORS[1] },
+        { name: 'Approved', value: releaseStats.approved, color: CHART_COLORS[2] },
+        { name: 'Rejected', value: releaseStats.rejected, color: CHART_COLORS[0] },
+      ].filter((d) => d.value > 0),
+    [releaseStats],
+  );
+
+  const pendingReleases = useMemo(() => recentReleases.filter((r) => r.status === 'pending'), [recentReleases]);
+
+  const totalStoreStreams = useMemo(() => topStores.reduce((a, b) => a + b.value, 0), [topStores]);
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -279,21 +342,11 @@ export default function UserDashboard() {
     );
   }
 
-  const releaseStatusData = [
-    { name: 'Pending', value: releaseStats.pending, color: CHART_COLORS[1] },
-    { name: 'Approved', value: releaseStats.approved, color: CHART_COLORS[2] },
-    { name: 'Rejected', value: releaseStats.rejected, color: CHART_COLORS[0] },
-  ].filter(d => d.value > 0);
-
-  const pendingReleases = recentReleases.filter(r => r.status === 'pending');
-
   const getReleaseName = (r: any) => {
     if (r.content_type === 'album') return r.album_name || 'Untitled Album';
     if (r.content_type === 'ep') return r.ep_name || 'Untitled EP';
     return r.album_name || r.ep_name || 'Untitled Single';
   };
-
-  const totalStoreStreams = topStores.reduce((a, b) => a + b.value, 0);
 
   return (
     <DashboardLayout>
@@ -435,7 +488,7 @@ export default function UserDashboard() {
         </h3>
         {monthlyRevenue.length > 0 ? (
           <div className="h-52 sm:h-64">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" debounce={200}>
               <AreaChart data={monthlyRevenue}>
                 <defs>
                   <linearGradient id="userRevenueGrad" x1="0" y1="0" x2="0" y2="1">
@@ -453,8 +506,8 @@ export default function UserDashboard() {
                 <YAxis yAxisId="right" orientation="right" tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} width={50} axisLine={{ stroke: 'hsl(0 0% 20%)' }} />
                 <Tooltip contentStyle={tooltipStyle} />
                 <Legend wrapperStyle={{ fontSize: '11px', color: 'hsl(0 0% 60%)' }} />
-                <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(0, 67%, 40%)" fill="url(#userRevenueGrad)" strokeWidth={2.5} name="Revenue (₹)" dot={{ r: 3, fill: 'hsl(0, 67%, 40%)' }} />
-                <Area yAxisId="right" type="monotone" dataKey="streams" stroke="hsl(200, 70%, 50%)" fill="url(#userStreamsGrad)" strokeWidth={2} name="Streams" dot={{ r: 2.5, fill: 'hsl(200, 70%, 50%)' }} />
+                <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(0, 67%, 40%)" fill="url(#userRevenueGrad)" strokeWidth={2.5} name="Revenue (₹)" dot={{ r: 3, fill: 'hsl(0, 67%, 40%)' }} isAnimationActive={false} />
+                <Area yAxisId="right" type="monotone" dataKey="streams" stroke="hsl(200, 70%, 50%)" fill="url(#userStreamsGrad)" strokeWidth={2} name="Streams" dot={{ r: 2.5, fill: 'hsl(200, 70%, 50%)' }} isAnimationActive={false} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -470,9 +523,9 @@ export default function UserDashboard() {
           {releaseStatusData.length > 0 ? (
             <>
               <div className="h-44 sm:h-52 relative">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" debounce={200}>
                   <PieChart>
-                    <Pie data={releaseStatusData} cx="50%" cy="50%" innerRadius={42} outerRadius={65} dataKey="value" strokeWidth={0} paddingAngle={3}>
+                    <Pie data={releaseStatusData} cx="50%" cy="50%" innerRadius={42} outerRadius={65} dataKey="value" strokeWidth={0} paddingAngle={3} isAnimationActive={false}>
                       {releaseStatusData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                     </Pie>
                     <Tooltip contentStyle={tooltipStyle} />

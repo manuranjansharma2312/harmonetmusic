@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react';
 import WorldMap from 'react-svg-worldmap';
 import { formatStreams } from '@/lib/formatNumbers';
 
@@ -75,15 +76,19 @@ interface WorldMapChartProps {
   className?: string;
 }
 
-export function WorldMapChart({ data, className }: WorldMapChartProps) {
-  const mapData = data
-    .map((d) => {
-      const code = getCountryCode(d.name);
-      return code ? { country: code.toLowerCase() as any, value: d.streams } : null;
-    })
-    .filter(Boolean) as any[];
+export const WorldMapChart = memo(function WorldMapChart({ data, className }: WorldMapChartProps) {
+  const mapData = useMemo(
+    () =>
+      data
+        .map((d) => {
+          const code = getCountryCode(d.name);
+          return code ? { country: code.toLowerCase(), value: d.streams } : null;
+        })
+        .filter(Boolean) as any[],
+    [data],
+  );
 
-  const maxStreams = Math.max(...data.map(d => d.streams), 1);
+  const maxStreams = useMemo(() => Math.max(...data.map((d) => d.streams), 1), [data]);
 
   return (
     <div className={className}>
@@ -99,24 +104,23 @@ export function WorldMapChart({ data, className }: WorldMapChartProps) {
           tooltipTextColor="hsl(0, 0%, 90%)"
         />
       </div>
-      {/* Legend list */}
       <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5">
-        {data.map((d, i) => {
+        {data.map((d) => {
           const pct = (d.streams / maxStreams) * 100;
           return (
             <div key={d.name} className="flex items-center gap-2 text-[10px] sm:text-xs">
               <div className="h-2 flex-1 max-w-[60px] rounded-full bg-muted/40 overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-primary transition-all"
-                  style={{ width: `${pct}%`, opacity: 0.5 + (pct / 200) }}
+                  className="h-full rounded-full bg-primary"
+                  style={{ width: `${pct}%`, opacity: 0.5 + pct / 200 }}
                 />
               </div>
               <span className="text-muted-foreground truncate">{d.name}</span>
-              <span className="text-foreground font-medium ml-auto">{formatStreams(d.streams)}</span>
+              <span className="ml-auto text-foreground font-medium">{formatStreams(d.streams)}</span>
             </div>
           );
         })}
       </div>
     </div>
   );
-}
+});
