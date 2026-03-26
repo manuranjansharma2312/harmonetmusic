@@ -485,6 +485,68 @@ export default function AdminAIImageSystem() {
                   <Button variant="outline" size="sm" onClick={addImageSize}><Plus className="h-4 w-4 mr-1" />Add Size</Button>
                 </div>
 
+                {/* Lifetime Free Plan */}
+                <div className="space-y-3 pt-2 border-t">
+                  <Label className="text-base">Lifetime Free Plan (Unlimited)</Label>
+                  <p className="text-xs text-muted-foreground">When enabled, selected users (or all users) can generate unlimited images without credits. Premium plans will be hidden for those users.</p>
+                  
+                  <div className="flex items-center justify-between rounded-lg border p-3">
+                    <div>
+                      <Label>Enable Lifetime Free Plan</Label>
+                      <p className="text-xs text-muted-foreground">Turn on/off the unlimited free generation.</p>
+                    </div>
+                    <Switch checked={aiSettings.lifetime_free_enabled} onCheckedChange={v => setAiSettings(s => ({ ...s, lifetime_free_enabled: v }))} />
+                  </div>
+
+                  {aiSettings.lifetime_free_enabled && (
+                    <>
+                      <div className="flex items-center justify-between rounded-lg border p-3">
+                        <div>
+                          <Label>Apply to All Users</Label>
+                          <p className="text-xs text-muted-foreground">If enabled, all users get unlimited free generation. If disabled, only specific users below.</p>
+                        </div>
+                        <Switch checked={aiSettings.lifetime_free_all_users} onCheckedChange={v => setAiSettings(s => ({ ...s, lifetime_free_all_users: v }))} />
+                      </div>
+
+                      {!aiSettings.lifetime_free_all_users && (
+                        <div className="space-y-2">
+                          <Label>Specific Users</Label>
+                          <Input placeholder="Search users by name or ID..." value={lifetimeFreeSearch} onChange={e => setLifetimeFreeSearch(e.target.value)} />
+                          <div className="max-h-[200px] overflow-auto border rounded-lg">
+                            {profiles
+                              .filter(p => {
+                                const q = lifetimeFreeSearch.toLowerCase();
+                                return !q || p.legal_name.toLowerCase().includes(q) || String(p.display_id).includes(q) || p.email.toLowerCase().includes(q);
+                              })
+                              .slice(0, 50)
+                              .map(p => {
+                                const isSelected = aiSettings.lifetime_free_user_ids.includes(p.user_id);
+                                return (
+                                  <div key={p.user_id} className={`flex items-center justify-between px-3 py-2 text-sm cursor-pointer hover:bg-muted/50 ${isSelected ? 'bg-primary/10' : ''}`}
+                                    onClick={() => {
+                                      setAiSettings(s => ({
+                                        ...s,
+                                        lifetime_free_user_ids: isSelected
+                                          ? s.lifetime_free_user_ids.filter(id => id !== p.user_id)
+                                          : [...s.lifetime_free_user_ids, p.user_id],
+                                      }));
+                                    }}
+                                  >
+                                    <span>{p.legal_name} (#{p.display_id})</span>
+                                    {isSelected && <CheckCircle className="h-4 w-4 text-primary" />}
+                                  </div>
+                                );
+                              })}
+                          </div>
+                          {aiSettings.lifetime_free_user_ids.length > 0 && (
+                            <p className="text-xs text-muted-foreground">{aiSettings.lifetime_free_user_ids.length} user(s) selected</p>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+
                 <Button onClick={saveSettings} disabled={settingsLoading}>{settingsLoading ? 'Saving...' : 'Save Settings'}</Button>
               </CardContent>
             </Card>
