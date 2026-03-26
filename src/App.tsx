@@ -56,6 +56,8 @@ const PromotionTools = lazy(() => import("./pages/PromotionTools"));
 const BankDetails = lazy(() => import("./pages/BankDetails"));
 const ContactSupport = lazy(() => import("./pages/ContactSupport"));
 const AdminContactSupport = lazy(() => import("./pages/AdminContactSupport"));
+const AdminAIImageSystem = lazy(() => import("./pages/AdminAIImageSystem"));
+const AIImageGeneration = lazy(() => import("./pages/AIImageGeneration"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
