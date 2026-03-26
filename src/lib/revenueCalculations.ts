@@ -14,7 +14,13 @@ export function getEffectiveRevenueCutPercent({
   subLabelCut: number;
   isSubLabel: boolean;
 }): number {
-  return normalizePercent(isSubLabel ? subLabelCut : hiddenCut);
+  if (!isSubLabel) return normalizePercent(hiddenCut);
+  // Stacked: Admin cut first, then Main Label cut on the remainder
+  // combined = 1 - (1 - adminCut/100) * (1 - parentCut/100)
+  const a = normalizePercent(hiddenCut) / 100;
+  const b = normalizePercent(subLabelCut) / 100;
+  const combined = (1 - (1 - a) * (1 - b)) * 100;
+  return normalizePercent(combined);
 }
 
 export function shouldApplyRevenueCut({

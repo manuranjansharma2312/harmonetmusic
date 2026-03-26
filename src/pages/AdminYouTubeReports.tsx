@@ -262,17 +262,27 @@ export default function AdminYouTubeReports() {
       const cutMap: Record<string, number> = {};
       (profiles || []).forEach((p: any) => { cutMap[p.user_id] = Number(p.hidden_cut_percent) || 0; });
 
-      // Also fetch sub-label cuts
-      const { data: subLabels } = await supabase.from('sub_labels').select('sub_user_id, percentage_cut').eq('status', 'active');
-      const subLabelCutMap: Record<string, number> = {};
-      (subLabels || []).forEach((sl: any) => { if (sl.sub_user_id) subLabelCutMap[sl.sub_user_id] = Number(sl.percentage_cut) || 0; });
+      // Also fetch sub-label cuts (with parent info for stacked cut)
+      const { data: subLabels } = await supabase.from('sub_labels').select('sub_user_id, parent_user_id, percentage_cut').eq('status', 'active');
+      const subLabelMap: Record<string, { parentCut: number; parentUserId: string }> = {};
+      (subLabels || []).forEach((sl: any) => {
+        if (sl.sub_user_id) subLabelMap[sl.sub_user_id] = { parentCut: Number(sl.percentage_cut) || 0, parentUserId: sl.parent_user_id };
+      });
 
       const toInsert = preview
         .map((row) => {
           const isrc = normalizeIsrc(row['ISRC']);
           const userId = isrc ? isrcMap[isrc] : null;
           if (!userId) return null;
-          const snapshotCut = subLabelCutMap[userId] !== undefined ? subLabelCutMap[userId] : (cutMap[userId] || 0);
+          let snapshotCut: number;
+          const subInfo = subLabelMap[userId];
+          if (subInfo) {
+            const adminCutOnParent = cutMap[subInfo.parentUserId] || 0;
+            const parentCutOnSub = subInfo.parentCut;
+            snapshotCut = (1 - (1 - adminCutOnParent / 100) * (1 - parentCutOnSub / 100)) * 100;
+          } else {
+            snapshotCut = cutMap[userId] || 0;
+          }
           return {
             user_id: userId,
             reporting_month: row['Reporting Month'] || '',
