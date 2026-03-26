@@ -22,7 +22,7 @@ type AIGenImage = { id: string; prompt: string; image_url: string | null; credit
 
 export default function AIImageGeneration() {
   const { user } = useAuth();
-  const [tab, setTab] = useState('plans');
+  const [tab, setTab] = useState('generate');
 
   // Plans
   const [plans, setPlans] = useState<AIPlan[]>([]);
