@@ -78,6 +78,13 @@ export default function AIImageGeneration() {
     if (imagesRes.data) setImages(imagesRes.data as any);
     if (settingsRes.data) { setQrCodeUrl((settingsRes.data as any).qr_code_url); setTaxes((settingsRes.data as any).taxes || []); }
 
+    // Check lifetime free status
+    const lfEnabled = (aiSettingsRes.data as any)?.lifetime_free_enabled ?? false;
+    const lfAllUsers = (aiSettingsRes.data as any)?.lifetime_free_all_users ?? true;
+    const lfUserIds: string[] = (aiSettingsRes.data as any)?.lifetime_free_user_ids || [];
+    const userIsLifetimeFree = lfEnabled && (lfAllUsers || (activeUserId ? lfUserIds.includes(activeUserId) : false));
+    setIsLifetimeFree(userIsLifetimeFree);
+
     // Handle credits & free credits auto-provisioning
     const freeCredits = (aiSettingsRes.data as any)?.free_credits || 0;
     setCreditsPerImage((aiSettingsRes.data as any)?.credits_per_image || 1);
