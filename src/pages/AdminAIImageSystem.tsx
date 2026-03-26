@@ -55,7 +55,7 @@ export default function AdminAIImageSystem() {
   const [activeUsers, setActiveUsers] = useState(0);
 
   // Settings
-  const [aiSettings, setAiSettings] = useState<{ credits_per_image: number; api_provider: string; is_enabled: boolean; free_credits: number; image_sizes: { label: string; ratio: string }[] }>({ credits_per_image: 1, api_provider: 'openai', is_enabled: true, free_credits: 0, image_sizes: [] });
+  const [aiSettings, setAiSettings] = useState<{ credits_per_image: number; api_provider: string; is_enabled: boolean; free_credits: number; image_sizes: { label: string; ratio: string }[]; lifetime_free_enabled: boolean; lifetime_free_all_users: boolean; lifetime_free_user_ids: string[] }>({ credits_per_image: 1, api_provider: 'openai', is_enabled: true, free_credits: 0, image_sizes: [], lifetime_free_enabled: false, lifetime_free_all_users: true, lifetime_free_user_ids: [] });
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [newSize, setNewSize] = useState({ label: '', ratio: '' });
 
