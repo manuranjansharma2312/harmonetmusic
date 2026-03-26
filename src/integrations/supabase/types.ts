@@ -858,10 +858,12 @@ export type Database = {
           ep_name: string | null
           id: string
           phonogram_line: string | null
+          platform_links: Json
           poster_url: string | null
           rejection_reason: string | null
           release_date: string
           release_type: string
+          slug: string | null
           status: string
           store_selection: string
           upc: string | null
@@ -876,10 +878,12 @@ export type Database = {
           ep_name?: string | null
           id?: string
           phonogram_line?: string | null
+          platform_links?: Json
           poster_url?: string | null
           rejection_reason?: string | null
           release_date: string
           release_type?: string
+          slug?: string | null
           status?: string
           store_selection?: string
           upc?: string | null
@@ -894,10 +898,12 @@ export type Database = {
           ep_name?: string | null
           id?: string
           phonogram_line?: string | null
+          platform_links?: Json
           poster_url?: string | null
           rejection_reason?: string | null
           release_date?: string
           release_type?: string
+          slug?: string | null
           status?: string
           store_selection?: string
           upc?: string | null
