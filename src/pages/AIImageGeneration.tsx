@@ -103,7 +103,7 @@ export default function AIImageGeneration() {
   };
 
   const submitOrder = async () => {
-    if (!purchaseModal || !user || !txId.trim()) return;
+    if (!purchaseModal || !activeUserId || !txId.trim()) return;
     setSubmitting(true);
     try {
       // Check duplicate transaction ID across tables
