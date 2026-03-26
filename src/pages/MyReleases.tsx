@@ -182,7 +182,7 @@ export default function MyReleases() {
     const fmt = (s: string) => s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
     const rows: string[][] = [];
-    releases.forEach((r) => {
+    data.forEach((r) => {
       const releaseFields = [
         getReleaseName(r), fmt(r.release_type), fmt(r.content_type), r.upc || '', fmt(r.status),
         r.release_date, fmt(r.store_selection), r.copyright_line || '', r.phonogram_line || '',
