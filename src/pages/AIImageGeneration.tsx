@@ -439,8 +439,8 @@ export default function AIImageGeneration() {
                         <CardContent className="p-3">
                           <p className="text-sm truncate">{img.prompt}</p>
                           <p className="text-xs text-muted-foreground">{format(new Date(img.created_at), 'dd MMM yyyy HH:mm')}</p>
-                          {isAfter(addHours(new Date(img.created_at), 24), new Date()) ? (
-                            <p className="text-xs text-orange-500 mt-1">⏳ Expires {formatDistanceToNow(addHours(new Date(img.created_at), 24), { addSuffix: true })}</p>
+                          {isAfter(addHours(new Date(img.created_at), 12), new Date()) ? (
+                            <p className="text-xs text-orange-500 mt-1">⏳ Expires {formatDistanceToNow(addHours(new Date(img.created_at), 12), { addSuffix: true })}</p>
                           ) : (
                             <p className="text-xs text-destructive mt-1">⚠️ Expired — will be removed soon</p>
                           )}
