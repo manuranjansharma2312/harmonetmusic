@@ -65,7 +65,7 @@ export default function AIImageGeneration() {
       supabase.from('ai_plan_orders').select('*, ai_plans(name, credits, price)').eq('user_id', user.id).order('created_at', { ascending: false }),
       supabase.from('ai_generated_images').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
       supabase.from('promotion_settings').select('qr_code_url, taxes').limit(1).maybeSingle(),
-      supabase.from('ai_settings').select('free_credits, credits_per_image').limit(1).maybeSingle(),
+      supabase.from('ai_settings').select('free_credits, credits_per_image, image_sizes').limit(1).maybeSingle(),
     ]);
     if (plansRes.data) setPlans(plansRes.data as any);
     if (ordersRes.data) setOrders(ordersRes.data as any);
