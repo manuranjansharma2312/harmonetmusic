@@ -433,7 +433,7 @@ export default function AdminAIImageSystem() {
                 </div>
                 <div>
                   <Label>Free Credits for New Users</Label>
-                  <Input type="number" min={0} value={aiSettings.free_credits} onChange={e => setAiSettings(s => ({ ...s, free_credits: Number(e.target.value) }))} />
+                  <Input type="text" inputMode="numeric" value={aiSettings.free_credits} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); setAiSettings(s => ({ ...s, free_credits: Number(v) || 0 })); }} />
                   <p className="text-xs text-muted-foreground mt-1">Each new user gets this many free credits automatically.</p>
                 </div>
                 <div>
@@ -443,7 +443,7 @@ export default function AdminAIImageSystem() {
                 </div>
                 <div>
                   <Label>Credits Per Image</Label>
-                  <Input type="number" min={1} value={aiSettings.credits_per_image} onChange={e => setAiSettings(s => ({ ...s, credits_per_image: Number(e.target.value) }))} />
+                  <Input type="text" inputMode="numeric" value={aiSettings.credits_per_image} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); setAiSettings(s => ({ ...s, credits_per_image: Number(v) || 1 })); }} />
                 </div>
 
                 {/* Image Sizes (Aspect Ratios) */}
@@ -480,8 +480,8 @@ export default function AdminAIImageSystem() {
           <div className="space-y-3">
             <div><Label>Plan Name *</Label><Input value={planForm.name} onChange={e => setPlanForm(f => ({ ...f, name: e.target.value }))} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Price (₹) *</Label><Input type="number" value={planForm.price} onChange={e => setPlanForm(f => ({ ...f, price: e.target.value }))} /></div>
-              <div><Label>Credits *</Label><Input type="number" value={planForm.credits} onChange={e => setPlanForm(f => ({ ...f, credits: e.target.value }))} /></div>
+              <div><Label>Price (₹) *</Label><Input type="text" inputMode="numeric" value={planForm.price} onChange={e => setPlanForm(f => ({ ...f, price: e.target.value.replace(/[^0-9.]/g, '') }))} /></div>
+              <div><Label>Credits *</Label><Input type="text" inputMode="numeric" value={planForm.credits} onChange={e => setPlanForm(f => ({ ...f, credits: e.target.value.replace(/[^0-9]/g, '') }))} /></div>
             </div>
             <div><Label>Description</Label><Textarea value={planForm.description} onChange={e => setPlanForm(f => ({ ...f, description: e.target.value }))} /></div>
             <div><Label>Tag (e.g. Most Popular)</Label><Input value={planForm.tag} onChange={e => setPlanForm(f => ({ ...f, tag: e.target.value }))} /></div>
@@ -524,7 +524,7 @@ export default function AdminAIImageSystem() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Credits *</Label><Input type="number" min={1} value={manualForm.credits} onChange={e => setManualForm(f => ({ ...f, credits: e.target.value }))} /></div>
+            <div><Label>Credits *</Label><Input type="text" inputMode="numeric" value={manualForm.credits} onChange={e => setManualForm(f => ({ ...f, credits: e.target.value.replace(/[^0-9]/g, '') }))} /></div>
             <div><Label>Note (Optional)</Label><Textarea value={manualForm.note} onChange={e => setManualForm(f => ({ ...f, note: e.target.value }))} placeholder="Reason for adding credits..." /></div>
           </div>
           <DialogFooter>
