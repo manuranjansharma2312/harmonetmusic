@@ -79,7 +79,7 @@ export default function AIImageGeneration() {
     setCreditsPerImage((aiSettingsRes.data as any)?.credits_per_image || 1);
     const sizes = (aiSettingsRes.data as any)?.image_sizes || [];
     setImageSizes(sizes);
-    if (sizes.length > 0 && !selectedSize) setSelectedSize(`${sizes[0].width}x${sizes[0].height}`);
+    if (sizes.length > 0 && !selectedSize) setSelectedSize(sizes[0].ratio);
     if (credRes.data) {
       setTotalCredits((credRes.data as any).total_credits);
       setUsedCredits((credRes.data as any).used_credits);
