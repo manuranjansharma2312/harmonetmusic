@@ -12,7 +12,8 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { Sparkles, CreditCard, History, ImageIcon, Upload, CheckCircle } from 'lucide-react';
+import { Sparkles, CreditCard, History, Image as ImageIcon, Upload, CheckCircle, Loader2, Download, Wand2 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 
 type AIPlan = { id: string; name: string; price: number; credits: number; description: string; tag: string | null };
