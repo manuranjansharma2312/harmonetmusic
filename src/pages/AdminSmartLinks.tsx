@@ -139,7 +139,36 @@ export default function AdminSmartLinks() {
       .from('smart_links')
       .select('id, title, artist_name, poster_url, platform_links, slug, created_at, user_id')
       .order('created_at', { ascending: false });
-    setCustomLinks((data as any) || []);
+    const links = (data as any) || [];
+
+    // Fetch profiles for all unique user_ids
+    const userIds = [...new Set(links.map((l: any) => l.user_id))];
+    let profilesMap: Record<string, any> = {};
+    let subLabelsMap: Record<string, any> = {};
+
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, legal_name, artist_name, record_label_name, user_type, display_id')
+        .in('user_id', userIds);
+      (profiles || []).forEach((p: any) => { profilesMap[p.user_id] = p; });
+
+      // Check if any are sub-labels
+      const { data: subLabels } = await supabase
+        .from('sub_labels')
+        .select('sub_user_id, sub_label_name, parent_label_name, parent_user_id, status')
+        .in('sub_user_id', userIds)
+        .eq('status', 'active');
+      (subLabels || []).forEach((sl: any) => { if (sl.sub_user_id) subLabelsMap[sl.sub_user_id] = sl; });
+    }
+
+    const enriched = links.map((l: any) => ({
+      ...l,
+      _profile: profilesMap[l.user_id] || null,
+      _subLabel: subLabelsMap[l.user_id] || null,
+    }));
+
+    setCustomLinks(enriched);
     setCustomLoading(false);
   };
 
