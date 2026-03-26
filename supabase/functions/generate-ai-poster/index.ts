@@ -80,10 +80,48 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    const textResponse = data.choices?.[0]?.message?.content || "";
+    console.log("AI response structure:", JSON.stringify({
+      hasChoices: !!data.choices,
+      choicesLength: data.choices?.length,
+      messageKeys: data.choices?.[0]?.message ? Object.keys(data.choices[0].message) : [],
+      hasImages: !!data.choices?.[0]?.message?.images,
+      imagesLength: data.choices?.[0]?.message?.images?.length,
+      contentPreview: typeof data.choices?.[0]?.message?.content === 'string' 
+        ? data.choices[0].message.content.substring(0, 200) 
+        : typeof data.choices?.[0]?.message?.content,
+    }));
+
+    // Try multiple extraction paths
+    let imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    
+    // Fallback: check if image is inline in content as base64
+    if (!imageUrl) {
+      const content = data.choices?.[0]?.message?.content;
+      if (typeof content === 'string' && content.includes('data:image')) {
+        const match = content.match(/(data:image\/[^;]+;base64,[A-Za-z0-9+/=]+)/);
+        if (match) imageUrl = match[1];
+      }
+      // Check if content is array with image parts
+      if (Array.isArray(content)) {
+        for (const part of content) {
+          if (part?.type === 'image_url') {
+            imageUrl = part.image_url?.url;
+            break;
+          }
+          if (part?.type === 'image' && part?.image_url?.url) {
+            imageUrl = part.image_url.url;
+            break;
+          }
+        }
+      }
+    }
+
+    const textResponse = typeof data.choices?.[0]?.message?.content === 'string' 
+      ? data.choices[0].message.content 
+      : "";
 
     if (!imageUrl) {
+      console.error("No image found in response. Full response:", JSON.stringify(data).substring(0, 2000));
       return new Response(JSON.stringify({ error: "No image was generated. Try a different prompt." }), {
         status: 422,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
