@@ -134,7 +134,16 @@ export default function AdminSmartLinks() {
     setApisLoading(false);
   };
 
-  useEffect(() => { fetchReleases(); fetchPlatforms(); fetchApiConfigs(); }, []);
+  const fetchCustomLinks = async () => {
+    const { data } = await supabase
+      .from('smart_links')
+      .select('id, title, artist_name, poster_url, platform_links, slug, created_at, user_id')
+      .order('created_at', { ascending: false });
+    setCustomLinks((data as any) || []);
+    setCustomLoading(false);
+  };
+
+  useEffect(() => { fetchReleases(); fetchPlatforms(); fetchApiConfigs(); fetchCustomLinks(); }, []);
 
   // ─── Release helpers ───
   const filtered = releases.filter(r => {
