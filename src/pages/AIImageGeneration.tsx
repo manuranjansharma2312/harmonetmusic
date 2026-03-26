@@ -14,7 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Sparkles, CreditCard, History, Image as ImageIcon, Upload, CheckCircle, Loader2, Download, Wand2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow, addHours, isAfter } from 'date-fns';
 
 type AIPlan = { id: string; name: string; price: number; credits: number; description: string; tag: string | null };
 type AIOrder = { id: string; plan_id: string; transaction_id: string; status: string; rejection_reason: string | null; created_at: string; ai_plans?: { name: string; credits: number; price: number } };
@@ -208,6 +208,7 @@ export default function AIImageGeneration() {
                       disabled={generating}
                     />
                     <p className="text-xs text-muted-foreground mt-1">Cost: {creditsPerImage} credit{creditsPerImage > 1 ? 's' : ''} per generation</p>
+                    <p className="text-xs text-orange-500 mt-1">⚠️ Generated posters are automatically deleted after 24 hours. Download them before they expire!</p>
                   </div>
                   <Button onClick={generateImage} disabled={generating || !prompt.trim() || remaining < creditsPerImage} className="w-full" size="lg">
                     {generating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</> : <><Sparkles className="h-4 w-4 mr-2" />Generate Poster</>}
@@ -330,6 +331,16 @@ export default function AIImageGeneration() {
                         <CardContent className="p-3">
                           <p className="text-sm truncate">{img.prompt}</p>
                           <p className="text-xs text-muted-foreground">{format(new Date(img.created_at), 'dd MMM yyyy HH:mm')}</p>
+                          {isAfter(addHours(new Date(img.created_at), 24), new Date()) ? (
+                            <p className="text-xs text-orange-500 mt-1">⏳ Expires {formatDistanceToNow(addHours(new Date(img.created_at), 24), { addSuffix: true })}</p>
+                          ) : (
+                            <p className="text-xs text-destructive mt-1">⚠️ Expired — will be removed soon</p>
+                          )}
+                          {img.image_url && (
+                            <Button variant="outline" size="sm" className="w-full mt-2" onClick={() => downloadImage(img.image_url!, `poster-${img.id}.png`)}>
+                              <Download className="h-3 w-3 mr-1" />Download
+                            </Button>
+                          )}
                         </CardContent>
                       </Card>
                     ))}
