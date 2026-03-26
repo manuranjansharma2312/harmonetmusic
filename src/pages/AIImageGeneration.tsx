@@ -300,7 +300,7 @@ export default function AIImageGeneration() {
                     )}
                     <p className="text-xs text-muted-foreground mt-1">Upload an image to use as style/design reference for AI generation.</p>
                   </div>
-                  <Button onClick={generateImage} disabled={generating || !prompt.trim() || remaining < creditsPerImage} className="w-full" size="lg">
+                  <Button onClick={generateImage} disabled={generating || !prompt.trim() || (!isLifetimeFree && remaining < creditsPerImage)} className="w-full" size="lg">
                     {generating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</> : <><Sparkles className="h-4 w-4 mr-2" />Generate Poster</>}
                   </Button>
                 </CardContent>
