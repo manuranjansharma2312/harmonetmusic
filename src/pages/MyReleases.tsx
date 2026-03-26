@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { StatusBadge } from '@/components/StatusBadge';
-import { Loader2, Music, ChevronDown, ChevronRight, Trash2, Eye, Pencil, Users } from 'lucide-react';
+import { Loader2, Music, ChevronDown, ChevronRight, Trash2, Eye, Pencil, Users, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -146,6 +146,62 @@ export default function MyReleases() {
     return r.tracks[0]?.song_title || 'Untitled Single';
   };
 
+  const exportCSV = () => {
+    if (releases.length === 0) { toast.error('No releases to export'); return; }
+
+    const headers = [
+      'Release Name', 'Release Type', 'Content Type', 'UPC', 'Status',
+      'Release Date', 'Store Selection', 'Copyright ©', 'Phonogram ℗',
+      'Poster URL', 'Rejection Reason',
+      'Track #', 'Song Title', 'ISRC', 'Primary Artist', 'New Artist Profile',
+      'New Profile Artists',
+      'Audio Type', 'Language', 'Genre',
+      'Singer', 'Lyricist', 'Composer', 'Producer',
+      'Spotify Link', 'Apple Music Link', 'Instagram Link',
+      'Callertune Time', 'Audio URL',
+    ];
+
+    const fmt = (s: string) => s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
+    const rows: string[][] = [];
+    releases.forEach((r) => {
+      const releaseFields = [
+        getReleaseName(r), fmt(r.release_type), fmt(r.content_type), r.upc || '', fmt(r.status),
+        r.release_date, fmt(r.store_selection), r.copyright_line || '', r.phonogram_line || '',
+        r.poster_url || '', r.rejection_reason || '',
+      ];
+
+      const tracks = r.tracks?.length ? r.tracks : [null];
+      tracks.forEach((t) => {
+        const newProfileArtists = t && t.is_new_artist_profile ? (t.primary_artist || '') : '';
+        const trackFields = t ? [
+          String(t.track_order), t.song_title || '', t.isrc || '', t.primary_artist || '',
+          t.is_new_artist_profile ? 'Yes' : 'No',
+          newProfileArtists,
+          fmt(t.audio_type || ''), t.language || '', t.genre || '',
+          t.singer || '', t.lyricist || '', t.composer || '', t.producer || '',
+          t.spotify_link || '', t.apple_music_link || '', t.instagram_link || '',
+          t.callertune_time || '', t.audio_url || '',
+        ] : Array(18).fill('');
+
+        rows.push([...releaseFields, ...trackFields]);
+      });
+    });
+
+    const csvContent = [headers, ...rows]
+      .map((row) => row.map((cell: string) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `my-releases-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${releases.length} release(s)`);
+  };
+
   const handleDelete = async () => {
     if (!deleteRelease) return;
     if (deleteRelease.status !== 'pending') {
@@ -172,9 +228,16 @@ export default function MyReleases() {
 
   return (
     <DashboardLayout>
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">My Releases</h1>
-        <p className="text-muted-foreground mt-1 text-sm sm:text-base">View and track all your music submissions.</p>
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">My Releases</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">View and track all your music submissions.</p>
+        </div>
+        {releases.length > 0 && (
+          <Button variant="outline" size="sm" onClick={exportCSV}>
+            <Download className="h-4 w-4" /> Export CSV
+          </Button>
+        )}
       </div>
 
       {releases.length === 0 ? (
