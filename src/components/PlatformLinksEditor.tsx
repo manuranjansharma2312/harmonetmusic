@@ -77,12 +77,12 @@ export function PlatformLinksEditor({ releaseId, releaseSlug, initialLinks, onSa
           body: JSON.stringify({ url: autoFetchUrl.trim() }),
         }
       );
+      const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error('Could not find this song on Songlink/Odesli');
+      if (data.error) {
+        throw new Error(data.error);
       }
 
-      const data = await response.json();
       const fetchedLinks: Record<string, string> = { ...links };
       let count = 0;
 
