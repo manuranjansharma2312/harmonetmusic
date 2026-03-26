@@ -256,8 +256,6 @@ export default function MyReleases() {
             <Download className="h-4 w-4" /> Export {selected.size > 0 ? `${selected.size} Selected` : 'All'} CSV
           </Button>
         )}
-          </Button>
-        )}
       </div>
 
       {releases.length === 0 ? (
