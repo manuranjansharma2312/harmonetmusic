@@ -51,6 +51,8 @@ import AdminPromotionTools from "./pages/AdminPromotionTools";
 import AdminPaymentSettings from "./pages/AdminPaymentSettings";
 import PromotionTools from "./pages/PromotionTools";
 import BankDetails from "./pages/BankDetails";
+import ContactSupport from "./pages/ContactSupport";
+import AdminContactSupport from "./pages/AdminContactSupport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
