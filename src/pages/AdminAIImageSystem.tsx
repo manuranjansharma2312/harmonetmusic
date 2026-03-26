@@ -443,7 +443,7 @@ export default function AdminAIImageSystem() {
                 </div>
                 <div>
                   <Label>Credits Per Image</Label>
-                  <Input type="number" min={1} value={aiSettings.credits_per_image} onChange={e => setAiSettings(s => ({ ...s, credits_per_image: Number(e.target.value) }))} />
+                  <Input type="text" inputMode="numeric" value={aiSettings.credits_per_image} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); setAiSettings(s => ({ ...s, credits_per_image: Number(v) || 1 })); }} />
                 </div>
 
                 {/* Image Sizes (Aspect Ratios) */}
