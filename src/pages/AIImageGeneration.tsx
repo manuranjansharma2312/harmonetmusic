@@ -331,6 +331,16 @@ export default function AIImageGeneration() {
                         <CardContent className="p-3">
                           <p className="text-sm truncate">{img.prompt}</p>
                           <p className="text-xs text-muted-foreground">{format(new Date(img.created_at), 'dd MMM yyyy HH:mm')}</p>
+                          {isAfter(addHours(new Date(img.created_at), 24), new Date()) ? (
+                            <p className="text-xs text-orange-500 mt-1">⏳ Expires {formatDistanceToNow(addHours(new Date(img.created_at), 24), { addSuffix: true })}</p>
+                          ) : (
+                            <p className="text-xs text-destructive mt-1">⚠️ Expired — will be removed soon</p>
+                          )}
+                          {img.image_url && (
+                            <Button variant="outline" size="sm" className="w-full mt-2" onClick={() => downloadImage(img.image_url!, `poster-${img.id}.png`)}>
+                              <Download className="h-3 w-3 mr-1" />Download
+                            </Button>
+                          )}
                         </CardContent>
                       </Card>
                     ))}
