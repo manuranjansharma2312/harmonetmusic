@@ -385,9 +385,14 @@ export default function Revenue() {
           <div className="p-4 border-b border-border/50">
             <h2 className="text-lg font-semibold">Withdrawal History</h2>
             {isSubLabelUser && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Your withdrawals are entirely managed by your Main Record Label.
-              </p>
+              <div className="mt-1 space-y-0.5">
+                <p className="text-xs text-muted-foreground">
+                  Your withdrawals are entirely managed by your Main Record Label.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Harmonet Music is not responsible for your withdraw delay problem. Because Harmonet Music pay to the Main Record Label after requesting within 7-10 working days.
+                </p>
+              </div>
             )}
           </div>
 
