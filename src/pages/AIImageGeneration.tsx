@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { Sparkles, CreditCard, History, Image as ImageIcon, Upload, CheckCircle, Loader2, Download, Wand2, X, Paperclip } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { format, formatDistanceToNow, addHours, isAfter } from 'date-fns';
+import { addWatermark } from '@/lib/watermark';
 
 type AIPlan = { id: string; name: string; price: number; credits: number; description: string; tag: string | null };
 type AIOrder = { id: string; plan_id: string; transaction_id: string; status: string; rejection_reason: string | null; created_at: string; ai_plans?: { name: string; credits: number; price: number } };
@@ -176,7 +177,15 @@ export default function AIImageGeneration() {
       const imageUrl = data?.image_url;
       if (!imageUrl) { toast.error('No image generated. Try a different prompt.'); return; }
 
-      setGeneratedImage(imageUrl);
+      // Add Harmonet Music watermark to generated image
+      let watermarkedUrl: string;
+      try {
+        watermarkedUrl = await addWatermark(imageUrl);
+      } catch {
+        watermarkedUrl = imageUrl; // Fallback to original if watermark fails
+      }
+
+      setGeneratedImage(watermarkedUrl);
 
       // Deduct credits only if not lifetime free
       if (!isLifetimeFree) {
@@ -184,7 +193,7 @@ export default function AIImageGeneration() {
         await supabase.from('ai_credit_transactions').insert({ user_id: activeUserId, credits: creditsPerImage, type: 'usage', note: `Generated: ${prompt.trim().slice(0, 100)}` });
         setUsedCredits(prev => prev + creditsPerImage);
       }
-      await supabase.from('ai_generated_images').insert({ user_id: activeUserId, prompt: prompt.trim(), image_url: imageUrl, credits_used: isLifetimeFree ? 0 : creditsPerImage });
+      await supabase.from('ai_generated_images').insert({ user_id: activeUserId, prompt: prompt.trim(), image_url: watermarkedUrl, credits_used: isLifetimeFree ? 0 : creditsPerImage });
       toast.success('Poster generated!');
       // Refresh gallery
       const { data: imgData } = await supabase.from('ai_generated_images').select('*').eq('user_id', activeUserId).order('created_at', { ascending: false }).limit(50);
