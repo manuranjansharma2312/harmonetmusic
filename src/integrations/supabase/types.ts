@@ -1396,6 +1396,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      init_ai_credits: {
+        Args: { _free_credits: number; _user_id: string }
+        Returns: undefined
+      }
       is_admin: { Args: never; Returns: boolean }
       is_parent_label: { Args: { _child_user_id: string }; Returns: boolean }
       user_owns_isrc: {
