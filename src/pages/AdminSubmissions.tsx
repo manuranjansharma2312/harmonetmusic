@@ -65,6 +65,8 @@ type Release = {
   user_type?: string;
   sub_label_name?: string;
   parent_label_name?: string;
+  platform_links?: Record<string, string>;
+  slug?: string;
 };
 
 type ParsedImportTrack = {
