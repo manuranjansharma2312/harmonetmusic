@@ -112,16 +112,20 @@ export default function AdminAIImageSystem() {
   };
 
   const fetchSettings = async () => {
-    const { data } = await supabase.from('ai_settings').select('*').limit(1).maybeSingle();
+    const { data } = await supabase.from('ai_settings').select('credits_per_image, api_provider, is_enabled, free_credits, image_sizes, lifetime_free_enabled, lifetime_free_all_users, lifetime_free_user_ids, id').limit(1).maybeSingle();
     if (data) {
       setAiSettings({ credits_per_image: (data as any).credits_per_image, api_provider: (data as any).api_provider, is_enabled: (data as any).is_enabled, free_credits: (data as any).free_credits, image_sizes: (data as any).image_sizes || [], lifetime_free_enabled: (data as any).lifetime_free_enabled ?? false, lifetime_free_all_users: (data as any).lifetime_free_all_users ?? true, lifetime_free_user_ids: (data as any).lifetime_free_user_ids || [] });
-      // Load custom API key (masked display)
-      const key = (data as any).custom_api_key || '';
-      if (key) {
-        setApiKeyValue(key);
-      }
-      setApiKeyLoaded(true);
     }
+    // Fetch API key status securely via edge function
+    try {
+      const { data: keyData } = await supabase.functions.invoke('manage-ai-api-key', {
+        body: { action: 'get_status' },
+      });
+      if (keyData?.has_key) {
+        setApiKeyValue(keyData.masked_key || '••••••••');
+      }
+    } catch (e) { console.error('Failed to fetch API key status:', e); }
+    setApiKeyLoaded(true);
   };
 
   useEffect(() => {
