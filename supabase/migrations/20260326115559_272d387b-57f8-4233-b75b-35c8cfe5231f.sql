@@ -1,0 +1,1 @@
+ALTER TABLE public.ai_credits ADD CONSTRAINT ai_credits_user_id_unique UNIQUE (user_id);
