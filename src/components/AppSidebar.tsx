@@ -78,6 +78,7 @@ export function AppSidebar() {
   const [userSubLabelsOpen, setUserSubLabelsOpen] = useState(false);
   const [impUserType, setImpUserType] = useState<string | null>(null);
   const [impIsSubLabel, setImpIsSubLabel] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(false);
 
   // Fetch impersonated user's profile when impersonating
   useEffect(() => {
@@ -92,6 +93,12 @@ export function AppSidebar() {
       setImpIsSubLabel(false);
     }
   }, [isImpersonating, impersonatedUserId]);
+
+  // Check if AI Image system is enabled
+  useEffect(() => {
+    supabase.from('ai_settings').select('is_enabled').limit(1).maybeSingle()
+      .then(({ data }) => { setAiEnabled((data as any)?.is_enabled ?? false); });
+  }, []);
 
   const effectiveUserType = isImpersonating ? impUserType : userType;
   const effectiveIsSubLabel = isImpersonating ? impIsSubLabel : isSubLabel;
@@ -112,7 +119,7 @@ export function AppSidebar() {
   const showUserSubLabels = effectiveUserType === 'record_label' && !effectiveIsSubLabel;
 
   const userLinksBottom = [
-    { to: '/ai-images', label: 'AI Image Generation', icon: Sparkles },
+    ...(aiEnabled ? [{ to: '/ai-images', label: 'AI Image Generation', icon: Sparkles }] : []),
     { to: '/poster-generator', label: 'Out Now Poster', icon: ImageIcon },
     { to: '/help-tutorials', label: 'Help Tutorials', icon: BookOpen },
     // Hide Promotion Tools for sub-labels
