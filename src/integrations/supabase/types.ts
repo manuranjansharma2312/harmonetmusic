@@ -1002,6 +1002,39 @@ export type Database = {
         }
         Relationships: []
       }
+      smart_link_api_configs: {
+        Row: {
+          api_key: string | null
+          api_name: string
+          api_url: string | null
+          created_at: string
+          id: string
+          is_enabled: boolean
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          api_key?: string | null
+          api_name: string
+          api_url?: string | null
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string | null
+          api_name?: string
+          api_url?: string | null
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       smart_link_platforms: {
         Row: {
           created_at: string
