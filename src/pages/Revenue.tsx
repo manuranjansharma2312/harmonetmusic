@@ -13,7 +13,7 @@ import { Wallet, IndianRupee, ArrowDownToLine, Clock, CheckCircle2, AlertCircle,
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { applyRevenueCutToAmount, calculateAvailableBalance, getEffectiveRevenueCutPercent, shouldApplyRevenueCut, summarizeWithdrawals } from '@/lib/revenueCalculations';
+import { applySnapshotCut, calculateAvailableBalance, getEffectiveRevenueCutPercent, shouldApplyRevenueCut, summarizeWithdrawals } from '@/lib/revenueCalculations';
 
 interface WithdrawalRequest {
   id: string;
@@ -44,11 +44,8 @@ export default function Revenue() {
   const [isSubLabelUser, setIsSubLabelUser] = useState(false);
 
   const effectiveCut = getEffectiveRevenueCutPercent({ hiddenCut, subLabelCut, isSubLabel: isSubLabelUser });
-  const netRevenue = applyRevenueCutToAmount(
-    totalRevenue,
-    effectiveCut,
-    shouldApplyRevenueCut({ role, currentUserId: user?.id, activeUserId })
-  );
+  const applyCut = shouldApplyRevenueCut({ role, currentUserId: user?.id, activeUserId });
+  const netRevenue = totalRevenue; // totalRevenue is now already net (computed per-row with snapshots)
   const availableBalance = calculateAvailableBalance(netRevenue, paidWithdrawals, pendingWithdrawals);
   const progressPercent = threshold > 0 ? Math.min((Math.max(availableBalance, 0) / threshold) * 100, 100) : 0;
   const canWithdraw = availableBalance >= threshold;
@@ -155,20 +152,20 @@ export default function Revenue() {
 
         if (ownedIsrcs.length > 0) {
           const [{ data: ottData }, { data: ytData }] = await Promise.all([
-            supabase.from('report_entries').select('net_generated_revenue').in('isrc', ownedIsrcs),
-            supabase.from('youtube_report_entries').select('net_generated_revenue').in('isrc', ownedIsrcs),
+            supabase.from('report_entries').select('net_generated_revenue, cut_percent_snapshot').in('isrc', ownedIsrcs),
+            supabase.from('youtube_report_entries').select('net_generated_revenue, cut_percent_snapshot').in('isrc', ownedIsrcs),
           ]);
-          ottTotal = (ottData || []).reduce((sum, r) => sum + (Number(r.net_generated_revenue) || 0), 0);
-          ytTotal = (ytData || []).reduce((sum, r) => sum + (Number(r.net_generated_revenue) || 0), 0);
+          ottTotal = (ottData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
+          ytTotal = (ytData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
         }
       } else {
         // Regular user or admin not impersonating - rely on RLS
         const [{ data: ottData }, { data: ytData }] = await Promise.all([
-          supabase.from('report_entries').select('net_generated_revenue'),
-          supabase.from('youtube_report_entries').select('net_generated_revenue'),
+          supabase.from('report_entries').select('net_generated_revenue, cut_percent_snapshot'),
+          supabase.from('youtube_report_entries').select('net_generated_revenue, cut_percent_snapshot'),
         ]);
-        ottTotal = (ottData || []).reduce((sum, r) => sum + (Number(r.net_generated_revenue) || 0), 0);
-        ytTotal = (ytData || []).reduce((sum, r) => sum + (Number(r.net_generated_revenue) || 0), 0);
+        ottTotal = (ottData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
+        ytTotal = (ytData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
       }
 
       setTotalRevenue(ottTotal + ytTotal);

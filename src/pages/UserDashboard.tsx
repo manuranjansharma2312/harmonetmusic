@@ -7,7 +7,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { formatStreams, formatRevenue } from '@/lib/formatNumbers';
-import { applyRevenueCutToAmount, calculateAvailableBalance, getEffectiveRevenueCutPercent, shouldApplyRevenueCut, summarizeWithdrawals } from '@/lib/revenueCalculations';
+import { applySnapshotCut, calculateAvailableBalance, getEffectiveRevenueCutPercent, shouldApplyRevenueCut, summarizeWithdrawals } from '@/lib/revenueCalculations';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import {
@@ -85,11 +85,7 @@ export default function UserDashboard() {
 
   const effectiveUserId = isImpersonating ? impersonatedUserId : user?.id;
   const effectiveCut = getEffectiveRevenueCutPercent({ hiddenCut, subLabelCut, isSubLabel: isSubLabelUser });
-  const netRevenue = applyRevenueCutToAmount(
-    totalRevenue,
-    effectiveCut,
-    shouldApplyRevenueCut({ role, currentUserId: user?.id, activeUserId: effectiveUserId })
-  );
+  const netRevenue = totalRevenue; // totalRevenue is now already net (computed per-row with snapshots)
   const availableRevenue = Math.max(calculateAvailableBalance(netRevenue, withdrawalBalance.paid, withdrawalBalance.pending), 0);
 
   const fetchAll = useCallback(async () => {
@@ -162,16 +158,16 @@ export default function UserDashboard() {
 
         if (ownedIsrcs.length > 0) {
           const [{ data: ottData }, { data: ytData }] = await Promise.all([
-            supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country').in('isrc', ownedIsrcs),
-            supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country').in('isrc', ownedIsrcs),
+            supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot').in('isrc', ownedIsrcs),
+            supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot').in('isrc', ownedIsrcs),
           ]);
           reportData = ottData || [];
           ytReportData = ytData || [];
         }
       } else {
         const [reportRes, ytReportRes] = await Promise.all([
-          supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country').eq('user_id', effectiveUserId),
-          supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country').eq('user_id', effectiveUserId),
+          supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot').eq('user_id', effectiveUserId),
+          supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot').eq('user_id', effectiveUserId),
         ]);
         reportData = reportRes.data || [];
         ytReportData = ytReportRes.data || [];
@@ -190,10 +186,10 @@ export default function UserDashboard() {
 
         allReports.forEach((r: any) => {
           const grossRevenue = Number(r.net_generated_revenue || 0);
-          const rev = applyRevenueCutToAmount(grossRevenue, effectiveCutPercent, shouldApplyCut);
+          const rev = applySnapshotCut(grossRevenue, r.cut_percent_snapshot, effectiveCutPercent, shouldApplyCut);
           const str = Number(r.streams || 0);
           const dl = Number(r.downloads || 0);
-          totalRev += grossRevenue;
+          totalRev += rev;
           totalStr += str;
           totalDl += dl;
 

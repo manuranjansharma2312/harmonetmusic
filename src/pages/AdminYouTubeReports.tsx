@@ -94,6 +94,7 @@ interface ReportEntry {
   downloads: number;
   net_generated_revenue: number;
   imported_at: string;
+  cut_percent_snapshot?: number | null;
 }
 
 interface MonthGroup {
@@ -122,7 +123,7 @@ export default function AdminYouTubeReports() {
   const [userCutMap, setUserCutMap] = useState<Record<string, number>>({});
 
   const applyUserCut = (entry: ReportEntry) => {
-    const cut = userCutMap[entry.user_id] || 0;
+    const cut = entry.cut_percent_snapshot != null ? entry.cut_percent_snapshot : (userCutMap[entry.user_id] || 0);
     return Number(((Number(entry.net_generated_revenue) || 0) * (1 - cut / 100)).toFixed(4));
   };
 
@@ -256,11 +257,22 @@ export default function AdminYouTubeReports() {
       const { data: songs } = await supabase.from('songs').select('isrc, user_id');
       songs?.forEach((s: any) => { if (s.isrc) isrcMap[s.isrc.toUpperCase()] = s.user_id; });
 
+      // Fetch current cut percentages for all users to snapshot at import time
+      const { data: profiles } = await supabase.from('profiles').select('user_id, hidden_cut_percent');
+      const cutMap: Record<string, number> = {};
+      (profiles || []).forEach((p: any) => { cutMap[p.user_id] = Number(p.hidden_cut_percent) || 0; });
+
+      // Also fetch sub-label cuts
+      const { data: subLabels } = await supabase.from('sub_labels').select('sub_user_id, percentage_cut').eq('status', 'active');
+      const subLabelCutMap: Record<string, number> = {};
+      (subLabels || []).forEach((sl: any) => { if (sl.sub_user_id) subLabelCutMap[sl.sub_user_id] = Number(sl.percentage_cut) || 0; });
+
       const toInsert = preview
         .map((row) => {
           const isrc = normalizeIsrc(row['ISRC']);
           const userId = isrc ? isrcMap[isrc] : null;
           if (!userId) return null;
+          const snapshotCut = subLabelCutMap[userId] !== undefined ? subLabelCutMap[userId] : (cutMap[userId] || 0);
           return {
             user_id: userId,
             reporting_month: row['Reporting Month'] || '',
@@ -278,6 +290,7 @@ export default function AdminYouTubeReports() {
             streams: parseInt(row['Streams'] || '0') || 0,
             downloads: parseInt(row['Downloads'] || '0') || 0,
             net_generated_revenue: parseFloat(row['Net Generated Revenue'] || '0') || 0,
+            cut_percent_snapshot: snapshotCut,
           };
         })
         .filter(Boolean) as any[];
