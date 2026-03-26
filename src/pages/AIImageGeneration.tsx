@@ -50,8 +50,10 @@ export default function AIImageGeneration() {
   const [generating, setGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [creditsPerImage, setCreditsPerImage] = useState(1);
-  const [imageSizes, setImageSizes] = useState<{ label: string; width: number; height: number }[]>([]);
+  const [imageSizes, setImageSizes] = useState<{ label: string; ratio: string }[]>([]);
   const [selectedSize, setSelectedSize] = useState('');
+  const [referenceImage, setReferenceImage] = useState<File | null>(null);
+  const [referencePreview, setReferencePreview] = useState<string | null>(null);
 
   // Payment settings (QR code etc)
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
