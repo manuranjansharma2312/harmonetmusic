@@ -282,7 +282,7 @@ export default function AIImageGeneration() {
                     <p className="text-xs text-muted-foreground mt-1">
                       {isLifetimeFree ? 'Unlimited free generation — no credits needed!' : `Cost: ${creditsPerImage} credit${creditsPerImage > 1 ? 's' : ''} per generation`}
                     </p>
-                    <p className="text-xs text-amber-500 mt-1">⚠️ Generated posters are automatically deleted after 24 hours. Download them before they expire!</p>
+                    <p className="text-xs text-amber-500 mt-1"><p className="text-xs text-amber-500 mt-1">⚠️ Generated posters are automatically deleted after 12 hours. Download them before they expire!</p></p>
                   </div>
                   {imageSizes.length > 0 && (
                     <div>
