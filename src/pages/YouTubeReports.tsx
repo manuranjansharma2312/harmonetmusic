@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { normalizeIsrc } from '@/lib/isrc';
-import { applyRevenueCutToAmount, getEffectiveRevenueCutPercent, shouldApplyRevenueCut } from '@/lib/revenueCalculations';
+import { applySnapshotCut, getEffectiveRevenueCutPercent, shouldApplyRevenueCut } from '@/lib/revenueCalculations';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Eye, BarChart3, Filter, X, Download, Search } from 'lucide-react';
@@ -33,6 +33,7 @@ interface ReportEntry {
   downloads: number;
   net_generated_revenue: number;
   imported_at: string;
+  cut_percent_snapshot?: number | null;
 }
 
 const COLUMNS = [
@@ -153,14 +154,14 @@ export default function YouTubeReports() {
 
   const effectiveCut = getEffectiveRevenueCutPercent({ hiddenCut, subLabelCut, isSubLabel: isSubLabelUser });
   const shouldApplyCut = shouldApplyRevenueCut({ role, currentUserId: user?.id, activeUserId });
-  const applyRevenueCut = (val: number) => applyRevenueCutToAmount(val, effectiveCut, shouldApplyCut);
+  const applyRevenueCut = (entry: ReportEntry) => applySnapshotCut(Number(entry.net_generated_revenue) || 0, entry.cut_percent_snapshot, effectiveCut, shouldApplyCut);
 
   const monthlyGroups = useMemo(() => {
     const groups: Record<string, { entries: ReportEntry[]; latestImport: string; totalRevenue: number }> = {};
     entries.forEach((e) => {
       if (!groups[e.reporting_month]) groups[e.reporting_month] = { entries: [], latestImport: e.imported_at, totalRevenue: 0 };
       groups[e.reporting_month].entries.push(e);
-      groups[e.reporting_month].totalRevenue += applyRevenueCut(Number(e.net_generated_revenue) || 0);
+      groups[e.reporting_month].totalRevenue += applyRevenueCut(e);
       if (e.imported_at > groups[e.reporting_month].latestImport) groups[e.reporting_month].latestImport = e.imported_at;
     });
     return Object.entries(groups).sort(([a], [b]) => parseMonthKey(b) - parseMonthKey(a));
@@ -199,7 +200,7 @@ export default function YouTubeReports() {
     const rows = selectedEntries.map((e) => [
       e.reporting_month,
       ...COLUMNS.map((c) => c.key === 'net_generated_revenue'
-        ? String(applyRevenueCut(Number(e[c.key])))
+        ? String(applyRevenueCut(e))
         : String(e[c.key as keyof ReportEntry] ?? '')),
     ]);
     const csv = [headers, ...rows].map((r) => r.map((v) => `"${v}"`).join(',')).join('\n');
