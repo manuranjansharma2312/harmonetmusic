@@ -228,9 +228,16 @@ export default function MyReleases() {
 
   return (
     <DashboardLayout>
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">My Releases</h1>
-        <p className="text-muted-foreground mt-1 text-sm sm:text-base">View and track all your music submissions.</p>
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">My Releases</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">View and track all your music submissions.</p>
+        </div>
+        {releases.length > 0 && (
+          <Button variant="outline" size="sm" onClick={exportCSV}>
+            <Download className="h-4 w-4" /> Export CSV
+          </Button>
+        )}
       </div>
 
       {releases.length === 0 ? (
