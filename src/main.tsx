@@ -49,16 +49,5 @@ const clearConsoleLoop = () => {
 };
 setInterval(clearConsoleLoop, 2000);
 
-// 6. Detect DevTools open via debugger statement (works on most browsers)
-const detectDevTools = () => {
-  const threshold = 160;
-  if (
-    window.outerWidth - window.innerWidth > threshold ||
-    window.outerHeight - window.innerHeight > threshold
-  ) {
-    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f0f0f;color:#fff;font-family:sans-serif;text-align:center;padding:2rem"><div><h1 style="font-size:2rem;margin-bottom:1rem">🔒 Access Denied</h1><p style="color:#999">Developer tools are not allowed on this site.</p></div></div>';
-  }
-};
-setInterval(detectDevTools, 1000);
 
 createRoot(document.getElementById("root")!).render(<App />);
