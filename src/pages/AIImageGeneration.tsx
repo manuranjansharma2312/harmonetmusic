@@ -68,7 +68,7 @@ export default function AIImageGeneration() {
     if (!activeUserId) return;
     
     // Fetch AI settings FIRST to determine lifetime free status
-    const { data: aiSettingsData } = await supabase.from('ai_settings').select('*').limit(1).maybeSingle();
+    const { data: aiSettingsData } = await supabase.from('ai_settings').select('credits_per_image, is_enabled, free_credits, image_sizes, lifetime_free_enabled, lifetime_free_all_users, lifetime_free_user_ids').limit(1).maybeSingle();
     
     const lfEnabled = aiSettingsData?.lifetime_free_enabled === true;
     const lfAllUsers = aiSettingsData?.lifetime_free_all_users !== false; // default true
