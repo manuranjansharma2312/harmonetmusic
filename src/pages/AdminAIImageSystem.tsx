@@ -56,13 +56,7 @@ export default function AdminAIImageSystem() {
 
   // Settings
   const [aiSettings, setAiSettings] = useState({ credits_per_image: 1, api_provider: 'openai', is_enabled: true, free_credits: 0 });
-  const saveSettings = async () => {
-    setSettingsLoading(true);
-    const { data: settingsRow } = await supabase.from('ai_settings').select('id').limit(1).single();
-    await supabase.from('ai_settings').update({ credits_per_image: aiSettings.credits_per_image, api_provider: aiSettings.api_provider, is_enabled: aiSettings.is_enabled, free_credits: aiSettings.free_credits, updated_at: new Date().toISOString(), updated_by: user?.id }).eq('id', settingsRow?.id || '');
-    toast.success('Settings saved');
-    setSettingsLoading(false);
-  };
+  const [settingsLoading, setSettingsLoading] = useState(false);
 
   const profileMap = useMemo(() => {
     const m: Record<string, Profile> = {};
