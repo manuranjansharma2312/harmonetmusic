@@ -1,6 +1,7 @@
 /**
  * Adds the Harmonet Music logo as a clearly visible watermark
  * in the bottom-right corner on every AI-generated image.
+ * Uses the self-contained app logo (dark bg + white text) for universal visibility.
  */
 export async function addWatermark(imageDataUrl: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -19,40 +20,28 @@ export async function addWatermark(imageDataUrl: string): Promise<string> {
         // Draw the generated image
         ctx.drawImage(img, 0, 0);
 
-        // Logo sizing — 22% of image width for clear visibility
-        const logoWidth = Math.round(img.width * 0.22);
+        // Logo sizing — 20% of image width
+        const logoWidth = Math.round(img.width * 0.20);
         const logoHeight = Math.round((logo.height / logo.width) * logoWidth);
-        const margin = Math.round(img.width * 0.03);
+        const margin = Math.round(img.width * 0.025);
         const x = img.width - logoWidth - margin;
         const y = img.height - logoHeight - margin;
 
-        // White rounded-rect background so logo is always readable
-        const padX = Math.round(logoWidth * 0.1);
-        const padY = Math.round(logoHeight * 0.12);
-        const bgX = x - padX;
-        const bgY = y - padY;
-        const bgW = logoWidth + padX * 2;
-        const bgH = logoHeight + padY * 2;
-        const bgRadius = Math.round(bgH * 0.15);
-
-        // Solid white background with slight transparency
+        // Rounded clipping for the logo
+        const radius = Math.round(logoHeight * 0.15);
         ctx.save();
-        ctx.globalAlpha = 0.92;
-        ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.roundRect(bgX, bgY, bgW, bgH, bgRadius);
-        ctx.fill();
+        ctx.roundRect(x, y, logoWidth, logoHeight, radius);
+        ctx.clip();
+        ctx.drawImage(logo, x, y, logoWidth, logoHeight);
         ctx.restore();
 
-        // Thin border for definition
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
-        ctx.lineWidth = 1;
+        // Subtle border
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.roundRect(bgX, bgY, bgW, bgH, bgRadius);
+        ctx.roundRect(x, y, logoWidth, logoHeight, radius);
         ctx.stroke();
-
-        // Draw logo at full opacity on the white background
-        ctx.drawImage(logo, x, y, logoWidth, logoHeight);
 
         resolve(canvas.toDataURL('image/png'));
       };
