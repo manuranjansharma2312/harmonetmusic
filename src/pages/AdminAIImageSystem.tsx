@@ -157,19 +157,26 @@ export default function AdminAIImageSystem() {
   // Order actions
   const approveOrder = async (order: AIOrder) => {
     const planCredits = (order as any).ai_plans?.credits || 0;
-    // Update order status
-    await supabase.from('ai_plan_orders').update({ status: 'approved', updated_at: new Date().toISOString() }).eq('id', order.id);
-    // Add credits
-    const { data: existing } = await supabase.from('ai_credits').select('*').eq('user_id', order.user_id).maybeSingle();
-    if (existing) {
-      await supabase.from('ai_credits').update({ total_credits: (existing as any).total_credits + planCredits, updated_at: new Date().toISOString() }).eq('user_id', order.user_id);
-    } else {
-      await supabase.from('ai_credits').insert({ user_id: order.user_id, total_credits: planCredits, used_credits: 0 });
+    try {
+      const { error: orderErr } = await supabase.from('ai_plan_orders').update({ status: 'approved', updated_at: new Date().toISOString() }).eq('id', order.id);
+      if (orderErr) { toast.error('Failed to approve order: ' + orderErr.message); return; }
+      
+      const { data: existing, error: fetchErr } = await supabase.from('ai_credits').select('*').eq('user_id', order.user_id).maybeSingle();
+      if (fetchErr) { toast.error('Failed to fetch credits: ' + fetchErr.message); return; }
+      
+      if (existing) {
+        const { error: updateErr } = await supabase.from('ai_credits').update({ total_credits: (existing as any).total_credits + planCredits, updated_at: new Date().toISOString() }).eq('user_id', order.user_id);
+        if (updateErr) { toast.error('Failed to update credits: ' + updateErr.message); return; }
+      } else {
+        const { error: insertErr } = await supabase.from('ai_credits').insert({ user_id: order.user_id, total_credits: planCredits, used_credits: 0 });
+        if (insertErr) { toast.error('Failed to insert credits: ' + insertErr.message); return; }
+      }
+      await supabase.from('ai_credit_transactions').insert({ user_id: order.user_id, credits: planCredits, type: 'plan_purchase', note: `Plan approved: ${(order as any).ai_plans?.name}`, order_id: order.id });
+      toast.success(`Approved! ${planCredits} credits added`);
+      await Promise.all([fetchOrders(), fetchCredits(), fetchTransactions(), fetchUsageStats()]);
+    } catch (e: any) {
+      toast.error('Error approving order: ' + (e?.message || 'Unknown error'));
     }
-    // Log transaction
-    await supabase.from('ai_credit_transactions').insert({ user_id: order.user_id, credits: planCredits, type: 'plan_purchase', note: `Plan approved: ${(order as any).ai_plans?.name}`, order_id: order.id });
-    toast.success(`Approved! ${planCredits} credits added`);
-    fetchOrders(); fetchCredits(); fetchTransactions(); fetchUsageStats();
   };
 
   const rejectOrder = async (reason: string) => {
