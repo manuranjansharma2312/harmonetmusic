@@ -206,9 +206,10 @@ export default function AdminAIImageSystem() {
   };
 
   const addImageSize = () => {
-    if (!newSize.label || !newSize.width || !newSize.height) { toast.error('Fill all size fields'); return; }
-    setAiSettings(s => ({ ...s, image_sizes: [...s.image_sizes, { label: newSize.label, width: Number(newSize.width), height: Number(newSize.height) }] }));
-    setNewSize({ label: '', width: '', height: '' });
+    if (!newSize.label || !newSize.ratio) { toast.error('Fill label and ratio'); return; }
+    if (!/^\d+:\d+$/.test(newSize.ratio)) { toast.error('Ratio format must be like 9:16'); return; }
+    setAiSettings(s => ({ ...s, image_sizes: [...s.image_sizes, { label: newSize.label, ratio: newSize.ratio }] }));
+    setNewSize({ label: '', ratio: '' });
   };
 
   const removeImageSize = (idx: number) => {
