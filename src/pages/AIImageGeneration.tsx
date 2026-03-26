@@ -66,40 +66,49 @@ export default function AIImageGeneration() {
 
   const fetchData = async () => {
     if (!activeUserId) return;
-    const [plansRes, credRes, ordersRes, imagesRes, settingsRes, aiSettingsRes] = await Promise.all([
+    
+    // Fetch AI settings FIRST to determine lifetime free status
+    const { data: aiSettingsData } = await supabase.from('ai_settings').select('*').limit(1).maybeSingle();
+    
+    const lfEnabled = aiSettingsData?.lifetime_free_enabled === true;
+    const lfAllUsers = aiSettingsData?.lifetime_free_all_users !== false; // default true
+    const lfUserIds: string[] = (aiSettingsData?.lifetime_free_user_ids as string[]) || [];
+    const userIsLifetimeFree = lfEnabled && (lfAllUsers || lfUserIds.includes(activeUserId));
+    setIsLifetimeFree(userIsLifetimeFree);
+    
+    setCreditsPerImage(aiSettingsData?.credits_per_image || 1);
+    const sizes = (aiSettingsData?.image_sizes as any[]) || [];
+    setImageSizes(sizes);
+    if (sizes.length > 0 && !selectedSize) setSelectedSize(sizes[0].ratio);
+
+    const [plansRes, credRes, ordersRes, imagesRes, settingsRes] = await Promise.all([
       supabase.from('ai_plans').select('*').eq('is_active', true).order('price'),
       supabase.from('ai_credits').select('*').eq('user_id', activeUserId).maybeSingle(),
       supabase.from('ai_plan_orders').select('*, ai_plans(name, credits, price)').eq('user_id', activeUserId).order('created_at', { ascending: false }),
       supabase.from('ai_generated_images').select('*').eq('user_id', activeUserId).order('created_at', { ascending: false }).limit(50),
       supabase.from('promotion_settings').select('qr_code_url, taxes').limit(1).maybeSingle(),
-      supabase.from('ai_settings').select('*').limit(1).maybeSingle(),
     ]);
     if (plansRes.data) setPlans(plansRes.data as any);
     if (ordersRes.data) setOrders(ordersRes.data as any);
     if (imagesRes.data) setImages(imagesRes.data as any);
     if (settingsRes.data) { setQrCodeUrl((settingsRes.data as any).qr_code_url); setTaxes((settingsRes.data as any).taxes || []); }
 
-    // Check lifetime free status
-    const lfEnabled = (aiSettingsRes.data as any)?.lifetime_free_enabled ?? false;
-    const lfAllUsers = (aiSettingsRes.data as any)?.lifetime_free_all_users ?? true;
-    const lfUserIds: string[] = (aiSettingsRes.data as any)?.lifetime_free_user_ids || [];
-    const userIsLifetimeFree = lfEnabled && (lfAllUsers || (activeUserId ? lfUserIds.includes(activeUserId) : false));
-    setIsLifetimeFree(userIsLifetimeFree);
-
-    // Handle credits & free credits auto-provisioning
-    const freeCredits = (aiSettingsRes.data as any)?.free_credits || 0;
-    setCreditsPerImage((aiSettingsRes.data as any)?.credits_per_image || 1);
-    const sizes = (aiSettingsRes.data as any)?.image_sizes || [];
-    setImageSizes(sizes);
-    if (sizes.length > 0 && !selectedSize) setSelectedSize(sizes[0].ratio);
-    if (credRes.data) {
-      setTotalCredits((credRes.data as any).total_credits);
-      setUsedCredits((credRes.data as any).used_credits);
-    } else if (freeCredits > 0 && !impersonatedUserId) {
-      await supabase.from('ai_credits').insert({ user_id: activeUserId, total_credits: freeCredits, used_credits: 0 });
-      await supabase.from('ai_credit_transactions').insert({ user_id: activeUserId, credits: freeCredits, type: 'free_credits', note: 'Free credits on first visit' });
-      setTotalCredits(freeCredits);
+    // Handle credits - if lifetime free, no need for credit provisioning
+    if (userIsLifetimeFree) {
+      // Set high values so UI doesn't block generation
+      setTotalCredits(999999);
       setUsedCredits(0);
+    } else {
+      const freeCredits = aiSettingsData?.free_credits || 0;
+      if (credRes.data) {
+        setTotalCredits((credRes.data as any).total_credits);
+        setUsedCredits((credRes.data as any).used_credits);
+      } else if (freeCredits > 0 && !impersonatedUserId) {
+        await supabase.from('ai_credits').insert({ user_id: activeUserId, total_credits: freeCredits, used_credits: 0 });
+        await supabase.from('ai_credit_transactions').insert({ user_id: activeUserId, credits: freeCredits, type: 'free_credits', note: 'Free credits on first visit' });
+        setTotalCredits(freeCredits);
+        setUsedCredits(0);
+      }
     }
   };
 
