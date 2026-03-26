@@ -460,30 +460,18 @@ export default function AdminAIImageSystem() {
                   <Input type="text" inputMode="numeric" value={aiSettings.free_credits} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); setAiSettings(s => ({ ...s, free_credits: Number(v) || 0 })); }} />
                   <p className="text-xs text-muted-foreground mt-1">Each new user gets this many free credits automatically.</p>
                 </div>
-                <div className="rounded-lg border p-4 space-y-3 bg-muted/30">
-                  <Label className="text-base">AI Engine Details</Label>
-                  <div className="grid gap-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Provider</span>
-                      <span className="font-semibold">Lovable AI (Google Gemini)</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Model</span>
-                      <span className="font-mono text-xs">gemini-3.1-flash-image-preview</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">API Key</span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs bg-background border rounded px-2 py-0.5">LOVABLE_API_KEY</span>
-                        <span className="inline-flex items-center rounded-full bg-green-600/20 px-2 py-0.5 text-xs font-medium text-green-600">Auto-configured</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Gateway</span>
-                      <span className="font-mono text-xs">ai.gateway.lovable.dev</span>
-                    </div>
+                <div>
+                  <Label>API Provider</Label>
+                  <Input value={aiSettings.api_provider} onChange={e => setAiSettings(s => ({ ...s, api_provider: e.target.value }))} placeholder="e.g. OpenAI, Google Gemini, Stability AI" />
+                  <p className="text-xs text-muted-foreground mt-1">For your reference only. Users cannot see this.</p>
+                </div>
+                <div>
+                  <Label>API Key</Label>
+                  <div className="flex items-center gap-2">
+                    <Input type="password" value="••••••••••••••••••••" disabled className="font-mono" />
+                    <span className="inline-flex shrink-0 items-center rounded-full border border-green-600/30 bg-green-600/10 px-2.5 py-0.5 text-xs font-medium text-green-600">Secured</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">The API key is automatically managed by Lovable Cloud and securely stored as a backend secret. It cannot be viewed or modified directly.</p>
+                  <p className="text-xs text-muted-foreground mt-1">API key is securely stored as a backend secret and never exposed to users. To update, contact your system administrator.</p>
                 </div>
                 <div>
                   <Label>Credits Per Image</Label>
