@@ -1402,6 +1402,15 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       is_parent_label: { Args: { _child_user_id: string }; Returns: boolean }
+      log_ai_credit_transaction: {
+        Args: {
+          _credits: number
+          _note?: string
+          _type: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
       user_owns_isrc: {
         Args: { _isrc: string; _user_id: string }
         Returns: boolean

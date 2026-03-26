@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import DOMPurify from "dompurify";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/DashboardLayout";
@@ -502,7 +503,7 @@ export default function AdminAgreementGenerator() {
             ref={previewRef}
             className="agreement-preview p-6 rounded-md overflow-x-hidden"
             style={{ backgroundColor: "white", color: "black" }}
-            dangerouslySetInnerHTML={{ __html: previewHtml }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(previewHtml) }}
           />
           <div className="flex justify-end pt-4">
             <Button className="bg-black hover:bg-black/90 text-white" onClick={handleDownload}>

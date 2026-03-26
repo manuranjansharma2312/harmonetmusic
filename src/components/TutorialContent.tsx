@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import DOMPurify from 'dompurify';
 import { cn } from '@/lib/utils';
 
 interface TutorialContentProps {
@@ -82,7 +83,13 @@ function normalizeTutorialHtml(html: string) {
 }
 
 export function TutorialContent({ html, className }: TutorialContentProps) {
-  const normalizedHtml = useMemo(() => normalizeTutorialHtml(html), [html]);
+  const normalizedHtml = useMemo(() => {
+    const processed = normalizeTutorialHtml(html);
+    return DOMPurify.sanitize(processed, {
+      ADD_TAGS: ['iframe'],
+      ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'src', 'referrerpolicy'],
+    });
+  }, [html]);
 
   return (
     <div

@@ -53,8 +53,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         if (!mounted) return;
+        
+        // Handle token refresh failures — force re-login
+        if (event === 'TOKEN_REFRESHED' && !session) {
+          setUser(null);
+          setSession(null);
+          setRole(null);
+          setUserType(null);
+          return;
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
@@ -67,9 +77,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
+    // Auto-logout after 8 hours of inactivity
+    let inactivityTimer: ReturnType<typeof setTimeout>;
+    const INACTIVITY_TIMEOUT = 8 * 60 * 60 * 1000; // 8 hours
+    
+    const resetTimer = () => {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(async () => {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (currentSession) {
+          await supabase.auth.signOut();
+          window.location.href = '/auth';
+        }
+      }, INACTIVITY_TIMEOUT);
+    };
+
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    events.forEach(e => window.addEventListener(e, resetTimer, { passive: true }));
+    resetTimer();
+
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      clearTimeout(inactivityTimer);
+      events.forEach(e => window.removeEventListener(e, resetTimer));
     };
   }, []);
 
