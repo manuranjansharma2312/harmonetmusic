@@ -675,6 +675,39 @@ export default function AdminSmartLinks() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Create Custom Smart Link Dialog */}
+      <Dialog open={creatingCustom} onOpenChange={open => !open && setCreatingCustom(false)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create Smart Link</DialogTitle>
+            <DialogDescription>Create a standalone smart link for any song.</DialogDescription>
+          </DialogHeader>
+          {user && (
+            <SmartLinkEditor
+              userId={user.id}
+              onSaved={() => { setCreatingCustom(false); fetchCustomLinks(); }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Custom Smart Link Dialog */}
+      <Dialog open={!!editCustom} onOpenChange={open => !open && setEditCustom(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Smart Link — {editCustom?.title}</DialogTitle>
+            <DialogDescription>Update the smart link details and platform URLs.</DialogDescription>
+          </DialogHeader>
+          {editCustom && user && (
+            <SmartLinkEditor
+              smartLink={editCustom}
+              userId={user.id}
+              onSaved={() => { setEditCustom(null); fetchCustomLinks(); }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
