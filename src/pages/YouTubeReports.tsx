@@ -95,14 +95,17 @@ export default function YouTubeReports() {
     // Check if user is a sub-label and get parent's cut
     const { data: subLabelData } = await supabase
       .from('sub_labels')
-      .select('percentage_cut')
+      .select('percentage_cut, parent_user_id')
       .eq('sub_user_id', activeUserId)
       .maybeSingle();
     setSubLabelCut(Number(subLabelData?.percentage_cut) || 0);
     setIsSubLabelUser(Boolean(subLabelData));
 
-    // Fetch hidden cut
-    if (role !== 'admin') {
+    // Fetch hidden cut - for sub-labels use parent's hidden cut
+    if (subLabelData?.parent_user_id) {
+      const { data: parentProfile } = await supabase.from('profiles').select('hidden_cut_percent').eq('user_id', subLabelData.parent_user_id).maybeSingle();
+      setHiddenCut(Number(parentProfile?.hidden_cut_percent) || 0);
+    } else if (role !== 'admin') {
       const { data: profileData } = await supabase.from('profiles').select('hidden_cut_percent').eq('user_id', user.id).maybeSingle();
       setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
     } else if (isImpersonating && impersonatedUserId) {
