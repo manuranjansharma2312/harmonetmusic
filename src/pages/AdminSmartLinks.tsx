@@ -14,7 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Link2, ExternalLink, Search, Music, Edit, Plus, Trash2, GripVertical, Settings, ImageIcon, Key, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Link2, ExternalLink, Search, Music, Edit, Plus, Trash2, GripVertical, Settings, ImageIcon, Key, Eye, EyeOff, User } from 'lucide-react';
 import { toast } from 'sonner';
 
 // ─── Types ───
@@ -139,7 +139,36 @@ export default function AdminSmartLinks() {
       .from('smart_links')
       .select('id, title, artist_name, poster_url, platform_links, slug, created_at, user_id')
       .order('created_at', { ascending: false });
-    setCustomLinks((data as any) || []);
+    const links = (data as any) || [];
+
+    // Fetch profiles for all unique user_ids
+    const userIds = [...new Set(links.map((l: any) => l.user_id))] as string[];
+    let profilesMap: Record<string, any> = {};
+    let subLabelsMap: Record<string, any> = {};
+
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, legal_name, artist_name, record_label_name, user_type, display_id')
+        .in('user_id', userIds);
+      (profiles || []).forEach((p: any) => { profilesMap[p.user_id] = p; });
+
+      // Check if any are sub-labels
+      const { data: subLabels } = await supabase
+        .from('sub_labels')
+        .select('sub_user_id, sub_label_name, parent_label_name, parent_user_id, status')
+        .in('sub_user_id', userIds)
+        .eq('status', 'active');
+      (subLabels || []).forEach((sl: any) => { if (sl.sub_user_id) subLabelsMap[sl.sub_user_id] = sl; });
+    }
+
+    const enriched = links.map((l: any) => ({
+      ...l,
+      _profile: profilesMap[l.user_id] || null,
+      _subLabel: subLabelsMap[l.user_id] || null,
+    }));
+
+    setCustomLinks(enriched);
     setCustomLoading(false);
   };
 
@@ -407,6 +436,21 @@ export default function AdminSmartLinks() {
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-sm text-foreground truncate">{c.title}</p>
                           <p className="text-xs text-muted-foreground">{c.artist_name || 'Unknown Artist'}</p>
+                          {/* Created by info */}
+                          {c._profile && (
+                            <div className="mt-1">
+                              <p className="text-[10px] text-muted-foreground/80 flex items-center gap-1">
+                                <User className="h-3 w-3" />
+                                {c._profile.artist_name || c._profile.record_label_name || c._profile.legal_name}
+                                <span className="text-muted-foreground/50">#{c._profile.display_id}</span>
+                              </p>
+                              {c._subLabel && (
+                                <p className="text-[10px] text-muted-foreground/60 ml-4">
+                                  ↳ Under: {c._subLabel.parent_label_name}
+                                </p>
+                              )}
+                            </div>
+                          )}
                           {active ? (
                             <Badge variant="default" className="mt-1 text-[10px]">{linkCount} platforms</Badge>
                           ) : (
