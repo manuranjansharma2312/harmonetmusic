@@ -532,11 +532,16 @@ export default function AdminAIImageSystem() {
                         {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
-                    <Button size="sm" onClick={saveApiKey} disabled={apiKeySaving || !apiKeyValue.trim()}>
+                    <Button size="sm" onClick={saveApiKey} disabled={apiKeySaving || !apiKeyValue.trim() || apiKeyValue.includes('••••')}>
                       {apiKeySaving ? 'Saving...' : <><Save className="h-4 w-4 mr-1" />Save Key</>}
                     </Button>
+                    {apiKeyValue && (
+                      <Button size="sm" variant="destructive" onClick={removeApiKey} disabled={apiKeySaving}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">Your API key is stored securely in the database and only accessible by admins. Users cannot see or access this key.</p>
+                  <p className="text-xs text-muted-foreground mt-1">🔒 Your API key is stored securely and encrypted. It is NEVER visible to users — only masked previews are shown to admins. To change, enter a new key and save.</p>
                 </div>
                 <div>
                   <Label>Credits Per Image</Label>
