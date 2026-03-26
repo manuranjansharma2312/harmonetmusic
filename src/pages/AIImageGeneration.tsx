@@ -57,6 +57,7 @@ export default function AIImageGeneration() {
   const [selectedSize, setSelectedSize] = useState('');
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [referencePreview, setReferencePreview] = useState<string | null>(null);
+  const [isLifetimeFree, setIsLifetimeFree] = useState(false);
 
   // Payment settings (QR code etc)
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
