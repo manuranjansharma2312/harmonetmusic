@@ -15,7 +15,7 @@ async function getApiKey(): Promise<string> {
     if (supabaseUrl && serviceRoleKey) {
       const supabase = createClient(supabaseUrl, serviceRoleKey);
       const { data } = await supabase.from("ai_settings").select("custom_api_key").limit(1).maybeSingle();
-      if (data?.custom_api_key && data.custom_api_key.trim().length > 0) {
+      if (data?.custom_api_key && data.custom_api_key.trim().length > 0 && data.custom_api_key.trim().startsWith("sk_")) {
         return data.custom_api_key.trim();
       }
     }
