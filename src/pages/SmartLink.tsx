@@ -4,16 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, ExternalLink } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 
-type ReleaseData = {
-  id: string;
-  album_name: string | null;
-  ep_name: string | null;
-  content_type: string;
+type LinkData = {
+  title: string;
+  artist_name: string;
   poster_url: string | null;
-  release_date: string;
-  copyright_line: string | null;
   platform_links: Record<string, string>;
-  tracks?: { song_title: string; primary_artist: string | null }[];
+  content_type?: string;
+  release_date?: string;
+  copyright_line?: string | null;
 };
 
 interface Platform {
@@ -23,17 +21,15 @@ interface Platform {
   sort_order: number;
 }
 
-// Generate a consistent color from platform name
 function nameToColor(name: string): string {
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 65%, 50%)`;
+  return `hsl(${Math.abs(hash) % 360}, 65%, 50%)`;
 }
 
 export default function SmartLink() {
   const { slug } = useParams<{ slug: string }>();
-  const [release, setRelease] = useState<ReleaseData | null>(null);
+  const [linkData, setLinkData] = useState<LinkData | null>(null);
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -50,43 +46,73 @@ export default function SmartLink() {
         .order('sort_order', { ascending: true });
       setPlatforms((platformData as any) || []);
 
-      // Try slug first, then ID
-      let query = supabase
-        .from('releases')
-        .select('id, album_name, ep_name, content_type, poster_url, release_date, copyright_line, platform_links')
-        .eq('status', 'approved');
+      // Try standalone smart_links first (by slug, then id)
+      let found: LinkData | null = null;
 
-      const { data: bySlug } = await query.eq('slug', slug).maybeSingle();
-      
-      let releaseData = bySlug;
-      if (!releaseData) {
-        const { data: byId } = await supabase
+      const { data: slBySlug } = await supabase
+        .from('smart_links')
+        .select('title, artist_name, poster_url, platform_links')
+        .eq('slug', slug)
+        .maybeSingle();
+
+      if (slBySlug && slBySlug.platform_links && Object.keys(slBySlug.platform_links as Record<string, string>).length > 0) {
+        found = { ...(slBySlug as any), platform_links: slBySlug.platform_links as Record<string, string> };
+      }
+
+      if (!found) {
+        const { data: slById } = await supabase
+          .from('smart_links')
+          .select('title, artist_name, poster_url, platform_links')
+          .eq('id', slug)
+          .maybeSingle();
+        if (slById && slById.platform_links && Object.keys(slById.platform_links as Record<string, string>).length > 0) {
+          found = { ...(slById as any), platform_links: slById.platform_links as Record<string, string> };
+        }
+      }
+
+      // Fallback to releases
+      if (!found) {
+        const { data: relBySlug } = await supabase
           .from('releases')
           .select('id, album_name, ep_name, content_type, poster_url, release_date, copyright_line, platform_links')
           .eq('status', 'approved')
-          .eq('id', slug)
+          .eq('slug', slug)
           .maybeSingle();
-        releaseData = byId;
+
+        let rel = relBySlug;
+        if (!rel) {
+          const { data: relById } = await supabase
+            .from('releases')
+            .select('id, album_name, ep_name, content_type, poster_url, release_date, copyright_line, platform_links')
+            .eq('status', 'approved')
+            .eq('id', slug)
+            .maybeSingle();
+          rel = relById;
+        }
+
+        if (rel && rel.platform_links && Object.keys(rel.platform_links as Record<string, string>).length > 0) {
+          // Fetch first track for artist name
+          const { data: tracks } = await supabase
+            .from('tracks')
+            .select('song_title, primary_artist')
+            .eq('release_id', rel.id)
+            .order('track_order')
+            .limit(1);
+
+          found = {
+            title: rel.album_name || rel.ep_name || tracks?.[0]?.song_title || 'Untitled',
+            artist_name: tracks?.[0]?.primary_artist || 'Unknown Artist',
+            poster_url: rel.poster_url,
+            platform_links: rel.platform_links as Record<string, string>,
+            content_type: rel.content_type,
+            release_date: rel.release_date,
+            copyright_line: rel.copyright_line,
+          };
+        }
       }
 
-      if (!releaseData || !releaseData.platform_links || Object.keys(releaseData.platform_links as Record<string, string>).length === 0) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-
-      // Fetch tracks for artist/title info
-      const { data: tracks } = await supabase
-        .from('tracks')
-        .select('song_title, primary_artist')
-        .eq('release_id', releaseData.id)
-        .order('track_order');
-
-      setRelease({
-        ...releaseData,
-        platform_links: releaseData.platform_links as Record<string, string>,
-        tracks: tracks || [],
-      });
+      if (!found) { setNotFound(true); setLoading(false); return; }
+      setLinkData(found);
       setLoading(false);
     };
 
@@ -101,41 +127,30 @@ export default function SmartLink() {
     );
   }
 
-  if (notFound || !release) {
+  if (notFound || !linkData) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background text-center px-4">
         <h1 className="text-2xl font-bold text-foreground mb-2">Link Not Found</h1>
-        <p className="text-muted-foreground">This smart link doesn't exist or the release hasn't been published yet.</p>
+        <p className="text-muted-foreground">This smart link doesn't exist or hasn't been published yet.</p>
       </div>
     );
   }
 
-  const releaseName = release.album_name || release.ep_name || release.tracks?.[0]?.song_title || 'Untitled';
-  const artistName = release.tracks?.[0]?.primary_artist || 'Unknown Artist';
-  const year = new Date(release.release_date).getFullYear();
-  const contentLabel = release.content_type === 'album' ? 'Album' : release.content_type === 'ep' ? 'EP' : 'Single';
-  const links = release.platform_links;
-
-  // Build available platforms from DB platforms that have a matching link
   const getPlatformKey = (p: Platform) => p.name.toLowerCase().replace(/\s+/g, '_');
-  const availablePlatforms = platforms.filter(p => links[getPlatformKey(p)]?.trim());
+  const availablePlatforms = platforms.filter(p => linkData.platform_links[getPlatformKey(p)]?.trim());
+
+  const year = linkData.release_date ? new Date(linkData.release_date).getFullYear() : null;
+  const contentLabel = linkData.content_type === 'album' ? 'Album' : linkData.content_type === 'ep' ? 'EP' : linkData.content_type ? 'Single' : null;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-10"
       style={{ background: 'linear-gradient(180deg, #0a0a0a 0%, #1a0a0a 50%, #0a0a0a 100%)' }}
     >
       <div className="w-full max-w-md flex flex-col items-center gap-6 animate-fade-in">
-        {/* Poster */}
-        {release.poster_url ? (
+        {linkData.poster_url ? (
           <div className="relative">
-            <div className="absolute inset-0 rounded-2xl blur-3xl opacity-30"
-              style={{ background: 'hsl(0 67% 25%)' }}
-            />
-            <img
-              src={release.poster_url}
-              alt={releaseName}
-              className="relative w-64 h-64 sm:w-72 sm:h-72 rounded-2xl object-cover shadow-2xl border border-white/10"
-            />
+            <div className="absolute inset-0 rounded-2xl blur-3xl opacity-30" style={{ background: 'hsl(0 67% 25%)' }} />
+            <img src={linkData.poster_url} alt={linkData.title} className="relative w-64 h-64 sm:w-72 sm:h-72 rounded-2xl object-cover shadow-2xl border border-white/10" />
           </div>
         ) : (
           <div className="w-64 h-64 sm:w-72 sm:h-72 rounded-2xl bg-muted/30 border border-border flex items-center justify-center">
@@ -143,16 +158,16 @@ export default function SmartLink() {
           </div>
         )}
 
-        {/* Title & Artist */}
         <div className="text-center space-y-1">
           <h1 className="text-2xl sm:text-3xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            {releaseName}
+            {linkData.title}
           </h1>
-          <p className="text-base text-white/70">{artistName}</p>
-          <p className="text-sm text-white/40">{contentLabel} • {year}</p>
+          <p className="text-base text-white/70">{linkData.artist_name}</p>
+          {(contentLabel || year) && (
+            <p className="text-sm text-white/40">{[contentLabel, year].filter(Boolean).join(' • ')}</p>
+          )}
         </div>
 
-        {/* Platform Buttons */}
         <div className="w-full space-y-3">
           {availablePlatforms.map((platform) => {
             const key = getPlatformKey(platform);
@@ -160,15 +175,11 @@ export default function SmartLink() {
             return (
               <a
                 key={platform.id}
-                href={links[key]}
+                href={linkData.platform_links[key]}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-between w-full px-5 py-3.5 rounded-xl transition-all duration-200 hover:scale-[1.02] group"
-                style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  backdropFilter: 'blur(12px)',
-                }}
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)' }}
                 onMouseEnter={(e) => {
                   (e.currentTarget as HTMLElement).style.background = `${color}22`;
                   (e.currentTarget as HTMLElement).style.borderColor = `${color}44`;
@@ -197,7 +208,6 @@ export default function SmartLink() {
           })}
         </div>
 
-        {/* Footer */}
         <div className="flex items-center gap-2 mt-6 opacity-40 hover:opacity-60 transition-opacity">
           <img src={logoWhite} alt="Harmonet Music" className="h-5 w-auto" />
           <span className="text-xs text-white/60">Powered by Harmonet Music</span>
