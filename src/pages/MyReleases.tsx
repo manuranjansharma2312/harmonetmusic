@@ -253,7 +253,9 @@ export default function MyReleases() {
         </div>
         {releases.length > 0 && (
           <Button variant="outline" size="sm" onClick={exportCSV}>
-            <Download className="h-4 w-4" /> Export CSV
+            <Download className="h-4 w-4" /> Export {selected.size > 0 ? `${selected.size} Selected` : 'All'} CSV
+          </Button>
+        )}
           </Button>
         )}
       </div>
