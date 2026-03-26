@@ -171,11 +171,9 @@ export default function AIImageGeneration() {
       setGeneratedImage(imageUrl);
 
       // Deduct credits
-      await supabase.from('ai_credits').update({ used_credits: usedCredits + creditsPerImage, updated_at: new Date().toISOString() }).eq('user_id', user.id);
-      // Log transaction
-      await supabase.from('ai_credit_transactions').insert({ user_id: user.id, credits: creditsPerImage, type: 'usage', note: `Generated: ${prompt.trim().slice(0, 100)}` });
-      // Save generated image
-      await supabase.from('ai_generated_images').insert({ user_id: user.id, prompt: prompt.trim(), image_url: imageUrl, credits_used: creditsPerImage });
+      await supabase.from('ai_credits').update({ used_credits: usedCredits + creditsPerImage, updated_at: new Date().toISOString() }).eq('user_id', activeUserId);
+      await supabase.from('ai_credit_transactions').insert({ user_id: activeUserId, credits: creditsPerImage, type: 'usage', note: `Generated: ${prompt.trim().slice(0, 100)}` });
+      await supabase.from('ai_generated_images').insert({ user_id: activeUserId, prompt: prompt.trim(), image_url: imageUrl, credits_used: creditsPerImage });
 
       setUsedCredits(prev => prev + creditsPerImage);
       toast.success('Poster generated!');
