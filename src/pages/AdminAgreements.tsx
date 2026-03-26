@@ -238,7 +238,7 @@ export default function AdminAgreements() {
           <div
             className="agreement-preview p-6 rounded-md overflow-x-hidden"
             style={{ backgroundColor: "white", color: "black" }}
-            dangerouslySetInnerHTML={{ __html: previewTemplate?.content || "" }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(previewTemplate?.content || "") }}
           />
         </DialogContent>
       </Dialog>

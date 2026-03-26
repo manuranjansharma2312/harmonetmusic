@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import DOMPurify from "dompurify";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/DashboardLayout";
