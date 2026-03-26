@@ -62,7 +62,16 @@ const AIImageGeneration = lazy(() => import("./pages/AIImageGeneration"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      refetchOnWindowFocus: false,
+      staleTime: 30000, // 30s — avoid redundant refetches
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
 });
 
 function PageLoader() {
