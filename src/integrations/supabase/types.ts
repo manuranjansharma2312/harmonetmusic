@@ -217,21 +217,27 @@ export type Database = {
         Row: {
           api_provider: string
           credits_per_image: number
+          free_credits: number
           id: string
+          is_enabled: boolean
           updated_at: string
           updated_by: string | null
         }
         Insert: {
           api_provider?: string
           credits_per_image?: number
+          free_credits?: number
           id?: string
+          is_enabled?: boolean
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
           api_provider?: string
           credits_per_image?: number
+          free_credits?: number
           id?: string
+          is_enabled?: boolean
           updated_at?: string
           updated_by?: string | null
         }
