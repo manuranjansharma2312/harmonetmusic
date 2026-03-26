@@ -8,11 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Link2, ExternalLink, Search, Music, Edit, Plus, Trash2, GripVertical, Settings, ImageIcon } from 'lucide-react';
+import { Loader2, Link2, ExternalLink, Search, Music, Edit, Plus, Trash2, GripVertical, Settings, ImageIcon, Key, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
+// ─── Types ───
 interface SmartLinkRelease {
   id: string;
   album_name: string | null;
@@ -34,20 +37,65 @@ interface Platform {
   is_active: boolean;
 }
 
+interface ApiConfig {
+  id: string;
+  api_name: string;
+  api_key: string;
+  api_url: string;
+  is_enabled: boolean;
+  notes: string;
+}
+
+// ─── Auto-crop helper ───
+function autoCropImage(file: File, size: number): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d')!;
+      // Center-crop to square
+      const min = Math.min(img.width, img.height);
+      const sx = (img.width - min) / 2;
+      const sy = (img.height - min) / 2;
+      ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+      canvas.toBlob(
+        blob => blob ? resolve(blob) : reject(new Error('Canvas toBlob failed')),
+        'image/png'
+      );
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 export default function AdminSmartLinks() {
+  // ─── Releases state ───
   const [releases, setReleases] = useState<SmartLinkRelease[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [editRelease, setEditRelease] = useState<SmartLinkRelease | null>(null);
 
-  // Platform management
+  // ─── Platforms state ───
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [platformsLoading, setPlatformsLoading] = useState(true);
   const [editPlatform, setEditPlatform] = useState<Platform | null>(null);
   const [newPlatform, setNewPlatform] = useState(false);
   const [platformForm, setPlatformForm] = useState({ name: '', icon_url: '', placeholder: '', is_active: true });
   const [saving, setSaving] = useState(false);
+  const [uploadingIcon, setUploadingIcon] = useState(false);
 
+  // ─── API Configs state ───
+  const [apiConfigs, setApiConfigs] = useState<ApiConfig[]>([]);
+  const [apisLoading, setApisLoading] = useState(true);
+  const [editApi, setEditApi] = useState<ApiConfig | null>(null);
+  const [newApi, setNewApi] = useState(false);
+  const [apiForm, setApiForm] = useState({ api_name: '', api_key: '', api_url: '', is_enabled: false, notes: '' });
+  const [savingApi, setSavingApi] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
+
+  // ─── Fetchers ───
   const fetchReleases = async () => {
     const { data } = await supabase
       .from('releases')
@@ -67,8 +115,18 @@ export default function AdminSmartLinks() {
     setPlatformsLoading(false);
   };
 
-  useEffect(() => { fetchReleases(); fetchPlatforms(); }, []);
+  const fetchApiConfigs = async () => {
+    const { data } = await supabase
+      .from('smart_link_api_configs')
+      .select('*')
+      .order('created_at', { ascending: true });
+    setApiConfigs((data as any) || []);
+    setApisLoading(false);
+  };
 
+  useEffect(() => { fetchReleases(); fetchPlatforms(); fetchApiConfigs(); }, []);
+
+  // ─── Release helpers ───
   const filtered = releases.filter(r => {
     const name = r.album_name || r.ep_name || '';
     return name.toLowerCase().includes(search.toLowerCase());
@@ -84,6 +142,7 @@ export default function AdminSmartLinks() {
     return links && Object.values(links).some(v => v?.trim());
   };
 
+  // ─── Platform handlers ───
   const openNewPlatform = () => {
     setPlatformForm({ name: '', icon_url: '', placeholder: '', is_active: true });
     setEditPlatform(null);
@@ -99,15 +158,23 @@ export default function AdminSmartLinks() {
   const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 500 * 1024) { toast.error('Icon must be under 500KB'); return; }
-    
-    const ext = file.name.split('.').pop();
-    const path = `platform-icons/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from('posters').upload(path, file, { upsert: true });
-    if (error) { toast.error('Upload failed'); return; }
-    const { data: urlData } = supabase.storage.from('posters').getPublicUrl(path);
-    setPlatformForm(prev => ({ ...prev, icon_url: urlData.publicUrl }));
-    toast.success('Icon uploaded');
+    if (file.size > 2 * 1024 * 1024) { toast.error('Icon must be under 2MB'); return; }
+
+    setUploadingIcon(true);
+    try {
+      // Auto-crop to 128x128 square PNG
+      const croppedBlob = await autoCropImage(file, 128);
+      const path = `platform-icons/${Date.now()}.png`;
+      const { error } = await supabase.storage.from('posters').upload(path, croppedBlob, { upsert: true, contentType: 'image/png' });
+      if (error) { toast.error('Upload failed'); return; }
+      const { data: urlData } = supabase.storage.from('posters').getPublicUrl(path);
+      setPlatformForm(prev => ({ ...prev, icon_url: urlData.publicUrl }));
+      toast.success('Icon uploaded & auto-cropped to 128×128');
+    } catch {
+      toast.error('Failed to process image');
+    } finally {
+      setUploadingIcon(false);
+    }
   };
 
   const savePlatform = async () => {
@@ -147,6 +214,57 @@ export default function AdminSmartLinks() {
     fetchPlatforms();
   };
 
+  // ─── API Config handlers ───
+  const openNewApi = () => {
+    setApiForm({ api_name: '', api_key: '', api_url: '', is_enabled: false, notes: '' });
+    setEditApi(null);
+    setNewApi(true);
+    setShowApiKey(false);
+  };
+
+  const openEditApi = (a: ApiConfig) => {
+    setApiForm({ api_name: a.api_name, api_key: a.api_key || '', api_url: a.api_url || '', is_enabled: a.is_enabled, notes: a.notes || '' });
+    setEditApi(a);
+    setNewApi(true);
+    setShowApiKey(false);
+  };
+
+  const saveApi = async () => {
+    if (!apiForm.api_name.trim()) { toast.error('API name is required'); return; }
+    setSavingApi(true);
+
+    if (editApi) {
+      const { error } = await supabase
+        .from('smart_link_api_configs')
+        .update({ api_name: apiForm.api_name.trim(), api_key: apiForm.api_key, api_url: apiForm.api_url, is_enabled: apiForm.is_enabled, notes: apiForm.notes, updated_at: new Date().toISOString() } as any)
+        .eq('id', editApi.id);
+      if (error) { toast.error('Failed to update'); setSavingApi(false); return; }
+      toast.success('API config updated');
+    } else {
+      const { error } = await supabase
+        .from('smart_link_api_configs')
+        .insert({ api_name: apiForm.api_name.trim(), api_key: apiForm.api_key, api_url: apiForm.api_url, is_enabled: apiForm.is_enabled, notes: apiForm.notes } as any);
+      if (error) { toast.error('Failed to add'); setSavingApi(false); return; }
+      toast.success('API added');
+    }
+    setSavingApi(false);
+    setNewApi(false);
+    setEditApi(null);
+    fetchApiConfigs();
+  };
+
+  const deleteApi = async (id: string) => {
+    if (!confirm('Remove this API configuration?')) return;
+    await supabase.from('smart_link_api_configs').delete().eq('id', id);
+    toast.success('API config removed');
+    fetchApiConfigs();
+  };
+
+  const toggleApi = async (a: ApiConfig) => {
+    await supabase.from('smart_link_api_configs').update({ is_enabled: !a.is_enabled, updated_at: new Date().toISOString() } as any).eq('id', a.id);
+    fetchApiConfigs();
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -158,7 +276,8 @@ export default function AdminSmartLinks() {
         <Tabs defaultValue="releases" className="w-full">
           <TabsList>
             <TabsTrigger value="releases"><Link2 className="h-3.5 w-3.5 mr-1.5" />Releases</TabsTrigger>
-            <TabsTrigger value="platforms"><Settings className="h-3.5 w-3.5 mr-1.5" />Manage Platforms</TabsTrigger>
+            <TabsTrigger value="platforms"><Settings className="h-3.5 w-3.5 mr-1.5" />Platforms</TabsTrigger>
+            <TabsTrigger value="apis"><Key className="h-3.5 w-3.5 mr-1.5" />API Integrations</TabsTrigger>
           </TabsList>
 
           {/* === RELEASES TAB === */}
@@ -233,7 +352,7 @@ export default function AdminSmartLinks() {
           {/* === PLATFORMS TAB === */}
           <TabsContent value="platforms" className="space-y-4 mt-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">Configure which streaming platforms appear for users to add links.</p>
+              <p className="text-sm text-muted-foreground">Configure streaming platforms. Logos are auto-cropped to 128×128.</p>
               <Button size="sm" onClick={openNewPlatform}><Plus className="h-3.5 w-3.5 mr-1" /> Add Platform</Button>
             </div>
 
@@ -274,6 +393,57 @@ export default function AdminSmartLinks() {
               </div>
             )}
           </TabsContent>
+
+          {/* === API INTEGRATIONS TAB === */}
+          <TabsContent value="apis" className="space-y-4 mt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Add external API keys for auto-filling platform links in the future.</p>
+                <p className="text-xs text-muted-foreground/70 mt-0.5">e.g., Songlink/Odesli, MusicBrainz, or custom APIs</p>
+              </div>
+              <Button size="sm" onClick={openNewApi}><Plus className="h-3.5 w-3.5 mr-1" /> Add API</Button>
+            </div>
+
+            {apisLoading ? (
+              <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+            ) : apiConfigs.length === 0 ? (
+              <GlassCard className="p-8 text-center">
+                <Key className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">No API integrations configured</p>
+              </GlassCard>
+            ) : (
+              <div className="space-y-2">
+                {apiConfigs.map(a => (
+                  <GlassCard key={a.id} className={`p-4 space-y-2 ${!a.is_enabled ? 'opacity-60' : ''}`}>
+                    <div className="flex items-center gap-3">
+                      <Key className="h-5 w-5 text-primary flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">{a.api_name}</p>
+                        <p className="text-xs text-muted-foreground truncate font-mono">{a.api_url || 'No URL set'}</p>
+                      </div>
+                      <Badge variant={a.is_enabled ? 'default' : 'secondary'} className="text-[10px] cursor-pointer" onClick={() => toggleApi(a)}>
+                        {a.is_enabled ? 'Enabled' : 'Disabled'}
+                      </Badge>
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEditApi(a)}>
+                        <Edit className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteApi(a.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    {a.api_key && (
+                      <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
+                        <span className="text-[11px] text-muted-foreground font-mono flex-1 truncate">
+                          API Key: {'•'.repeat(20)}
+                        </span>
+                      </div>
+                    )}
+                    {a.notes && <p className="text-xs text-muted-foreground">{a.notes}</p>}
+                  </GlassCard>
+                ))}
+              </div>
+            )}
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -303,7 +473,7 @@ export default function AdminSmartLinks() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{editPlatform ? 'Edit' : 'Add'} Platform</DialogTitle>
-            <DialogDescription>Configure the streaming platform details.</DialogDescription>
+            <DialogDescription>Configure the streaming platform details. Logos are auto-cropped to 128×128 square.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -311,7 +481,7 @@ export default function AdminSmartLinks() {
               <Input value={platformForm.name} onChange={e => setPlatformForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Spotify" className="mt-1" />
             </div>
             <div>
-              <Label className="text-xs">Platform Logo</Label>
+              <Label className="text-xs">Platform Logo (auto-cropped to 128×128)</Label>
               <div className="flex items-center gap-3 mt-1">
                 {platformForm.icon_url ? (
                   <img src={platformForm.icon_url} alt="icon" className="h-10 w-10 rounded object-contain border border-border" />
@@ -321,8 +491,9 @@ export default function AdminSmartLinks() {
                   </div>
                 )}
                 <div className="flex-1">
-                  <Input type="file" accept="image/*" onChange={handleIconUpload} className="text-xs h-8" />
-                  <p className="text-[10px] text-muted-foreground mt-1">Max 500KB. PNG/SVG recommended.</p>
+                  <Input type="file" accept="image/*" onChange={handleIconUpload} className="text-xs h-8" disabled={uploadingIcon} />
+                  {uploadingIcon && <p className="text-[10px] text-primary mt-1 flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Cropping & uploading...</p>}
+                  <p className="text-[10px] text-muted-foreground mt-1">Max 2MB. Any image will be auto-cropped to 128×128 PNG.</p>
                 </div>
               </div>
               <div className="mt-2">
@@ -343,6 +514,67 @@ export default function AdminSmartLinks() {
               <Button size="sm" onClick={savePlatform} disabled={saving}>
                 {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
                 {editPlatform ? 'Update' : 'Add'} Platform
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add/Edit API Dialog */}
+      <Dialog open={newApi} onOpenChange={open => { if (!open) { setNewApi(false); setEditApi(null); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editApi ? 'Edit' : 'Add'} API Integration</DialogTitle>
+            <DialogDescription>Configure an external API for auto-fetching platform links.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-xs">API Name *</Label>
+              <Input value={apiForm.api_name} onChange={e => setApiForm(p => ({ ...p, api_name: e.target.value }))} placeholder="e.g. Songlink / Odesli" className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs">API Base URL</Label>
+              <Input value={apiForm.api_url} onChange={e => setApiForm(p => ({ ...p, api_url: e.target.value }))} placeholder="https://api.example.com/v1/..." className="mt-1 text-xs font-mono" />
+            </div>
+            <div>
+              <Label className="text-xs">API Key</Label>
+              <div className="relative mt-1">
+                <Input
+                  type={showApiKey ? 'text' : 'password'}
+                  value={apiForm.api_key}
+                  onChange={e => setApiForm(p => ({ ...p, api_key: e.target.value }))}
+                  placeholder="Paste your API key here"
+                  className="text-xs font-mono pr-10"
+                />
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                  onClick={() => setShowApiKey(!showApiKey)}
+                >
+                  {showApiKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                </Button>
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs">Notes / Instructions</Label>
+              <Textarea
+                value={apiForm.notes}
+                onChange={e => setApiForm(p => ({ ...p, notes: e.target.value }))}
+                placeholder="Where to get the API key, usage notes..."
+                className="mt-1 text-xs min-h-[60px]"
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch checked={apiForm.is_enabled} onCheckedChange={v => setApiForm(p => ({ ...p, is_enabled: v }))} id="api-enabled" />
+              <Label htmlFor="api-enabled" className="text-xs">Enable this API</Label>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" size="sm" onClick={() => { setNewApi(false); setEditApi(null); }}>Cancel</Button>
+              <Button size="sm" onClick={saveApi} disabled={savingApi}>
+                {savingApi ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
+                {editApi ? 'Update' : 'Add'} API
               </Button>
             </div>
           </div>
