@@ -22,7 +22,9 @@ type AIOrder = { id: string; plan_id: string; transaction_id: string; status: st
 type AIGenImage = { id: string; prompt: string; image_url: string | null; credits_used: number; created_at: string };
 
 export default function AIImageGeneration() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
+  const { impersonatedUserId } = useImpersonate();
+  const activeUserId = impersonatedUserId || user?.id;
   const [tab, setTab] = useState('generate');
 
   // Plans
