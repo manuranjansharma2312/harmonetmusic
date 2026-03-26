@@ -156,6 +156,8 @@ function App() {
                       <Route path="/reports/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
                       <Route path="/admin/reports/analytics" element={<ProtectedRoute requiredRole="admin"><Analytics /></ProtectedRoute>} />
                       <Route path="/reports" element={<Navigate to="/reports/ott" replace />} />
+                      <Route path="/smart-links" element={<ProtectedRoute><MySmartLinks /></ProtectedRoute>} />
+                      <Route path="/admin/smart-links" element={<ProtectedRoute requiredRole="admin"><AdminSmartLinks /></ProtectedRoute>} />
                       <Route path="/r/:slug" element={<SmartLink />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
