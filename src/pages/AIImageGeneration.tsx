@@ -12,6 +12,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useImpersonate } from '@/hooks/useImpersonate';
 import { toast } from 'sonner';
 import { Sparkles, CreditCard, History, Image as ImageIcon, Upload, CheckCircle, Loader2, Download, Wand2, X, Paperclip } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,7 +23,9 @@ type AIOrder = { id: string; plan_id: string; transaction_id: string; status: st
 type AIGenImage = { id: string; prompt: string; image_url: string | null; credits_used: number; created_at: string };
 
 export default function AIImageGeneration() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
+  const { impersonatedUserId } = useImpersonate();
+  const activeUserId = impersonatedUserId || user?.id;
   const [tab, setTab] = useState('generate');
 
   // Plans
@@ -60,12 +63,12 @@ export default function AIImageGeneration() {
   const [taxes, setTaxes] = useState<any[]>([]);
 
   const fetchData = async () => {
-    if (!user) return;
+    if (!activeUserId) return;
     const [plansRes, credRes, ordersRes, imagesRes, settingsRes, aiSettingsRes] = await Promise.all([
       supabase.from('ai_plans').select('*').eq('is_active', true).order('price'),
-      supabase.from('ai_credits').select('*').eq('user_id', user.id).maybeSingle(),
-      supabase.from('ai_plan_orders').select('*, ai_plans(name, credits, price)').eq('user_id', user.id).order('created_at', { ascending: false }),
-      supabase.from('ai_generated_images').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
+      supabase.from('ai_credits').select('*').eq('user_id', activeUserId).maybeSingle(),
+      supabase.from('ai_plan_orders').select('*, ai_plans(name, credits, price)').eq('user_id', activeUserId).order('created_at', { ascending: false }),
+      supabase.from('ai_generated_images').select('*').eq('user_id', activeUserId).order('created_at', { ascending: false }).limit(50),
       supabase.from('promotion_settings').select('qr_code_url, taxes').limit(1).maybeSingle(),
       supabase.from('ai_settings').select('free_credits, credits_per_image, image_sizes').limit(1).maybeSingle(),
     ]);
@@ -83,15 +86,15 @@ export default function AIImageGeneration() {
     if (credRes.data) {
       setTotalCredits((credRes.data as any).total_credits);
       setUsedCredits((credRes.data as any).used_credits);
-    } else if (freeCredits > 0) {
-      await supabase.from('ai_credits').insert({ user_id: user.id, total_credits: freeCredits, used_credits: 0 });
-      await supabase.from('ai_credit_transactions').insert({ user_id: user.id, credits: freeCredits, type: 'free_credits', note: 'Free credits on first visit' });
+    } else if (freeCredits > 0 && !impersonatedUserId) {
+      await supabase.from('ai_credits').insert({ user_id: activeUserId, total_credits: freeCredits, used_credits: 0 });
+      await supabase.from('ai_credit_transactions').insert({ user_id: activeUserId, credits: freeCredits, type: 'free_credits', note: 'Free credits on first visit' });
       setTotalCredits(freeCredits);
       setUsedCredits(0);
     }
   };
 
-  useEffect(() => { fetchData(); }, [user]);
+  useEffect(() => { fetchData(); }, [activeUserId]);
 
   const calculateTotal = (price: number) => {
     let total = price;
@@ -100,7 +103,7 @@ export default function AIImageGeneration() {
   };
 
   const submitOrder = async () => {
-    if (!purchaseModal || !user || !txId.trim()) return;
+    if (!purchaseModal || !activeUserId || !txId.trim()) return;
     setSubmitting(true);
     try {
       // Check duplicate transaction ID across tables
@@ -114,7 +117,7 @@ export default function AIImageGeneration() {
       let screenshotUrl: string | null = null;
       if (screenshot) {
         const ext = screenshot.name.split('.').pop();
-        const path = `ai-orders/${user.id}/${Date.now()}.${ext}`;
+        const path = `ai-orders/${activeUserId}/${Date.now()}.${ext}`;
         const { error: upErr } = await supabase.storage.from('promotion-screenshots').upload(path, screenshot);
         if (upErr) { toast.error('Screenshot upload failed'); setSubmitting(false); return; }
         const { data: urlData } = supabase.storage.from('promotion-screenshots').getPublicUrl(path);
@@ -122,7 +125,7 @@ export default function AIImageGeneration() {
       }
 
       const { error } = await supabase.from('ai_plan_orders').insert({
-        user_id: user.id,
+        user_id: activeUserId,
         plan_id: purchaseModal.id,
         transaction_id: txId.trim(),
         screenshot_url: screenshotUrl,
@@ -138,7 +141,7 @@ export default function AIImageGeneration() {
   };
 
   const generateImage = async () => {
-    if (!user || !prompt.trim()) return;
+    if (!activeUserId || !prompt.trim()) return;
     if (remaining < creditsPerImage) { toast.error(`Not enough credits. You need ${creditsPerImage} credits.`); return; }
     setGenerating(true);
     setGeneratedImage(null);
@@ -168,16 +171,14 @@ export default function AIImageGeneration() {
       setGeneratedImage(imageUrl);
 
       // Deduct credits
-      await supabase.from('ai_credits').update({ used_credits: usedCredits + creditsPerImage, updated_at: new Date().toISOString() }).eq('user_id', user.id);
-      // Log transaction
-      await supabase.from('ai_credit_transactions').insert({ user_id: user.id, credits: creditsPerImage, type: 'usage', note: `Generated: ${prompt.trim().slice(0, 100)}` });
-      // Save generated image
-      await supabase.from('ai_generated_images').insert({ user_id: user.id, prompt: prompt.trim(), image_url: imageUrl, credits_used: creditsPerImage });
+      await supabase.from('ai_credits').update({ used_credits: usedCredits + creditsPerImage, updated_at: new Date().toISOString() }).eq('user_id', activeUserId);
+      await supabase.from('ai_credit_transactions').insert({ user_id: activeUserId, credits: creditsPerImage, type: 'usage', note: `Generated: ${prompt.trim().slice(0, 100)}` });
+      await supabase.from('ai_generated_images').insert({ user_id: activeUserId, prompt: prompt.trim(), image_url: imageUrl, credits_used: creditsPerImage });
 
       setUsedCredits(prev => prev + creditsPerImage);
       toast.success('Poster generated!');
       // Refresh gallery
-      const { data: imgData } = await supabase.from('ai_generated_images').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50);
+      const { data: imgData } = await supabase.from('ai_generated_images').select('*').eq('user_id', activeUserId).order('created_at', { ascending: false }).limit(50);
       if (imgData) setImages(imgData as any);
     } catch (e) {
       toast.error('Generation failed. Please try again.');
