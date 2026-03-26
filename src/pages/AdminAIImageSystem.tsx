@@ -410,7 +410,7 @@ export default function AdminAIImageSystem() {
           {/* SETTINGS TAB */}
           <TabsContent value="settings">
             <Card>
-              <CardHeader><CardTitle>AI Poster Settings</CardTitle></CardHeader>
+              <CardHeader><CardTitle>AI Poster Generate Settings</CardTitle></CardHeader>
               <CardContent className="space-y-4 max-w-md">
                 <div className="flex items-center justify-between rounded-lg border p-3">
                   <div>
