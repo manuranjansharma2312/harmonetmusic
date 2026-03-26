@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { Sparkles, CreditCard, History, Image as ImageIcon, Upload, CheckCircle, Loader2, Download, Wand2 } from 'lucide-react';
+import { Sparkles, CreditCard, History, Image as ImageIcon, Upload, CheckCircle, Loader2, Download, Wand2, X, Paperclip } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { format, formatDistanceToNow, addHours, isAfter } from 'date-fns';
 
@@ -50,8 +50,10 @@ export default function AIImageGeneration() {
   const [generating, setGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [creditsPerImage, setCreditsPerImage] = useState(1);
-  const [imageSizes, setImageSizes] = useState<{ label: string; width: number; height: number }[]>([]);
+  const [imageSizes, setImageSizes] = useState<{ label: string; ratio: string }[]>([]);
   const [selectedSize, setSelectedSize] = useState('');
+  const [referenceImage, setReferenceImage] = useState<File | null>(null);
+  const [referencePreview, setReferencePreview] = useState<string | null>(null);
 
   // Payment settings (QR code etc)
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
@@ -77,7 +79,7 @@ export default function AIImageGeneration() {
     setCreditsPerImage((aiSettingsRes.data as any)?.credits_per_image || 1);
     const sizes = (aiSettingsRes.data as any)?.image_sizes || [];
     setImageSizes(sizes);
-    if (sizes.length > 0 && !selectedSize) setSelectedSize(`${sizes[0].width}x${sizes[0].height}`);
+    if (sizes.length > 0 && !selectedSize) setSelectedSize(sizes[0].ratio);
     if (credRes.data) {
       setTotalCredits((credRes.data as any).total_credits);
       setUsedCredits((credRes.data as any).used_credits);
@@ -141,8 +143,23 @@ export default function AIImageGeneration() {
     setGenerating(true);
     setGeneratedImage(null);
     try {
-      const sizeObj = imageSizes.find(s => `${s.width}x${s.height}` === selectedSize);
-      const { data, error } = await supabase.functions.invoke('generate-ai-poster', { body: { prompt: prompt.trim(), width: sizeObj?.width, height: sizeObj?.height } });
+      // Convert reference image to base64 if provided
+      let referenceImageData: string | undefined;
+      if (referenceImage) {
+        referenceImageData = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(referenceImage);
+        });
+      }
+
+      const { data, error } = await supabase.functions.invoke('generate-ai-poster', { 
+        body: { 
+          prompt: prompt.trim(), 
+          aspectRatio: selectedSize || undefined,
+          referenceImage: referenceImageData || undefined,
+        } 
+      });
       if (error) { toast.error('Generation failed. Please try again.'); return; }
       if (data?.error) { toast.error(data.error); return; }
       const imageUrl = data?.image_url;
@@ -172,6 +189,22 @@ export default function AIImageGeneration() {
     a.href = dataUrl;
     a.download = filename;
     a.click();
+  };
+
+  const handleReferenceImage = (file: File | null) => {
+    setReferenceImage(file);
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setReferencePreview(url);
+    } else {
+      setReferencePreview(null);
+    }
+  };
+
+  const clearReferenceImage = () => {
+    setReferenceImage(null);
+    if (referencePreview) URL.revokeObjectURL(referencePreview);
+    setReferencePreview(null);
   };
 
   return (
@@ -219,17 +252,38 @@ export default function AIImageGeneration() {
                   </div>
                   {imageSizes.length > 0 && (
                     <div>
-                      <Label>Image Size *</Label>
+                      <Label>Aspect Ratio *</Label>
                       <Select value={selectedSize} onValueChange={setSelectedSize}>
-                        <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Select aspect ratio" /></SelectTrigger>
                         <SelectContent>
                           {imageSizes.map((s, i) => (
-                            <SelectItem key={i} value={`${s.width}x${s.height}`}>{s.label} ({s.width}×{s.height})</SelectItem>
+                            <SelectItem key={i} value={s.ratio}>{s.label} ({s.ratio})</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
                   )}
+                  {/* Reference Image */}
+                  <div>
+                    <Label>Reference Image (Optional)</Label>
+                    {referencePreview ? (
+                      <div className="relative mt-2 inline-block">
+                        <img src={referencePreview} alt="Reference" className="h-32 rounded-lg border object-cover" />
+                        <Button variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={clearReferenceImage}>
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="mt-1">
+                        <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-dashed p-3 hover:bg-muted/50 transition-colors">
+                          <Paperclip className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">Attach a reference image</span>
+                          <Input type="file" accept="image/*" className="hidden" onChange={e => handleReferenceImage(e.target.files?.[0] || null)} disabled={generating} />
+                        </label>
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">Upload an image to use as style/design reference for AI generation.</p>
+                  </div>
                   <Button onClick={generateImage} disabled={generating || !prompt.trim() || remaining < creditsPerImage} className="w-full" size="lg">
                     {generating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</> : <><Sparkles className="h-4 w-4 mr-2" />Generate Poster</>}
                   </Button>
