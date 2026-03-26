@@ -16,7 +16,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, CreditCard, History, BarChart3, Settings, Users, Image as ImageIcon } from 'lucide-react';
+import { Plus, Pencil, Trash2, CreditCard, History, BarChart3, Settings, Users, Image as ImageIcon, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
 type AIPlan = { id: string; name: string; price: number; credits: number; description: string; tag: string | null; is_active: boolean; created_at: string };
@@ -55,9 +55,10 @@ export default function AdminAIImageSystem() {
   const [activeUsers, setActiveUsers] = useState(0);
 
   // Settings
-  const [aiSettings, setAiSettings] = useState<{ credits_per_image: number; api_provider: string; is_enabled: boolean; free_credits: number; image_sizes: { label: string; ratio: string }[] }>({ credits_per_image: 1, api_provider: 'openai', is_enabled: true, free_credits: 0, image_sizes: [] });
+  const [aiSettings, setAiSettings] = useState<{ credits_per_image: number; api_provider: string; is_enabled: boolean; free_credits: number; image_sizes: { label: string; ratio: string }[]; lifetime_free_enabled: boolean; lifetime_free_all_users: boolean; lifetime_free_user_ids: string[] }>({ credits_per_image: 1, api_provider: 'openai', is_enabled: true, free_credits: 0, image_sizes: [], lifetime_free_enabled: false, lifetime_free_all_users: true, lifetime_free_user_ids: [] });
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [newSize, setNewSize] = useState({ label: '', ratio: '' });
+  const [lifetimeFreeSearch, setLifetimeFreeSearch] = useState('');
 
   const profileMap = useMemo(() => {
     const m: Record<string, Profile> = {};
@@ -109,7 +110,7 @@ export default function AdminAIImageSystem() {
 
   const fetchSettings = async () => {
     const { data } = await supabase.from('ai_settings').select('*').limit(1).maybeSingle();
-    if (data) setAiSettings({ credits_per_image: (data as any).credits_per_image, api_provider: (data as any).api_provider, is_enabled: (data as any).is_enabled, free_credits: (data as any).free_credits, image_sizes: (data as any).image_sizes || [] });
+    if (data) setAiSettings({ credits_per_image: (data as any).credits_per_image, api_provider: (data as any).api_provider, is_enabled: (data as any).is_enabled, free_credits: (data as any).free_credits, image_sizes: (data as any).image_sizes || [], lifetime_free_enabled: (data as any).lifetime_free_enabled ?? false, lifetime_free_all_users: (data as any).lifetime_free_all_users ?? true, lifetime_free_user_ids: (data as any).lifetime_free_user_ids || [] });
   };
 
   useEffect(() => {
@@ -237,7 +238,7 @@ export default function AdminAIImageSystem() {
   const saveSettings = async () => {
     setSettingsLoading(true);
     const { data: settingsRow } = await supabase.from('ai_settings').select('id').limit(1).single();
-    await supabase.from('ai_settings').update({ credits_per_image: aiSettings.credits_per_image, api_provider: aiSettings.api_provider, is_enabled: aiSettings.is_enabled, free_credits: aiSettings.free_credits, image_sizes: aiSettings.image_sizes as any, updated_at: new Date().toISOString(), updated_by: user?.id }).eq('id', settingsRow?.id || '');
+    await supabase.from('ai_settings').update({ credits_per_image: aiSettings.credits_per_image, api_provider: aiSettings.api_provider, is_enabled: aiSettings.is_enabled, free_credits: aiSettings.free_credits, image_sizes: aiSettings.image_sizes as any, lifetime_free_enabled: aiSettings.lifetime_free_enabled, lifetime_free_all_users: aiSettings.lifetime_free_all_users, lifetime_free_user_ids: aiSettings.lifetime_free_user_ids, updated_at: new Date().toISOString(), updated_by: user?.id } as any).eq('id', settingsRow?.id || '');
     toast.success('Settings saved');
     setSettingsLoading(false);
   };
@@ -482,6 +483,68 @@ export default function AdminAIImageSystem() {
                     <Input placeholder="Ratio (e.g. 9:16)" value={newSize.ratio} onChange={e => setNewSize(s => ({ ...s, ratio: e.target.value }))} />
                   </div>
                   <Button variant="outline" size="sm" onClick={addImageSize}><Plus className="h-4 w-4 mr-1" />Add Size</Button>
+                </div>
+
+                {/* Lifetime Free Plan */}
+                <div className="space-y-3 pt-2 border-t">
+                  <Label className="text-base">Lifetime Free Plan (Unlimited)</Label>
+                  <p className="text-xs text-muted-foreground">When enabled, selected users (or all users) can generate unlimited images without credits. Premium plans will be hidden for those users.</p>
+                  
+                  <div className="flex items-center justify-between rounded-lg border p-3">
+                    <div>
+                      <Label>Enable Lifetime Free Plan</Label>
+                      <p className="text-xs text-muted-foreground">Turn on/off the unlimited free generation.</p>
+                    </div>
+                    <Switch checked={aiSettings.lifetime_free_enabled} onCheckedChange={v => setAiSettings(s => ({ ...s, lifetime_free_enabled: v }))} />
+                  </div>
+
+                  {aiSettings.lifetime_free_enabled && (
+                    <>
+                      <div className="flex items-center justify-between rounded-lg border p-3">
+                        <div>
+                          <Label>Apply to All Users</Label>
+                          <p className="text-xs text-muted-foreground">If enabled, all users get unlimited free generation. If disabled, only specific users below.</p>
+                        </div>
+                        <Switch checked={aiSettings.lifetime_free_all_users} onCheckedChange={v => setAiSettings(s => ({ ...s, lifetime_free_all_users: v }))} />
+                      </div>
+
+                      {!aiSettings.lifetime_free_all_users && (
+                        <div className="space-y-2">
+                          <Label>Specific Users</Label>
+                          <Input placeholder="Search users by name or ID..." value={lifetimeFreeSearch} onChange={e => setLifetimeFreeSearch(e.target.value)} />
+                          <div className="max-h-[200px] overflow-auto border rounded-lg">
+                            {profiles
+                              .filter(p => {
+                                const q = lifetimeFreeSearch.toLowerCase();
+                                return !q || p.legal_name.toLowerCase().includes(q) || String(p.display_id).includes(q) || p.email.toLowerCase().includes(q);
+                              })
+                              .slice(0, 50)
+                              .map(p => {
+                                const isSelected = aiSettings.lifetime_free_user_ids.includes(p.user_id);
+                                return (
+                                  <div key={p.user_id} className={`flex items-center justify-between px-3 py-2 text-sm cursor-pointer hover:bg-muted/50 ${isSelected ? 'bg-primary/10' : ''}`}
+                                    onClick={() => {
+                                      setAiSettings(s => ({
+                                        ...s,
+                                        lifetime_free_user_ids: isSelected
+                                          ? s.lifetime_free_user_ids.filter(id => id !== p.user_id)
+                                          : [...s.lifetime_free_user_ids, p.user_id],
+                                      }));
+                                    }}
+                                  >
+                                    <span>{p.legal_name} (#{p.display_id})</span>
+                                    {isSelected && <CheckCircle className="h-4 w-4 text-primary" />}
+                                  </div>
+                                );
+                              })}
+                          </div>
+                          {aiSettings.lifetime_free_user_ids.length > 0 && (
+                            <p className="text-xs text-muted-foreground">{aiSettings.lifetime_free_user_ids.length} user(s) selected</p>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
 
                 <Button onClick={saveSettings} disabled={settingsLoading}>{settingsLoading ? 'Saving...' : 'Save Settings'}</Button>

@@ -57,6 +57,7 @@ export default function AIImageGeneration() {
   const [selectedSize, setSelectedSize] = useState('');
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [referencePreview, setReferencePreview] = useState<string | null>(null);
+  const [isLifetimeFree, setIsLifetimeFree] = useState(false);
 
   // Payment settings (QR code etc)
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
@@ -70,12 +71,19 @@ export default function AIImageGeneration() {
       supabase.from('ai_plan_orders').select('*, ai_plans(name, credits, price)').eq('user_id', activeUserId).order('created_at', { ascending: false }),
       supabase.from('ai_generated_images').select('*').eq('user_id', activeUserId).order('created_at', { ascending: false }).limit(50),
       supabase.from('promotion_settings').select('qr_code_url, taxes').limit(1).maybeSingle(),
-      supabase.from('ai_settings').select('free_credits, credits_per_image, image_sizes').limit(1).maybeSingle(),
+      supabase.from('ai_settings').select('free_credits, credits_per_image, image_sizes, lifetime_free_enabled, lifetime_free_all_users, lifetime_free_user_ids').limit(1).maybeSingle(),
     ]);
     if (plansRes.data) setPlans(plansRes.data as any);
     if (ordersRes.data) setOrders(ordersRes.data as any);
     if (imagesRes.data) setImages(imagesRes.data as any);
     if (settingsRes.data) { setQrCodeUrl((settingsRes.data as any).qr_code_url); setTaxes((settingsRes.data as any).taxes || []); }
+
+    // Check lifetime free status
+    const lfEnabled = (aiSettingsRes.data as any)?.lifetime_free_enabled ?? false;
+    const lfAllUsers = (aiSettingsRes.data as any)?.lifetime_free_all_users ?? true;
+    const lfUserIds: string[] = (aiSettingsRes.data as any)?.lifetime_free_user_ids || [];
+    const userIsLifetimeFree = lfEnabled && (lfAllUsers || (activeUserId ? lfUserIds.includes(activeUserId) : false));
+    setIsLifetimeFree(userIsLifetimeFree);
 
     // Handle credits & free credits auto-provisioning
     const freeCredits = (aiSettingsRes.data as any)?.free_credits || 0;
@@ -142,7 +150,7 @@ export default function AIImageGeneration() {
 
   const generateImage = async () => {
     if (!activeUserId || !prompt.trim()) return;
-    if (remaining < creditsPerImage) { toast.error(`Not enough credits. You need ${creditsPerImage} credits.`); return; }
+    if (!isLifetimeFree && remaining < creditsPerImage) { toast.error(`Not enough credits. You need ${creditsPerImage} credits.`); return; }
     setGenerating(true);
     setGeneratedImage(null);
     try {
@@ -170,12 +178,13 @@ export default function AIImageGeneration() {
 
       setGeneratedImage(imageUrl);
 
-      // Deduct credits
-      await supabase.from('ai_credits').update({ used_credits: usedCredits + creditsPerImage, updated_at: new Date().toISOString() }).eq('user_id', activeUserId);
-      await supabase.from('ai_credit_transactions').insert({ user_id: activeUserId, credits: creditsPerImage, type: 'usage', note: `Generated: ${prompt.trim().slice(0, 100)}` });
-      await supabase.from('ai_generated_images').insert({ user_id: activeUserId, prompt: prompt.trim(), image_url: imageUrl, credits_used: creditsPerImage });
-
-      setUsedCredits(prev => prev + creditsPerImage);
+      // Deduct credits only if not lifetime free
+      if (!isLifetimeFree) {
+        await supabase.from('ai_credits').update({ used_credits: usedCredits + creditsPerImage, updated_at: new Date().toISOString() }).eq('user_id', activeUserId);
+        await supabase.from('ai_credit_transactions').insert({ user_id: activeUserId, credits: creditsPerImage, type: 'usage', note: `Generated: ${prompt.trim().slice(0, 100)}` });
+        setUsedCredits(prev => prev + creditsPerImage);
+      }
+      await supabase.from('ai_generated_images').insert({ user_id: activeUserId, prompt: prompt.trim(), image_url: imageUrl, credits_used: isLifetimeFree ? 0 : creditsPerImage });
       toast.success('Poster generated!');
       // Refresh gallery
       const { data: imgData } = await supabase.from('ai_generated_images').select('*').eq('user_id', activeUserId).order('created_at', { ascending: false }).limit(50);
@@ -217,7 +226,11 @@ export default function AIImageGeneration() {
             <CreditCard className="h-5 w-5 text-primary" />
             <div>
               <p className="text-xs text-muted-foreground">Credits</p>
-              <p className="font-bold text-lg">{remaining} <span className="text-xs text-muted-foreground font-normal">remaining</span></p>
+              {isLifetimeFree ? (
+                <p className="font-bold text-lg text-green-600">Unlimited <span className="text-xs text-muted-foreground font-normal">(Free Plan)</span></p>
+              ) : (
+                <p className="font-bold text-lg">{remaining} <span className="text-xs text-muted-foreground font-normal">remaining</span></p>
+              )}
             </div>
           </Card>
         </div>
@@ -226,8 +239,8 @@ export default function AIImageGeneration() {
           <TabsList className="flex flex-wrap h-auto gap-1">
             <TabsTrigger value="generate" className="gap-1"><Wand2 className="h-4 w-4" />Generate</TabsTrigger>
             <TabsTrigger value="gallery" className="gap-1"><ImageIcon className="h-4 w-4" />My Posters</TabsTrigger>
-            <TabsTrigger value="plans" className="gap-1"><CreditCard className="h-4 w-4" />Buy Credits</TabsTrigger>
-            <TabsTrigger value="orders" className="gap-1"><History className="h-4 w-4" />My Orders</TabsTrigger>
+            {!isLifetimeFree && <TabsTrigger value="plans" className="gap-1"><CreditCard className="h-4 w-4" />Buy Credits</TabsTrigger>}
+            {!isLifetimeFree && <TabsTrigger value="orders" className="gap-1"><History className="h-4 w-4" />My Orders</TabsTrigger>}
           </TabsList>
 
           {/* GENERATE TAB */}
@@ -248,7 +261,9 @@ export default function AIImageGeneration() {
                       className="min-h-[140px]"
                       disabled={generating}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">Cost: {creditsPerImage} credit{creditsPerImage > 1 ? 's' : ''} per generation</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {isLifetimeFree ? 'Unlimited free generation — no credits needed!' : `Cost: ${creditsPerImage} credit${creditsPerImage > 1 ? 's' : ''} per generation`}
+                    </p>
                     <p className="text-xs text-amber-500 mt-1">⚠️ Generated posters are automatically deleted after 24 hours. Download them before they expire!</p>
                   </div>
                   {imageSizes.length > 0 && (
@@ -285,7 +300,7 @@ export default function AIImageGeneration() {
                     )}
                     <p className="text-xs text-muted-foreground mt-1">Upload an image to use as style/design reference for AI generation.</p>
                   </div>
-                  <Button onClick={generateImage} disabled={generating || !prompt.trim() || remaining < creditsPerImage} className="w-full" size="lg">
+                  <Button onClick={generateImage} disabled={generating || !prompt.trim() || (!isLifetimeFree && remaining < creditsPerImage)} className="w-full" size="lg">
                     {generating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</> : <><Sparkles className="h-4 w-4 mr-2" />Generate Poster</>}
                   </Button>
                 </CardContent>
