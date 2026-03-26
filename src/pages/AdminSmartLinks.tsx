@@ -98,6 +98,13 @@ export default function AdminSmartLinks() {
   const [savingApi, setSavingApi] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
 
+  // ─── Custom Smart Links state ───
+  const [customLinks, setCustomLinks] = useState<any[]>([]);
+  const [customLoading, setCustomLoading] = useState(true);
+  const [customSearch, setCustomSearch] = useState('');
+  const [editCustom, setEditCustom] = useState<any | null>(null);
+  const [creatingCustom, setCreatingCustom] = useState(false);
+
   // ─── Fetchers ───
   const fetchReleases = async () => {
     const { data } = await supabase
