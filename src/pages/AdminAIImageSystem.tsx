@@ -259,15 +259,33 @@ export default function AdminAIImageSystem() {
   };
 
   const saveApiKey = async () => {
-    if (!apiKeyValue.trim()) { toast.error('Please enter an API key'); return; }
+    if (!apiKeyValue.trim() || apiKeyValue.includes('••••')) { toast.error('Please enter a new API key'); return; }
     setApiKeySaving(true);
     try {
-      const { data: settingsRow } = await supabase.from('ai_settings').select('id').limit(1).single();
-      if (settingsRow) {
-        await supabase.from('ai_settings').update({ custom_api_key: apiKeyValue.trim(), updated_at: new Date().toISOString(), updated_by: user?.id } as any).eq('id', settingsRow.id);
-        toast.success('API Key saved successfully!');
-      }
+      const { data, error } = await supabase.functions.invoke('manage-ai-api-key', {
+        body: { action: 'save_key', api_key: apiKeyValue.trim() },
+      });
+      if (error) throw error;
+      if (data?.error) { toast.error(data.error); return; }
+      toast.success('API Key saved securely!');
+      // Refresh to show masked version
+      const { data: keyData } = await supabase.functions.invoke('manage-ai-api-key', {
+        body: { action: 'get_status' },
+      });
+      if (keyData?.has_key) setApiKeyValue(keyData.masked_key || '••••••••');
     } catch { toast.error('Failed to save API key'); }
+    finally { setApiKeySaving(false); }
+  };
+
+  const removeApiKey = async () => {
+    setApiKeySaving(true);
+    try {
+      await supabase.functions.invoke('manage-ai-api-key', {
+        body: { action: 'remove_key' },
+      });
+      setApiKeyValue('');
+      toast.success('API Key removed. System will use default key.');
+    } catch { toast.error('Failed to remove API key'); }
     finally { setApiKeySaving(false); }
   };
 
