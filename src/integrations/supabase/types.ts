@@ -41,6 +41,202 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_credit_transactions: {
+        Row: {
+          created_at: string
+          credits: number
+          id: string
+          note: string | null
+          order_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits: number
+          id?: string
+          note?: string | null
+          order_id?: string | null
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits?: number
+          id?: string
+          note?: string | null
+          order_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_credit_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "ai_plan_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_credits: {
+        Row: {
+          id: string
+          total_credits: number
+          updated_at: string
+          used_credits: number
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          total_credits?: number
+          updated_at?: string
+          used_credits?: number
+          user_id: string
+        }
+        Update: {
+          id?: string
+          total_credits?: number
+          updated_at?: string
+          used_credits?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_generated_images: {
+        Row: {
+          created_at: string
+          credits_used: number
+          id: string
+          image_url: string | null
+          prompt: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits_used?: number
+          id?: string
+          image_url?: string | null
+          prompt: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits_used?: number
+          id?: string
+          image_url?: string | null
+          prompt?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_plan_orders: {
+        Row: {
+          created_at: string
+          id: string
+          payment_note: string | null
+          plan_id: string
+          rejection_reason: string | null
+          screenshot_url: string | null
+          status: string
+          transaction_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payment_note?: string | null
+          plan_id: string
+          rejection_reason?: string | null
+          screenshot_url?: string | null
+          status?: string
+          transaction_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payment_note?: string | null
+          plan_id?: string
+          rejection_reason?: string | null
+          screenshot_url?: string | null
+          status?: string
+          transaction_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_plan_orders_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "ai_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_plans: {
+        Row: {
+          created_at: string
+          credits: number
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          tag: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credits?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          price?: number
+          tag?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credits?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          tag?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_settings: {
+        Row: {
+          api_provider: string
+          credits_per_image: number
+          id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          api_provider?: string
+          credits_per_image?: number
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          api_provider?: string
+          credits_per_image?: number
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       bank_detail_audit_logs: {
         Row: {
           bank_detail_id: string
