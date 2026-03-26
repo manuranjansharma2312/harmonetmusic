@@ -63,8 +63,19 @@ export function PlatformLinksEditor({ releaseId, releaseSlug, initialLinks, onSa
 
     setFetching(true);
     try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const response = await fetch(
-        `https://api.song.link/v1-alpha.1/links?url=${encodeURIComponent(autoFetchUrl.trim())}&userCountry=IN`
+        `${supabaseUrl}/functions/v1/songlink-proxy`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+          },
+          body: JSON.stringify({ url: autoFetchUrl.trim() }),
+        }
       );
 
       if (!response.ok) {
