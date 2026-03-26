@@ -200,7 +200,7 @@ export default function AIImageGeneration() {
       // Deduct credits only if not lifetime free
       if (!isLifetimeFree) {
         await supabase.rpc('deduct_ai_credit' as any, { _user_id: activeUserId, _amount: creditsPerImage });
-        await supabase.from('ai_credit_transactions').insert({ user_id: activeUserId, credits: creditsPerImage, type: 'usage', note: `Generated: ${prompt.trim().slice(0, 100)}` });
+        await supabase.rpc('log_ai_credit_transaction' as any, { _user_id: activeUserId, _credits: creditsPerImage, _type: 'usage', _note: `Generated: ${prompt.trim().slice(0, 100)}` });
         setUsedCredits(prev => prev + creditsPerImage);
       }
       await supabase.from('ai_generated_images').insert({ user_id: activeUserId, prompt: prompt.trim(), image_url: watermarkedUrl, credits_used: isLifetimeFree ? 0 : creditsPerImage });
