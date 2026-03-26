@@ -1,0 +1,1 @@
+UPDATE public.ai_settings SET api_provider = 'Lovable AI' WHERE api_provider LIKE 'nvapi-%' OR api_provider LIKE 'sk-%';
