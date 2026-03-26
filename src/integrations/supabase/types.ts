@@ -157,6 +157,27 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_support: {
+        Row: {
+          content: string
+          id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          content?: string
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          content?: string
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       content_requests: {
         Row: {
           artist_name: string | null
