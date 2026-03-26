@@ -107,7 +107,7 @@ export default function AdminAIImageSystem() {
 
   const fetchSettings = async () => {
     const { data } = await supabase.from('ai_settings').select('*').limit(1).maybeSingle();
-    if (data) setAiSettings({ credits_per_image: (data as any).credits_per_image, api_provider: (data as any).api_provider });
+    if (data) setAiSettings({ credits_per_image: (data as any).credits_per_image, api_provider: (data as any).api_provider, is_enabled: (data as any).is_enabled, free_credits: (data as any).free_credits });
   };
 
   useEffect(() => {
