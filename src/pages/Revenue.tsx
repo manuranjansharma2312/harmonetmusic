@@ -241,29 +241,7 @@ export default function Revenue() {
     );
   }
 
-  if (hasBankDetails === false && role !== 'admin') {
-    return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center max-w-md mx-auto p-8">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 mx-auto mb-5">
-              <Landmark className="h-8 w-8 text-primary" />
-            </div>
-            <h2 className="text-xl font-display font-bold text-foreground mb-2">Bank Details Required</h2>
-            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-              You need to add your bank details before you can access the Revenue section and request withdrawals.
-            </p>
-            <button
-              onClick={() => navigate('/bank-details')}
-              className="px-6 py-3 rounded-xl btn-primary-gradient text-primary-foreground font-semibold text-sm shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all flex items-center gap-2 mx-auto"
-            >
-              <Landmark className="h-4 w-4" /> Add Bank Details
-            </button>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
+  const showBankDetailsNotice = hasBankDetails === false && role !== 'admin';
 
   return (
     <DashboardLayout>
