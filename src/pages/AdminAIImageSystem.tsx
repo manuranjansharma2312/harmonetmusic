@@ -113,7 +113,15 @@ export default function AdminAIImageSystem() {
 
   const fetchSettings = async () => {
     const { data } = await supabase.from('ai_settings').select('*').limit(1).maybeSingle();
-    if (data) setAiSettings({ credits_per_image: (data as any).credits_per_image, api_provider: (data as any).api_provider, is_enabled: (data as any).is_enabled, free_credits: (data as any).free_credits, image_sizes: (data as any).image_sizes || [], lifetime_free_enabled: (data as any).lifetime_free_enabled ?? false, lifetime_free_all_users: (data as any).lifetime_free_all_users ?? true, lifetime_free_user_ids: (data as any).lifetime_free_user_ids || [] });
+    if (data) {
+      setAiSettings({ credits_per_image: (data as any).credits_per_image, api_provider: (data as any).api_provider, is_enabled: (data as any).is_enabled, free_credits: (data as any).free_credits, image_sizes: (data as any).image_sizes || [], lifetime_free_enabled: (data as any).lifetime_free_enabled ?? false, lifetime_free_all_users: (data as any).lifetime_free_all_users ?? true, lifetime_free_user_ids: (data as any).lifetime_free_user_ids || [] });
+      // Load custom API key (masked display)
+      const key = (data as any).custom_api_key || '';
+      if (key) {
+        setApiKeyValue(key);
+      }
+      setApiKeyLoaded(true);
+    }
   };
 
   useEffect(() => {
