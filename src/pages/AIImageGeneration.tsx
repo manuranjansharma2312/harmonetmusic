@@ -214,8 +214,21 @@ export default function AIImageGeneration() {
                       disabled={generating}
                     />
                     <p className="text-xs text-muted-foreground mt-1">Cost: {creditsPerImage} credit{creditsPerImage > 1 ? 's' : ''} per generation</p>
-                    <p className="text-xs text-orange-500 mt-1">⚠️ Generated posters are automatically deleted after 24 hours. Download them before they expire!</p>
+                    <p className="text-xs text-amber-500 mt-1">⚠️ Generated posters are automatically deleted after 24 hours. Download them before they expire!</p>
                   </div>
+                  {imageSizes.length > 0 && (
+                    <div>
+                      <Label>Image Size *</Label>
+                      <Select value={selectedSize} onValueChange={setSelectedSize}>
+                        <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
+                        <SelectContent>
+                          {imageSizes.map((s, i) => (
+                            <SelectItem key={i} value={`${s.width}x${s.height}`}>{s.label} ({s.width}×{s.height})</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   <Button onClick={generateImage} disabled={generating || !prompt.trim() || remaining < creditsPerImage} className="w-full" size="lg">
                     {generating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</> : <><Sparkles className="h-4 w-4 mr-2" />Generate Poster</>}
                   </Button>
