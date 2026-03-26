@@ -204,10 +204,10 @@ export default function AdminAIImageSystem() {
     fetchCredits(); fetchTransactions(); fetchUsageStats();
   };
 
-  // Settings
   const saveSettings = async () => {
     setSettingsLoading(true);
-    await supabase.from('ai_settings').update({ credits_per_image: aiSettings.credits_per_image, api_provider: aiSettings.api_provider, updated_at: new Date().toISOString(), updated_by: user?.id }).eq('id', (await supabase.from('ai_settings').select('id').limit(1).single()).data?.id || '');
+    const { data: settingsRow } = await supabase.from('ai_settings').select('id').limit(1).single();
+    await supabase.from('ai_settings').update({ credits_per_image: aiSettings.credits_per_image, api_provider: aiSettings.api_provider, is_enabled: aiSettings.is_enabled, free_credits: aiSettings.free_credits, updated_at: new Date().toISOString(), updated_by: user?.id }).eq('id', settingsRow?.id || '');
     toast.success('Settings saved');
     setSettingsLoading(false);
   };
