@@ -253,6 +253,30 @@ export default function Revenue() {
           </p>
         </div>
 
+        {showBankDetailsNotice && (
+          <GlassCard className="p-4 border-destructive/30 bg-destructive/5">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-destructive/10">
+                <Landmark className="h-5 w-5 text-destructive" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-foreground">Bank Details Required</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  You need to add your bank details before you can request withdrawals. Please add them to proceed.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/bank-details')}
+                className="gap-1.5 shrink-0"
+              >
+                <Landmark className="h-3.5 w-3.5" /> Add Bank Details
+              </Button>
+            </div>
+          </GlassCard>
+        )}
+
         {parentBankMissing && (
           <GlassCard className="p-4 border-amber-500/30 bg-amber-500/5">
             <div className="flex items-start gap-3">
