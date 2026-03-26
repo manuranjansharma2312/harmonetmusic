@@ -117,7 +117,7 @@ export default function AIImageGeneration() {
       let screenshotUrl: string | null = null;
       if (screenshot) {
         const ext = screenshot.name.split('.').pop();
-        const path = `ai-orders/${user.id}/${Date.now()}.${ext}`;
+        const path = `ai-orders/${activeUserId}/${Date.now()}.${ext}`;
         const { error: upErr } = await supabase.storage.from('promotion-screenshots').upload(path, screenshot);
         if (upErr) { toast.error('Screenshot upload failed'); setSubmitting(false); return; }
         const { data: urlData } = supabase.storage.from('promotion-screenshots').getPublicUrl(path);
