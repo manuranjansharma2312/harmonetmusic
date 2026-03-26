@@ -103,13 +103,10 @@ export default function Revenue() {
         setHasBankDetails(!!bankData);
       }
 
-      // Fetch hidden cut
-      setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
-
       // Check if sub-label and get parent's cut
       const { data: subLabelData } = await supabase
         .from('sub_labels')
-        .select('percentage_cut, withdrawal_threshold')
+        .select('percentage_cut, withdrawal_threshold, parent_user_id')
         .eq('sub_user_id', activeUserId!)
         .maybeSingle();
       if (subLabelData) {
@@ -117,8 +114,21 @@ export default function Revenue() {
         if (isSubLabel) {
           setThreshold(Number(subLabelData.withdrawal_threshold) || 1000);
         }
+        // For sub-labels, fetch PARENT's hidden cut for stacked calculation
+        if (isSubLabel && subLabelData.parent_user_id) {
+          const { data: parentProfile } = await supabase
+            .from('profiles')
+            .select('hidden_cut_percent')
+            .eq('user_id', subLabelData.parent_user_id)
+            .maybeSingle();
+          setHiddenCut(Number(parentProfile?.hidden_cut_percent) || 0);
+        } else {
+          setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
+        }
       } else {
         setSubLabelCut(0);
+        // Fetch hidden cut from own profile
+        setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
       }
       // When admin impersonates, we need to filter by user's ISRCs
       // because admin RLS sees all entries
