@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ImpersonateProvider } from "@/hooks/useImpersonate";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Lazy load all pages for code splitting
 const Auth = lazy(() => import("./pages/Auth"));
@@ -61,7 +62,16 @@ const AIImageGeneration = lazy(() => import("./pages/AIImageGeneration"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      refetchOnWindowFocus: false,
+      staleTime: 30000, // 30s — avoid redundant refetches
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
 });
 
 function PageLoader() {
@@ -80,77 +90,79 @@ function App() {
   });
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Sonner />
-        <BrowserRouter>
-          <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
-            <AuthProvider>
-              <ImpersonateProvider>
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
-                    <Route path="/" element={<Navigate to="/auth" replace />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
-                    <Route path="/submit" element={<ProtectedRoute><NewRelease /></ProtectedRoute>} />
-                    <Route path="/admin/genres-languages" element={<ProtectedRoute requiredRole="admin"><AdminGenresLanguages /></ProtectedRoute>} />
-                    <Route path="/my-releases" element={<ProtectedRoute><MyReleases /></ProtectedRoute>} />
-                    <Route path="/my-labels" element={<ProtectedRoute><MyLabels /></ProtectedRoute>} />
-                    <Route path="/sub-labels" element={<ProtectedRoute><SubLabels /></ProtectedRoute>} />
-                    <Route path="/sub-labels/withdrawals" element={<ProtectedRoute><SubLabelWithdrawals /></ProtectedRoute>} />
-                    <Route path="/my-songs" element={<Navigate to="/my-releases" replace />} />
-                    <Route path="/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
-                    <Route path="/bank-details" element={<ProtectedRoute><BankDetails /></ProtectedRoute>} />
-                    <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
-                    <Route path="/admin/submissions" element={<ProtectedRoute requiredRole="admin"><AdminSubmissions /></ProtectedRoute>} />
-                    <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
-                    <Route path="/admin/labels" element={<ProtectedRoute requiredRole="admin"><AdminLabels /></ProtectedRoute>} />
-                    <Route path="/admin/sub-labels" element={<ProtectedRoute requiredRole="admin"><AdminSubLabels /></ProtectedRoute>} />
-                    <Route path="/admin/sub-label-withdrawals" element={<ProtectedRoute requiredRole="admin"><AdminSubLabelWithdrawals /></ProtectedRoute>} />
-                    <Route path="/admin/content-requests" element={<ProtectedRoute requiredRole="admin"><AdminContentRequests /></ProtectedRoute>} />
-                    <Route path="/admin/reports/ott" element={<ProtectedRoute requiredRole="admin"><AdminReports /></ProtectedRoute>} />
-                    <Route path="/admin/reports/youtube" element={<ProtectedRoute requiredRole="admin"><AdminYouTubeReports /></ProtectedRoute>} />
-                    <Route path="/admin/reports" element={<Navigate to="/admin/reports/ott" replace />} />
-                    <Route path="/revenue" element={<ProtectedRoute><Revenue /></ProtectedRoute>} />
-                    <Route path="/admin/revenue" element={<ProtectedRoute requiredRole="admin"><AdminRevenue /></ProtectedRoute>} />
-                    <Route path="/admin/terms" element={<ProtectedRoute requiredRole="admin"><AdminTermsConditions /></ProtectedRoute>} />
-                    <Route path="/admin/invoices" element={<ProtectedRoute requiredRole="admin"><AdminInvoices /></ProtectedRoute>} />
-                    <Route path="/admin/poster-generator" element={<ProtectedRoute requiredRole="admin"><AdminPosterGenerator /></ProtectedRoute>} />
-                    <Route path="/admin/notices" element={<ProtectedRoute requiredRole="admin"><AdminNotices /></ProtectedRoute>} />
-                    <Route path="/admin/tutorials" element={<ProtectedRoute requiredRole="admin"><AdminTutorials /></ProtectedRoute>} />
-                    <Route path="/poster-generator" element={<ProtectedRoute><AdminPosterGenerator /></ProtectedRoute>} />
-                    <Route path="/help-tutorials" element={<ProtectedRoute><HelpTutorials /></ProtectedRoute>} />
-                    <Route path="/admin/agreements" element={<ProtectedRoute requiredRole="admin"><AdminAgreements /></ProtectedRoute>} />
-                    <Route path="/admin/agreements/generate" element={<ProtectedRoute requiredRole="admin"><AdminAgreementGenerator /></ProtectedRoute>} />
-                    <Route path="/admin/promotion-tools" element={<ProtectedRoute requiredRole="admin"><AdminPromotionTools /></ProtectedRoute>} />
-                    <Route path="/admin/payment-settings" element={<ProtectedRoute requiredRole="admin"><AdminPaymentSettings /></ProtectedRoute>} />
-                    <Route path="/admin/contact-support" element={<ProtectedRoute requiredRole="admin"><AdminContactSupport /></ProtectedRoute>} />
-                    <Route path="/admin/ai-image-system" element={<ProtectedRoute requiredRole="admin"><AdminAIImageSystem /></ProtectedRoute>} />
-                    <Route path="/ai-images" element={<ProtectedRoute><AIImageGeneration /></ProtectedRoute>} />
-                    <Route path="/promotion-tools" element={<ProtectedRoute><PromotionTools /></ProtectedRoute>} />
-                    <Route path="/terms" element={<ProtectedRoute><TermsConditions /></ProtectedRoute>} />
-                    <Route path="/contact-support" element={<ProtectedRoute><ContactSupport /></ProtectedRoute>} />
-                    <Route path="/tools/copyright-claim" element={<ProtectedRoute><CopyrightClaimRemoval /></ProtectedRoute>} />
-                    <Route path="/tools/instagram-link" element={<ProtectedRoute><InstagramLinkToSong /></ProtectedRoute>} />
-                    <Route path="/tools/content-id-merge" element={<ProtectedRoute><ContentIdMerge /></ProtectedRoute>} />
-                    <Route path="/tools/oac-apply" element={<ProtectedRoute><OacApply /></ProtectedRoute>} />
-                    <Route path="/tools/takedown" element={<ProtectedRoute><Takedown /></ProtectedRoute>} />
-                    <Route path="/tools/custom-support" element={<ProtectedRoute><CustomSupport /></ProtectedRoute>} />
-                    <Route path="/tools/playlist-pitching" element={<ProtectedRoute><PlaylistPitching /></ProtectedRoute>} />
-                    <Route path="/reports/ott" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
-                    <Route path="/reports/youtube" element={<ProtectedRoute><YouTubeReports /></ProtectedRoute>} />
-                    <Route path="/reports/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-                    <Route path="/admin/reports/analytics" element={<ProtectedRoute requiredRole="admin"><Analytics /></ProtectedRoute>} />
-                    <Route path="/reports" element={<Navigate to="/reports/ott" replace />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-              </ImpersonateProvider>
-            </AuthProvider>
-          </SidebarProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Sonner />
+          <BrowserRouter>
+            <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
+              <AuthProvider>
+                <ImpersonateProvider>
+                  <Suspense fallback={<PageLoader />}>
+                    <Routes>
+                      <Route path="/" element={<Navigate to="/auth" replace />} />
+                      <Route path="/auth" element={<Auth />} />
+                      <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+                      <Route path="/submit" element={<ProtectedRoute><NewRelease /></ProtectedRoute>} />
+                      <Route path="/admin/genres-languages" element={<ProtectedRoute requiredRole="admin"><AdminGenresLanguages /></ProtectedRoute>} />
+                      <Route path="/my-releases" element={<ProtectedRoute><MyReleases /></ProtectedRoute>} />
+                      <Route path="/my-labels" element={<ProtectedRoute><MyLabels /></ProtectedRoute>} />
+                      <Route path="/sub-labels" element={<ProtectedRoute><SubLabels /></ProtectedRoute>} />
+                      <Route path="/sub-labels/withdrawals" element={<ProtectedRoute><SubLabelWithdrawals /></ProtectedRoute>} />
+                      <Route path="/my-songs" element={<Navigate to="/my-releases" replace />} />
+                      <Route path="/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
+                      <Route path="/bank-details" element={<ProtectedRoute><BankDetails /></ProtectedRoute>} />
+                      <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+                      <Route path="/admin/submissions" element={<ProtectedRoute requiredRole="admin"><AdminSubmissions /></ProtectedRoute>} />
+                      <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
+                      <Route path="/admin/labels" element={<ProtectedRoute requiredRole="admin"><AdminLabels /></ProtectedRoute>} />
+                      <Route path="/admin/sub-labels" element={<ProtectedRoute requiredRole="admin"><AdminSubLabels /></ProtectedRoute>} />
+                      <Route path="/admin/sub-label-withdrawals" element={<ProtectedRoute requiredRole="admin"><AdminSubLabelWithdrawals /></ProtectedRoute>} />
+                      <Route path="/admin/content-requests" element={<ProtectedRoute requiredRole="admin"><AdminContentRequests /></ProtectedRoute>} />
+                      <Route path="/admin/reports/ott" element={<ProtectedRoute requiredRole="admin"><AdminReports /></ProtectedRoute>} />
+                      <Route path="/admin/reports/youtube" element={<ProtectedRoute requiredRole="admin"><AdminYouTubeReports /></ProtectedRoute>} />
+                      <Route path="/admin/reports" element={<Navigate to="/admin/reports/ott" replace />} />
+                      <Route path="/revenue" element={<ProtectedRoute><Revenue /></ProtectedRoute>} />
+                      <Route path="/admin/revenue" element={<ProtectedRoute requiredRole="admin"><AdminRevenue /></ProtectedRoute>} />
+                      <Route path="/admin/terms" element={<ProtectedRoute requiredRole="admin"><AdminTermsConditions /></ProtectedRoute>} />
+                      <Route path="/admin/invoices" element={<ProtectedRoute requiredRole="admin"><AdminInvoices /></ProtectedRoute>} />
+                      <Route path="/admin/poster-generator" element={<ProtectedRoute requiredRole="admin"><AdminPosterGenerator /></ProtectedRoute>} />
+                      <Route path="/admin/notices" element={<ProtectedRoute requiredRole="admin"><AdminNotices /></ProtectedRoute>} />
+                      <Route path="/admin/tutorials" element={<ProtectedRoute requiredRole="admin"><AdminTutorials /></ProtectedRoute>} />
+                      <Route path="/poster-generator" element={<ProtectedRoute><AdminPosterGenerator /></ProtectedRoute>} />
+                      <Route path="/help-tutorials" element={<ProtectedRoute><HelpTutorials /></ProtectedRoute>} />
+                      <Route path="/admin/agreements" element={<ProtectedRoute requiredRole="admin"><AdminAgreements /></ProtectedRoute>} />
+                      <Route path="/admin/agreements/generate" element={<ProtectedRoute requiredRole="admin"><AdminAgreementGenerator /></ProtectedRoute>} />
+                      <Route path="/admin/promotion-tools" element={<ProtectedRoute requiredRole="admin"><AdminPromotionTools /></ProtectedRoute>} />
+                      <Route path="/admin/payment-settings" element={<ProtectedRoute requiredRole="admin"><AdminPaymentSettings /></ProtectedRoute>} />
+                      <Route path="/admin/contact-support" element={<ProtectedRoute requiredRole="admin"><AdminContactSupport /></ProtectedRoute>} />
+                      <Route path="/admin/ai-image-system" element={<ProtectedRoute requiredRole="admin"><AdminAIImageSystem /></ProtectedRoute>} />
+                      <Route path="/ai-images" element={<ProtectedRoute><AIImageGeneration /></ProtectedRoute>} />
+                      <Route path="/promotion-tools" element={<ProtectedRoute><PromotionTools /></ProtectedRoute>} />
+                      <Route path="/terms" element={<ProtectedRoute><TermsConditions /></ProtectedRoute>} />
+                      <Route path="/contact-support" element={<ProtectedRoute><ContactSupport /></ProtectedRoute>} />
+                      <Route path="/tools/copyright-claim" element={<ProtectedRoute><CopyrightClaimRemoval /></ProtectedRoute>} />
+                      <Route path="/tools/instagram-link" element={<ProtectedRoute><InstagramLinkToSong /></ProtectedRoute>} />
+                      <Route path="/tools/content-id-merge" element={<ProtectedRoute><ContentIdMerge /></ProtectedRoute>} />
+                      <Route path="/tools/oac-apply" element={<ProtectedRoute><OacApply /></ProtectedRoute>} />
+                      <Route path="/tools/takedown" element={<ProtectedRoute><Takedown /></ProtectedRoute>} />
+                      <Route path="/tools/custom-support" element={<ProtectedRoute><CustomSupport /></ProtectedRoute>} />
+                      <Route path="/tools/playlist-pitching" element={<ProtectedRoute><PlaylistPitching /></ProtectedRoute>} />
+                      <Route path="/reports/ott" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+                      <Route path="/reports/youtube" element={<ProtectedRoute><YouTubeReports /></ProtectedRoute>} />
+                      <Route path="/reports/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+                      <Route path="/admin/reports/analytics" element={<ProtectedRoute requiredRole="admin"><Analytics /></ProtectedRoute>} />
+                      <Route path="/reports" element={<Navigate to="/reports/ott" replace />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
+                </ImpersonateProvider>
+              </AuthProvider>
+            </SidebarProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
