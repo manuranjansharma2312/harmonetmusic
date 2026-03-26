@@ -117,6 +117,7 @@ export function AppSidebar() {
     ...(!effectiveIsSubLabel ? [{ to: '/promotion-tools', label: 'Promotion Tools', icon: Megaphone }] : []),
     { to: '/revenue', label: 'Revenue', icon: Wallet },
     { to: '/terms', label: 'Terms & Conditions', icon: FileText },
+    { to: '/contact-support', label: 'Contact Support', icon: Headset },
     { to: '/profile', label: 'My Profile', icon: UserCircle },
   ];
 
