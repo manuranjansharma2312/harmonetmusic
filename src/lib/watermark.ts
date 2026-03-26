@@ -1,7 +1,6 @@
 /**
- * Adds the Harmonet Music logo as a clearly visible watermark
- * in the bottom-right corner on every AI-generated image.
- * Uses the self-contained app logo (dark bg + white text) for universal visibility.
+ * Adds the Harmonet Music white logo as a watermark with a dark
+ * frosted-glass backdrop — visible on ANY background (Gemini-style).
  */
 export async function addWatermark(imageDataUrl: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -20,28 +19,41 @@ export async function addWatermark(imageDataUrl: string): Promise<string> {
         // Draw the generated image
         ctx.drawImage(img, 0, 0);
 
-        // Logo sizing — 20% of image width
-        const logoWidth = Math.round(img.width * 0.20);
+        // Logo sizing — 18% of image width
+        const logoWidth = Math.round(img.width * 0.18);
         const logoHeight = Math.round((logo.height / logo.width) * logoWidth);
+        const padX = Math.round(logoWidth * 0.12);
+        const padY = Math.round(logoHeight * 0.35);
         const margin = Math.round(img.width * 0.025);
-        const x = img.width - logoWidth - margin;
-        const y = img.height - logoHeight - margin;
 
-        // Rounded clipping for the logo
-        const radius = Math.round(logoHeight * 0.15);
+        const bgW = logoWidth + padX * 2;
+        const bgH = logoHeight + padY * 2;
+        const bgX = img.width - bgW - margin;
+        const bgY = img.height - bgH - margin;
+        const bgRadius = Math.round(bgH * 0.28);
+
+        // Dark frosted pill background — ensures white logo pops on ANY image
         ctx.save();
+        ctx.globalAlpha = 0.55;
+        ctx.fillStyle = '#000000';
         ctx.beginPath();
-        ctx.roundRect(x, y, logoWidth, logoHeight, radius);
-        ctx.clip();
-        ctx.drawImage(logo, x, y, logoWidth, logoHeight);
+        ctx.roundRect(bgX, bgY, bgW, bgH, bgRadius);
+        ctx.fill();
         ctx.restore();
 
-        // Subtle border
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-        ctx.lineWidth = 1.5;
+        // Subtle light border for polish
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.roundRect(x, y, logoWidth, logoHeight, radius);
+        ctx.roundRect(bgX, bgY, bgW, bgH, bgRadius);
         ctx.stroke();
+        ctx.restore();
+
+        // Draw the white logo on top
+        const x = bgX + padX;
+        const y = bgY + padY;
+        ctx.drawImage(logo, x, y, logoWidth, logoHeight);
 
         resolve(canvas.toDataURL('image/png'));
       };
