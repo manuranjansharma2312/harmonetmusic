@@ -10,7 +10,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
       <BackgroundBlobs />
       <AppSidebar />
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-20 flex h-14 items-center border-b border-border/50 bg-background/80 px-3 backdrop-blur-sm sm:px-4 lg:px-6">
+        <header className="sticky top-0 z-20 flex h-14 items-center border-b border-border/50 bg-background/95 px-3 sm:px-4 lg:px-6">
           <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
           <img src={logoWhite} alt="Harmonet Music" className="ml-3 h-8 w-auto sm:h-9 md:hidden" />
         </header>
