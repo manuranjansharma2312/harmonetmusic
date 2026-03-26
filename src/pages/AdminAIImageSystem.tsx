@@ -254,6 +254,19 @@ export default function AdminAIImageSystem() {
     setSettingsLoading(false);
   };
 
+  const saveApiKey = async () => {
+    if (!apiKeyValue.trim()) { toast.error('Please enter an API key'); return; }
+    setApiKeySaving(true);
+    try {
+      const { data: settingsRow } = await supabase.from('ai_settings').select('id').limit(1).single();
+      if (settingsRow) {
+        await supabase.from('ai_settings').update({ custom_api_key: apiKeyValue.trim(), updated_at: new Date().toISOString(), updated_by: user?.id } as any).eq('id', settingsRow.id);
+        toast.success('API Key saved successfully!');
+      }
+    } catch { toast.error('Failed to save API key'); }
+    finally { setApiKeySaving(false); }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
