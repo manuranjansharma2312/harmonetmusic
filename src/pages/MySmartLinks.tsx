@@ -4,9 +4,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { CopyButton } from '@/components/CopyButton';
+import { PlatformLinksEditor } from '@/components/PlatformLinksEditor';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Link2, ExternalLink, Search, Music } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Loader2, Link2, ExternalLink, Search, Music, Plus } from 'lucide-react';
 
 interface SmartLinkRelease {
   id: string;
@@ -25,6 +28,7 @@ export default function MySmartLinks() {
   const [releases, setReleases] = useState<SmartLinkRelease[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [editRelease, setEditRelease] = useState<SmartLinkRelease | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -81,7 +85,7 @@ export default function MySmartLinks() {
           <GlassCard className="p-8 text-center">
             <Music className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
             <p className="text-muted-foreground">No approved releases found</p>
-            <p className="text-xs text-muted-foreground mt-1">Smart links are available once your release is approved and platform links are added by admin.</p>
+            <p className="text-xs text-muted-foreground mt-1">Smart links are available once your release is approved.</p>
           </GlassCard>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -122,12 +126,46 @@ export default function MySmartLinks() {
                       </a>
                     </div>
                   )}
+
+                  <Button
+                    size="sm"
+                    variant={active ? "outline" : "default"}
+                    className="w-full text-xs"
+                    onClick={() => setEditRelease(r)}
+                  >
+                    {active ? (
+                      <><Link2 className="h-3.5 w-3.5 mr-1" /> Edit Smart Link</>
+                    ) : (
+                      <><Plus className="h-3.5 w-3.5 mr-1" /> Create Smart Link</>
+                    )}
+                  </Button>
                 </GlassCard>
               );
             })}
           </div>
         )}
       </div>
+
+      <Dialog open={!!editRelease} onOpenChange={open => !open && setEditRelease(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editRelease && hasLinks(editRelease) ? 'Edit' : 'Create'} Smart Link — {editRelease?.album_name || editRelease?.ep_name || 'Untitled'}
+            </DialogTitle>
+          </DialogHeader>
+          {editRelease && (
+            <PlatformLinksEditor
+              releaseId={editRelease.id}
+              releaseSlug={editRelease.slug}
+              initialLinks={editRelease.platform_links || {}}
+              onSaved={(links) => {
+                setReleases(prev => prev.map(r => r.id === editRelease.id ? { ...r, platform_links: links } : r));
+                setEditRelease(null);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
