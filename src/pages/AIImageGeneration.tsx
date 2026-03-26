@@ -239,7 +239,10 @@ export default function AIImageGeneration() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <h1 className="text-2xl font-bold flex items-center gap-2"><Sparkles className="h-6 w-6 text-primary" />AI Poster Generate</h1>
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2"><Sparkles className="h-6 w-6 text-primary" />AI Poster Generate</h1>
+            <p className="text-sm text-muted-foreground mt-1 ml-8 italic">Create Ultra-Realistic, Studio-Quality Posters — Powered by AI ✨</p>
+          </div>
           <Card className="px-4 py-2 flex items-center gap-3">
             <CreditCard className="h-5 w-5 text-primary" />
             <div>
