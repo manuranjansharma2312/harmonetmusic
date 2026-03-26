@@ -433,7 +433,7 @@ export default function AdminAIImageSystem() {
                 </div>
                 <div>
                   <Label>Free Credits for New Users</Label>
-                  <Input type="number" min={0} value={aiSettings.free_credits} onChange={e => setAiSettings(s => ({ ...s, free_credits: Number(e.target.value) }))} />
+                  <Input type="text" inputMode="numeric" value={aiSettings.free_credits} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); setAiSettings(s => ({ ...s, free_credits: Number(v) || 0 })); }} />
                   <p className="text-xs text-muted-foreground mt-1">Each new user gets this many free credits automatically.</p>
                 </div>
                 <div>
