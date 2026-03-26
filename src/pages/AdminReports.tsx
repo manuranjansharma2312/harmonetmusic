@@ -94,6 +94,7 @@ interface ReportEntry {
   downloads: number;
   net_generated_revenue: number;
   imported_at: string;
+  cut_percent_snapshot?: number | null;
 }
 
 interface MonthGroup {
@@ -122,7 +123,8 @@ export default function AdminReports() {
   const [userCutMap, setUserCutMap] = useState<Record<string, number>>({});
 
   const applyUserCut = (entry: ReportEntry) => {
-    const cut = userCutMap[entry.user_id] || 0;
+    // Use snapshot cut if available, otherwise fall back to current profile cut
+    const cut = entry.cut_percent_snapshot != null ? entry.cut_percent_snapshot : (userCutMap[entry.user_id] || 0);
     return Number(((Number(entry.net_generated_revenue) || 0) * (1 - cut / 100)).toFixed(4));
   };
 
