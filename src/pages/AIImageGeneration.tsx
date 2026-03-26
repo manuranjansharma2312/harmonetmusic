@@ -141,7 +141,8 @@ export default function AIImageGeneration() {
     setGenerating(true);
     setGeneratedImage(null);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-ai-poster', { body: { prompt: prompt.trim() } });
+      const sizeObj = imageSizes.find(s => `${s.width}x${s.height}` === selectedSize);
+      const { data, error } = await supabase.functions.invoke('generate-ai-poster', { body: { prompt: prompt.trim(), width: sizeObj?.width, height: sizeObj?.height } });
       if (error) { toast.error('Generation failed. Please try again.'); return; }
       if (data?.error) { toast.error(data.error); return; }
       const imageUrl = data?.image_url;

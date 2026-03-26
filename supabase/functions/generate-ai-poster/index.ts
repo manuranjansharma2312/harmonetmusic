@@ -37,7 +37,7 @@ serve(async (req) => {
         messages: [
           {
             role: "user",
-            content: prompt.trim(),
+            content: prompt.trim() + sizeInstruction,
           },
         ],
         modalities: ["image", "text"],
