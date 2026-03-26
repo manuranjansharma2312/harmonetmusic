@@ -12,7 +12,8 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { Sparkles, CreditCard, History, ImageIcon, Upload, CheckCircle } from 'lucide-react';
+import { Sparkles, CreditCard, History, Image as ImageIcon, Upload, CheckCircle, Loader2, Download, Wand2 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 
 type AIPlan = { id: string; name: string; price: number; credits: number; description: string; tag: string | null };
@@ -21,7 +22,7 @@ type AIGenImage = { id: string; prompt: string; image_url: string | null; credit
 
 export default function AIImageGeneration() {
   const { user } = useAuth();
-  const [tab, setTab] = useState('plans');
+  const [tab, setTab] = useState('generate');
 
   // Plans
   const [plans, setPlans] = useState<AIPlan[]>([]);
@@ -43,6 +44,12 @@ export default function AIImageGeneration() {
   const [screenshot, setScreenshot] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // Generate state
+  const [prompt, setPrompt] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [creditsPerImage, setCreditsPerImage] = useState(1);
+
   // Payment settings (QR code etc)
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [taxes, setTaxes] = useState<any[]>([]);
@@ -55,7 +62,7 @@ export default function AIImageGeneration() {
       supabase.from('ai_plan_orders').select('*, ai_plans(name, credits, price)').eq('user_id', user.id).order('created_at', { ascending: false }),
       supabase.from('ai_generated_images').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
       supabase.from('promotion_settings').select('qr_code_url, taxes').limit(1).maybeSingle(),
-      supabase.from('ai_settings').select('free_credits').limit(1).maybeSingle(),
+      supabase.from('ai_settings').select('free_credits, credits_per_image').limit(1).maybeSingle(),
     ]);
     if (plansRes.data) setPlans(plansRes.data as any);
     if (ordersRes.data) setOrders(ordersRes.data as any);
@@ -64,11 +71,11 @@ export default function AIImageGeneration() {
 
     // Handle credits & free credits auto-provisioning
     const freeCredits = (aiSettingsRes.data as any)?.free_credits || 0;
+    setCreditsPerImage((aiSettingsRes.data as any)?.credits_per_image || 1);
     if (credRes.data) {
       setTotalCredits((credRes.data as any).total_credits);
       setUsedCredits((credRes.data as any).used_credits);
     } else if (freeCredits > 0) {
-      // Auto-provision free credits for first-time user
       await supabase.from('ai_credits').insert({ user_id: user.id, total_credits: freeCredits, used_credits: 0 });
       await supabase.from('ai_credit_transactions').insert({ user_id: user.id, credits: freeCredits, type: 'free_credits', note: 'Free credits on first visit' });
       setTotalCredits(freeCredits);
@@ -122,6 +129,44 @@ export default function AIImageGeneration() {
     } finally { setSubmitting(false); }
   };
 
+  const generateImage = async () => {
+    if (!user || !prompt.trim()) return;
+    if (remaining < creditsPerImage) { toast.error(`Not enough credits. You need ${creditsPerImage} credits.`); return; }
+    setGenerating(true);
+    setGeneratedImage(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-ai-poster', { body: { prompt: prompt.trim() } });
+      if (error) { toast.error('Generation failed. Please try again.'); return; }
+      if (data?.error) { toast.error(data.error); return; }
+      const imageUrl = data?.image_url;
+      if (!imageUrl) { toast.error('No image generated. Try a different prompt.'); return; }
+
+      setGeneratedImage(imageUrl);
+
+      // Deduct credits
+      await supabase.from('ai_credits').update({ used_credits: usedCredits + creditsPerImage, updated_at: new Date().toISOString() }).eq('user_id', user.id);
+      // Log transaction
+      await supabase.from('ai_credit_transactions').insert({ user_id: user.id, credits: creditsPerImage, type: 'usage', note: `Generated: ${prompt.trim().slice(0, 100)}` });
+      // Save generated image
+      await supabase.from('ai_generated_images').insert({ user_id: user.id, prompt: prompt.trim(), image_url: imageUrl, credits_used: creditsPerImage });
+
+      setUsedCredits(prev => prev + creditsPerImage);
+      toast.success('Poster generated!');
+      // Refresh gallery
+      const { data: imgData } = await supabase.from('ai_generated_images').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50);
+      if (imgData) setImages(imgData as any);
+    } catch (e) {
+      toast.error('Generation failed. Please try again.');
+    } finally { setGenerating(false); }
+  };
+
+  const downloadImage = (dataUrl: string, filename: string) => {
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = filename;
+    a.click();
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -137,11 +182,66 @@ export default function AIImageGeneration() {
         </div>
 
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList>
+          <TabsList className="flex flex-wrap h-auto gap-1">
+            <TabsTrigger value="generate" className="gap-1"><Wand2 className="h-4 w-4" />Generate</TabsTrigger>
+            <TabsTrigger value="gallery" className="gap-1"><ImageIcon className="h-4 w-4" />My Posters</TabsTrigger>
             <TabsTrigger value="plans" className="gap-1"><CreditCard className="h-4 w-4" />Buy Credits</TabsTrigger>
             <TabsTrigger value="orders" className="gap-1"><History className="h-4 w-4" />My Orders</TabsTrigger>
-            <TabsTrigger value="gallery" className="gap-1"><ImageIcon className="h-4 w-4" />My Images</TabsTrigger>
           </TabsList>
+
+          {/* GENERATE TAB */}
+          <TabsContent value="generate">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><Wand2 className="h-5 w-5" />Create Your Poster</CardTitle>
+                  <CardDescription>Describe the poster you want to generate. Be detailed for better results.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label>Your Prompt *</Label>
+                    <Textarea
+                      value={prompt}
+                      onChange={e => setPrompt(e.target.value)}
+                      placeholder="e.g. A vibrant music album poster for a pop song called 'Midnight Dreams' with neon lights, city skyline, and bold typography..."
+                      className="min-h-[140px]"
+                      disabled={generating}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Cost: {creditsPerImage} credit{creditsPerImage > 1 ? 's' : ''} per generation</p>
+                  </div>
+                  <Button onClick={generateImage} disabled={generating || !prompt.trim() || remaining < creditsPerImage} className="w-full" size="lg">
+                    {generating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</> : <><Sparkles className="h-4 w-4 mr-2" />Generate Poster</>}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Preview</CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center min-h-[300px]">
+                  {generating ? (
+                    <div className="text-center space-y-3">
+                      <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+                      <p className="text-muted-foreground">Creating your poster...</p>
+                    </div>
+                  ) : generatedImage ? (
+                    <div className="space-y-3 w-full">
+                      <img src={generatedImage} alt="Generated poster" className="w-full rounded-lg border max-h-[400px] object-contain" />
+                      <Button variant="outline" className="w-full" onClick={() => downloadImage(generatedImage, `ai-poster-${Date.now()}.png`)}>
+                        <Download className="h-4 w-4 mr-2" />Download Poster
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="text-center text-muted-foreground space-y-2">
+                      <ImageIcon className="h-16 w-16 mx-auto opacity-30" />
+                      <p>Your generated poster will appear here</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
           {/* PLANS */}
           <TabsContent value="plans">
