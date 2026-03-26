@@ -191,6 +191,22 @@ export default function AIImageGeneration() {
     a.click();
   };
 
+  const handleReferenceImage = (file: File | null) => {
+    setReferenceImage(file);
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setReferencePreview(url);
+    } else {
+      setReferencePreview(null);
+    }
+  };
+
+  const clearReferenceImage = () => {
+    setReferenceImage(null);
+    if (referencePreview) URL.revokeObjectURL(referencePreview);
+    setReferencePreview(null);
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">

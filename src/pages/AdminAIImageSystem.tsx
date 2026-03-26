@@ -446,23 +446,22 @@ export default function AdminAIImageSystem() {
                   <Input type="number" min={1} value={aiSettings.credits_per_image} onChange={e => setAiSettings(s => ({ ...s, credits_per_image: Number(e.target.value) }))} />
                 </div>
 
-                {/* Image Sizes */}
+                {/* Image Sizes (Aspect Ratios) */}
                 <div className="space-y-3 pt-2 border-t">
-                  <Label className="text-base">Image Size Options</Label>
-                  <p className="text-xs text-muted-foreground">Define available size presets that users can choose from when generating posters.</p>
+                  <Label className="text-base">Image Size Options (Aspect Ratios)</Label>
+                  <p className="text-xs text-muted-foreground">Define aspect ratio presets that users can choose when generating posters (e.g. 9:16, 3:4, 1:1).</p>
                   
                   {aiSettings.image_sizes.map((size, idx) => (
                     <div key={idx} className="flex items-center gap-2 rounded-lg border p-2">
                       <span className="flex-1 text-sm font-medium">{size.label}</span>
-                      <span className="text-xs text-muted-foreground">{size.width}×{size.height}</span>
+                      <Badge variant="secondary">{size.ratio}</Badge>
                       <Button variant="ghost" size="icon" onClick={() => removeImageSize(idx)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                     </div>
                   ))}
 
-                  <div className="grid grid-cols-3 gap-2">
-                    <Input placeholder="Label (e.g. Square)" value={newSize.label} onChange={e => setNewSize(s => ({ ...s, label: e.target.value }))} />
-                    <Input type="number" placeholder="Width" value={newSize.width} onChange={e => setNewSize(s => ({ ...s, width: e.target.value }))} />
-                    <Input type="number" placeholder="Height" value={newSize.height} onChange={e => setNewSize(s => ({ ...s, height: e.target.value }))} />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input placeholder="Label (e.g. Portrait)" value={newSize.label} onChange={e => setNewSize(s => ({ ...s, label: e.target.value }))} />
+                    <Input placeholder="Ratio (e.g. 9:16)" value={newSize.ratio} onChange={e => setNewSize(s => ({ ...s, ratio: e.target.value }))} />
                   </div>
                   <Button variant="outline" size="sm" onClick={addImageSize}><Plus className="h-4 w-4 mr-1" />Add Size</Button>
                 </div>
