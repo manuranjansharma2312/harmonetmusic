@@ -68,7 +68,8 @@ export default function AIImageGeneration() {
     if (!activeUserId) return;
     
     // Fetch AI settings FIRST to determine lifetime free status
-    const { data: aiSettingsData } = await supabase.rpc('get_ai_settings_public' as any);
+    const { data: aiSettingsArr } = await supabase.rpc('get_ai_settings_public' as any);
+    const aiSettingsData = Array.isArray(aiSettingsArr) ? aiSettingsArr[0] : aiSettingsArr;
     
     const lfEnabled = aiSettingsData?.lifetime_free_enabled === true;
     const lfAllUsers = aiSettingsData?.lifetime_free_all_users !== false; // default true
