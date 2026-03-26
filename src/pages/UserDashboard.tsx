@@ -318,16 +318,6 @@ export default function UserDashboard() {
     navigate('/admin/users');
   };
 
-  if (loading) {
-    return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </DashboardLayout>
-    );
-  }
-
   const releaseStatusData = useMemo(
     () =>
       [
@@ -340,13 +330,23 @@ export default function UserDashboard() {
 
   const pendingReleases = useMemo(() => recentReleases.filter((r) => r.status === 'pending'), [recentReleases]);
 
+  const totalStoreStreams = useMemo(() => topStores.reduce((a, b) => a + b.value, 0), [topStores]);
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   const getReleaseName = (r: any) => {
     if (r.content_type === 'album') return r.album_name || 'Untitled Album';
     if (r.content_type === 'ep') return r.ep_name || 'Untitled EP';
     return r.album_name || r.ep_name || 'Untitled Single';
   };
-
-  const totalStoreStreams = useMemo(() => topStores.reduce((a, b) => a + b.value, 0), [topStores]);
 
   return (
     <DashboardLayout>

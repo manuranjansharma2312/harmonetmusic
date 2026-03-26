@@ -82,9 +82,9 @@ export const WorldMapChart = memo(function WorldMapChart({ data, className }: Wo
       data
         .map((d) => {
           const code = getCountryCode(d.name);
-          return code ? { country: code.toLowerCase() as const, value: d.streams } : null;
+          return code ? { country: code.toLowerCase(), value: d.streams } : null;
         })
-        .filter(Boolean) as Array<{ country: Lowercase<string>; value: number }>,
+        .filter(Boolean) as any[],
     [data],
   );
 
