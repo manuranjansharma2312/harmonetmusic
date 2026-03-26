@@ -492,10 +492,29 @@ export default function AdminAIImageSystem() {
                 <div>
                   <Label>API Key</Label>
                   <div className="flex items-center gap-2">
-                    <Input type="password" value="••••••••••••••••••••" disabled className="font-mono" />
-                    <span className="inline-flex shrink-0 items-center rounded-full border border-green-600/30 bg-green-600/10 px-2.5 py-0.5 text-xs font-medium text-green-600">Secured</span>
+                    <div className="relative flex-1">
+                      <Input
+                        type={showApiKey ? 'text' : 'password'}
+                        value={apiKeyValue}
+                        onChange={e => setApiKeyValue(e.target.value)}
+                        placeholder="Enter your AI API key"
+                        className="pr-10 font-mono"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3"
+                        onClick={() => setShowApiKey(!showApiKey)}
+                      >
+                        {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    <Button size="sm" onClick={saveApiKey} disabled={apiKeySaving || !apiKeyValue.trim()}>
+                      {apiKeySaving ? 'Saving...' : <><Save className="h-4 w-4 mr-1" />Save Key</>}
+                    </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">API key is securely stored as a backend secret and never exposed to users. To update, contact your system administrator.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Your API key is stored securely in the database and only accessible by admins. Users cannot see or access this key.</p>
                 </div>
                 <div>
                   <Label>Credits Per Image</Label>
