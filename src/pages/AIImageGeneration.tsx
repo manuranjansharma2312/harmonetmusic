@@ -105,7 +105,7 @@ export default function AIImageGeneration() {
         setTotalCredits((credRes.data as any).total_credits);
         setUsedCredits((credRes.data as any).used_credits);
       } else if (freeCredits > 0 && !impersonatedUserId) {
-        await supabase.from('ai_credits').insert({ user_id: activeUserId, total_credits: freeCredits, used_credits: 0 });
+        await supabase.rpc('init_ai_credits' as any, { _user_id: activeUserId, _free_credits: freeCredits });
         await supabase.from('ai_credit_transactions').insert({ user_id: activeUserId, credits: freeCredits, type: 'free_credits', note: 'Free credits on first visit' });
         setTotalCredits(freeCredits);
         setUsedCredits(0);
