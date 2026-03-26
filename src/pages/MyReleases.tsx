@@ -164,7 +164,8 @@ export default function MyReleases() {
   };
 
   const exportCSV = () => {
-    if (releases.length === 0) { toast.error('No releases to export'); return; }
+    const data = selected.size > 0 ? releases.filter((r) => selected.has(r.id)) : releases;
+    if (data.length === 0) { toast.error('No releases to export'); return; }
 
     const headers = [
       'Release Name', 'Release Type', 'Content Type', 'UPC', 'Status',
