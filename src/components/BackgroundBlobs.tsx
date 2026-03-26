@@ -2,7 +2,7 @@ import { memo } from 'react';
 
 export const BackgroundBlobs = memo(function BackgroundBlobs() {
   return (
-    <>
+    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
       <div
         className="floating-blob animate-float"
         style={{
@@ -11,7 +11,6 @@ export const BackgroundBlobs = memo(function BackgroundBlobs() {
           background: 'radial-gradient(circle, hsl(0 67% 25%), transparent)',
           top: '10%',
           left: '5%',
-          willChange: 'transform',
         }}
       />
       <div
@@ -23,7 +22,6 @@ export const BackgroundBlobs = memo(function BackgroundBlobs() {
           bottom: '15%',
           right: '10%',
           animation: 'float 8s ease-in-out infinite reverse',
-          willChange: 'transform',
         }}
       />
       <div
@@ -35,9 +33,8 @@ export const BackgroundBlobs = memo(function BackgroundBlobs() {
           top: '60%',
           left: '40%',
           animation: 'float 10s ease-in-out infinite',
-          willChange: 'transform',
         }}
       />
-    </>
+    </div>
   );
 });

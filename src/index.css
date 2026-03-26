@@ -140,6 +140,8 @@
     opacity: 0.15;
     pointer-events: none;
     z-index: 0;
+    contain: strict;
+    will-change: transform;
   }
 
   .neon-glow {
