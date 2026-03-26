@@ -7,8 +7,11 @@ import { PlatformLinksEditor } from '@/components/PlatformLinksEditor';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Loader2, Link2, ExternalLink, Search, Music, Edit } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, Link2, ExternalLink, Search, Music, Edit, Plus, Trash2, GripVertical, Settings, ImageIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface SmartLinkRelease {
   id: string;
@@ -22,11 +25,28 @@ interface SmartLinkRelease {
   release_date: string;
 }
 
+interface Platform {
+  id: string;
+  name: string;
+  icon_url: string | null;
+  placeholder: string;
+  sort_order: number;
+  is_active: boolean;
+}
+
 export default function AdminSmartLinks() {
   const [releases, setReleases] = useState<SmartLinkRelease[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [editRelease, setEditRelease] = useState<SmartLinkRelease | null>(null);
+
+  // Platform management
+  const [platforms, setPlatforms] = useState<Platform[]>([]);
+  const [platformsLoading, setPlatformsLoading] = useState(true);
+  const [editPlatform, setEditPlatform] = useState<Platform | null>(null);
+  const [newPlatform, setNewPlatform] = useState(false);
+  const [platformForm, setPlatformForm] = useState({ name: '', icon_url: '', placeholder: '', is_active: true });
+  const [saving, setSaving] = useState(false);
 
   const fetchReleases = async () => {
     const { data } = await supabase
@@ -38,7 +58,16 @@ export default function AdminSmartLinks() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchReleases(); }, []);
+  const fetchPlatforms = async () => {
+    const { data } = await supabase
+      .from('smart_link_platforms')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    setPlatforms((data as any) || []);
+    setPlatformsLoading(false);
+  };
+
+  useEffect(() => { fetchReleases(); fetchPlatforms(); }, []);
 
   const filtered = releases.filter(r => {
     const name = r.album_name || r.ep_name || '';
@@ -55,6 +84,69 @@ export default function AdminSmartLinks() {
     return links && Object.values(links).some(v => v?.trim());
   };
 
+  const openNewPlatform = () => {
+    setPlatformForm({ name: '', icon_url: '', placeholder: '', is_active: true });
+    setEditPlatform(null);
+    setNewPlatform(true);
+  };
+
+  const openEditPlatform = (p: Platform) => {
+    setPlatformForm({ name: p.name, icon_url: p.icon_url || '', placeholder: p.placeholder || '', is_active: p.is_active });
+    setEditPlatform(p);
+    setNewPlatform(true);
+  };
+
+  const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 500 * 1024) { toast.error('Icon must be under 500KB'); return; }
+    
+    const ext = file.name.split('.').pop();
+    const path = `platform-icons/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('posters').upload(path, file, { upsert: true });
+    if (error) { toast.error('Upload failed'); return; }
+    const { data: urlData } = supabase.storage.from('posters').getPublicUrl(path);
+    setPlatformForm(prev => ({ ...prev, icon_url: urlData.publicUrl }));
+    toast.success('Icon uploaded');
+  };
+
+  const savePlatform = async () => {
+    if (!platformForm.name.trim()) { toast.error('Platform name is required'); return; }
+    setSaving(true);
+
+    if (editPlatform) {
+      const { error } = await supabase
+        .from('smart_link_platforms')
+        .update({ name: platformForm.name.trim(), icon_url: platformForm.icon_url || null, placeholder: platformForm.placeholder, is_active: platformForm.is_active, updated_at: new Date().toISOString() } as any)
+        .eq('id', editPlatform.id);
+      if (error) { toast.error('Failed to update'); setSaving(false); return; }
+      toast.success('Platform updated');
+    } else {
+      const maxOrder = platforms.length > 0 ? Math.max(...platforms.map(p => p.sort_order)) : 0;
+      const { error } = await supabase
+        .from('smart_link_platforms')
+        .insert({ name: platformForm.name.trim(), icon_url: platformForm.icon_url || null, placeholder: platformForm.placeholder, sort_order: maxOrder + 1, is_active: platformForm.is_active } as any);
+      if (error) { toast.error('Failed to add'); setSaving(false); return; }
+      toast.success('Platform added');
+    }
+    setSaving(false);
+    setNewPlatform(false);
+    setEditPlatform(null);
+    fetchPlatforms();
+  };
+
+  const deletePlatform = async (id: string) => {
+    if (!confirm('Remove this platform?')) return;
+    await supabase.from('smart_link_platforms').delete().eq('id', id);
+    toast.success('Platform removed');
+    fetchPlatforms();
+  };
+
+  const togglePlatform = async (p: Platform) => {
+    await supabase.from('smart_link_platforms').update({ is_active: !p.is_active, updated_at: new Date().toISOString() } as any).eq('id', p.id);
+    fetchPlatforms();
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -63,84 +155,134 @@ export default function AdminSmartLinks() {
           <p className="text-sm text-muted-foreground mt-1">Manage platform links for all approved releases</p>
         </div>
 
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search releases..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+        <Tabs defaultValue="releases" className="w-full">
+          <TabsList>
+            <TabsTrigger value="releases"><Link2 className="h-3.5 w-3.5 mr-1.5" />Releases</TabsTrigger>
+            <TabsTrigger value="platforms"><Settings className="h-3.5 w-3.5 mr-1.5" />Manage Platforms</TabsTrigger>
+          </TabsList>
 
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          </div>
-        ) : filtered.length === 0 ? (
-          <GlassCard className="p-8 text-center">
-            <Music className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">No approved releases found</p>
-          </GlassCard>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filtered.map(r => {
-              const name = r.album_name || r.ep_name || 'Untitled';
-              const active = hasLinks(r);
-              const url = getSmartLinkUrl(r);
-              const linkCount = active ? Object.values(r.platform_links).filter(v => v?.trim()).length : 0;
+          {/* === RELEASES TAB === */}
+          <TabsContent value="releases" className="space-y-4 mt-4">
+            <div className="relative max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Search releases..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+            </div>
 
-              return (
-                <GlassCard key={r.id} className="p-4 space-y-3">
-                  <div className="flex items-start gap-3">
-                    {r.poster_url ? (
-                      <img src={r.poster_url} alt={name} className="h-14 w-14 rounded-lg object-cover flex-shrink-0" />
+            {loading ? (
+              <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+            ) : filtered.length === 0 ? (
+              <GlassCard className="p-8 text-center">
+                <Music className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">No approved releases found</p>
+              </GlassCard>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {filtered.map(r => {
+                  const name = r.album_name || r.ep_name || 'Untitled';
+                  const active = hasLinks(r);
+                  const url = getSmartLinkUrl(r);
+                  const linkCount = active ? Object.values(r.platform_links).filter(v => v?.trim()).length : 0;
+
+                  return (
+                    <GlassCard key={r.id} className="p-4 space-y-3">
+                      <div className="flex items-start gap-3">
+                        {r.poster_url ? (
+                          <img src={r.poster_url} alt={name} className="h-14 w-14 rounded-lg object-cover flex-shrink-0" />
+                        ) : (
+                          <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                            <Music className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm text-foreground truncate">{name}</p>
+                          <p className="text-xs text-muted-foreground capitalize">{r.content_type} • {r.release_date}</p>
+                          {active ? (
+                            <Badge variant="default" className="mt-1 text-[10px]">{linkCount} platforms</Badge>
+                          ) : (
+                            <Badge variant="outline" className="mt-1 text-[10px]">No links</Badge>
+                          )}
+                        </div>
+                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setEditRelease(r)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      {active && (
+                        <div className="flex items-center gap-2 p-2 rounded-md bg-primary/5 border border-primary/20">
+                          <Link2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                          <span className="text-[11px] text-muted-foreground flex-1 truncate font-mono">{url}</span>
+                          <CopyButton value={url} />
+                          <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80">
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                        </div>
+                      )}
+
+                      {!active && (
+                        <Button size="sm" variant="outline" className="w-full text-xs" onClick={() => setEditRelease(r)}>
+                          <Link2 className="h-3.5 w-3.5 mr-1" /> Add Platform Links
+                        </Button>
+                      )}
+                    </GlassCard>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* === PLATFORMS TAB === */}
+          <TabsContent value="platforms" className="space-y-4 mt-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">Configure which streaming platforms appear for users to add links.</p>
+              <Button size="sm" onClick={openNewPlatform}><Plus className="h-3.5 w-3.5 mr-1" /> Add Platform</Button>
+            </div>
+
+            {platformsLoading ? (
+              <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+            ) : platforms.length === 0 ? (
+              <GlassCard className="p-8 text-center">
+                <Settings className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">No platforms configured</p>
+              </GlassCard>
+            ) : (
+              <div className="space-y-2">
+                {platforms.map(p => (
+                  <GlassCard key={p.id} className={`p-3 flex items-center gap-3 ${!p.is_active ? 'opacity-50' : ''}`}>
+                    <GripVertical className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    {p.icon_url ? (
+                      <img src={p.icon_url} alt={p.name} className="h-8 w-8 rounded object-contain flex-shrink-0" />
                     ) : (
-                      <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                        <Music className="h-6 w-6 text-muted-foreground" />
+                      <div className="h-8 w-8 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                        <Music className="h-4 w-4 text-muted-foreground" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-foreground truncate">{name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{r.content_type} • {r.release_date}</p>
-                      {active ? (
-                        <Badge variant="default" className="mt-1 text-[10px]">{linkCount} platforms</Badge>
-                      ) : (
-                        <Badge variant="outline" className="mt-1 text-[10px]">No links</Badge>
-                      )}
+                      <p className="text-sm font-medium text-foreground">{p.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{p.placeholder || 'No placeholder set'}</p>
                     </div>
-                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setEditRelease(r)}>
-                      <Edit className="h-4 w-4" />
+                    <Badge variant={p.is_active ? 'default' : 'secondary'} className="text-[10px] cursor-pointer" onClick={() => togglePlatform(p)}>
+                      {p.is_active ? 'Active' : 'Inactive'}
+                    </Badge>
+                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEditPlatform(p)}>
+                      <Edit className="h-3.5 w-3.5" />
                     </Button>
-                  </div>
-
-                  {active && (
-                    <div className="flex items-center gap-2 p-2 rounded-md bg-primary/5 border border-primary/20">
-                      <Link2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-                      <span className="text-[11px] text-muted-foreground flex-1 truncate font-mono">{url}</span>
-                      <CopyButton value={url} />
-                      <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80">
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
-                    </div>
-                  )}
-
-                  {!active && (
-                    <Button size="sm" variant="outline" className="w-full text-xs" onClick={() => setEditRelease(r)}>
-                      <Link2 className="h-3.5 w-3.5 mr-1" /> Add Platform Links
+                    <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deletePlatform(p.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
-                  )}
-                </GlassCard>
-              );
-            })}
-          </div>
-        )}
+                  </GlassCard>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
 
+      {/* Edit Release Dialog */}
       <Dialog open={!!editRelease} onOpenChange={open => !open && setEditRelease(null)}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Smart Link — {editRelease?.album_name || editRelease?.ep_name || 'Untitled'}</DialogTitle>
+            <DialogDescription>Add platform URLs for this release's smart link page.</DialogDescription>
           </DialogHeader>
           {editRelease && (
             <PlatformLinksEditor
@@ -153,6 +295,57 @@ export default function AdminSmartLinks() {
               }}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add/Edit Platform Dialog */}
+      <Dialog open={newPlatform} onOpenChange={open => { if (!open) { setNewPlatform(false); setEditPlatform(null); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editPlatform ? 'Edit' : 'Add'} Platform</DialogTitle>
+            <DialogDescription>Configure the streaming platform details.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-xs">Platform Name *</Label>
+              <Input value={platformForm.name} onChange={e => setPlatformForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Spotify" className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs">Platform Logo</Label>
+              <div className="flex items-center gap-3 mt-1">
+                {platformForm.icon_url ? (
+                  <img src={platformForm.icon_url} alt="icon" className="h-10 w-10 rounded object-contain border border-border" />
+                ) : (
+                  <div className="h-10 w-10 rounded border border-dashed border-border flex items-center justify-center">
+                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <Input type="file" accept="image/*" onChange={handleIconUpload} className="text-xs h-8" />
+                  <p className="text-[10px] text-muted-foreground mt-1">Max 500KB. PNG/SVG recommended.</p>
+                </div>
+              </div>
+              <div className="mt-2">
+                <Label className="text-xs">Or paste logo URL</Label>
+                <Input value={platformForm.icon_url} onChange={e => setPlatformForm(p => ({ ...p, icon_url: e.target.value }))} placeholder="https://..." className="mt-1 text-xs h-8" />
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs">Placeholder URL</Label>
+              <Input value={platformForm.placeholder} onChange={e => setPlatformForm(p => ({ ...p, placeholder: e.target.value }))} placeholder="e.g. https://open.spotify.com/..." className="mt-1 text-xs" />
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" checked={platformForm.is_active} onChange={e => setPlatformForm(p => ({ ...p, is_active: e.target.checked }))} id="platform-active" />
+              <Label htmlFor="platform-active" className="text-xs">Active (visible to users)</Label>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" size="sm" onClick={() => { setNewPlatform(false); setEditPlatform(null); }}>Cancel</Button>
+              <Button size="sm" onClick={savePlatform} disabled={saving}>
+                {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
+                {editPlatform ? 'Update' : 'Add'} Platform
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </DashboardLayout>
