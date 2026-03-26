@@ -369,6 +369,81 @@ export default function AdminSmartLinks() {
             )}
           </TabsContent>
 
+          {/* === CUSTOM SMART LINKS TAB === */}
+          <TabsContent value="custom" className="space-y-4 mt-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">Standalone smart links created by users or admin.</p>
+              <Button size="sm" onClick={() => setCreatingCustom(true)}><Plus className="h-3.5 w-3.5 mr-1" /> Create Smart Link</Button>
+            </div>
+            <div className="relative max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Search custom links..." value={customSearch} onChange={e => setCustomSearch(e.target.value)} className="pl-9" />
+            </div>
+
+            {customLoading ? (
+              <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+            ) : customLinks.filter(c => c.title.toLowerCase().includes(customSearch.toLowerCase())).length === 0 ? (
+              <GlassCard className="p-8 text-center">
+                <Music className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">No custom smart links yet</p>
+              </GlassCard>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {customLinks.filter(c => c.title.toLowerCase().includes(customSearch.toLowerCase())).map(c => {
+                  const url = c.slug ? `${window.location.origin}/r/${c.slug}` : `${window.location.origin}/r/${c.id}`;
+                  const active = c.platform_links && Object.values(c.platform_links).some((v: any) => v?.trim());
+                  const linkCount = active ? Object.values(c.platform_links).filter((v: any) => v?.trim()).length : 0;
+
+                  return (
+                    <GlassCard key={c.id} className="p-4 space-y-3">
+                      <div className="flex items-start gap-3">
+                        {c.poster_url ? (
+                          <img src={c.poster_url} alt={c.title} className="h-14 w-14 rounded-lg object-cover flex-shrink-0" />
+                        ) : (
+                          <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                            <Music className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm text-foreground truncate">{c.title}</p>
+                          <p className="text-xs text-muted-foreground">{c.artist_name || 'Unknown Artist'}</p>
+                          {active ? (
+                            <Badge variant="default" className="mt-1 text-[10px]">{linkCount} platforms</Badge>
+                          ) : (
+                            <Badge variant="outline" className="mt-1 text-[10px]">No links</Badge>
+                          )}
+                        </div>
+                        <div className="flex gap-1">
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditCustom(c)}>
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={async () => {
+                            if (!confirm('Delete this smart link?')) return;
+                            await supabase.from('smart_links').delete().eq('id', c.id);
+                            toast.success('Smart link deleted');
+                            fetchCustomLinks();
+                          }}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                      {active && (
+                        <div className="flex items-center gap-2 p-2 rounded-md bg-primary/5 border border-primary/20">
+                          <Link2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                          <span className="text-[11px] text-muted-foreground flex-1 truncate font-mono">{url}</span>
+                          <CopyButton value={url} />
+                          <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80">
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                        </div>
+                      )}
+                    </GlassCard>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+
           {/* === PLATFORMS TAB === */}
           <TabsContent value="platforms" className="space-y-4 mt-4">
             <div className="flex items-center justify-between">
