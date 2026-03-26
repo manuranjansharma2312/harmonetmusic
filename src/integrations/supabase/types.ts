@@ -221,6 +221,9 @@ export type Database = {
           id: string
           image_sizes: Json
           is_enabled: boolean
+          lifetime_free_all_users: boolean
+          lifetime_free_enabled: boolean
+          lifetime_free_user_ids: string[]
           updated_at: string
           updated_by: string | null
         }
@@ -231,6 +234,9 @@ export type Database = {
           id?: string
           image_sizes?: Json
           is_enabled?: boolean
+          lifetime_free_all_users?: boolean
+          lifetime_free_enabled?: boolean
+          lifetime_free_user_ids?: string[]
           updated_at?: string
           updated_by?: string | null
         }
@@ -241,6 +247,9 @@ export type Database = {
           id?: string
           image_sizes?: Json
           is_enabled?: boolean
+          lifetime_free_all_users?: boolean
+          lifetime_free_enabled?: boolean
+          lifetime_free_user_ids?: string[]
           updated_at?: string
           updated_by?: string | null
         }
