@@ -59,6 +59,7 @@ const ContactSupport = lazy(() => import("./pages/ContactSupport"));
 const AdminContactSupport = lazy(() => import("./pages/AdminContactSupport"));
 const AdminAIImageSystem = lazy(() => import("./pages/AdminAIImageSystem"));
 const AIImageGeneration = lazy(() => import("./pages/AIImageGeneration"));
+const SmartLink = lazy(() => import("./pages/SmartLink"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
