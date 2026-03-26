@@ -62,6 +62,7 @@ const adminLinksTop = [
   { to: '/admin/agreements', label: 'Agreements', icon: FileSignature },
   { to: '/admin/promotion-tools', label: 'Promotion Tools', icon: Megaphone },
   { to: '/admin/payment-settings', label: 'Payment Settings', icon: CreditCard },
+  { to: '/admin/ai-image-system', label: 'AI Image System', icon: Sparkles },
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
 ];
 
