@@ -141,7 +141,7 @@ export default function AIImageGeneration() {
   };
 
   const generateImage = async () => {
-    if (!user || !prompt.trim()) return;
+    if (!activeUserId || !prompt.trim()) return;
     if (remaining < creditsPerImage) { toast.error(`Not enough credits. You need ${creditsPerImage} credits.`); return; }
     setGenerating(true);
     setGeneratedImage(null);
