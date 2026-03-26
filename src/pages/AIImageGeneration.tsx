@@ -193,7 +193,7 @@ export default function AIImageGeneration() {
         await supabase.from('ai_credit_transactions').insert({ user_id: activeUserId, credits: creditsPerImage, type: 'usage', note: `Generated: ${prompt.trim().slice(0, 100)}` });
         setUsedCredits(prev => prev + creditsPerImage);
       }
-      await supabase.from('ai_generated_images').insert({ user_id: activeUserId, prompt: prompt.trim(), image_url: imageUrl, credits_used: isLifetimeFree ? 0 : creditsPerImage });
+      await supabase.from('ai_generated_images').insert({ user_id: activeUserId, prompt: prompt.trim(), image_url: watermarkedUrl, credits_used: isLifetimeFree ? 0 : creditsPerImage });
       toast.success('Poster generated!');
       // Refresh gallery
       const { data: imgData } = await supabase.from('ai_generated_images').select('*').eq('user_id', activeUserId).order('created_at', { ascending: false }).limit(50);
