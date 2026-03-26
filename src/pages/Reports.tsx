@@ -393,7 +393,7 @@ export default function Reports() {
                           {COLUMNS.map((col) => (
                             <TableCell key={col.key} className="whitespace-nowrap">
                               {col.key === 'net_generated_revenue'
-                                ? applyRevenueCut(Number(entry[col.key])).toFixed(4)
+                                ? applyRevenueCut(entry).toFixed(4)
                                 : String(entry[col.key as keyof ReportEntry] ?? '-')}
                             </TableCell>
                           ))}
