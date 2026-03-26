@@ -437,9 +437,9 @@ export default function AdminAIImageSystem() {
                   <p className="text-xs text-muted-foreground mt-1">Each new user gets this many free credits automatically.</p>
                 </div>
                 <div>
-                  <Label>API Provider</Label>
-                  <Input value={aiSettings.api_provider} onChange={e => setAiSettings(s => ({ ...s, api_provider: e.target.value }))} placeholder="e.g. openai, stability, etc." />
-                  <p className="text-xs text-muted-foreground mt-1">The API key is securely stored as an edge function secret. Users cannot see it.</p>
+                  <Label>API Provider (Reference Only)</Label>
+                  <Input value={aiSettings.api_provider} onChange={e => setAiSettings(s => ({ ...s, api_provider: e.target.value }))} placeholder="e.g. Lovable AI, OpenAI, etc." />
+                  <p className="text-xs text-muted-foreground mt-1">Label for your reference only. The actual API key is securely stored as a backend secret and cannot be seen by users.</p>
                 </div>
                 <div>
                   <Label>Credits Per Image</Label>
