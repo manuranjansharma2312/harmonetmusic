@@ -1345,6 +1345,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_ai_images: { Args: never; Returns: undefined }
       get_auth_emails: {
         Args: { _user_ids: string[] }
         Returns: {
