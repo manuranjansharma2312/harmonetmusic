@@ -1220,6 +1220,17 @@ export default function AdminSubmissions() {
                 </div>
               )}
 
+              {/* Platform Links Editor */}
+              <PlatformLinksEditor
+                releaseId={viewRelease.id}
+                releaseSlug={viewRelease.slug || null}
+                initialLinks={(viewRelease.platform_links as Record<string, string>) || {}}
+                onSaved={(links) => {
+                  setViewRelease(prev => prev ? { ...prev, platform_links: links } : null);
+                  fetchReleases();
+                }}
+              />
+
               {viewRelease.tracks && viewRelease.tracks.length > 0 && (
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Tracks ({viewRelease.tracks.length})</p>
