@@ -178,12 +178,13 @@ export default function AIImageGeneration() {
 
       setGeneratedImage(imageUrl);
 
-      // Deduct credits
-      await supabase.from('ai_credits').update({ used_credits: usedCredits + creditsPerImage, updated_at: new Date().toISOString() }).eq('user_id', activeUserId);
-      await supabase.from('ai_credit_transactions').insert({ user_id: activeUserId, credits: creditsPerImage, type: 'usage', note: `Generated: ${prompt.trim().slice(0, 100)}` });
-      await supabase.from('ai_generated_images').insert({ user_id: activeUserId, prompt: prompt.trim(), image_url: imageUrl, credits_used: creditsPerImage });
-
-      setUsedCredits(prev => prev + creditsPerImage);
+      // Deduct credits only if not lifetime free
+      if (!isLifetimeFree) {
+        await supabase.from('ai_credits').update({ used_credits: usedCredits + creditsPerImage, updated_at: new Date().toISOString() }).eq('user_id', activeUserId);
+        await supabase.from('ai_credit_transactions').insert({ user_id: activeUserId, credits: creditsPerImage, type: 'usage', note: `Generated: ${prompt.trim().slice(0, 100)}` });
+        setUsedCredits(prev => prev + creditsPerImage);
+      }
+      await supabase.from('ai_generated_images').insert({ user_id: activeUserId, prompt: prompt.trim(), image_url: imageUrl, credits_used: isLifetimeFree ? 0 : creditsPerImage });
       toast.success('Poster generated!');
       // Refresh gallery
       const { data: imgData } = await supabase.from('ai_generated_images').select('*').eq('user_id', activeUserId).order('created_at', { ascending: false }).limit(50);
