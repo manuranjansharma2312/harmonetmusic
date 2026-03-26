@@ -5,7 +5,7 @@ import {
   Merge, Youtube, Trash2, ChevronDown, MessageSquare,
   BarChart3, MonitorPlay, Wallet, FileText, Receipt,
   Image as ImageIcon, Bell, BookOpen, FileSignature,
-  Megaphone, Landmark, CreditCard, UsersRound, Sparkles,
+  Megaphone, Landmark, CreditCard, UsersRound, Sparkles, Link2,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { supabase } from '@/integrations/supabase/client';
@@ -63,6 +63,7 @@ const adminLinksTop = [
   { to: '/admin/promotion-tools', label: 'Promotion Tools', icon: Megaphone },
   { to: '/admin/payment-settings', label: 'Payment Settings', icon: CreditCard },
   { to: '/admin/ai-image-system', label: 'AI Poster Generate', icon: Sparkles },
+  { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
 ];
 
@@ -111,6 +112,7 @@ export function AppSidebar() {
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/submit', label: 'New Release', icon: Upload },
     { to: '/my-releases', label: 'My Releases', icon: ListMusic },
+    { to: '/smart-links', label: 'Smart Links', icon: Link2 },
     { to: '/my-labels', label: 'My Labels', icon: Tag },
   ];
 
