@@ -832,6 +832,7 @@ export default function AdminSubmissions() {
       'Poster URL', 'Rejection Reason',
       'Submitted By', 'User ID', 'User Email',
       'Track #', 'Song Title', 'ISRC', 'Primary Artist', 'New Artist Profile',
+      'New Profile Artists',
       'Audio Type', 'Language', 'Genre',
       'Singer', 'Lyricist', 'Composer', 'Producer',
       'Spotify Link', 'Apple Music Link', 'Instagram Link',
@@ -851,14 +852,20 @@ export default function AdminSubmissions() {
 
       const tracks = r.tracks?.length ? r.tracks : [null];
       tracks.forEach((t, i) => {
+        // Build "New Profile Artists" - show which specific artists need new profiles
+        // Since DB stores is_new_artist_profile as boolean for the whole track,
+        // if true, list all primary artists as needing new profiles
+        const newProfileArtists = t && t.is_new_artist_profile ? (t.primary_artist || '') : '';
+        
         const trackFields = t ? [
           String(t.track_order), t.song_title || '', t.isrc || '', t.primary_artist || '',
           t.is_new_artist_profile ? 'Yes' : 'No',
+          newProfileArtists,
           fmt(t.audio_type || ''), t.language || '', t.genre || '',
           (t as any).singer || '', t.lyricist || '', t.composer || '', t.producer || '',
           t.spotify_link || '', t.apple_music_link || '', t.instagram_link || '',
           t.callertune_time || '', t.audio_url || '',
-        ] : Array(17).fill('');
+        ] : Array(18).fill('');
 
         rows.push([...releaseFields, ...trackFields]);
       });
