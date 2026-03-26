@@ -129,12 +129,20 @@ export default function NewRelease() {
           audioType: t.audio_type as 'with_vocal' | 'instrumental',
           language: t.language || '',
           genre: t.genre || '',
-          primaryArtists: [{
-            name: t.primary_artist || '',
-            spotifyLink: t.spotify_link || '',
-            appleMusicLink: t.apple_music_link || '',
-            isNewProfile: t.is_new_artist_profile || false,
-          }],
+          primaryArtists: (() => {
+            const names = (t.primary_artist || '').split(',').map(s => s.trim()).filter(Boolean);
+            const spotifyLinks = (t.spotify_link || '').split(',').map(s => s.trim());
+            const appleLinks = (t.apple_music_link || '').split(',').map(s => s.trim());
+            if (names.length <= 1) {
+              return [{ name: t.primary_artist || '', spotifyLink: t.spotify_link || '', appleMusicLink: t.apple_music_link || '', isNewProfile: t.is_new_artist_profile || false }];
+            }
+            return names.map((name, idx) => ({
+              name,
+              spotifyLink: spotifyLinks[idx] || '',
+              appleMusicLink: appleLinks[idx] || '',
+              isNewProfile: false, // individual flags not stored separately
+            }));
+          })(),
           singer: (t as any).singer || '',
           lyricist: t.lyricist || '',
           composer: t.composer || '',
@@ -319,8 +327,8 @@ export default function NewRelease() {
             language: track.language || null,
             genre: track.genre || null,
             primary_artist: track.primaryArtists.map(a => a.name).filter(Boolean).join(', ') || null,
-            spotify_link: track.primaryArtists[0]?.spotifyLink || null,
-            apple_music_link: track.primaryArtists[0]?.appleMusicLink || null,
+            spotify_link: track.primaryArtists.map(a => a.spotifyLink || '').join(', ').replace(/(, )*$/, '') || null,
+            apple_music_link: track.primaryArtists.map(a => a.appleMusicLink || '').join(', ').replace(/(, )*$/, '') || null,
             is_new_artist_profile: track.primaryArtists.some(a => a.isNewProfile),
             singer: track.singer || null,
             lyricist: track.lyricist || null,
@@ -387,8 +395,8 @@ export default function NewRelease() {
             language: track.language || null,
             genre: track.genre || null,
             primary_artist: track.primaryArtists.map(a => a.name).filter(Boolean).join(', ') || null,
-            spotify_link: track.primaryArtists[0]?.spotifyLink || null,
-            apple_music_link: track.primaryArtists[0]?.appleMusicLink || null,
+            spotify_link: track.primaryArtists.map(a => a.spotifyLink || '').join(', ').replace(/(, )*$/, '') || null,
+            apple_music_link: track.primaryArtists.map(a => a.appleMusicLink || '').join(', ').replace(/(, )*$/, '') || null,
             is_new_artist_profile: track.primaryArtists.some(a => a.isNewProfile),
             singer: track.singer || null,
             lyricist: track.lyricist || null,

@@ -396,49 +396,55 @@ export default function AdminSubmissions() {
   };
 
   const downloadDemoTemplate = () => {
-    // Match export format exactly
     const headers = [
       'Release Name', 'Release Type', 'Content Type', 'UPC', 'Status',
       'Release Date', 'Store Selection', 'Copyright ©', 'Phonogram ℗',
       'Poster URL', 'Rejection Reason',
       'Submitted By', 'User ID', 'User Email',
       'Track #', 'Song Title', 'ISRC', 'Primary Artist', 'New Artist Profile',
+      'New Profile Artists',
       'Audio Type', 'Language', 'Genre',
       'Singer', 'Lyricist', 'Composer', 'Producer',
       'Spotify Link', 'Apple Music Link', 'Instagram Link',
       'Callertune Time', 'Audio URL',
     ];
+    // Row 1: Album track 1 with multiple artists (some need new profile)
     const row1 = [
       'My First Album', 'New Release', 'Album', '', 'Pending',
       '2026-04-01', 'Worldwide', '© 2026 Label Name', '℗ 2026 Label Name',
       '', '',
       '', '#1', '',
-      '1', 'Track One', '', 'Artist Name', 'No',
+      '1', 'Track One', '', 'Artist One, Artist Two', 'Yes',
+      'Artist Two',
       'With Vocal', 'Hindi', 'Pop',
       'Singer Name', 'Lyricist Name', 'Composer Name', 'Producer Name',
-      '', '', '',
+      'https://open.spotify.com/artist/abc, https://open.spotify.com/artist/def', 'https://music.apple.com/artist/abc, https://music.apple.com/artist/def', 'https://instagram.com/artist',
       '00:30', '',
     ];
+    // Row 2: Album track 2, single artist
     const row2 = [
       'My First Album', 'New Release', 'Album', '', 'Pending',
       '2026-04-01', 'Worldwide', '© 2026 Label Name', '℗ 2026 Label Name',
       '', '',
       '', '#1', '',
       '2', 'Track Two', '', 'Another Artist', 'No',
+      '',
       'Instrumental', '', 'Rock',
       'Singer Name', 'Lyricist Name', 'Composer Name', 'Producer Name',
-      '', '', '',
+      'https://open.spotify.com/artist/xyz', 'https://music.apple.com/artist/xyz', '',
       '', '',
     ];
+    // Row 3: Single with new profile, using email
     const row3 = [
       'My Single Song', 'New Release', 'Single', '', 'Approved',
       '2026-05-01', 'Instagram & Facebook Only', '© 2026 Label', '℗ 2026 Label',
       '', '',
       '', '', 'user@example.com',
-      '1', 'Single Song Title', 'ISRC12345', 'Solo Artist', 'Yes',
+      '1', 'Single Song Title', 'ISRC12345', 'Solo Artist, Featured Artist', 'Yes',
+      'Solo Artist, Featured Artist',
       'With Vocal', 'English', 'Pop',
       'Solo Singer', 'Lyricist', 'Composer', 'Producer',
-      'https://open.spotify.com/...', 'https://music.apple.com/...', 'https://instagram.com/...',
+      'https://open.spotify.com/artist/solo, ', ', https://music.apple.com/artist/feat', 'https://instagram.com/solo',
       '01:15', '',
     ];
     const csvContent = [headers, row1, row2, row3]
@@ -832,6 +838,7 @@ export default function AdminSubmissions() {
       'Poster URL', 'Rejection Reason',
       'Submitted By', 'User ID', 'User Email',
       'Track #', 'Song Title', 'ISRC', 'Primary Artist', 'New Artist Profile',
+      'New Profile Artists',
       'Audio Type', 'Language', 'Genre',
       'Singer', 'Lyricist', 'Composer', 'Producer',
       'Spotify Link', 'Apple Music Link', 'Instagram Link',
@@ -851,14 +858,20 @@ export default function AdminSubmissions() {
 
       const tracks = r.tracks?.length ? r.tracks : [null];
       tracks.forEach((t, i) => {
+        // Build "New Profile Artists" - show which specific artists need new profiles
+        // Since DB stores is_new_artist_profile as boolean for the whole track,
+        // if true, list all primary artists as needing new profiles
+        const newProfileArtists = t && t.is_new_artist_profile ? (t.primary_artist || '') : '';
+        
         const trackFields = t ? [
           String(t.track_order), t.song_title || '', t.isrc || '', t.primary_artist || '',
           t.is_new_artist_profile ? 'Yes' : 'No',
+          newProfileArtists,
           fmt(t.audio_type || ''), t.language || '', t.genre || '',
           (t as any).singer || '', t.lyricist || '', t.composer || '', t.producer || '',
           t.spotify_link || '', t.apple_music_link || '', t.instagram_link || '',
           t.callertune_time || '', t.audio_url || '',
-        ] : Array(17).fill('');
+        ] : Array(18).fill('');
 
         rows.push([...releaseFields, ...trackFields]);
       });
