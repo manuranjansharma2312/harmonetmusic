@@ -237,7 +237,7 @@ export default function AdminAIImageSystem() {
   const saveSettings = async () => {
     setSettingsLoading(true);
     const { data: settingsRow } = await supabase.from('ai_settings').select('id').limit(1).single();
-    await supabase.from('ai_settings').update({ credits_per_image: aiSettings.credits_per_image, api_provider: aiSettings.api_provider, is_enabled: aiSettings.is_enabled, free_credits: aiSettings.free_credits, image_sizes: aiSettings.image_sizes as any, updated_at: new Date().toISOString(), updated_by: user?.id }).eq('id', settingsRow?.id || '');
+    await supabase.from('ai_settings').update({ credits_per_image: aiSettings.credits_per_image, api_provider: aiSettings.api_provider, is_enabled: aiSettings.is_enabled, free_credits: aiSettings.free_credits, image_sizes: aiSettings.image_sizes as any, lifetime_free_enabled: aiSettings.lifetime_free_enabled, lifetime_free_all_users: aiSettings.lifetime_free_all_users, lifetime_free_user_ids: aiSettings.lifetime_free_user_ids, updated_at: new Date().toISOString(), updated_by: user?.id } as any).eq('id', settingsRow?.id || '');
     toast.success('Settings saved');
     setSettingsLoading(false);
   };
