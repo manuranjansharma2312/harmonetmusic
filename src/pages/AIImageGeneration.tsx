@@ -71,11 +71,11 @@ export default function AIImageGeneration() {
 
     // Handle credits & free credits auto-provisioning
     const freeCredits = (aiSettingsRes.data as any)?.free_credits || 0;
+    setCreditsPerImage((aiSettingsRes.data as any)?.credits_per_image || 1);
     if (credRes.data) {
       setTotalCredits((credRes.data as any).total_credits);
       setUsedCredits((credRes.data as any).used_credits);
     } else if (freeCredits > 0) {
-      // Auto-provision free credits for first-time user
       await supabase.from('ai_credits').insert({ user_id: user.id, total_credits: freeCredits, used_credits: 0 });
       await supabase.from('ai_credit_transactions').insert({ user_id: user.id, credits: freeCredits, type: 'free_credits', note: 'Free credits on first visit' });
       setTotalCredits(freeCredits);
