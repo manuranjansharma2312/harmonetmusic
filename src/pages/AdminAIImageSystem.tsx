@@ -59,7 +59,10 @@ export default function AdminAIImageSystem() {
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [newSize, setNewSize] = useState({ label: '', ratio: '' });
   const [lifetimeFreeSearch, setLifetimeFreeSearch] = useState('');
-
+  const [apiKeyValue, setApiKeyValue] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [apiKeySaving, setApiKeySaving] = useState(false);
+  const [apiKeyLoaded, setApiKeyLoaded] = useState(false);
   const profileMap = useMemo(() => {
     const m: Record<string, Profile> = {};
     profiles.forEach(p => { m[p.user_id] = p; });
