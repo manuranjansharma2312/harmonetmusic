@@ -54,3 +54,21 @@ export function summarizeWithdrawals<T extends { amount: number | string; status
     { pending: 0, paid: 0 }
   );
 }
+
+/**
+ * Apply per-row snapshot cut to a report entry's revenue.
+ * If the entry has a `cut_percent_snapshot` value (i.e. it was imported after the
+ * snapshot feature was added), use that frozen value. Otherwise fall back to the
+ * global effective cut.
+ */
+export function applySnapshotCut(
+  grossRevenue: number,
+  snapshotCut: number | null | undefined,
+  fallbackCut: number,
+  applyCut: boolean,
+): number {
+  if (!applyCut) return Number(grossRevenue) || 0;
+  const cut = snapshotCut != null ? normalizePercent(snapshotCut) : normalizePercent(fallbackCut);
+  const multiplier = 1 - cut / 100;
+  return Number(((Number(grossRevenue) || 0) * multiplier).toFixed(4));
+}
