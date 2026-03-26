@@ -226,7 +226,11 @@ export default function AIImageGeneration() {
             <CreditCard className="h-5 w-5 text-primary" />
             <div>
               <p className="text-xs text-muted-foreground">Credits</p>
-              <p className="font-bold text-lg">{remaining} <span className="text-xs text-muted-foreground font-normal">remaining</span></p>
+              {isLifetimeFree ? (
+                <p className="font-bold text-lg text-green-600">Unlimited <span className="text-xs text-muted-foreground font-normal">(Free Plan)</span></p>
+              ) : (
+                <p className="font-bold text-lg">{remaining} <span className="text-xs text-muted-foreground font-normal">remaining</span></p>
+              )}
             </div>
           </Card>
         </div>
@@ -235,8 +239,8 @@ export default function AIImageGeneration() {
           <TabsList className="flex flex-wrap h-auto gap-1">
             <TabsTrigger value="generate" className="gap-1"><Wand2 className="h-4 w-4" />Generate</TabsTrigger>
             <TabsTrigger value="gallery" className="gap-1"><ImageIcon className="h-4 w-4" />My Posters</TabsTrigger>
-            <TabsTrigger value="plans" className="gap-1"><CreditCard className="h-4 w-4" />Buy Credits</TabsTrigger>
-            <TabsTrigger value="orders" className="gap-1"><History className="h-4 w-4" />My Orders</TabsTrigger>
+            {!isLifetimeFree && <TabsTrigger value="plans" className="gap-1"><CreditCard className="h-4 w-4" />Buy Credits</TabsTrigger>}
+            {!isLifetimeFree && <TabsTrigger value="orders" className="gap-1"><History className="h-4 w-4" />My Orders</TabsTrigger>}
           </TabsList>
 
           {/* GENERATE TAB */}
