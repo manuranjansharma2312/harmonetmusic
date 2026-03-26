@@ -82,7 +82,8 @@ export default function AdminAIImageSystem() {
   };
 
   const fetchCredits = async () => {
-    const { data } = await supabase.from('ai_credits').select('*');
+    const { data, error } = await supabase.from('ai_credits').select('*');
+    if (error) { console.error('Failed to fetch credits:', error); return; }
     if (data) setCredits(data as any);
   };
 
