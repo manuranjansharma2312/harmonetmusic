@@ -63,6 +63,7 @@ const adminLinksTop = [
   { to: '/admin/promotion-tools', label: 'Promotion Tools', icon: Megaphone },
   { to: '/admin/payment-settings', label: 'Payment Settings', icon: CreditCard },
   { to: '/admin/ai-image-system', label: 'AI Poster Generate', icon: Sparkles },
+  { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
 ];
 
