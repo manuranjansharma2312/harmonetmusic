@@ -142,7 +142,7 @@ export default function AdminSmartLinks() {
     const links = (data as any) || [];
 
     // Fetch profiles for all unique user_ids
-    const userIds = [...new Set(links.map((l: any) => l.user_id))];
+    const userIds = [...new Set(links.map((l: any) => l.user_id))] as string[];
     let profilesMap: Record<string, any> = {};
     let subLabelsMap: Record<string, any> = {};
 
