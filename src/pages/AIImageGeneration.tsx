@@ -63,12 +63,12 @@ export default function AIImageGeneration() {
   const [taxes, setTaxes] = useState<any[]>([]);
 
   const fetchData = async () => {
-    if (!user) return;
+    if (!activeUserId) return;
     const [plansRes, credRes, ordersRes, imagesRes, settingsRes, aiSettingsRes] = await Promise.all([
       supabase.from('ai_plans').select('*').eq('is_active', true).order('price'),
-      supabase.from('ai_credits').select('*').eq('user_id', user.id).maybeSingle(),
-      supabase.from('ai_plan_orders').select('*, ai_plans(name, credits, price)').eq('user_id', user.id).order('created_at', { ascending: false }),
-      supabase.from('ai_generated_images').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
+      supabase.from('ai_credits').select('*').eq('user_id', activeUserId).maybeSingle(),
+      supabase.from('ai_plan_orders').select('*, ai_plans(name, credits, price)').eq('user_id', activeUserId).order('created_at', { ascending: false }),
+      supabase.from('ai_generated_images').select('*').eq('user_id', activeUserId).order('created_at', { ascending: false }).limit(50),
       supabase.from('promotion_settings').select('qr_code_url, taxes').limit(1).maybeSingle(),
       supabase.from('ai_settings').select('free_credits, credits_per_image, image_sizes').limit(1).maybeSingle(),
     ]);
@@ -86,15 +86,15 @@ export default function AIImageGeneration() {
     if (credRes.data) {
       setTotalCredits((credRes.data as any).total_credits);
       setUsedCredits((credRes.data as any).used_credits);
-    } else if (freeCredits > 0) {
-      await supabase.from('ai_credits').insert({ user_id: user.id, total_credits: freeCredits, used_credits: 0 });
-      await supabase.from('ai_credit_transactions').insert({ user_id: user.id, credits: freeCredits, type: 'free_credits', note: 'Free credits on first visit' });
+    } else if (freeCredits > 0 && !impersonatedUserId) {
+      await supabase.from('ai_credits').insert({ user_id: activeUserId, total_credits: freeCredits, used_credits: 0 });
+      await supabase.from('ai_credit_transactions').insert({ user_id: activeUserId, credits: freeCredits, type: 'free_credits', note: 'Free credits on first visit' });
       setTotalCredits(freeCredits);
       setUsedCredits(0);
     }
   };
 
-  useEffect(() => { fetchData(); }, [user]);
+  useEffect(() => { fetchData(); }, [activeUserId]);
 
   const calculateTotal = (price: number) => {
     let total = price;
