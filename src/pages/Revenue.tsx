@@ -384,6 +384,11 @@ export default function Revenue() {
         <GlassCard className="p-0 overflow-hidden">
           <div className="p-4 border-b border-border/50">
             <h2 className="text-lg font-semibold">Withdrawal History</h2>
+            {isSubLabelUser && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Your withdrawals are entirely managed by your Main Record Label.
+              </p>
+            )}
           </div>
 
           <div className="overflow-x-auto">
