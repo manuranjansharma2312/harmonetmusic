@@ -1,0 +1,1 @@
+ALTER TABLE public.ai_settings ADD COLUMN IF NOT EXISTS image_sizes jsonb NOT NULL DEFAULT '[{"label":"1080x1080 (Square)","width":1080,"height":1080},{"label":"1080x1350 (Portrait)","width":1080,"height":1350},{"label":"1920x1080 (Landscape)","width":1920,"height":1080}]'::jsonb;
