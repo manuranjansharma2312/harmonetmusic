@@ -16,7 +16,7 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell,
   AreaChart, Area, Legend,
 } from 'recharts';
-import { applyRevenueCutToAmount, getEffectiveRevenueCutPercent, shouldApplyRevenueCut } from '@/lib/revenueCalculations';
+import { applySnapshotCut, getEffectiveRevenueCutPercent, shouldApplyRevenueCut } from '@/lib/revenueCalculations';
 
 /* ── Types ── */
 type TimePeriod = '30d' | '6m' | '12m' | 'all';
@@ -28,6 +28,7 @@ interface ReportEntry {
   upc: string | null; currency: string | null; streams: number;
   downloads: number; net_generated_revenue: number; imported_at: string;
   source: 'ott' | 'youtube';
+  cut_percent_snapshot?: number | null;
 }
 
 const TIME_PERIODS: { key: TimePeriod; label: string }[] = [
@@ -266,9 +267,9 @@ export default function Analytics() {
   const adjustedFiltered = useMemo(
     () => filtered.map((entry) => ({
       ...entry,
-      net_generated_revenue: applyRevenueCutToAmount(Number(entry.net_generated_revenue) || 0, effectiveCut, shouldApplyCut),
+      net_generated_revenue: applySnapshotCut(Number(entry.net_generated_revenue) || 0, entry.cut_percent_snapshot, effectiveCut, shouldApplyCut),
     })),
-    [filtered, effectiveCut, shouldApplyCut]
+    [filtered, effectiveCut, shouldApplyCut],
   );
 
   const totalRevenue = useMemo(() => adjustedFiltered.reduce((s, e) => s + (Number(e.net_generated_revenue) || 0), 0), [adjustedFiltered]);
