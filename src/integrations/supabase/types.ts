@@ -696,6 +696,7 @@ export type Database = {
           country: string | null
           created_at: string | null
           currency: string | null
+          cut_percent_snapshot: number | null
           downloads: number | null
           id: string
           imported_at: string | null
@@ -717,6 +718,7 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           currency?: string | null
+          cut_percent_snapshot?: number | null
           downloads?: number | null
           id?: string
           imported_at?: string | null
@@ -738,6 +740,7 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           currency?: string | null
+          cut_percent_snapshot?: number | null
           downloads?: number | null
           id?: string
           imported_at?: string | null
@@ -1073,6 +1076,7 @@ export type Database = {
           country: string | null
           created_at: string | null
           currency: string | null
+          cut_percent_snapshot: number | null
           downloads: number | null
           id: string
           imported_at: string | null
@@ -1094,6 +1098,7 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           currency?: string | null
+          cut_percent_snapshot?: number | null
           downloads?: number | null
           id?: string
           imported_at?: string | null
@@ -1115,6 +1120,7 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           currency?: string | null
+          cut_percent_snapshot?: number | null
           downloads?: number | null
           id?: string
           imported_at?: string | null
