@@ -436,6 +436,21 @@ export default function AdminSmartLinks() {
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-sm text-foreground truncate">{c.title}</p>
                           <p className="text-xs text-muted-foreground">{c.artist_name || 'Unknown Artist'}</p>
+                          {/* Created by info */}
+                          {c._profile && (
+                            <div className="mt-1">
+                              <p className="text-[10px] text-muted-foreground/80 flex items-center gap-1">
+                                <User className="h-3 w-3" />
+                                {c._profile.artist_name || c._profile.record_label_name || c._profile.legal_name}
+                                <span className="text-muted-foreground/50">#{c._profile.display_id}</span>
+                              </p>
+                              {c._subLabel && (
+                                <p className="text-[10px] text-muted-foreground/60 ml-4">
+                                  ↳ Under: {c._subLabel.parent_label_name}
+                                </p>
+                              )}
+                            </div>
+                          )}
                           {active ? (
                             <Badge variant="default" className="mt-1 text-[10px]">{linkCount} platforms</Badge>
                           ) : (
