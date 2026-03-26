@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
 const statusStyles: Record<string, string> = {
@@ -9,15 +10,18 @@ const statusStyles: Record<string, string> = {
   paid: 'bg-emerald-500/20 text-emerald-400',
 };
 
-export function StatusBadge({ status }: { status: string }) {
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium',
-        statusStyles[status] || 'bg-muted text-muted-foreground'
-      )}
-    >
-      {status.charAt(0).toUpperCase() + status.slice(1)}
-    </span>
-  );
-}
+export const StatusBadge = forwardRef<HTMLSpanElement, { status: string }>(
+  function StatusBadge({ status }, ref) {
+    return (
+      <span
+        ref={ref}
+        className={cn(
+          'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium',
+          statusStyles[status] || 'bg-muted text-muted-foreground'
+        )}
+      >
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    );
+  }
+);
