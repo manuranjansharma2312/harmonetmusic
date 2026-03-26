@@ -412,6 +412,18 @@ export default function AdminAIImageSystem() {
             <Card>
               <CardHeader><CardTitle>AI Image Settings</CardTitle></CardHeader>
               <CardContent className="space-y-4 max-w-md">
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <div>
+                    <Label className="text-base">Enable AI Image System</Label>
+                    <p className="text-xs text-muted-foreground">When disabled, the AI Image menu is hidden from users.</p>
+                  </div>
+                  <Switch checked={aiSettings.is_enabled} onCheckedChange={v => setAiSettings(s => ({ ...s, is_enabled: v }))} />
+                </div>
+                <div>
+                  <Label>Free Credits for New Users</Label>
+                  <Input type="number" min={0} value={aiSettings.free_credits} onChange={e => setAiSettings(s => ({ ...s, free_credits: Number(e.target.value) }))} />
+                  <p className="text-xs text-muted-foreground mt-1">Each new user gets this many free credits automatically.</p>
+                </div>
                 <div>
                   <Label>API Provider</Label>
                   <Input value={aiSettings.api_provider} onChange={e => setAiSettings(s => ({ ...s, api_provider: e.target.value }))} placeholder="e.g. openai, stability, etc." />
