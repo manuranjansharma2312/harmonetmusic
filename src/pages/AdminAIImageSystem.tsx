@@ -480,8 +480,8 @@ export default function AdminAIImageSystem() {
           <div className="space-y-3">
             <div><Label>Plan Name *</Label><Input value={planForm.name} onChange={e => setPlanForm(f => ({ ...f, name: e.target.value }))} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Price (₹) *</Label><Input type="number" value={planForm.price} onChange={e => setPlanForm(f => ({ ...f, price: e.target.value }))} /></div>
-              <div><Label>Credits *</Label><Input type="number" value={planForm.credits} onChange={e => setPlanForm(f => ({ ...f, credits: e.target.value }))} /></div>
+              <div><Label>Price (₹) *</Label><Input type="text" inputMode="numeric" value={planForm.price} onChange={e => setPlanForm(f => ({ ...f, price: e.target.value.replace(/[^0-9.]/g, '') }))} /></div>
+              <div><Label>Credits *</Label><Input type="text" inputMode="numeric" value={planForm.credits} onChange={e => setPlanForm(f => ({ ...f, credits: e.target.value.replace(/[^0-9]/g, '') }))} /></div>
             </div>
             <div><Label>Description</Label><Textarea value={planForm.description} onChange={e => setPlanForm(f => ({ ...f, description: e.target.value }))} /></div>
             <div><Label>Tag (e.g. Most Popular)</Label><Input value={planForm.tag} onChange={e => setPlanForm(f => ({ ...f, tag: e.target.value }))} /></div>
