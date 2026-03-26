@@ -143,8 +143,23 @@ export default function AIImageGeneration() {
     setGenerating(true);
     setGeneratedImage(null);
     try {
-      const sizeObj = imageSizes.find(s => `${s.width}x${s.height}` === selectedSize);
-      const { data, error } = await supabase.functions.invoke('generate-ai-poster', { body: { prompt: prompt.trim(), width: sizeObj?.width, height: sizeObj?.height } });
+      // Convert reference image to base64 if provided
+      let referenceImageData: string | undefined;
+      if (referenceImage) {
+        referenceImageData = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(referenceImage);
+        });
+      }
+
+      const { data, error } = await supabase.functions.invoke('generate-ai-poster', { 
+        body: { 
+          prompt: prompt.trim(), 
+          aspectRatio: selectedSize || undefined,
+          referenceImage: referenceImageData || undefined,
+        } 
+      });
       if (error) { toast.error('Generation failed. Please try again.'); return; }
       if (data?.error) { toast.error(data.error); return; }
       const imageUrl = data?.image_url;
