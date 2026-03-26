@@ -44,6 +44,12 @@ export default function AIImageGeneration() {
   const [screenshot, setScreenshot] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // Generate state
+  const [prompt, setPrompt] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [creditsPerImage, setCreditsPerImage] = useState(1);
+
   // Payment settings (QR code etc)
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [taxes, setTaxes] = useState<any[]>([]);
