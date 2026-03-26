@@ -241,7 +241,7 @@ export default function Revenue() {
     );
   }
 
-  const showBankDetailsNotice = hasBankDetails === false && role !== 'admin';
+  const showBankDetailsNotice = hasBankDetails === false && (role !== 'admin' || (role === 'admin' && impersonatedUserId && impersonatedUserId !== user?.id));
 
   return (
     <DashboardLayout>
