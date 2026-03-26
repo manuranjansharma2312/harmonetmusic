@@ -1361,6 +1361,23 @@ export type Database = {
     }
     Functions: {
       cleanup_old_ai_images: { Args: never; Returns: undefined }
+      deduct_ai_credit: {
+        Args: { _amount: number; _user_id: string }
+        Returns: boolean
+      }
+      get_ai_settings_public: {
+        Args: never
+        Returns: {
+          credits_per_image: number
+          free_credits: number
+          id: string
+          image_sizes: Json
+          is_enabled: boolean
+          lifetime_free_all_users: boolean
+          lifetime_free_enabled: boolean
+          lifetime_free_user_ids: string[]
+        }[]
+      }
       get_auth_emails: {
         Args: { _user_ids: string[] }
         Returns: {
