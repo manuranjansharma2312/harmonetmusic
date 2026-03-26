@@ -178,7 +178,7 @@ export default function AIImageGeneration() {
       setUsedCredits(prev => prev + creditsPerImage);
       toast.success('Poster generated!');
       // Refresh gallery
-      const { data: imgData } = await supabase.from('ai_generated_images').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50);
+      const { data: imgData } = await supabase.from('ai_generated_images').select('*').eq('user_id', activeUserId).order('created_at', { ascending: false }).limit(50);
       if (imgData) setImages(imgData as any);
     } catch (e) {
       toast.error('Generation failed. Please try again.');
