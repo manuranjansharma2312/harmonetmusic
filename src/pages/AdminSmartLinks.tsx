@@ -4,6 +4,8 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { CopyButton } from '@/components/CopyButton';
 import { PlatformLinksEditor } from '@/components/PlatformLinksEditor';
+import { SmartLinkEditor } from '@/components/SmartLinkEditor';
+import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -71,6 +73,7 @@ function autoCropImage(file: File, size: number): Promise<Blob> {
 }
 
 export default function AdminSmartLinks() {
+  const { user } = useAuth();
   // ─── Releases state ───
   const [releases, setReleases] = useState<SmartLinkRelease[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,6 +97,13 @@ export default function AdminSmartLinks() {
   const [apiForm, setApiForm] = useState({ api_name: '', api_key: '', api_url: '', is_enabled: false, notes: '' });
   const [savingApi, setSavingApi] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
+
+  // ─── Custom Smart Links state ───
+  const [customLinks, setCustomLinks] = useState<any[]>([]);
+  const [customLoading, setCustomLoading] = useState(true);
+  const [customSearch, setCustomSearch] = useState('');
+  const [editCustom, setEditCustom] = useState<any | null>(null);
+  const [creatingCustom, setCreatingCustom] = useState(false);
 
   // ─── Fetchers ───
   const fetchReleases = async () => {
@@ -124,7 +134,16 @@ export default function AdminSmartLinks() {
     setApisLoading(false);
   };
 
-  useEffect(() => { fetchReleases(); fetchPlatforms(); fetchApiConfigs(); }, []);
+  const fetchCustomLinks = async () => {
+    const { data } = await supabase
+      .from('smart_links')
+      .select('id, title, artist_name, poster_url, platform_links, slug, created_at, user_id')
+      .order('created_at', { ascending: false });
+    setCustomLinks((data as any) || []);
+    setCustomLoading(false);
+  };
+
+  useEffect(() => { fetchReleases(); fetchPlatforms(); fetchApiConfigs(); fetchCustomLinks(); }, []);
 
   // ─── Release helpers ───
   const filtered = releases.filter(r => {
@@ -276,6 +295,7 @@ export default function AdminSmartLinks() {
         <Tabs defaultValue="releases" className="w-full">
           <TabsList>
             <TabsTrigger value="releases"><Link2 className="h-3.5 w-3.5 mr-1.5" />Releases</TabsTrigger>
+            <TabsTrigger value="custom"><Music className="h-3.5 w-3.5 mr-1.5" />Custom Links</TabsTrigger>
             <TabsTrigger value="platforms"><Settings className="h-3.5 w-3.5 mr-1.5" />Platforms</TabsTrigger>
             <TabsTrigger value="apis"><Key className="h-3.5 w-3.5 mr-1.5" />API Integrations</TabsTrigger>
           </TabsList>
@@ -341,6 +361,81 @@ export default function AdminSmartLinks() {
                         <Button size="sm" variant="outline" className="w-full text-xs" onClick={() => setEditRelease(r)}>
                           <Link2 className="h-3.5 w-3.5 mr-1" /> Add Platform Links
                         </Button>
+                      )}
+                    </GlassCard>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* === CUSTOM SMART LINKS TAB === */}
+          <TabsContent value="custom" className="space-y-4 mt-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">Standalone smart links created by users or admin.</p>
+              <Button size="sm" onClick={() => setCreatingCustom(true)}><Plus className="h-3.5 w-3.5 mr-1" /> Create Smart Link</Button>
+            </div>
+            <div className="relative max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Search custom links..." value={customSearch} onChange={e => setCustomSearch(e.target.value)} className="pl-9" />
+            </div>
+
+            {customLoading ? (
+              <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+            ) : customLinks.filter(c => c.title.toLowerCase().includes(customSearch.toLowerCase())).length === 0 ? (
+              <GlassCard className="p-8 text-center">
+                <Music className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">No custom smart links yet</p>
+              </GlassCard>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {customLinks.filter(c => c.title.toLowerCase().includes(customSearch.toLowerCase())).map(c => {
+                  const url = c.slug ? `${window.location.origin}/r/${c.slug}` : `${window.location.origin}/r/${c.id}`;
+                  const active = c.platform_links && Object.values(c.platform_links).some((v: any) => v?.trim());
+                  const linkCount = active ? Object.values(c.platform_links).filter((v: any) => v?.trim()).length : 0;
+
+                  return (
+                    <GlassCard key={c.id} className="p-4 space-y-3">
+                      <div className="flex items-start gap-3">
+                        {c.poster_url ? (
+                          <img src={c.poster_url} alt={c.title} className="h-14 w-14 rounded-lg object-cover flex-shrink-0" />
+                        ) : (
+                          <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                            <Music className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm text-foreground truncate">{c.title}</p>
+                          <p className="text-xs text-muted-foreground">{c.artist_name || 'Unknown Artist'}</p>
+                          {active ? (
+                            <Badge variant="default" className="mt-1 text-[10px]">{linkCount} platforms</Badge>
+                          ) : (
+                            <Badge variant="outline" className="mt-1 text-[10px]">No links</Badge>
+                          )}
+                        </div>
+                        <div className="flex gap-1">
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditCustom(c)}>
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={async () => {
+                            if (!confirm('Delete this smart link?')) return;
+                            await supabase.from('smart_links').delete().eq('id', c.id);
+                            toast.success('Smart link deleted');
+                            fetchCustomLinks();
+                          }}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                      {active && (
+                        <div className="flex items-center gap-2 p-2 rounded-md bg-primary/5 border border-primary/20">
+                          <Link2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                          <span className="text-[11px] text-muted-foreground flex-1 truncate font-mono">{url}</span>
+                          <CopyButton value={url} />
+                          <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80">
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                        </div>
                       )}
                     </GlassCard>
                   );
@@ -578,6 +673,39 @@ export default function AdminSmartLinks() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Custom Smart Link Dialog */}
+      <Dialog open={creatingCustom} onOpenChange={open => !open && setCreatingCustom(false)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create Smart Link</DialogTitle>
+            <DialogDescription>Create a standalone smart link for any song.</DialogDescription>
+          </DialogHeader>
+          {user && (
+            <SmartLinkEditor
+              userId={user.id}
+              onSaved={() => { setCreatingCustom(false); fetchCustomLinks(); }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Custom Smart Link Dialog */}
+      <Dialog open={!!editCustom} onOpenChange={open => !open && setEditCustom(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Smart Link — {editCustom?.title}</DialogTitle>
+            <DialogDescription>Update the smart link details and platform URLs.</DialogDescription>
+          </DialogHeader>
+          {editCustom && user && (
+            <SmartLinkEditor
+              smartLink={editCustom}
+              userId={user.id}
+              onSaved={() => { setEditCustom(null); fetchCustomLinks(); }}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </DashboardLayout>
