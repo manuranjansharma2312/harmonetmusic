@@ -14,7 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Sparkles, CreditCard, History, Image as ImageIcon, Upload, CheckCircle, Loader2, Download, Wand2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow, addHours, isAfter } from 'date-fns';
 
 type AIPlan = { id: string; name: string; price: number; credits: number; description: string; tag: string | null };
 type AIOrder = { id: string; plan_id: string; transaction_id: string; status: string; rejection_reason: string | null; created_at: string; ai_plans?: { name: string; credits: number; price: number } };
