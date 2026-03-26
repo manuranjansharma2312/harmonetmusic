@@ -1068,6 +1068,42 @@ export type Database = {
         }
         Relationships: []
       }
+      smart_links: {
+        Row: {
+          artist_name: string
+          created_at: string
+          id: string
+          platform_links: Json
+          poster_url: string | null
+          slug: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          artist_name?: string
+          created_at?: string
+          id?: string
+          platform_links?: Json
+          poster_url?: string | null
+          slug?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          artist_name?: string
+          created_at?: string
+          id?: string
+          platform_links?: Json
+          poster_url?: string | null
+          slug?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       songs: {
         Row: {
           artist: string
