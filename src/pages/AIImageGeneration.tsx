@@ -125,7 +125,7 @@ export default function AIImageGeneration() {
       }
 
       const { error } = await supabase.from('ai_plan_orders').insert({
-        user_id: user.id,
+        user_id: activeUserId,
         plan_id: purchaseModal.id,
         transaction_id: txId.trim(),
         screenshot_url: screenshotUrl,
