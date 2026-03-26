@@ -119,7 +119,7 @@ export function AppSidebar() {
   const showUserSubLabels = effectiveUserType === 'record_label' && !effectiveIsSubLabel;
 
   const userLinksBottom = [
-    { to: '/ai-images', label: 'AI Image Generation', icon: Sparkles },
+    ...(aiEnabled ? [{ to: '/ai-images', label: 'AI Image Generation', icon: Sparkles }] : []),
     { to: '/poster-generator', label: 'Out Now Poster', icon: ImageIcon },
     { to: '/help-tutorials', label: 'Help Tutorials', icon: BookOpen },
     // Hide Promotion Tools for sub-labels
