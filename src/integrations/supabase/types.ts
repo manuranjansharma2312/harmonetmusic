@@ -1357,7 +1357,48 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      ai_settings_public: {
+        Row: {
+          api_provider: string | null
+          credits_per_image: number | null
+          free_credits: number | null
+          id: string | null
+          image_sizes: Json | null
+          is_enabled: boolean | null
+          lifetime_free_all_users: boolean | null
+          lifetime_free_enabled: boolean | null
+          lifetime_free_user_ids: string[] | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          api_provider?: string | null
+          credits_per_image?: number | null
+          free_credits?: number | null
+          id?: string | null
+          image_sizes?: Json | null
+          is_enabled?: boolean | null
+          lifetime_free_all_users?: boolean | null
+          lifetime_free_enabled?: boolean | null
+          lifetime_free_user_ids?: string[] | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          api_provider?: string | null
+          credits_per_image?: number | null
+          free_credits?: number | null
+          id?: string | null
+          image_sizes?: Json | null
+          is_enabled?: boolean | null
+          lifetime_free_all_users?: boolean | null
+          lifetime_free_enabled?: boolean | null
+          lifetime_free_user_ids?: string[] | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       cleanup_old_ai_images: { Args: never; Returns: undefined }
