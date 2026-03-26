@@ -59,6 +59,7 @@ const ContactSupport = lazy(() => import("./pages/ContactSupport"));
 const AdminContactSupport = lazy(() => import("./pages/AdminContactSupport"));
 const AdminAIImageSystem = lazy(() => import("./pages/AdminAIImageSystem"));
 const AIImageGeneration = lazy(() => import("./pages/AIImageGeneration"));
+const SmartLink = lazy(() => import("./pages/SmartLink"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -153,6 +154,7 @@ function App() {
                       <Route path="/reports/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
                       <Route path="/admin/reports/analytics" element={<ProtectedRoute requiredRole="admin"><Analytics /></ProtectedRoute>} />
                       <Route path="/reports" element={<Navigate to="/reports/ott" replace />} />
+                      <Route path="/r/:slug" element={<SmartLink />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>

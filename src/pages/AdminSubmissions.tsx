@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { PlatformLinksEditor } from '@/components/PlatformLinksEditor';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
@@ -64,6 +65,8 @@ type Release = {
   user_type?: string;
   sub_label_name?: string;
   parent_label_name?: string;
+  platform_links?: any;
+  slug?: string | null;
 };
 
 type ParsedImportTrack = {
@@ -1216,6 +1219,17 @@ export default function AdminSubmissions() {
                   </div>
                 </div>
               )}
+
+              {/* Platform Links Editor */}
+              <PlatformLinksEditor
+                releaseId={viewRelease.id}
+                releaseSlug={viewRelease.slug || null}
+                initialLinks={(viewRelease.platform_links as Record<string, string>) || {}}
+                onSaved={(links) => {
+                  setViewRelease(prev => prev ? { ...prev, platform_links: links } : null);
+                  fetchReleases();
+                }}
+              />
 
               {viewRelease.tracks && viewRelease.tracks.length > 0 && (
                 <div>
