@@ -1,10 +1,33 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+async function getApiKey(): Promise<string> {
+  // Check for custom API key stored by admin in ai_settings
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (supabaseUrl && serviceRoleKey) {
+      const supabase = createClient(supabaseUrl, serviceRoleKey);
+      const { data } = await supabase.from("ai_settings").select("custom_api_key").limit(1).maybeSingle();
+      if (data?.custom_api_key && data.custom_api_key.trim().length > 0) {
+        return data.custom_api_key.trim();
+      }
+    }
+  } catch (e) {
+    console.error("Failed to fetch custom API key from DB, using env fallback:", e);
+  }
+
+  // Fallback to environment variable
+  const envKey = Deno.env.get("LOVABLE_API_KEY");
+  if (!envKey) throw new Error("No API key configured. Set one in Admin Settings or configure LOVABLE_API_KEY.");
+  return envKey;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -18,10 +41,7 @@ serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
+    const apiKey = await getApiKey();
 
     // Build prompt with aspect ratio instruction
     let fullPrompt = prompt.trim();
@@ -41,14 +61,14 @@ serve(async (req) => {
     }
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 120000); // 120s timeout
+    const timeout = setTimeout(() => controller.abort(), 120000);
 
     let response: Response;
     try {
       response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({

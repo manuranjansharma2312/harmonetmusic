@@ -16,7 +16,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, CreditCard, History, BarChart3, Settings, Users, Image as ImageIcon, CheckCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, CreditCard, History, BarChart3, Settings, Users, Image as ImageIcon, CheckCircle, Eye, EyeOff, Save } from 'lucide-react';
 import { format } from 'date-fns';
 
 type AIPlan = { id: string; name: string; price: number; credits: number; description: string; tag: string | null; is_active: boolean; created_at: string };
@@ -59,7 +59,10 @@ export default function AdminAIImageSystem() {
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [newSize, setNewSize] = useState({ label: '', ratio: '' });
   const [lifetimeFreeSearch, setLifetimeFreeSearch] = useState('');
-
+  const [apiKeyValue, setApiKeyValue] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [apiKeySaving, setApiKeySaving] = useState(false);
+  const [apiKeyLoaded, setApiKeyLoaded] = useState(false);
   const profileMap = useMemo(() => {
     const m: Record<string, Profile> = {};
     profiles.forEach(p => { m[p.user_id] = p; });
@@ -110,7 +113,15 @@ export default function AdminAIImageSystem() {
 
   const fetchSettings = async () => {
     const { data } = await supabase.from('ai_settings').select('*').limit(1).maybeSingle();
-    if (data) setAiSettings({ credits_per_image: (data as any).credits_per_image, api_provider: (data as any).api_provider, is_enabled: (data as any).is_enabled, free_credits: (data as any).free_credits, image_sizes: (data as any).image_sizes || [], lifetime_free_enabled: (data as any).lifetime_free_enabled ?? false, lifetime_free_all_users: (data as any).lifetime_free_all_users ?? true, lifetime_free_user_ids: (data as any).lifetime_free_user_ids || [] });
+    if (data) {
+      setAiSettings({ credits_per_image: (data as any).credits_per_image, api_provider: (data as any).api_provider, is_enabled: (data as any).is_enabled, free_credits: (data as any).free_credits, image_sizes: (data as any).image_sizes || [], lifetime_free_enabled: (data as any).lifetime_free_enabled ?? false, lifetime_free_all_users: (data as any).lifetime_free_all_users ?? true, lifetime_free_user_ids: (data as any).lifetime_free_user_ids || [] });
+      // Load custom API key (masked display)
+      const key = (data as any).custom_api_key || '';
+      if (key) {
+        setApiKeyValue(key);
+      }
+      setApiKeyLoaded(true);
+    }
   };
 
   useEffect(() => {
@@ -241,6 +252,19 @@ export default function AdminAIImageSystem() {
     await supabase.from('ai_settings').update({ credits_per_image: aiSettings.credits_per_image, api_provider: aiSettings.api_provider, is_enabled: aiSettings.is_enabled, free_credits: aiSettings.free_credits, image_sizes: aiSettings.image_sizes as any, lifetime_free_enabled: aiSettings.lifetime_free_enabled, lifetime_free_all_users: aiSettings.lifetime_free_all_users, lifetime_free_user_ids: aiSettings.lifetime_free_user_ids, updated_at: new Date().toISOString(), updated_by: user?.id } as any).eq('id', settingsRow?.id || '');
     toast.success('Settings saved');
     setSettingsLoading(false);
+  };
+
+  const saveApiKey = async () => {
+    if (!apiKeyValue.trim()) { toast.error('Please enter an API key'); return; }
+    setApiKeySaving(true);
+    try {
+      const { data: settingsRow } = await supabase.from('ai_settings').select('id').limit(1).single();
+      if (settingsRow) {
+        await supabase.from('ai_settings').update({ custom_api_key: apiKeyValue.trim(), updated_at: new Date().toISOString(), updated_by: user?.id } as any).eq('id', settingsRow.id);
+        toast.success('API Key saved successfully!');
+      }
+    } catch { toast.error('Failed to save API key'); }
+    finally { setApiKeySaving(false); }
   };
 
   return (
@@ -468,10 +492,29 @@ export default function AdminAIImageSystem() {
                 <div>
                   <Label>API Key</Label>
                   <div className="flex items-center gap-2">
-                    <Input type="password" value="••••••••••••••••••••" disabled className="font-mono" />
-                    <span className="inline-flex shrink-0 items-center rounded-full border border-green-600/30 bg-green-600/10 px-2.5 py-0.5 text-xs font-medium text-green-600">Secured</span>
+                    <div className="relative flex-1">
+                      <Input
+                        type={showApiKey ? 'text' : 'password'}
+                        value={apiKeyValue}
+                        onChange={e => setApiKeyValue(e.target.value)}
+                        placeholder="Enter your AI API key"
+                        className="pr-10 font-mono"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3"
+                        onClick={() => setShowApiKey(!showApiKey)}
+                      >
+                        {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    <Button size="sm" onClick={saveApiKey} disabled={apiKeySaving || !apiKeyValue.trim()}>
+                      {apiKeySaving ? 'Saving...' : <><Save className="h-4 w-4 mr-1" />Save Key</>}
+                    </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">API key is securely stored as a backend secret and never exposed to users. To update, contact your system administrator.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Your API key is stored securely in the database and only accessible by admins. Users cannot see or access this key.</p>
                 </div>
                 <div>
                   <Label>Credits Per Image</Label>

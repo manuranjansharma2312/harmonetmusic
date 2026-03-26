@@ -217,6 +217,7 @@ export type Database = {
         Row: {
           api_provider: string
           credits_per_image: number
+          custom_api_key: string | null
           free_credits: number
           id: string
           image_sizes: Json
@@ -230,6 +231,7 @@ export type Database = {
         Insert: {
           api_provider?: string
           credits_per_image?: number
+          custom_api_key?: string | null
           free_credits?: number
           id?: string
           image_sizes?: Json
@@ -243,6 +245,7 @@ export type Database = {
         Update: {
           api_provider?: string
           credits_per_image?: number
+          custom_api_key?: string | null
           free_credits?: number
           id?: string
           image_sizes?: Json
