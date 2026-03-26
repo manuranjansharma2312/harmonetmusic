@@ -68,7 +68,8 @@ export default function AIImageGeneration() {
     if (!activeUserId) return;
     
     // Fetch AI settings FIRST to determine lifetime free status
-    const { data: aiSettingsData } = await supabase.from('ai_settings').select('*').limit(1).maybeSingle();
+    const { data: aiSettingsArr } = await supabase.rpc('get_ai_settings_public' as any);
+    const aiSettingsData = Array.isArray(aiSettingsArr) ? aiSettingsArr[0] : aiSettingsArr;
     
     const lfEnabled = aiSettingsData?.lifetime_free_enabled === true;
     const lfAllUsers = aiSettingsData?.lifetime_free_all_users !== false; // default true
@@ -104,7 +105,7 @@ export default function AIImageGeneration() {
         setTotalCredits((credRes.data as any).total_credits);
         setUsedCredits((credRes.data as any).used_credits);
       } else if (freeCredits > 0 && !impersonatedUserId) {
-        await supabase.from('ai_credits').insert({ user_id: activeUserId, total_credits: freeCredits, used_credits: 0 });
+        await supabase.rpc('init_ai_credits' as any, { _user_id: activeUserId, _free_credits: freeCredits });
         await supabase.from('ai_credit_transactions').insert({ user_id: activeUserId, credits: freeCredits, type: 'free_credits', note: 'Free credits on first visit' });
         setTotalCredits(freeCredits);
         setUsedCredits(0);
@@ -198,7 +199,7 @@ export default function AIImageGeneration() {
 
       // Deduct credits only if not lifetime free
       if (!isLifetimeFree) {
-        await supabase.from('ai_credits').update({ used_credits: usedCredits + creditsPerImage, updated_at: new Date().toISOString() }).eq('user_id', activeUserId);
+        await supabase.rpc('deduct_ai_credit' as any, { _user_id: activeUserId, _amount: creditsPerImage });
         await supabase.from('ai_credit_transactions').insert({ user_id: activeUserId, credits: creditsPerImage, type: 'usage', note: `Generated: ${prompt.trim().slice(0, 100)}` });
         setUsedCredits(prev => prev + creditsPerImage);
       }

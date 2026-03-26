@@ -96,8 +96,11 @@ export function AppSidebar() {
 
   // Check if AI Image system is enabled
   useEffect(() => {
-    supabase.from('ai_settings').select('is_enabled').limit(1).maybeSingle()
-      .then(({ data }) => { setAiEnabled((data as any)?.is_enabled ?? false); });
+    supabase.rpc('get_ai_settings_public' as any)
+      .then(({ data }: any) => { 
+        const settings = Array.isArray(data) ? data[0] : data;
+        setAiEnabled(settings?.is_enabled ?? false); 
+      });
   }, []);
 
   const effectiveUserType = isImpersonating ? impUserType : userType;

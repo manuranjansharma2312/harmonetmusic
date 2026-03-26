@@ -1361,6 +1361,23 @@ export type Database = {
     }
     Functions: {
       cleanup_old_ai_images: { Args: never; Returns: undefined }
+      deduct_ai_credit: {
+        Args: { _amount: number; _user_id: string }
+        Returns: boolean
+      }
+      get_ai_settings_public: {
+        Args: never
+        Returns: {
+          credits_per_image: number
+          free_credits: number
+          id: string
+          image_sizes: Json
+          is_enabled: boolean
+          lifetime_free_all_users: boolean
+          lifetime_free_enabled: boolean
+          lifetime_free_user_ids: string[]
+        }[]
+      }
       get_auth_emails: {
         Args: { _user_ids: string[] }
         Returns: {
@@ -1378,6 +1395,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      init_ai_credits: {
+        Args: { _free_credits: number; _user_id: string }
+        Returns: undefined
       }
       is_admin: { Args: never; Returns: boolean }
       is_parent_label: { Args: { _child_user_id: string }; Returns: boolean }
