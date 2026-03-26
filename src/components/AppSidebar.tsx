@@ -62,7 +62,7 @@ const adminLinksTop = [
   { to: '/admin/agreements', label: 'Agreements', icon: FileSignature },
   { to: '/admin/promotion-tools', label: 'Promotion Tools', icon: Megaphone },
   { to: '/admin/payment-settings', label: 'Payment Settings', icon: CreditCard },
-  { to: '/admin/ai-image-system', label: 'AI Image System', icon: Sparkles },
+  { to: '/admin/ai-image-system', label: 'AI Poster System', icon: Sparkles },
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
 ];
 
@@ -119,7 +119,7 @@ export function AppSidebar() {
   const showUserSubLabels = effectiveUserType === 'record_label' && !effectiveIsSubLabel;
 
   const userLinksBottom = [
-    ...(aiEnabled ? [{ to: '/ai-images', label: 'AI Image Generation', icon: Sparkles }] : []),
+    ...(aiEnabled ? [{ to: '/ai-images', label: 'AI Poster Generate', icon: Sparkles }] : []),
     { to: '/poster-generator', label: 'Out Now Poster', icon: ImageIcon },
     { to: '/help-tutorials', label: 'Help Tutorials', icon: BookOpen },
     // Hide Promotion Tools for sub-labels
