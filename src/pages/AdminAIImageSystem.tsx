@@ -55,9 +55,9 @@ export default function AdminAIImageSystem() {
   const [activeUsers, setActiveUsers] = useState(0);
 
   // Settings
-  const [aiSettings, setAiSettings] = useState<{ credits_per_image: number; api_provider: string; is_enabled: boolean; free_credits: number; image_sizes: { label: string; width: number; height: number }[] }>({ credits_per_image: 1, api_provider: 'openai', is_enabled: true, free_credits: 0, image_sizes: [] });
+  const [aiSettings, setAiSettings] = useState<{ credits_per_image: number; api_provider: string; is_enabled: boolean; free_credits: number; image_sizes: { label: string; ratio: string }[] }>({ credits_per_image: 1, api_provider: 'openai', is_enabled: true, free_credits: 0, image_sizes: [] });
   const [settingsLoading, setSettingsLoading] = useState(false);
-  const [newSize, setNewSize] = useState({ label: '', width: '', height: '' });
+  const [newSize, setNewSize] = useState({ label: '', ratio: '' });
 
   const profileMap = useMemo(() => {
     const m: Record<string, Profile> = {};
