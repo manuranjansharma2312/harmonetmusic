@@ -410,12 +410,12 @@ export default function AdminAIImageSystem() {
           {/* SETTINGS TAB */}
           <TabsContent value="settings">
             <Card>
-              <CardHeader><CardTitle>AI Image Settings</CardTitle></CardHeader>
+              <CardHeader><CardTitle>AI Poster Settings</CardTitle></CardHeader>
               <CardContent className="space-y-4 max-w-md">
                 <div className="flex items-center justify-between rounded-lg border p-3">
                   <div>
-                    <Label className="text-base">Enable AI Image System</Label>
-                    <p className="text-xs text-muted-foreground">When disabled, the AI Image menu is hidden from users.</p>
+                    <Label className="text-base">Enable AI Poster System</Label>
+                    <p className="text-xs text-muted-foreground">When disabled, the AI Poster menu is hidden from users.</p>
                   </div>
                   <Switch checked={aiSettings.is_enabled} onCheckedChange={v => setAiSettings(s => ({ ...s, is_enabled: v }))} />
                 </div>
