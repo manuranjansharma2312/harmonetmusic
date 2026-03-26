@@ -10,7 +10,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { prompt, width, height } = await req.json();
+    const { prompt, aspectRatio, referenceImage } = await req.json();
     if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
       return new Response(JSON.stringify({ error: "Prompt is required" }), {
         status: 400,
@@ -18,12 +18,26 @@ serve(async (req) => {
       });
     }
 
-    // Build size instruction for the prompt
-    const sizeInstruction = width && height ? ` Generate the image at exactly ${width}x${height} pixels resolution.` : "";
-
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    // Build prompt with aspect ratio instruction
+    let fullPrompt = prompt.trim();
+    if (aspectRatio) {
+      fullPrompt += ` Generate the image in ${aspectRatio} aspect ratio.`;
+    }
+
+    // Build message content - text only or multimodal with reference image
+    let messageContent: any;
+    if (referenceImage && typeof referenceImage === "string") {
+      messageContent = [
+        { type: "text", text: `Use this reference image as style/design inspiration. ${fullPrompt}` },
+        { type: "image_url", image_url: { url: referenceImage } },
+      ];
+    } else {
+      messageContent = fullPrompt;
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -37,7 +51,7 @@ serve(async (req) => {
         messages: [
           {
             role: "user",
-            content: prompt.trim() + sizeInstruction,
+            content: messageContent,
           },
         ],
         modalities: ["image", "text"],

@@ -252,17 +252,38 @@ export default function AIImageGeneration() {
                   </div>
                   {imageSizes.length > 0 && (
                     <div>
-                      <Label>Image Size *</Label>
+                      <Label>Aspect Ratio *</Label>
                       <Select value={selectedSize} onValueChange={setSelectedSize}>
-                        <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Select aspect ratio" /></SelectTrigger>
                         <SelectContent>
                           {imageSizes.map((s, i) => (
-                            <SelectItem key={i} value={`${s.width}x${s.height}`}>{s.label} ({s.width}×{s.height})</SelectItem>
+                            <SelectItem key={i} value={s.ratio}>{s.label} ({s.ratio})</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
                   )}
+                  {/* Reference Image */}
+                  <div>
+                    <Label>Reference Image (Optional)</Label>
+                    {referencePreview ? (
+                      <div className="relative mt-2 inline-block">
+                        <img src={referencePreview} alt="Reference" className="h-32 rounded-lg border object-cover" />
+                        <Button variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={clearReferenceImage}>
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="mt-1">
+                        <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-dashed p-3 hover:bg-muted/50 transition-colors">
+                          <Paperclip className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">Attach a reference image</span>
+                          <Input type="file" accept="image/*" className="hidden" onChange={e => handleReferenceImage(e.target.files?.[0] || null)} disabled={generating} />
+                        </label>
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">Upload an image to use as style/design reference for AI generation.</p>
+                  </div>
                   <Button onClick={generateImage} disabled={generating || !prompt.trim() || remaining < creditsPerImage} className="w-full" size="lg">
                     {generating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</> : <><Sparkles className="h-4 w-4 mr-2" />Generate Poster</>}
                   </Button>
