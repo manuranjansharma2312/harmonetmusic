@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
-import { Loader2, Settings, Zap, Image, Monitor, Shield, Database, RefreshCw } from 'lucide-react';
+import {
+  Loader2, Settings, Zap, Image, Monitor, Shield, Database, RefreshCw,
+  Bell, Wifi, Clock, Upload, Terminal, AlertTriangle, Type, Gauge,
+} from 'lucide-react';
 import { useSiteSettings, type SiteSettings } from '@/hooks/useSiteSettings';
 
 export default function AdminSiteSettings() {
@@ -14,31 +17,27 @@ export default function AdminSiteSettings() {
   const { settings, isLoading } = useSiteSettings();
   const [form, setForm] = useState<SiteSettings | null>(null);
   const [saving, setSaving] = useState(false);
+  const formInitialized = useRef(false);
 
   useEffect(() => {
-    if (settings && !form) setForm(settings);
+    if (settings && !formInitialized.current) {
+      setForm(settings);
+      formInitialized.current = true;
+    }
   }, [settings]);
 
-  const update = <K extends keyof SiteSettings>(key: K, value: SiteSettings[K]) =>
-    setForm((p) => (p ? { ...p, [key]: value } : p));
+  const update = useCallback(<K extends keyof SiteSettings>(key: K, value: SiteSettings[K]) =>
+    setForm((p) => (p ? { ...p, [key]: value } : p)), []);
 
   const handleSave = async () => {
     if (!form || !user) return;
     setSaving(true);
     try {
+      const { id, updated_at, updated_by, ...fields } = form;
       const { error } = await supabase
         .from('site_settings')
         .update({
-          enable_background_animations: form.enable_background_animations,
-          enable_anti_inspection: form.enable_anti_inspection,
-          query_stale_time: form.query_stale_time,
-          query_cache_time: form.query_cache_time,
-          query_retry_count: form.query_retry_count,
-          enable_lazy_loading: form.enable_lazy_loading,
-          image_quality: form.image_quality,
-          enable_image_lazy_load: form.enable_image_lazy_load,
-          enable_page_transitions: form.enable_page_transitions,
-          max_table_rows: form.max_table_rows,
+          ...fields,
           updated_by: user.id,
           updated_at: new Date().toISOString(),
         } as any)
@@ -58,6 +57,53 @@ export default function AdminSiteSettings() {
     toast.success('Client cache cleared successfully');
   };
 
+  const applyPreset = (preset: 'performance' | 'balanced' | 'quality') => {
+    if (!form) return;
+    const presets: Record<string, Partial<SiteSettings>> = {
+      performance: {
+        enable_background_animations: false,
+        enable_page_transitions: false,
+        query_stale_time: 300000,
+        query_cache_time: 600000,
+        query_retry_count: 1,
+        max_table_rows: 25,
+        image_quality: 60,
+        enable_image_lazy_load: true,
+        enable_prefetch: false,
+        debounce_delay: 500,
+        toast_duration: 3000,
+      },
+      balanced: {
+        enable_background_animations: true,
+        enable_page_transitions: true,
+        query_stale_time: 60000,
+        query_cache_time: 300000,
+        query_retry_count: 1,
+        max_table_rows: 50,
+        image_quality: 80,
+        enable_image_lazy_load: true,
+        enable_prefetch: true,
+        debounce_delay: 300,
+        toast_duration: 4000,
+      },
+      quality: {
+        enable_background_animations: true,
+        enable_page_transitions: true,
+        query_stale_time: 30000,
+        query_cache_time: 120000,
+        query_retry_count: 2,
+        max_table_rows: 100,
+        image_quality: 100,
+        enable_image_lazy_load: false,
+        enable_prefetch: true,
+        debounce_delay: 200,
+        toast_duration: 5000,
+      },
+    };
+    setForm((p) => (p ? { ...p, ...presets[preset] } : p));
+    toast.success(`Applied "${preset}" preset. Click Save to apply.`);
+  };
+
   if (isLoading || !form) {
     return (
       <DashboardLayout>
@@ -71,6 +117,7 @@ export default function AdminSiteSettings() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -81,7 +128,7 @@ export default function AdminSiteSettings() {
               Optimize performance, fix lag & loading issues. Works on all hosting servers.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button onClick={handleClearCache} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted text-foreground text-sm font-medium hover:bg-muted/80 transition-colors">
               <RefreshCw className="h-4 w-4" /> Clear Cache
             </button>
@@ -91,6 +138,52 @@ export default function AdminSiteSettings() {
             </button>
           </div>
         </div>
+
+        {/* Quick Presets */}
+        <GlassCard>
+          <h2 className="text-lg font-semibold flex items-center gap-2 mb-3">
+            <Gauge className="h-5 w-5 text-primary" /> Quick Presets
+          </h2>
+          <p className="text-xs text-muted-foreground mb-3">Apply a preset to quickly configure multiple settings at once.</p>
+          <div className="flex gap-2 flex-wrap">
+            <button onClick={() => applyPreset('performance')} className="px-4 py-2 rounded-lg bg-green-500/10 text-green-400 text-sm font-medium hover:bg-green-500/20 transition-colors border border-green-500/20">
+              ⚡ Max Performance
+            </button>
+            <button onClick={() => applyPreset('balanced')} className="px-4 py-2 rounded-lg bg-blue-500/10 text-blue-400 text-sm font-medium hover:bg-blue-500/20 transition-colors border border-blue-500/20">
+              ⚖️ Balanced
+            </button>
+            <button onClick={() => applyPreset('quality')} className="px-4 py-2 rounded-lg bg-purple-500/10 text-purple-400 text-sm font-medium hover:bg-purple-500/20 transition-colors border border-purple-500/20">
+              💎 Max Quality
+            </button>
+          </div>
+        </GlassCard>
+
+        {/* Maintenance Mode */}
+        <GlassCard>
+          <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
+            <AlertTriangle className="h-5 w-5 text-orange-500" /> Maintenance Mode
+          </h2>
+          <div className="space-y-4">
+            <ToggleRow
+              label="Enable Maintenance Mode"
+              description="Show a maintenance page to all non-admin users. Useful during updates or migrations."
+              checked={form.maintenance_mode}
+              onChange={(v) => update('maintenance_mode', v)}
+            />
+            {form.maintenance_mode && (
+              <div>
+                <p className="text-sm font-medium text-foreground mb-1">Maintenance Message</p>
+                <textarea
+                  className="w-full rounded-lg bg-muted/50 border border-border/50 px-3 py-2 text-sm text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  rows={3}
+                  value={form.maintenance_message}
+                  onChange={(e) => update('maintenance_message', e.target.value)}
+                  placeholder="Enter maintenance message..."
+                />
+              </div>
+            )}
+          </div>
+        </GlassCard>
 
         {/* Performance */}
         <GlassCard>
@@ -116,6 +209,26 @@ export default function AdminSiteSettings() {
               checked={form.enable_lazy_loading}
               onChange={(v) => update('enable_lazy_loading', v)}
             />
+            <ToggleRow
+              label="Prefetch on Hover"
+              description="Pre-load page data when hovering over navigation links. Uses more bandwidth but makes navigation instant."
+              checked={form.enable_prefetch}
+              onChange={(v) => update('enable_prefetch', v)}
+            />
+            <NumberRow
+              label="Debounce Delay (ms)"
+              description="Delay before search/filter inputs trigger a data fetch. Higher = fewer requests, lower = more responsive."
+              value={form.debounce_delay}
+              onChange={(v) => update('debounce_delay', v)}
+              min={100}
+              max={1000}
+              step={50}
+              presets={[
+                { label: '150ms', value: 150 },
+                { label: '300ms', value: 300 },
+                { label: '500ms', value: 500 },
+              ]}
+            />
           </div>
         </GlassCard>
 
@@ -125,9 +238,38 @@ export default function AdminSiteSettings() {
             <Database className="h-5 w-5 text-blue-500" /> Data & Caching
           </h2>
           <div className="space-y-4">
+            <ToggleRow
+              label="Auto Clear Cache"
+              description="Automatically clear client-side cache at a set interval to prevent stale data and memory buildup."
+              checked={form.auto_clear_cache_enabled}
+              onChange={(v) => update('auto_clear_cache_enabled', v)}
+            />
+            {form.auto_clear_cache_enabled && (
+              <NumberRow
+                label="Auto Clear Interval"
+                description="How often to automatically clear the cache."
+                value={form.auto_clear_cache_interval}
+                onChange={(v) => update('auto_clear_cache_interval', v)}
+                min={600000}
+                max={86400000}
+                step={600000}
+                presets={[
+                  { label: '30 min', value: 1800000 },
+                  { label: '1 hour', value: 3600000 },
+                  { label: '6 hours', value: 21600000 },
+                  { label: '12 hours', value: 43200000 },
+                  { label: '24 hours', value: 86400000 },
+                ]}
+                formatValue={(v) => {
+                  if (v >= 86400000) return `${(v / 86400000).toFixed(0)}d`;
+                  if (v >= 3600000) return `${(v / 3600000).toFixed(1)}h`;
+                  return `${(v / 60000).toFixed(0)}m`;
+                }}
+              />
+            )}
             <NumberRow
               label="Query Stale Time (ms)"
-              description="How long fetched data stays fresh before re-fetching. Higher = fewer network requests, lower = fresher data."
+              description="How long fetched data stays fresh before re-fetching. Higher = fewer network requests."
               value={form.query_stale_time}
               onChange={(v) => update('query_stale_time', v)}
               min={5000}
@@ -142,7 +284,7 @@ export default function AdminSiteSettings() {
             />
             <NumberRow
               label="Query Cache Time (ms)"
-              description="How long inactive data is kept in memory. Higher = faster back-navigation, more memory usage."
+              description="How long inactive data is kept in memory. Higher = faster back-navigation."
               value={form.query_cache_time}
               onChange={(v) => update('query_cache_time', v)}
               min={60000}
@@ -157,7 +299,7 @@ export default function AdminSiteSettings() {
             />
             <NumberRow
               label="Query Retry Count"
-              description="How many times to retry a failed network request. 0 = no retries (fastest failure), 3 = most resilient."
+              description="How many times to retry a failed network request. 0 = no retries, 3 = most resilient."
               value={form.query_retry_count}
               onChange={(v) => update('query_retry_count', v)}
               min={0}
@@ -184,13 +326,19 @@ export default function AdminSiteSettings() {
                 { label: '100', value: 100 },
               ]}
             />
+            <ToggleRow
+              label="Realtime Subscriptions"
+              description="Enable live database updates via WebSocket. Disable to reduce server load if real-time isn't needed."
+              checked={form.enable_realtime}
+              onChange={(v) => update('enable_realtime', v)}
+            />
           </div>
         </GlassCard>
 
-        {/* Images */}
+        {/* Images & Uploads */}
         <GlassCard>
           <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
-            <Image className="h-5 w-5 text-green-500" /> Image Optimization
+            <Image className="h-5 w-5 text-green-500" /> Images & Uploads
           </h2>
           <div className="space-y-4">
             <ToggleRow
@@ -213,20 +361,109 @@ export default function AdminSiteSettings() {
                 { label: '100%', value: 100 },
               ]}
             />
+            <NumberRow
+              label="Max Upload Size (MB)"
+              description="Maximum file size allowed for uploads (audio, images, documents)."
+              value={form.max_upload_size_mb}
+              onChange={(v) => update('max_upload_size_mb', v)}
+              min={5}
+              max={200}
+              step={5}
+              presets={[
+                { label: '10 MB', value: 10 },
+                { label: '25 MB', value: 25 },
+                { label: '50 MB', value: 50 },
+                { label: '100 MB', value: 100 },
+              ]}
+            />
           </div>
         </GlassCard>
 
-        {/* Security */}
+        {/* Notifications */}
         <GlassCard>
           <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
-            <Shield className="h-5 w-5 text-red-500" /> Security & Protection
+            <Bell className="h-5 w-5 text-yellow-500" /> Notifications & Alerts
+          </h2>
+          <div className="space-y-4">
+            <ToggleRow
+              label="Toast Notifications"
+              description="Show pop-up notifications for actions (save, delete, errors). Disable for a cleaner UI."
+              checked={form.enable_toast_notifications}
+              onChange={(v) => update('enable_toast_notifications', v)}
+            />
+            {form.enable_toast_notifications && (
+              <NumberRow
+                label="Toast Duration (ms)"
+                description="How long toast notifications stay visible before auto-dismissing."
+                value={form.toast_duration}
+                onChange={(v) => update('toast_duration', v)}
+                min={1000}
+                max={10000}
+                step={500}
+                presets={[
+                  { label: '2s', value: 2000 },
+                  { label: '4s', value: 4000 },
+                  { label: '6s', value: 6000 },
+                  { label: '10s', value: 10000 },
+                ]}
+              />
+            )}
+            <ToggleRow
+              label="Error Reporting"
+              description="Capture and display detailed error messages when something goes wrong."
+              checked={form.enable_error_reporting}
+              onChange={(v) => update('enable_error_reporting', v)}
+            />
+          </div>
+        </GlassCard>
+
+        {/* Session & Security */}
+        <GlassCard>
+          <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
+            <Shield className="h-5 w-5 text-red-500" /> Security & Session
           </h2>
           <div className="space-y-4">
             <ToggleRow
               label="Anti-Inspection Mode"
-              description="Blocks right-click, DevTools shortcuts, and view-source in production. Disable for debugging."
+              description="Blocks right-click, DevTools shortcuts, and view-source in production."
               checked={form.enable_anti_inspection}
               onChange={(v) => update('enable_anti_inspection', v)}
+            />
+            <ToggleRow
+              label="Allow Text Selection"
+              description="Allow users to select and copy text on the site. Disable for content protection."
+              checked={form.enable_text_selection}
+              onChange={(v) => update('enable_text_selection', v)}
+            />
+            <NumberRow
+              label="Session Timeout (minutes)"
+              description="Auto-logout inactive users after this time. 0 = never timeout."
+              value={form.session_timeout}
+              onChange={(v) => update('session_timeout', v)}
+              min={0}
+              max={480}
+              step={15}
+              presets={[
+                { label: 'Never', value: 0 },
+                { label: '30 min', value: 30 },
+                { label: '1 hour', value: 60 },
+                { label: '4 hours', value: 240 },
+              ]}
+            />
+          </div>
+        </GlassCard>
+
+        {/* Developer / Debug */}
+        <GlassCard>
+          <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
+            <Terminal className="h-5 w-5 text-emerald-500" /> Developer & Debug
+          </h2>
+          <div className="space-y-4">
+            <ToggleRow
+              label="Console Logs (Production)"
+              description="Show detailed console logs in production. Useful for debugging but exposes internals."
+              checked={form.enable_console_logs}
+              onChange={(v) => update('enable_console_logs', v)}
             />
           </div>
         </GlassCard>
@@ -236,13 +473,16 @@ export default function AdminSiteSettings() {
           <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
             <Monitor className="h-5 w-5 text-purple-500" /> Quick Fix Guide
           </h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <TipCard title="🐌 Slow Loading" tip="Increase stale time to 2-5 min, enable lazy loading, disable background animations." />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <TipCard title="🐌 Slow Loading" tip="Use 'Max Performance' preset, or increase stale time to 2-5 min and disable animations." />
             <TipCard title="🔄 Laggy Scrolling" tip="Disable background animations, reduce table rows to 25, enable image lazy loading." />
-            <TipCard title="📱 Slow on Mobile" tip="Disable page transitions & animations, lower image quality to 60%, reduce cache time." />
-            <TipCard title="⚡ Self-Hosted Server" tip="Set stale time to 2min+, cache time to 10min+, retry count to 2-3 for resilience." />
-            <TipCard title="🧹 Stale Data" tip="Click 'Clear Cache' button above, reduce stale time to 30s for real-time freshness." />
-            <TipCard title="🔒 Need to Debug" tip="Temporarily disable Anti-Inspection to access browser DevTools for troubleshooting." />
+            <TipCard title="📱 Slow on Mobile" tip="Disable transitions & animations, lower image quality to 60%, set debounce to 500ms." />
+            <TipCard title="⚡ Self-Hosted Server" tip="Set stale time to 2min+, cache time to 10min+, retry count to 2-3, enable auto-cache clear." />
+            <TipCard title="🧹 Stale Data" tip="Enable auto-clear cache (1 hour), or click 'Clear Cache' manually. Reduce stale time to 30s." />
+            <TipCard title="🔒 Need to Debug" tip="Disable Anti-Inspection, enable Console Logs, and turn on Error Reporting." />
+            <TipCard title="💾 Memory Issues" tip="Reduce cache time, lower table rows, disable prefetch, and enable auto-clear cache." />
+            <TipCard title="🔌 High Bandwidth" tip="Disable realtime subscriptions, disable prefetch, increase debounce delay to 500ms+." />
+            <TipCard title="🛠️ Maintenance" tip="Enable Maintenance Mode before server updates. Only admins can still access the site." />
           </div>
         </GlassCard>
       </div>
@@ -274,11 +514,13 @@ function ToggleRow({ label, description, checked, onChange }: {
   );
 }
 
-function NumberRow({ label, description, value, onChange, min, max, step, presets }: {
+function NumberRow({ label, description, value, onChange, min, max, step, presets, formatValue }: {
   label: string; description: string; value: number; onChange: (v: number) => void;
   min: number; max: number; step: number;
   presets?: { label: string; value: number }[];
+  formatValue?: (v: number) => string;
 }) {
+  const display = formatValue ? formatValue(value) : value.toLocaleString();
   return (
     <div className="py-2 space-y-2">
       <div>
@@ -295,7 +537,7 @@ function NumberRow({ label, description, value, onChange, min, max, step, preset
           onChange={(e) => onChange(Number(e.target.value))}
           className="flex-1 min-w-[120px] accent-primary"
         />
-        <span className="text-sm font-mono text-foreground w-20 text-right">{value.toLocaleString()}</span>
+        <span className="text-sm font-mono text-foreground w-20 text-right">{display}</span>
       </div>
       {presets && (
         <div className="flex gap-1.5 flex-wrap">

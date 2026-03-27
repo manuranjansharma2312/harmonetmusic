@@ -1275,47 +1275,89 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          auto_clear_cache_enabled: boolean
+          auto_clear_cache_interval: number
+          debounce_delay: number
           enable_anti_inspection: boolean
           enable_background_animations: boolean
+          enable_console_logs: boolean
+          enable_error_reporting: boolean
           enable_image_lazy_load: boolean
           enable_lazy_loading: boolean
           enable_page_transitions: boolean
+          enable_prefetch: boolean
+          enable_realtime: boolean
+          enable_text_selection: boolean
+          enable_toast_notifications: boolean
           id: string
           image_quality: number
+          maintenance_message: string
+          maintenance_mode: boolean
           max_table_rows: number
+          max_upload_size_mb: number
           query_cache_time: number
           query_retry_count: number
           query_stale_time: number
+          session_timeout: number
+          toast_duration: number
           updated_at: string
           updated_by: string | null
         }
         Insert: {
+          auto_clear_cache_enabled?: boolean
+          auto_clear_cache_interval?: number
+          debounce_delay?: number
           enable_anti_inspection?: boolean
           enable_background_animations?: boolean
+          enable_console_logs?: boolean
+          enable_error_reporting?: boolean
           enable_image_lazy_load?: boolean
           enable_lazy_loading?: boolean
           enable_page_transitions?: boolean
+          enable_prefetch?: boolean
+          enable_realtime?: boolean
+          enable_text_selection?: boolean
+          enable_toast_notifications?: boolean
           id?: string
           image_quality?: number
+          maintenance_message?: string
+          maintenance_mode?: boolean
           max_table_rows?: number
+          max_upload_size_mb?: number
           query_cache_time?: number
           query_retry_count?: number
           query_stale_time?: number
+          session_timeout?: number
+          toast_duration?: number
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
+          auto_clear_cache_enabled?: boolean
+          auto_clear_cache_interval?: number
+          debounce_delay?: number
           enable_anti_inspection?: boolean
           enable_background_animations?: boolean
+          enable_console_logs?: boolean
+          enable_error_reporting?: boolean
           enable_image_lazy_load?: boolean
           enable_lazy_loading?: boolean
           enable_page_transitions?: boolean
+          enable_prefetch?: boolean
+          enable_realtime?: boolean
+          enable_text_selection?: boolean
+          enable_toast_notifications?: boolean
           id?: string
           image_quality?: number
+          maintenance_message?: string
+          maintenance_mode?: boolean
           max_table_rows?: number
+          max_upload_size_mb?: number
           query_cache_time?: number
           query_retry_count?: number
           query_stale_time?: number
+          session_timeout?: number
+          toast_duration?: number
           updated_at?: string
           updated_by?: string | null
         }

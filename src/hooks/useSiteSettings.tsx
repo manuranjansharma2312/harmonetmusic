@@ -13,6 +13,20 @@ export interface SiteSettings {
   enable_image_lazy_load: boolean;
   enable_page_transitions: boolean;
   max_table_rows: number;
+  auto_clear_cache_enabled: boolean;
+  auto_clear_cache_interval: number;
+  enable_error_reporting: boolean;
+  enable_toast_notifications: boolean;
+  toast_duration: number;
+  enable_realtime: boolean;
+  session_timeout: number;
+  enable_prefetch: boolean;
+  max_upload_size_mb: number;
+  enable_console_logs: boolean;
+  debounce_delay: number;
+  enable_text_selection: boolean;
+  maintenance_mode: boolean;
+  maintenance_message: string;
   updated_at: string;
   updated_by: string | null;
 }
@@ -29,6 +43,20 @@ const DEFAULTS: SiteSettings = {
   enable_image_lazy_load: true,
   enable_page_transitions: true,
   max_table_rows: 50,
+  auto_clear_cache_enabled: false,
+  auto_clear_cache_interval: 3600000,
+  enable_error_reporting: true,
+  enable_toast_notifications: true,
+  toast_duration: 4000,
+  enable_realtime: true,
+  session_timeout: 0,
+  enable_prefetch: true,
+  max_upload_size_mb: 50,
+  enable_console_logs: false,
+  debounce_delay: 300,
+  enable_text_selection: false,
+  maintenance_mode: false,
+  maintenance_message: 'We are currently performing maintenance. Please check back soon.',
   updated_at: '',
   updated_by: null,
 };
@@ -44,9 +72,12 @@ export function useSiteSettings() {
         .maybeSingle();
       if (error) throw error;
       const settings = (data as unknown as SiteSettings) ?? DEFAULTS;
-      // Sync anti-inspection to localStorage for main.tsx to read on next load
       try {
         localStorage.setItem('site_anti_inspection', String(settings.enable_anti_inspection));
+        localStorage.setItem('site_maintenance', JSON.stringify({
+          enabled: settings.maintenance_mode,
+          message: settings.maintenance_message,
+        }));
       } catch {}
       return settings;
     },
