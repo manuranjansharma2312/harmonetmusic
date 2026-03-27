@@ -31,6 +31,12 @@ export default function MySmartLinks() {
   const [search, setSearch] = useState('');
   const [editLink, setEditLink] = useState<SmartLinkItem | null>(null);
   const [creating, setCreating] = useState(false);
+  const [systemEnabled, setSystemEnabled] = useState<boolean | null>(null);
+
+  const fetchSystemSetting = async () => {
+    const { data } = await supabase.from('smart_link_settings').select('is_enabled').limit(1).single();
+    setSystemEnabled(data ? (data as any).is_enabled : true);
+  };
 
   const fetchLinks = async () => {
     if (!user) return;
@@ -43,7 +49,7 @@ export default function MySmartLinks() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchLinks(); }, [user]);
+  useEffect(() => { fetchLinks(); fetchSystemSetting(); }, [user]);
 
   const filtered = smartLinks.filter(s =>
     s.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -65,6 +71,21 @@ export default function MySmartLinks() {
     toast.success('Smart link deleted');
     fetchLinks();
   };
+
+  if (systemEnabled === false) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6">
+          <h1 className="text-2xl font-bold text-foreground">My Smart Links</h1>
+          <GlassCard className="p-8 text-center">
+            <Link2 className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground font-medium">Smart Links system is currently disabled</p>
+            <p className="text-xs text-muted-foreground mt-1">Please check back later or contact your admin.</p>
+          </GlassCard>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>

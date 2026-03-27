@@ -105,6 +105,10 @@ export default function AdminSmartLinks() {
   const [editCustom, setEditCustom] = useState<any | null>(null);
   const [creatingCustom, setCreatingCustom] = useState(false);
 
+  // ─── System enable/disable ───
+  const [systemEnabled, setSystemEnabled] = useState(true);
+  const [togglingSystem, setTogglingSystem] = useState(false);
+
   // ─── Fetchers ───
   const fetchReleases = async () => {
     const { data } = await supabase
@@ -172,7 +176,23 @@ export default function AdminSmartLinks() {
     setCustomLoading(false);
   };
 
-  useEffect(() => { fetchReleases(); fetchPlatforms(); fetchApiConfigs(); fetchCustomLinks(); }, []);
+  const fetchSystemSetting = async () => {
+    const { data } = await supabase.from('smart_link_settings').select('is_enabled').limit(1).single();
+    if (data) setSystemEnabled((data as any).is_enabled);
+  };
+
+  const toggleSystem = async (val: boolean) => {
+    setTogglingSystem(true);
+    const { data } = await supabase.from('smart_link_settings').select('id').limit(1).single();
+    if (data) {
+      await supabase.from('smart_link_settings').update({ is_enabled: val, updated_at: new Date().toISOString(), updated_by: user?.id } as any).eq('id', (data as any).id);
+    }
+    setSystemEnabled(val);
+    setTogglingSystem(false);
+    toast.success(val ? 'Smart Links system enabled' : 'Smart Links system disabled');
+  };
+
+  useEffect(() => { fetchReleases(); fetchPlatforms(); fetchApiConfigs(); fetchCustomLinks(); fetchSystemSetting(); }, []);
 
   // ─── Release helpers ───
   const filtered = releases.filter(r => {
@@ -329,9 +349,20 @@ export default function AdminSmartLinks() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Smart Links</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage platform links for all approved releases</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Smart Links</h1>
+            <p className="text-sm text-muted-foreground mt-1">Manage platform links for all approved releases</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Label htmlFor="system-toggle" className="text-sm text-muted-foreground">{systemEnabled ? 'Enabled' : 'Disabled'}</Label>
+            <Switch
+              id="system-toggle"
+              checked={systemEnabled}
+              onCheckedChange={toggleSystem}
+              disabled={togglingSystem}
+            />
+          </div>
         </div>
 
         <Tabs defaultValue="releases" className="w-full">
