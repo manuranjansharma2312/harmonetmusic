@@ -129,7 +129,37 @@ export default function AdminSignatureSettings() {
           </div>
         </GlassCard>
 
-        {/* Issued By Details */}
+        {/* Sender Email Account */}
+        <GlassCard className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Send className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold">Sender Email Account</h2>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">
+            Select which email account will be used to send all signature-related emails (signing requests, completion emails). If not set, the system default email account will be used.
+          </p>
+          <div>
+            <Label>Email Account</Label>
+            <Select
+              value={settings.email_account_id || 'default'}
+              onValueChange={v => setSettings(s => ({ ...s, email_account_id: v === 'default' ? '' : v }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Use system default" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default">Use System Default Account</SelectItem>
+                {emailAccounts.map(acc => (
+                  <SelectItem key={acc.id} value={acc.id}>
+                    {acc.account_name} ({acc.from_email})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </GlassCard>
+
+
         <GlassCard className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <Building2 className="h-5 w-5 text-primary" />
