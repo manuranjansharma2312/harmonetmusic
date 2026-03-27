@@ -173,10 +173,14 @@ export default function AdminSignatureDocuments() {
             <h1 className="text-2xl font-bold">E-Signature Documents</h1>
             <p className="text-muted-foreground text-sm">Upload, send, and manage signature requests</p>
           </div>
-          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" /> New Document</Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/admin/signature-settings')}>
+              <Settings2 className="h-4 w-4 mr-2" /> Settings
+            </Button>
+            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+              <DialogTrigger asChild>
+                <Button><Plus className="h-4 w-4 mr-2" /> New Document</Button>
+              </DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Create Signature Document</DialogTitle>
