@@ -383,76 +383,8 @@ export default function AdminSmartLinks() {
             <TabsTrigger value="apis"><Key className="h-3.5 w-3.5 mr-1.5" />API Integrations</TabsTrigger>
           </TabsList>
 
-          {/* === RELEASES TAB === */}
-          <TabsContent value="releases" className="space-y-4 mt-4">
-            <div className="relative max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search releases..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-            </div>
 
-            {loading ? (
-              <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-            ) : filtered.length === 0 ? (
-              <GlassCard className="p-8 text-center">
-                <Music className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">No approved releases found</p>
-              </GlassCard>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filtered.map(r => {
-                  const name = r.album_name || r.ep_name || 'Untitled';
-                  const active = hasLinks(r);
-                  const url = getSmartLinkUrl(r);
-                  const linkCount = active ? Object.values(r.platform_links).filter(v => v?.trim()).length : 0;
 
-                  return (
-                    <GlassCard key={r.id} className="p-4 space-y-3">
-                      <div className="flex items-start gap-3">
-                        {r.poster_url ? (
-                          <img src={r.poster_url} alt={name} className="h-14 w-14 rounded-lg object-cover flex-shrink-0" />
-                        ) : (
-                          <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                            <Music className="h-6 w-6 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm text-foreground truncate">{name}</p>
-                          <p className="text-xs text-muted-foreground capitalize">{r.content_type} • {r.release_date}</p>
-                          {active ? (
-                            <Badge variant="default" className="mt-1 text-[10px]">{linkCount} platforms</Badge>
-                          ) : (
-                            <Badge variant="outline" className="mt-1 text-[10px]">No links</Badge>
-                          )}
-                        </div>
-                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setEditRelease(r)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      {active && (
-                        <div className="flex items-center gap-2 p-2 rounded-md bg-primary/5 border border-primary/20">
-                          <Link2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-                          <span className="text-[11px] text-muted-foreground flex-1 truncate font-mono">{url}</span>
-                          <CopyButton value={url} />
-                          <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80">
-                            <ExternalLink className="h-3.5 w-3.5" />
-                          </a>
-                        </div>
-                      )}
-
-                      {!active && (
-                        <Button size="sm" variant="outline" className="w-full text-xs" onClick={() => setEditRelease(r)}>
-                          <Link2 className="h-3.5 w-3.5 mr-1" /> Add Platform Links
-                        </Button>
-                      )}
-                    </GlassCard>
-                  );
-                })}
-              </div>
-            )}
-          </TabsContent>
-
-          {/* === CUSTOM SMART LINKS TAB === */}
           <TabsContent value="custom" className="space-y-4 mt-4">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Standalone smart links created by users or admin.</p>
