@@ -176,7 +176,23 @@ export default function AdminSmartLinks() {
     setCustomLoading(false);
   };
 
-  useEffect(() => { fetchReleases(); fetchPlatforms(); fetchApiConfigs(); fetchCustomLinks(); }, []);
+  const fetchSystemSetting = async () => {
+    const { data } = await supabase.from('smart_link_settings').select('is_enabled').limit(1).single();
+    if (data) setSystemEnabled((data as any).is_enabled);
+  };
+
+  const toggleSystem = async (val: boolean) => {
+    setTogglingSystem(true);
+    const { data } = await supabase.from('smart_link_settings').select('id').limit(1).single();
+    if (data) {
+      await supabase.from('smart_link_settings').update({ is_enabled: val, updated_at: new Date().toISOString(), updated_by: user?.id } as any).eq('id', (data as any).id);
+    }
+    setSystemEnabled(val);
+    setTogglingSystem(false);
+    toast.success(val ? 'Smart Links system enabled' : 'Smart Links system disabled');
+  };
+
+  useEffect(() => { fetchReleases(); fetchPlatforms(); fetchApiConfigs(); fetchCustomLinks(); fetchSystemSetting(); }, []);
 
   // ─── Release helpers ───
   const filtered = releases.filter(r => {
