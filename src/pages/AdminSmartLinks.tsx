@@ -376,9 +376,8 @@ export default function AdminSmartLinks() {
           </div>
         </div>
 
-        <Tabs defaultValue="releases" className="w-full">
+        <Tabs defaultValue="custom" className="w-full">
           <TabsList>
-            <TabsTrigger value="releases"><Link2 className="h-3.5 w-3.5 mr-1.5" />Releases</TabsTrigger>
             <TabsTrigger value="custom"><Music className="h-3.5 w-3.5 mr-1.5" />Custom Links</TabsTrigger>
             <TabsTrigger value="platforms"><Settings className="h-3.5 w-3.5 mr-1.5" />Platforms</TabsTrigger>
             <TabsTrigger value="apis"><Key className="h-3.5 w-3.5 mr-1.5" />API Integrations</TabsTrigger>
