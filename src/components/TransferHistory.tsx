@@ -167,7 +167,8 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
     setConfirmLog(null);
   };
 
-  const paged = paginateItems(logs, page, pageSize);
+  const paged = paginateItems(filteredLogs, page, pageSize);
+  const hasFilters = searchQuery || dateFrom || dateTo;
 
   if (loading) return null;
   if (logs.length === 0) return null;
@@ -175,12 +176,52 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
   return (
     <>
       <GlassCard className="p-0 overflow-hidden">
-        <div className="p-4 border-b border-border/50">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <ArrowRightLeft className="h-5 w-5 text-primary" />
-            Transfer History
-          </h2>
-          <p className="text-xs text-muted-foreground mt-1">Log of all release ownership transfers</p>
+        <div className="p-4 border-b border-border/50 space-y-3">
+          <div>
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <ArrowRightLeft className="h-5 w-5 text-primary" />
+              Transfer History
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">Log of all release ownership transfers</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search release, user..."
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
+                className="pl-9 h-9"
+              />
+            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", dateFrom && "text-foreground")}>
+                  <CalendarIcon className="h-3.5 w-3.5" />
+                  {dateFrom ? format(dateFrom, 'dd MMM yyyy') : 'From'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={dateFrom} onSelect={(d) => { setDateFrom(d); setPage(0); }} className="p-3 pointer-events-auto" />
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", dateTo && "text-foreground")}>
+                  <CalendarIcon className="h-3.5 w-3.5" />
+                  {dateTo ? format(dateTo, 'dd MMM yyyy') : 'To'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={dateTo} onSelect={(d) => { setDateTo(d); setPage(0); }} className="p-3 pointer-events-auto" />
+              </PopoverContent>
+            </Popover>
+            {hasFilters && (
+              <Button variant="ghost" size="sm" className="h-9 gap-1 text-muted-foreground" onClick={() => { setSearchQuery(''); setDateFrom(undefined); setDateTo(undefined); setPage(0); }}>
+                <X className="h-3.5 w-3.5" /> Clear
+              </Button>
+            )}
+          </div>
         </div>
         <div className="overflow-x-auto">
           <Table>
