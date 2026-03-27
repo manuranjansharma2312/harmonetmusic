@@ -212,7 +212,7 @@ serve(async (req) => {
       recipientMap[r.id] = r.name || r.email || "Unknown";
     }
 
-    const auditCols = [MARGIN, MARGIN + 100, MARGIN + 200, MARGIN + 295, MARGIN + 395];
+    const auditCols = [MARGIN, MARGIN + 90, MARGIN + 185, MARGIN + 260, MARGIN + 370];
     const auditHeaders = ["Performed By", "Action", "IP Address", "Location", "Timestamp"];
     page.drawRectangle({ x: MARGIN, y: y - 2, width: MAX_W, height: 16, color: rgb(0.94, 0.96, 0.97) });
     auditHeaders.forEach((h, i) => {
