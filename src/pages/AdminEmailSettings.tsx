@@ -439,7 +439,7 @@ export default function AdminEmailSettings() {
                       <Save className="h-4 w-4" />
                       {saving ? 'Saving...' : 'Save Settings'}
                     </Button>
-                    <Button variant="outline" className="gap-2" onClick={() => toast.info('Test email feature will work after server-side integration')}>
+                    <Button variant="outline" className="gap-2" onClick={() => setShowTestDialog(true)}>
                       <Send className="h-4 w-4" /> Send Test Email
                     </Button>
                   </div>
