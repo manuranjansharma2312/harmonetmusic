@@ -71,6 +71,7 @@ const AdminSignatureDetail = lazy(() => import("./pages/AdminSignatureDetail"));
 const AdminSignatureFields = lazy(() => import("./pages/AdminSignatureFields"));
 const AdminSignatureSettings = lazy(() => import("./pages/AdminSignatureSettings"));
 const SignDocument = lazy(() => import("./pages/SignDocument"));
+const DownloadSignedPdf = lazy(() => import("./pages/DownloadSignedPdf"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
