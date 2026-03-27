@@ -532,6 +532,7 @@ export type Database = {
       }
       email_send_logs: {
         Row: {
+          body_html: string | null
           error_message: string | null
           id: string
           recipient_email: string
@@ -543,6 +544,7 @@ export type Database = {
           template_label: string | null
         }
         Insert: {
+          body_html?: string | null
           error_message?: string | null
           id?: string
           recipient_email: string
@@ -554,6 +556,7 @@ export type Database = {
           template_label?: string | null
         }
         Update: {
+          body_html?: string | null
           error_message?: string | null
           id?: string
           recipient_email?: string
