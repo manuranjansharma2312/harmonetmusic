@@ -89,6 +89,9 @@ export default function AdminEmailSettings() {
   const [logStatusFilter, setLogStatusFilter] = useState('all');
   const [logPage, setLogPage] = useState(0);
   const [logPageSize, setLogPageSize] = useState<number | 'all'>(20);
+  const [showTestDialog, setShowTestDialog] = useState(false);
+  const [testEmail, setTestEmail] = useState('');
+  const [sendingTest, setSendingTest] = useState(false);
 
   useEffect(() => {
     fetchData();
