@@ -778,6 +778,14 @@ export default function AdminEmailSettings() {
                   <p className="text-center text-muted-foreground py-8 text-sm">No templates match your search</p>
                 )}
               </div>
+              <TablePagination
+                totalItems={filteredTemplates.length}
+                currentPage={templatePage}
+                pageSize={templatePageSize}
+                onPageChange={setTemplatePage}
+                onPageSizeChange={setTemplatePageSize}
+                itemLabel="templates"
+              />
             </GlassCard>
           </TabsContent>
 
