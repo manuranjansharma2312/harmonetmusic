@@ -63,6 +63,7 @@ const AIImageGeneration = lazy(() => import("./pages/AIImageGeneration"));
 const SmartLink = lazy(() => import("./pages/SmartLink"));
 const MySmartLinks = lazy(() => import("./pages/MySmartLinks"));
 const AdminSmartLinks = lazy(() => import("./pages/AdminSmartLinks"));
+const AdminEmailSettings = lazy(() => import("./pages/AdminEmailSettings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
