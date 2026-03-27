@@ -9,7 +9,8 @@ import {
   Loader2, Settings, Zap, Image, Monitor, Shield, Database, RefreshCw,
   Bell, Wifi, Clock, Upload, Terminal, AlertTriangle, Type, Gauge,
 } from 'lucide-react';
-import { useSiteSettings, type SiteSettings } from '@/hooks/useSiteSettings';
+import { useSiteSettings, SITE_SETTINGS_DEFAULTS, type SiteSettings } from '@/hooks/useSiteSettings';
+import { RotateCcw } from 'lucide-react';
 
 export default function AdminSiteSettings() {
   const { user } = useAuth();
