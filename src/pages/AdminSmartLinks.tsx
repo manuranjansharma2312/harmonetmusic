@@ -178,23 +178,8 @@ export default function AdminSmartLinks() {
     toast.success(val ? 'Smart Links system enabled' : 'Smart Links system disabled');
   };
 
-  useEffect(() => { fetchReleases(); fetchPlatforms(); fetchApiConfigs(); fetchCustomLinks(); fetchSystemSetting(); }, []);
+  useEffect(() => { fetchPlatforms(); fetchApiConfigs(); fetchCustomLinks(); fetchSystemSetting(); }, []);
 
-  // ─── Release helpers ───
-  const filtered = releases.filter(r => {
-    const name = r.album_name || r.ep_name || '';
-    return name.toLowerCase().includes(search.toLowerCase());
-  });
-
-  const getSmartLinkUrl = (r: SmartLinkRelease) => {
-    const base = window.location.origin;
-    return r.slug ? `${base}/r/${r.slug}` : `${base}/r/${r.id}`;
-  };
-
-  const hasLinks = (r: SmartLinkRelease) => {
-    const links = r.platform_links as Record<string, string>;
-    return links && Object.values(links).some(v => v?.trim());
-  };
 
   // ─── Platform handlers ───
   const openNewPlatform = () => {
