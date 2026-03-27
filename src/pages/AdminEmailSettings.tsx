@@ -757,6 +757,36 @@ export default function AdminEmailSettings() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Test Email Dialog */}
+      <Dialog open={showTestDialog} onOpenChange={setShowTestDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send Test Email</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Send a test email to verify your SMTP configuration is working correctly.
+            </p>
+            <div className="space-y-2">
+              <Label>Recipient Email</Label>
+              <Input
+                type="email"
+                placeholder="test@example.com"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowTestDialog(false)}>Cancel</Button>
+              <Button onClick={sendTestEmail} disabled={sendingTest} className="gap-2">
+                <Send className="h-4 w-4" />
+                {sendingTest ? 'Sending...' : 'Send Test'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
