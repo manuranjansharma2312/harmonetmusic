@@ -90,7 +90,7 @@ export default function AdminSignatureDocuments() {
           document_hash: hash,
           created_by: user!.id,
           status: 'draft',
-          expires_at: new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString(),
+          expires_at: null,
         })
         .select()
         .single();
