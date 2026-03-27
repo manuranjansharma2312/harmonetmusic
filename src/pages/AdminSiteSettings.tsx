@@ -7,10 +7,9 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Loader2, Settings, Zap, Image, Monitor, Shield, Database, RefreshCw,
-  Bell, Wifi, Clock, Upload, Terminal, AlertTriangle, Type, Gauge,
+  Bell, Wifi, Clock, Upload, Terminal, AlertTriangle, Type, Gauge, RotateCcw,
 } from 'lucide-react';
 import { useSiteSettings, SITE_SETTINGS_DEFAULTS, type SiteSettings } from '@/hooks/useSiteSettings';
-import { RotateCcw } from 'lucide-react';
 
 export default function AdminSiteSettings() {
   const { user } = useAuth();
