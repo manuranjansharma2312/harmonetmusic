@@ -51,9 +51,7 @@ export default function SignDocument() {
       .createSignedUrl(result.document.document_url, 3600);
     if (signedUrl) setPdfUrl(signedUrl.signedUrl);
 
-    if (result.recipient.otp_verified) {
-      setStep('sign');
-    }
+    // No OTP needed, go directly to sign step
 
     // Log document viewed
     await supabase.rpc('log_signature_audit', {
