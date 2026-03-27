@@ -105,6 +105,12 @@ export default function AdminSiteSettings() {
     toast.success(`Applied "${preset}" preset. Click Save to apply.`);
   };
 
+  const handleResetDefaults = () => {
+    if (!form) return;
+    setForm((p) => (p ? { ...p, ...SITE_SETTINGS_DEFAULTS, id: p.id, updated_at: p.updated_at, updated_by: p.updated_by } : p));
+    toast.success('Reset to defaults (Max Performance). Click Save to apply.');
+  };
+
   if (isLoading || !form) {
     return (
       <DashboardLayout>
