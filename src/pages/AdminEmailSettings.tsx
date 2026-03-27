@@ -270,6 +270,8 @@ export default function AdminEmailSettings() {
   const [editBody, setEditBody] = useState('');
   const [editAccountId, setEditAccountId] = useState<string | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
+  const [templatePage, setTemplatePage] = useState(0);
+  const [templatePageSize, setTemplatePageSize] = useState<number | 'all'>(10);
 
   // Log state
   const [logSearch, setLogSearch] = useState('');
@@ -481,13 +483,21 @@ export default function AdminEmailSettings() {
     toast.success(`Exported ${filteredLogs.length} logs`);
   }
 
-  const filteredTemplates = templates.filter(t => {
-    const matchesSearch = !searchQuery ||
-      t.trigger_label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.trigger_key.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === 'all' || t.category === categoryFilter;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredTemplates = useMemo(() => {
+    let result = templates.filter(t => {
+      const matchesSearch = !searchQuery ||
+        t.trigger_label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.trigger_key.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = categoryFilter === 'all' || t.category === categoryFilter;
+      return matchesSearch && matchesCategory;
+    });
+    return result;
+  }, [templates, searchQuery, categoryFilter]);
+
+  const paginatedTemplates = useMemo(
+    () => paginateItems(filteredTemplates, templatePage, templatePageSize),
+    [filteredTemplates, templatePage, templatePageSize]
+  );
 
   const getCategoryColor = (cat: string) => {
     const colors: Record<string, string> = {
@@ -647,9 +657,9 @@ export default function AdminEmailSettings() {
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Search templates..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
+                <Input placeholder="Search templates..." value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setTemplatePage(0); }} className="pl-9" />
                 </div>
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setTemplatePage(0); }}>
                   <SelectTrigger className="w-full sm:w-[200px]"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.map(c => <SelectItem key={c.key} value={c.key}>{c.label}</SelectItem>)}
@@ -658,7 +668,7 @@ export default function AdminEmailSettings() {
               </div>
 
               <div className="space-y-3">
-                {filteredTemplates.map(template => {
+                {paginatedTemplates.map(template => {
                   const assignedName = getAccountName(template.email_account_id);
                   return (
                     <div key={template.id} className="border border-border rounded-lg overflow-hidden">
@@ -768,6 +778,14 @@ export default function AdminEmailSettings() {
                   <p className="text-center text-muted-foreground py-8 text-sm">No templates match your search</p>
                 )}
               </div>
+              <TablePagination
+                totalItems={filteredTemplates.length}
+                currentPage={templatePage}
+                pageSize={templatePageSize}
+                onPageChange={setTemplatePage}
+                onPageSizeChange={setTemplatePageSize}
+                itemLabel="templates"
+              />
             </GlassCard>
           </TabsContent>
 
