@@ -412,7 +412,7 @@ export default function AdminSmartLinks() {
               </GlassCard>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {customLinks.filter(c => c.title.toLowerCase().includes(customSearch.toLowerCase())).map(c => {
+                {customLinks.filter(c => c.title.toLowerCase().includes(customSearch.toLowerCase()) && (statusFilter === 'all' || c.status === statusFilter)).map(c => {
                   const url = c.slug ? `${window.location.origin}/r/${c.slug}` : `${window.location.origin}/r/${c.id}`;
                   const active = c.platform_links && Object.values(c.platform_links).some((v: any) => v?.trim());
                   const linkCount = active ? Object.values(c.platform_links).filter((v: any) => v?.trim()).length : 0;
