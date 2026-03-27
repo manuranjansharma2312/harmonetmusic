@@ -25,7 +25,7 @@ export default function AdminSignatureDetail() {
     const [docRes, recRes, auditRes] = await Promise.all([
       supabase.from('signature_documents').select('*').eq('id', id).single(),
       supabase.from('signature_recipients').select('*').eq('document_id', id).order('signing_order'),
-      supabase.from('signature_audit_logs').select('*').eq('document_id', id).order('created_at', { ascending: false }),
+      supabase.from('signature_audit_logs').select('*, recipient:signature_recipients(name, email)').eq('document_id', id).order('created_at', { ascending: false }),
     ]);
     if (!docRes.error) setDoc(docRes.data);
     if (!recRes.error) setRecipients(recRes.data || []);
