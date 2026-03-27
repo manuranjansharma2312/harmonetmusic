@@ -703,6 +703,11 @@ export default function AdminEmailSettings() {
             </GlassCard>
           </TabsContent>
 
+          {/* =============== Analytics Tab =============== */}
+          <TabsContent value="analytics">
+            <EmailAnalytics logs={emailLogs} />
+          </TabsContent>
+
           {/* =============== Setup Guide Tab =============== */}
           <TabsContent value="guide">
             <GlassCard className="p-6 space-y-6">
