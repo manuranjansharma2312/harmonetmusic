@@ -849,6 +849,39 @@ export type Database = {
         }
         Relationships: []
       }
+      release_transfers: {
+        Row: {
+          from_user_id: string
+          id: string
+          isrcs: string[]
+          release_id: string
+          release_name: string
+          to_user_id: string
+          transferred_at: string
+          transferred_by: string
+        }
+        Insert: {
+          from_user_id: string
+          id?: string
+          isrcs?: string[]
+          release_id: string
+          release_name?: string
+          to_user_id: string
+          transferred_at?: string
+          transferred_by: string
+        }
+        Update: {
+          from_user_id?: string
+          id?: string
+          isrcs?: string[]
+          release_id?: string
+          release_name?: string
+          to_user_id?: string
+          transferred_at?: string
+          transferred_by?: string
+        }
+        Relationships: []
+      }
       releases: {
         Row: {
           album_name: string | null

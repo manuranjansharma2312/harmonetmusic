@@ -5,6 +5,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Eye, Pencil, Trash2, Download, Search, ChevronDown, ChevronRight, Music, Save, Users, Image, Volume2, ImageOff, VolumeX, Upload, ArrowRightLeft } from 'lucide-react';
 import { TransferOwnershipModal } from '@/components/TransferOwnershipModal';
+import { TransferHistory } from '@/components/TransferHistory';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -68,6 +69,7 @@ type Release = {
   parent_label_name?: string;
   platform_links?: any;
   slug?: string | null;
+  was_transferred?: boolean;
 };
 
 type ParsedImportTrack = {
@@ -493,6 +495,12 @@ export default function AdminSubmissions() {
       .from('sub_labels')
       .select('sub_user_id, sub_label_name, parent_label_name');
 
+    // Fetch transfer log to identify transferred releases
+    const { data: transfersData } = await supabase
+      .from('release_transfers')
+      .select('release_id');
+    const transferredReleaseIds = new Set((transfersData || []).map((t: any) => t.release_id));
+
     const subLabelInfoMap: Record<string, { sub_label_name: string; parent_label_name: string }> = {};
     subLabelsData?.forEach((sl) => {
       if (sl.sub_user_id) {
@@ -542,6 +550,7 @@ export default function AdminSubmissions() {
         user_type: userTypeMap[r.user_id],
         sub_label_name: subLabelInfoMap[r.user_id]?.sub_label_name,
         parent_label_name: subLabelInfoMap[r.user_id]?.parent_label_name,
+        was_transferred: transferredReleaseIds.has(r.id),
       }))
     );
     setLoading(false);
@@ -1009,7 +1018,12 @@ export default function AdminSubmissions() {
                               <div className="h-10 w-10 rounded bg-muted/50 flex items-center justify-center"><Music className="h-4 w-4 text-muted-foreground" /></div>
                             )}
                             <div>
-                              <p className="font-medium text-foreground">{getReleaseName(release)}</p>
+                              <div className="flex items-center gap-1.5">
+                                <p className="font-medium text-foreground">{getReleaseName(release)}</p>
+                                {release.was_transferred && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/50 text-accent-foreground font-medium">Transferred</span>
+                                )}
+                              </div>
                               <p className="text-xs text-muted-foreground">{release.tracks?.length || 0} track(s)</p>
                             </div>
                           </div>
@@ -1169,6 +1183,8 @@ export default function AdminSubmissions() {
           </>
         )}
       </GlassCard>
+
+      <TransferHistory />
 
       {/* View Release Detail Modal */}
       {viewRelease && (

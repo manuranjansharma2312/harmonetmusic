@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { StatusBadge } from '@/components/StatusBadge';
-import { Loader2, Music, ChevronDown, ChevronRight, Trash2, Eye, Pencil, Users, Download, CheckSquare, Square } from 'lucide-react';
+import { Loader2, Music, ChevronDown, ChevronRight, Trash2, Eye, Pencil, Users, Download, CheckSquare, Square, ArrowRightLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -56,6 +56,7 @@ type Release = {
   tracks: Track[];
   user_id: string;
   submitted_by_label?: string;
+  was_transferred?: boolean;
 };
 
 
@@ -147,10 +148,17 @@ export default function MyReleases() {
       tracksByRelease[t.release_id].push(t);
     });
 
+    // Check for transferred releases
+    const { data: transfersData } = releaseIds.length > 0
+      ? await supabase.from('release_transfers').select('release_id').in('release_id', releaseIds)
+      : { data: [] };
+    const transferredIds = new Set((transfersData || []).map((t: any) => t.release_id));
+
     setReleases(allReleases.map((r: any) => ({
       ...r,
       tracks: tracksByRelease[r.id] || [],
       submitted_by_label: subLabelMap[r.user_id] || undefined,
+      was_transferred: transferredIds.has(r.id),
     })));
     setLoading(false);
   };
@@ -299,6 +307,11 @@ export default function MyReleases() {
                       <span className="text-xs px-2 py-0.5 rounded bg-muted/50 text-muted-foreground capitalize">{release.content_type}</span>
                       {release.release_type === 'transfer' && (
                         <span className="text-xs px-2 py-0.5 rounded bg-accent/50 text-accent-foreground">Transfer</span>
+                      )}
+                      {release.was_transferred && (
+                        <span className="text-xs px-2 py-0.5 rounded bg-accent/50 text-accent-foreground flex items-center gap-1">
+                          <ArrowRightLeft className="h-3 w-3" /> Transferred
+                        </span>
                       )}
                       {release.submitted_by_label && (
                         <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary flex items-center gap-1">
