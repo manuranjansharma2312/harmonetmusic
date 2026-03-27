@@ -19,6 +19,7 @@ const AdminGenresLanguages = lazy(() => import("./pages/AdminGenresLanguages"));
 const MyReleases = lazy(() => import("./pages/MyReleases"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminSubmissions = lazy(() => import("./pages/AdminSubmissions"));
+const AdminTransferHistory = lazy(() => import("./pages/AdminTransferHistory"));
 const AdminUsers = lazy(() => import("./pages/AdminUsers"));
 const MyProfile = lazy(() => import("./pages/MyProfile"));
 const MyLabels = lazy(() => import("./pages/MyLabels"));
