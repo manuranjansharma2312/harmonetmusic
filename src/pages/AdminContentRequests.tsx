@@ -357,7 +357,7 @@ export default function AdminContentRequests() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                      {DATA_FIELDS.map((field) =>
+                      {(TYPE_FIELDS[item.request_type] || DATA_FIELDS).map((field) =>
                         item[field] ? (
                           <div key={field}>
                             <span className="text-xs text-muted-foreground">{FIELD_LABELS[field]}:</span>
