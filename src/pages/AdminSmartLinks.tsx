@@ -157,8 +157,12 @@ export default function AdminSmartLinks() {
   };
 
   const fetchSystemSetting = async () => {
-    const { data } = await supabase.from('smart_link_settings').select('is_enabled').limit(1).single();
-    if (data) setSystemEnabled((data as any).is_enabled);
+    const { data } = await supabase.from('smart_link_settings').select('is_enabled, auto_fetch_enabled, search_enabled').limit(1).single();
+    if (data) {
+      setSystemEnabled((data as any).is_enabled);
+      setAutoFetchEnabled((data as any).auto_fetch_enabled ?? false);
+      setSearchEnabled((data as any).search_enabled ?? false);
+    }
   };
 
   const toggleSystem = async (val: boolean) => {
