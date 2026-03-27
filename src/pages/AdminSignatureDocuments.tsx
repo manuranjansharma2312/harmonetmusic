@@ -152,8 +152,9 @@ export default function AdminSignatureDocuments() {
     }
   };
 
-  const paginatedDocs = documents.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-  const totalPages = Math.ceil(documents.length / ITEMS_PER_PAGE);
+  const filteredDocs = statusFilter === 'all' ? documents : documents.filter(d => d.status === statusFilter);
+  const paginatedDocs = filteredDocs.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredDocs.length / ITEMS_PER_PAGE);
 
   const statusColor = (s: string) => {
     switch (s) {
