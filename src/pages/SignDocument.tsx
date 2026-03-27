@@ -14,11 +14,7 @@ export default function SignDocument() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [step, setStep] = useState<'otp' | 'sign' | 'done'>('otp');
-  const [otp, setOtp] = useState('');
-  const [otpSending, setOtpSending] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [verifying, setVerifying] = useState(false);
+  const [step, setStep] = useState<'sign' | 'done'>('sign');
   const [signing, setSigning] = useState(false);
   const [consent, setConsent] = useState(false);
   const [signatureTab, setSignatureTab] = useState('draw');
