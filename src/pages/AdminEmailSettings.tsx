@@ -957,6 +957,86 @@ export default function AdminEmailSettings() {
                     <li>Set up SPF, DKIM, and DMARC records for better deliverability</li>
                   </ul>
                 </div>
+
+                {/* Anti-Spam / Deliverability Checklist */}
+                <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg space-y-3">
+                  <h3 className="font-semibold text-green-400 text-base">🛡️ Anti-Spam & Deliverability Checklist</h3>
+                  <p className="text-muted-foreground text-sm">
+                    Follow these DNS configurations at your domain registrar to ensure emails don't land in spam:
+                  </p>
+
+                  <div className="space-y-3">
+                    <div className="p-3 bg-background/50 rounded-lg border border-border/30">
+                      <h4 className="font-semibold text-sm mb-1">1. SPF Record (Sender Policy Framework)</h4>
+                      <p className="text-xs text-muted-foreground mb-1.5">Authorizes your server to send emails on behalf of your domain.</p>
+                      <code className="block bg-muted px-3 py-2 rounded text-xs break-all">
+                        TXT &nbsp; @ &nbsp; v=spf1 include:_spf.google.com include:your-smtp-provider.com ~all
+                      </code>
+                      <p className="text-xs text-muted-foreground mt-1">Replace with your actual SMTP provider's SPF include.</p>
+                    </div>
+
+                    <div className="p-3 bg-background/50 rounded-lg border border-border/30">
+                      <h4 className="font-semibold text-sm mb-1">2. DKIM Record (DomainKeys Identified Mail)</h4>
+                      <p className="text-xs text-muted-foreground mb-1.5">Proves your emails haven't been tampered with in transit.</p>
+                      <code className="block bg-muted px-3 py-2 rounded text-xs break-all">
+                        TXT &nbsp; selector._domainkey &nbsp; v=DKIM1; k=rsa; p=YOUR_PUBLIC_KEY
+                      </code>
+                      <p className="text-xs text-muted-foreground mt-1">Get DKIM key from your SMTP provider's dashboard (Gmail Workspace, Zoho, SendGrid, etc.)</p>
+                    </div>
+
+                    <div className="p-3 bg-background/50 rounded-lg border border-border/30">
+                      <h4 className="font-semibold text-sm mb-1">3. DMARC Record (Domain-based Message Authentication)</h4>
+                      <p className="text-xs text-muted-foreground mb-1.5">Tells receiving servers how to handle unauthenticated emails.</p>
+                      <code className="block bg-muted px-3 py-2 rounded text-xs break-all">
+                        TXT &nbsp; _dmarc &nbsp; v=DMARC1; p=quarantine; rua=mailto:dmarc@yourdomain.com; pct=100
+                      </code>
+                      <p className="text-xs text-muted-foreground mt-1">Start with <code className="bg-muted px-1 rounded">p=none</code> for monitoring, then move to <code className="bg-muted px-1 rounded">p=quarantine</code> or <code className="bg-muted px-1 rounded">p=reject</code>.</p>
+                    </div>
+
+                    <div className="p-3 bg-background/50 rounded-lg border border-border/30">
+                      <h4 className="font-semibold text-sm mb-1">4. Reverse DNS (PTR Record)</h4>
+                      <p className="text-xs text-muted-foreground">Set up with your hosting/VPS provider. Maps your server IP back to your domain. Most cloud providers handle this automatically.</p>
+                    </div>
+
+                    <div className="p-3 bg-background/50 rounded-lg border border-border/30">
+                      <h4 className="font-semibold text-sm mb-1">5. MX Records</h4>
+                      <p className="text-xs text-muted-foreground">Ensure your domain has valid MX records for receiving email. This helps establish domain legitimacy with spam filters.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Built-in Anti-Spam Features */}
+                <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg space-y-2">
+                  <h3 className="font-semibold text-blue-400 text-base">✅ Built-in Anti-Spam Features (Already Active)</h3>
+                  <p className="text-muted-foreground text-sm mb-2">
+                    The following anti-spam measures are automatically applied to all outgoing emails:
+                  </p>
+                  <ul className="list-disc list-inside space-y-1.5 text-muted-foreground text-sm">
+                    <li><strong>Proper From Header</strong> — Emails use "Name &lt;email&gt;" format</li>
+                    <li><strong>Message-ID Header</strong> — Unique identifier generated per email</li>
+                    <li><strong>Plain-Text Fallback</strong> — Auto-generated from HTML for multi-part emails</li>
+                    <li><strong>Email-Safe HTML Structure</strong> — DOCTYPE, charset, viewport, and table-based layout</li>
+                    <li><strong>Hidden Preview Text</strong> — Pre-header text for inbox previews</li>
+                    <li><strong>Reply-To Header</strong> — Set when reply-to email is configured</li>
+                    <li><strong>List-Unsubscribe Header</strong> — Helps ISPs identify legitimate senders</li>
+                    <li><strong>Proper MIME Headers</strong> — MIME-Version, X-Priority, Precedence</li>
+                    <li><strong>Rate Limiting</strong> — Built-in rate limits prevent sending spikes</li>
+                    <li><strong>Copyright Footer</strong> — Adds legitimacy with proper attribution</li>
+                  </ul>
+                </div>
+
+                {/* Verification Tools */}
+                <div className="p-4 bg-muted/30 border border-border/30 rounded-lg space-y-2">
+                  <h3 className="font-semibold text-sm">🔍 Verify Your Setup</h3>
+                  <p className="text-muted-foreground text-xs">Use these free tools to check your email deliverability:</p>
+                  <ul className="list-disc list-inside space-y-1 text-muted-foreground text-xs">
+                    <li><strong>mail-tester.com</strong> — Send a test email and get a spam score (aim for 9+/10)</li>
+                    <li><strong>mxtoolbox.com</strong> — Check SPF, DKIM, DMARC, and MX records</li>
+                    <li><strong>dmarcian.com</strong> — Monitor DMARC reports</li>
+                    <li><strong>Google Postmaster Tools</strong> — Track domain reputation with Gmail</li>
+                    <li><strong>learndmarc.com</strong> — Visualize your email authentication flow</li>
+                  </ul>
+                </div>
               </div>
             </GlassCard>
           </TabsContent>
