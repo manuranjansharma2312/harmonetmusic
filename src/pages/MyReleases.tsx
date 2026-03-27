@@ -56,6 +56,7 @@ type Release = {
   tracks: Track[];
   user_id: string;
   submitted_by_label?: string;
+  was_transferred?: boolean;
 };
 
 
