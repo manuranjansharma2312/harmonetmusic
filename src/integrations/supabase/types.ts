@@ -2224,16 +2224,28 @@ export type Database = {
         Args: { _ip: string; _token: string }
         Returns: boolean
       }
-      submit_signature: {
-        Args: {
-          _ip: string
-          _signature_data: string
-          _signature_type: string
-          _token: string
-          _user_agent: string
-        }
-        Returns: boolean
-      }
+      submit_signature:
+        | {
+            Args: {
+              _ip: string
+              _signature_data: string
+              _signature_type: string
+              _token: string
+              _user_agent: string
+            }
+            Returns: boolean
+          }
+        | {
+            Args: {
+              _geolocation?: string
+              _ip: string
+              _signature_data: string
+              _signature_type: string
+              _token: string
+              _user_agent: string
+            }
+            Returns: boolean
+          }
       user_owns_isrc: {
         Args: { _isrc: string; _user_id: string }
         Returns: boolean
