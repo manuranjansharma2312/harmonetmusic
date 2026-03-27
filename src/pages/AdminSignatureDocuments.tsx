@@ -155,8 +155,8 @@ export default function AdminSignatureDocuments() {
     }
   };
 
-  const paginatedDocs = documents.slice((page - 1) * perPage, page * perPage);
-  const totalPages = Math.ceil(documents.length / perPage);
+  const paginatedDocs = documents.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(documents.length / ITEMS_PER_PAGE);
 
   const statusColor = (s: string) => {
     switch (s) {
