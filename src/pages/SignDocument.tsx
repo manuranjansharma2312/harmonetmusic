@@ -98,7 +98,7 @@ export default function SignDocument() {
     const { data: valid } = await supabase.rpc('verify_signing_otp', {
       _token: token!,
       _otp: otp,
-      _ip: '',
+      _ip: geoInfo.ip || '',
     });
     if (valid) {
       toast.success('OTP verified');
