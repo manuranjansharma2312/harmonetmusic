@@ -476,6 +476,60 @@ export type Database = {
         }
         Relationships: []
       }
+      email_accounts: {
+        Row: {
+          account_name: string
+          created_at: string
+          from_email: string
+          from_name: string
+          id: string
+          is_default: boolean
+          is_enabled: boolean
+          provider: string
+          reply_to_email: string | null
+          smtp_encryption: string
+          smtp_host: string
+          smtp_password: string
+          smtp_port: number
+          smtp_username: string
+          updated_at: string
+        }
+        Insert: {
+          account_name: string
+          created_at?: string
+          from_email?: string
+          from_name?: string
+          id?: string
+          is_default?: boolean
+          is_enabled?: boolean
+          provider?: string
+          reply_to_email?: string | null
+          smtp_encryption?: string
+          smtp_host?: string
+          smtp_password?: string
+          smtp_port?: number
+          smtp_username?: string
+          updated_at?: string
+        }
+        Update: {
+          account_name?: string
+          created_at?: string
+          from_email?: string
+          from_name?: string
+          id?: string
+          is_default?: boolean
+          is_enabled?: boolean
+          provider?: string
+          reply_to_email?: string | null
+          smtp_encryption?: string
+          smtp_host?: string
+          smtp_password?: string
+          smtp_port?: number
+          smtp_username?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_send_logs: {
         Row: {
           error_message: string | null
@@ -568,6 +622,7 @@ export type Database = {
           body_html: string
           category: string
           created_at: string | null
+          email_account_id: string | null
           id: string
           is_enabled: boolean | null
           subject: string
@@ -581,6 +636,7 @@ export type Database = {
           body_html?: string
           category?: string
           created_at?: string | null
+          email_account_id?: string | null
           id?: string
           is_enabled?: boolean | null
           subject?: string
@@ -594,6 +650,7 @@ export type Database = {
           body_html?: string
           category?: string
           created_at?: string | null
+          email_account_id?: string | null
           id?: string
           is_enabled?: boolean | null
           subject?: string
@@ -603,7 +660,15 @@ export type Database = {
           updated_by?: string | null
           variables?: string[] | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "email_templates_email_account_id_fkey"
+            columns: ["email_account_id"]
+            isOneToOne: false
+            referencedRelation: "email_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       genres: {
         Row: {
