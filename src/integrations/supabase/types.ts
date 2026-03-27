@@ -476,6 +476,42 @@ export type Database = {
         }
         Relationships: []
       }
+      email_send_logs: {
+        Row: {
+          error_message: string | null
+          id: string
+          recipient_email: string
+          sent_at: string
+          sent_by: string | null
+          status: string
+          subject: string | null
+          template_key: string
+          template_label: string | null
+        }
+        Insert: {
+          error_message?: string | null
+          id?: string
+          recipient_email: string
+          sent_at?: string
+          sent_by?: string | null
+          status?: string
+          subject?: string | null
+          template_key: string
+          template_label?: string | null
+        }
+        Update: {
+          error_message?: string | null
+          id?: string
+          recipient_email?: string
+          sent_at?: string
+          sent_by?: string | null
+          status?: string
+          subject?: string | null
+          template_key?: string
+          template_label?: string | null
+        }
+        Relationships: []
+      }
       email_settings: {
         Row: {
           from_email: string | null
