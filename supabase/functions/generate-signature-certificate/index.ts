@@ -156,11 +156,11 @@ serve(async (req) => {
     page.drawText("Signer Details", { x: MARGIN, y, size: 13, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
     y -= 20;
 
-    const cols = [MARGIN, MARGIN + 20, MARGIN + 140, MARGIN + 280, MARGIN + 340, MARGIN + 420];
-    const headerLabels = ["#", "Name", "Email", "Status", "Signed At", "IP Address"];
+    const cols = [MARGIN, MARGIN + 18, MARGIN + 110, MARGIN + 210, MARGIN + 265, MARGIN + 335, MARGIN + 420];
+    const headerLabels = ["#", "Name", "Email", "Status", "Signed At", "Location", "IP Address"];
     page.drawRectangle({ x: MARGIN, y: y - 2, width: MAX_W, height: 16, color: rgb(0.1, 0.1, 0.1) });
     headerLabels.forEach((h, i) => {
-      page.drawText(h, { x: cols[i] + 4, y: y + 2, size: 8, font: fontBold, color: rgb(1, 1, 1) });
+      page.drawText(h, { x: cols[i] + 4, y: y + 2, size: 7, font: fontBold, color: rgb(1, 1, 1) });
     });
     y -= 18;
 
@@ -176,12 +176,13 @@ serve(async (req) => {
         r.email || "",
         r.status === "signed" ? "Signed" : "Pending",
         r.signed_at ? formatDate(r.signed_at) : "-",
+        r.geolocation || "-",
         r.ip_address || "-",
       ];
       rowData.forEach((val, ci) => {
-        const maxColW = ci < cols.length - 1 ? (cols[ci + 1] - cols[ci] - 8) : 70;
-        const display = font.widthOfTextAtSize(val, 8) > maxColW ? val.substring(0, Math.floor(maxColW / 4)) + "..." : val;
-        page.drawText(display, { x: cols[ci] + 4, y, size: 8, font, color: r.status === "signed" && ci === 3 ? rgb(0.09, 0.65, 0.26) : rgb(0.2, 0.2, 0.2) });
+        const maxColW = ci < cols.length - 1 ? (cols[ci + 1] - cols[ci] - 6) : 70;
+        const display = font.widthOfTextAtSize(val, 7) > maxColW ? val.substring(0, Math.floor(maxColW / 3.5)) + "..." : val;
+        page.drawText(display, { x: cols[ci] + 4, y, size: 7, font, color: r.status === "signed" && ci === 3 ? rgb(0.09, 0.65, 0.26) : rgb(0.2, 0.2, 0.2) });
       });
       y -= 14;
       page.drawLine({ start: { x: MARGIN, y: y + 10 }, end: { x: PAGE_W - MARGIN, y: y + 10 }, thickness: 0.5, color: rgb(0.85, 0.85, 0.85) });
@@ -238,7 +239,7 @@ serve(async (req) => {
     const legalTexts = [
       "This certificate confirms that the above-mentioned document was electronically signed by the listed parties using a verified electronic signature process. The document's integrity is verified through SHA-256 cryptographic hashing. Each signer's identity was verified via Email OTP (One-Time Password) before signing.",
       "This electronic signature is legally valid and enforceable under the Information Technology Act, 2000 (India) - Sections 5 and 10A, which recognize electronic signatures as equivalent to handwritten signatures for private commercial agreements. This certificate does not constitute a government-issued Digital Signature Certificate (DSC) under Section 35 of the IT Act.",
-      "The complete audit trail above serves as evidence of the signing process, including timestamps, IP addresses, and device information for each action taken during the signing workflow.",
+      "The complete audit trail above serves as evidence of the signing process, including timestamps, IP addresses, geographic locations, and device information for each action taken during the signing workflow.",
     ];
 
     for (const txt of legalTexts) {

@@ -229,6 +229,7 @@ export default function AdminSignatureDetail() {
                 <TableHead>Email</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Signed At</TableHead>
+                <TableHead>Location</TableHead>
                 <TableHead>Signing Link</TableHead>
               </TableRow>
             </TableHeader>
@@ -245,6 +246,9 @@ export default function AdminSignatureDetail() {
                   </TableCell>
                   <TableCell>
                     {r.signed_at ? format(new Date(r.signed_at), 'dd MMM yyyy HH:mm') : '-'}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {r.geolocation || '-'}
                   </TableCell>
                   <TableCell>
                     {r.signing_token && (

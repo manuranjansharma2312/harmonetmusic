@@ -27,10 +27,16 @@ export default function SignDocument() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [pdfUrl, setPdfUrl] = useState('');
+  const [geoInfo, setGeoInfo] = useState<{ ip: string; city: string; region: string; country: string }>({ ip: '', city: '', region: '', country: '' });
 
   useEffect(() => {
     if (!token) return;
     loadData();
+    // Fetch IP + geolocation
+    fetch('https://ipapi.co/json/')
+      .then(r => r.json())
+      .then(d => setGeoInfo({ ip: d.ip || '', city: d.city || '', region: d.region || '', country: d.country_name || '' }))
+      .catch(() => {});
   }, [token]);
 
   const loadData = async () => {
@@ -57,7 +63,7 @@ export default function SignDocument() {
     await supabase.rpc('log_signature_audit', {
       _token: token!,
       _action: 'document_viewed',
-      _ip: '',
+      _ip: geoInfo.ip || '',
       _user_agent: navigator.userAgent,
       _metadata: {},
     });
@@ -68,7 +74,7 @@ export default function SignDocument() {
     setOtpSending(true);
     const { data: success } = await supabase.rpc('request_signing_otp', {
       _token: token!,
-      _ip: '',
+      _ip: geoInfo.ip || '',
     });
     if (success) {
       setOtpSent(true);
@@ -92,7 +98,7 @@ export default function SignDocument() {
     const { data: valid } = await supabase.rpc('verify_signing_otp', {
       _token: token!,
       _otp: otp,
-      _ip: '',
+      _ip: geoInfo.ip || '',
     });
     if (valid) {
       toast.success('OTP verified');
@@ -177,12 +183,14 @@ export default function SignDocument() {
       return;
     }
     setSigning(true);
+    const locationStr = [geoInfo.city, geoInfo.region, geoInfo.country].filter(Boolean).join(', ');
     const { data: success } = await supabase.rpc('submit_signature', {
       _token: token!,
       _signature_data: sigData,
       _signature_type: signatureTab,
-      _ip: '',
+      _ip: geoInfo.ip || '',
       _user_agent: navigator.userAgent,
+      _geolocation: locationStr,
     });
     if (success) {
       setStep('done');
