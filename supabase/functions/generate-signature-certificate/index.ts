@@ -198,11 +198,17 @@ serve(async (req) => {
     page.drawText("Complete Audit Trail", { x: MARGIN, y, size: 13, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
     y -= 20;
 
-    const auditCols = [MARGIN, MARGIN + 120, MARGIN + 220, MARGIN + 360];
-    const auditHeaders = ["Action", "IP Address", "Timestamp", "User Agent"];
+    // Build recipient lookup map
+    const recipientMap: Record<string, string> = {};
+    for (const r of recipients) {
+      recipientMap[r.id] = r.name || r.email || "Unknown";
+    }
+
+    const auditCols = [MARGIN, MARGIN + 100, MARGIN + 200, MARGIN + 295, MARGIN + 395];
+    const auditHeaders = ["Performed By", "Action", "IP Address", "Location", "Timestamp"];
     page.drawRectangle({ x: MARGIN, y: y - 2, width: MAX_W, height: 16, color: rgb(0.94, 0.96, 0.97) });
     auditHeaders.forEach((h, i) => {
-      page.drawText(h, { x: auditCols[i] + 4, y: y + 2, size: 8, font: fontBold, color: rgb(0.3, 0.3, 0.3) });
+      page.drawText(h, { x: auditCols[i] + 4, y: y + 2, size: 7, font: fontBold, color: rgb(0.3, 0.3, 0.3) });
     });
     y -= 18;
 
@@ -211,15 +217,20 @@ serve(async (req) => {
         page = pdfDoc.addPage([PAGE_W, PAGE_H]);
         y = PAGE_H - MARGIN;
       }
+      const performedBy = log.recipient_id ? (recipientMap[log.recipient_id] || "Unknown") : "System";
       const actionLabel = formatActionLabel(log.action);
+      const geo = (log.metadata as any)?.geolocation || "-";
       const logData = [
+        performedBy,
         actionLabel,
         log.ip_address || "-",
+        typeof geo === 'string' ? geo.substring(0, 25) : "-",
         formatDate(log.created_at),
-        (log.user_agent || "-").substring(0, 30),
       ];
       logData.forEach((val, ci) => {
-        page.drawText(val, { x: auditCols[ci] + 4, y, size: 7, font, color: rgb(0.3, 0.3, 0.3) });
+        const maxW = ci < auditCols.length - 1 ? (auditCols[ci + 1] - auditCols[ci] - 6) : 90;
+        const display = font.widthOfTextAtSize(val, 7) > maxW ? val.substring(0, Math.floor(maxW / 3.5)) + "..." : val;
+        page.drawText(display, { x: auditCols[ci] + 4, y, size: 7, font, color: rgb(0.3, 0.3, 0.3) });
       });
       y -= 13;
       page.drawLine({ start: { x: MARGIN, y: y + 9 }, end: { x: PAGE_W - MARGIN, y: y + 9 }, thickness: 0.3, color: rgb(0.9, 0.9, 0.9) });
