@@ -74,7 +74,7 @@ export default function SignDocument() {
     setOtpSending(true);
     const { data: success } = await supabase.rpc('request_signing_otp', {
       _token: token!,
-      _ip: '',
+      _ip: geoInfo.ip || '',
     });
     if (success) {
       setOtpSent(true);
