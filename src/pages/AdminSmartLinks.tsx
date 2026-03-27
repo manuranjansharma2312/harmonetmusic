@@ -105,15 +105,6 @@ export default function AdminSmartLinks() {
   const [togglingSystem, setTogglingSystem] = useState(false);
 
   // ─── Fetchers ───
-  const fetchReleases = async () => {
-    const { data } = await supabase
-      .from('releases')
-      .select('id, album_name, ep_name, poster_url, platform_links, slug, status, content_type, release_date')
-      .eq('status', 'approved')
-      .order('release_date', { ascending: false });
-    setReleases((data as any) || []);
-    setLoading(false);
-  };
 
   const fetchPlatforms = async () => {
     const { data } = await supabase
