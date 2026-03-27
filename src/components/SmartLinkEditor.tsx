@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CopyButton } from '@/components/CopyButton';
 import { toast } from 'sonner';
-import { Save, Link, ExternalLink, Loader2, Music, Upload, ImageIcon } from 'lucide-react';
+import { Save, Link, ExternalLink, Loader2, Music, Upload, ImageIcon, AlertCircle } from 'lucide-react';
 
 interface Platform {
   id: string;
