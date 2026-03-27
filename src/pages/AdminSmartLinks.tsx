@@ -178,6 +178,30 @@ export default function AdminSmartLinks() {
 
   useEffect(() => { fetchPlatforms(); fetchApiConfigs(); fetchCustomLinks(); fetchSystemSetting(); }, []);
 
+  const hasEnabledApi = apiConfigs.some(a => a.is_enabled && a.api_key?.trim() && a.api_url?.trim());
+
+  const toggleAutoFetch = async (val: boolean) => {
+    setTogglingAutoFetch(true);
+    const { data } = await supabase.from('smart_link_settings').select('id').limit(1).single();
+    if (data) {
+      await supabase.from('smart_link_settings').update({ auto_fetch_enabled: val, updated_at: new Date().toISOString(), updated_by: user?.id } as any).eq('id', (data as any).id);
+    }
+    setAutoFetchEnabled(val);
+    setTogglingAutoFetch(false);
+    toast.success(val ? 'Auto-fetch enabled' : 'Auto-fetch disabled');
+  };
+
+  const toggleSearchEnabled = async (val: boolean) => {
+    setTogglingSearch(true);
+    const { data } = await supabase.from('smart_link_settings').select('id').limit(1).single();
+    if (data) {
+      await supabase.from('smart_link_settings').update({ search_enabled: val, updated_at: new Date().toISOString(), updated_by: user?.id } as any).eq('id', (data as any).id);
+    }
+    setSearchEnabled(val);
+    setTogglingSearch(false);
+    toast.success(val ? 'Search by ISRC/UPC enabled' : 'Search by ISRC/UPC disabled');
+  };
+
 
   // ─── Platform handlers ───
   const openNewPlatform = () => {
