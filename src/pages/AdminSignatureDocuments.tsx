@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, Send, Eye, FileSignature, Trash2, RefreshCw, Upload, CheckCircle, Award } from 'lucide-react';
+import { Plus, Send, Eye, FileSignature, Trash2, RefreshCw, Upload, CheckCircle, Award, Settings2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -34,14 +34,18 @@ export default function AdminSignatureDocuments() {
   const [recipients, setRecipients] = useState<Recipient[]>([{ name: '', email: '' }]);
   const [page, setPage] = useState(1);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [expiryDays, setExpiryDays] = useState(30);
 
   const fetchDocuments = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('signature_documents')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (!error) setDocuments(data || []);
+    const [docsRes, settingsRes] = await Promise.all([
+      supabase.from('signature_documents').select('*').order('created_at', { ascending: false }),
+      supabase.from('signature_settings').select('default_expiry_days').limit(1).maybeSingle(),
+    ]);
+    if (!docsRes.error) setDocuments(docsRes.data || []);
+    if (!settingsRes.error && settingsRes.data) {
+      setExpiryDays((settingsRes.data as any).default_expiry_days ?? 30);
+    }
     setLoading(false);
   };
 
@@ -92,7 +96,7 @@ export default function AdminSignatureDocuments() {
           document_hash: hash,
           created_by: user!.id,
           status: 'draft',
-          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          expires_at: new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString(),
         })
         .select()
         .single();
@@ -107,7 +111,7 @@ export default function AdminSignatureDocuments() {
           email: validRecipients[i].email.trim().toLowerCase(),
           signing_order: i + 1,
           signing_token: token,
-          token_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          token_expires_at: new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString(),
         });
       }
 
@@ -173,10 +177,14 @@ export default function AdminSignatureDocuments() {
             <h1 className="text-2xl font-bold">E-Signature Documents</h1>
             <p className="text-muted-foreground text-sm">Upload, send, and manage signature requests</p>
           </div>
-          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" /> New Document</Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/admin/signature-settings')}>
+              <Settings2 className="h-4 w-4 mr-2" /> Settings
+            </Button>
+            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+              <DialogTrigger asChild>
+                <Button><Plus className="h-4 w-4 mr-2" /> New Document</Button>
+              </DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Create Signature Document</DialogTitle>
@@ -249,6 +257,7 @@ export default function AdminSignatureDocuments() {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         <GlassCard>

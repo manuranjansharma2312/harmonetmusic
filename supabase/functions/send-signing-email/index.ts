@@ -11,6 +11,14 @@ function escapeHtml(str: string): string {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+function replaceVars(template: string, vars: Record<string, string>): string {
+  let result = template;
+  for (const [key, value] of Object.entries(vars)) {
+    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+  }
+  return result;
+}
+
 async function sendSmtp(account: any, to: string, subject: string, html: string) {
   const client = new SMTPClient({
     connection: {
@@ -48,12 +56,13 @@ serve(async (req) => {
 
     const { document_id } = await req.json();
 
-    // Fetch document, recipients, SMTP account, company details in parallel
-    const [docRes, recipientsRes, emailAccountsRes, companyRes] = await Promise.all([
+    // Fetch all needed data in parallel
+    const [docRes, recipientsRes, emailAccountsRes, companyRes, settingsRes] = await Promise.all([
       supabase.from("signature_documents").select("*").eq("id", document_id).single(),
       supabase.from("signature_recipients").select("*").eq("document_id", document_id).neq("status", "signed"),
       supabase.from("email_accounts").select("*").eq("is_default", true).eq("is_enabled", true).limit(1),
       supabase.from("company_details").select("*").limit(1).single(),
+      supabase.from("signature_settings").select("*").limit(1).maybeSingle(),
     ]);
 
     const doc = docRes.data;
@@ -70,11 +79,24 @@ serve(async (req) => {
     if (!account) throw new Error("No email account configured. Please set up an email account in Admin Email Settings first.");
 
     const companyName = companyRes.data?.company_name || "Harmonet Music";
+    const sigSettings = settingsRes.data as any;
+
+    const vars = {
+      document_title: doc.title,
+      company_name: companyName,
+    };
+
+    const subjectTemplate = sigSettings?.signing_email_subject || "Please sign: {{document_title}}";
+    const bodyIntro = sigSettings?.signing_email_body || "You have been requested to sign the following document.";
 
     let emailsSent = 0;
 
     for (const recipient of recipients) {
       const signingUrl = `${req.headers.get("origin") || supabaseUrl.replace("supabase.co", "lovable.app")}/sign/${recipient.signing_token}`;
+      const recipientVars = { ...vars, recipient_name: recipient.name };
+
+      const subject = replaceVars(subjectTemplate, recipientVars);
+      const introText = replaceVars(bodyIntro, recipientVars);
 
       const emailHtml = `
         <div style="font-family: Arial, Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; color: #333;">
@@ -86,7 +108,7 @@ serve(async (req) => {
           
           <p>Hello ${escapeHtml(recipient.name)},</p>
           
-          <p>You have been requested to sign the following document:</p>
+          <p>${escapeHtml(introText)}</p>
           
           <div style="background: #f8f9fa; padding: 18px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
             <p style="font-weight: bold; margin: 0 0 5px; font-size: 16px;">${escapeHtml(doc.title)}</p>
@@ -100,7 +122,7 @@ serve(async (req) => {
           </div>
 
           <p style="color: #999; font-size: 12px; margin-top: 25px;">
-            This link expires in 30 days. If you did not expect this request, please ignore this email.
+            This link expires in ${sigSettings?.default_expiry_days || 30} days. If you did not expect this request, please ignore this email.
           </p>
 
           <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
@@ -114,7 +136,6 @@ serve(async (req) => {
         </div>
       `;
 
-      const subject = `Please sign: ${doc.title}`;
       let status = "sent";
       let errorMessage = null;
 
@@ -126,7 +147,6 @@ serve(async (req) => {
         errorMessage = smtpErr.message || "SMTP send failed";
       }
 
-      // Log audit
       await supabase.from("signature_audit_logs").insert({
         document_id,
         recipient_id: recipient.id,
@@ -134,7 +154,6 @@ serve(async (req) => {
         metadata: { email: recipient.email, status },
       });
 
-      // Log email
       await supabase.from("email_send_logs").insert({
         template_key: "signature_request",
         template_label: "Signature Request",
