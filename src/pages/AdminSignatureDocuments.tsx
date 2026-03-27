@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, Send, Eye, FileSignature, Trash2, RefreshCw, Upload } from 'lucide-react';
+import { Plus, Send, Eye, FileSignature, Trash2, RefreshCw, Upload, CheckCircle, Award } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -270,8 +270,8 @@ export default function AdminSignatureDocuments() {
                 <TableRow key={doc.id}>
                   <TableCell className="font-medium">{doc.title}</TableCell>
                   <TableCell>
-                    <Badge variant={statusColor(doc.status) as any}>
-                      {doc.status === 'completed' ? '✅ Completed' : doc.status === 'sent' ? '📨 Sent' : '📝 Draft'}
+                    <Badge variant={statusColor(doc.status) as any} className="flex items-center gap-1.5 w-fit">
+                      {doc.status === 'completed' ? <><CheckCircle className="h-3 w-3" /> Completed</> : doc.status === 'sent' ? <><Send className="h-3 w-3" /> Sent</> : <><FileSignature className="h-3 w-3" /> Draft</>}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
@@ -295,6 +295,11 @@ export default function AdminSignatureDocuments() {
                       {doc.status === 'sent' && (
                         <Button variant="ghost" size="icon" onClick={() => handleSend(doc.id)} title="Resend">
                           <RefreshCw className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {doc.status === 'completed' && (
+                        <Button variant="ghost" size="icon" onClick={() => navigate(`/admin/signature/${doc.id}`)} title="Download Certificate">
+                          <Award className="h-4 w-4" />
                         </Button>
                       )}
                       <Button variant="ghost" size="icon" onClick={() => setDeleteId(doc.id)}>

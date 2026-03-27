@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ArrowLeft, Send, FileSignature, Download, Copy, CheckCircle, Clock, Eye, Award } from 'lucide-react';
+import { ArrowLeft, Send, FileSignature, Download, Copy, CheckCircle, Clock, Eye, Award, Mail, KeyRound, PenLine } from 'lucide-react';
 import { format } from 'date-fns';
 import { CopyButton } from '@/components/CopyButton';
 
@@ -80,16 +80,28 @@ export default function AdminSignatureDetail() {
     setGeneratingCert(false);
   };
 
-  const actionLabel = (action: string) => {
-    const labels: Record<string, string> = {
-      'email_sent': '📧 Email Sent',
-      'document_viewed': '👁️ Document Viewed',
-      'otp_requested': '🔑 OTP Requested',
-      'otp_verified': '✅ OTP Verified',
-      'document_signed': '✍️ Document Signed',
-    };
-    return labels[action] || action;
+  const actionIcons: Record<string, React.ReactNode> = {
+    'email_sent': <Mail className="h-3.5 w-3.5 mr-1.5 text-blue-500" />,
+    'document_viewed': <Eye className="h-3.5 w-3.5 mr-1.5 text-amber-500" />,
+    'otp_requested': <KeyRound className="h-3.5 w-3.5 mr-1.5 text-orange-500" />,
+    'otp_verified': <CheckCircle className="h-3.5 w-3.5 mr-1.5 text-green-500" />,
+    'document_signed': <PenLine className="h-3.5 w-3.5 mr-1.5 text-primary" />,
   };
+
+  const actionLabels: Record<string, string> = {
+    'email_sent': 'Email Sent',
+    'document_viewed': 'Document Viewed',
+    'otp_requested': 'OTP Requested',
+    'otp_verified': 'OTP Verified',
+    'document_signed': 'Document Signed',
+  };
+
+  const renderAction = (action: string) => (
+    <span className="flex items-center">
+      {actionIcons[action] || null}
+      {actionLabels[action] || action}
+    </span>
+  );
 
   if (loading) return <DashboardLayout><div className="flex items-center justify-center h-64 text-muted-foreground">Loading...</div></DashboardLayout>;
   if (!doc) return <DashboardLayout><div className="text-center py-12 text-muted-foreground">Document not found</div></DashboardLayout>;
@@ -105,8 +117,8 @@ export default function AdminSignatureDetail() {
             <h1 className="text-2xl font-bold">{doc.title}</h1>
             <p className="text-muted-foreground text-sm">{doc.description}</p>
           </div>
-          <Badge variant={doc.status === 'completed' ? 'default' : 'secondary'}>
-            {doc.status === 'completed' ? '✅ Completed' : doc.status === 'sent' ? '📨 Sent' : '📝 Draft'}
+          <Badge variant={doc.status === 'completed' ? 'default' : 'secondary'} className="flex items-center gap-1.5">
+            {doc.status === 'completed' ? <><CheckCircle className="h-3.5 w-3.5" /> Completed</> : doc.status === 'sent' ? <><Send className="h-3.5 w-3.5" /> Sent</> : <><FileSignature className="h-3.5 w-3.5" /> Draft</>}
           </Badge>
         </div>
 
@@ -208,7 +220,7 @@ export default function AdminSignatureDetail() {
                 <TableRow><TableCell colSpan={4} className="text-center py-4 text-muted-foreground">No activity yet</TableCell></TableRow>
               ) : auditLogs.map(log => (
                 <TableRow key={log.id}>
-                  <TableCell className="font-medium">{actionLabel(log.action)}</TableCell>
+                  <TableCell className="font-medium">{renderAction(log.action)}</TableCell>
                   <TableCell className="text-sm">{log.ip_address || '-'}</TableCell>
                   <TableCell className="text-sm max-w-[200px] truncate">{log.user_agent || '-'}</TableCell>
                   <TableCell className="text-sm">{format(new Date(log.created_at), 'dd MMM yyyy HH:mm:ss')}</TableCell>
