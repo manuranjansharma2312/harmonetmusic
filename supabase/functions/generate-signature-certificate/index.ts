@@ -75,7 +75,7 @@ serve(async (req) => {
         <td style="padding:8px;border:1px solid #ddd;">${i + 1}</td>
         <td style="padding:8px;border:1px solid #ddd;">${escapeHtml(r.name)}</td>
         <td style="padding:8px;border:1px solid #ddd;">${escapeHtml(r.email)}</td>
-        <td style="padding:8px;border:1px solid #ddd;">${r.status === 'signed' ? '✅ Signed' : '⏳ Pending'}</td>
+        <td style="padding:8px;border:1px solid #ddd;">${r.status === 'signed' ? '<span style="color:#16a34a;font-weight:bold;">&#10003; Signed</span>' : '<span style="color:#ea580c;">Pending</span>'}</td>
         <td style="padding:8px;border:1px solid #ddd;">${r.signed_at ? formatDate(r.signed_at) : '-'}</td>
         <td style="padding:8px;border:1px solid #ddd;">${r.signature_type || '-'}</td>
         <td style="padding:8px;border:1px solid #ddd;">${escapeHtml(r.ip_address || '-')}</td>
