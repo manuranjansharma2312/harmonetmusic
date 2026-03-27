@@ -18,7 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 import {
   Mail, Settings, FileText, Save, Send, Eye, EyeOff, Search,
   ChevronUp, Info, Code, History, Download, Plus, Trash2, Star, Edit2, BarChart3,
-  Tag,
+  Tag, CheckSquare,
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
