@@ -483,13 +483,21 @@ export default function AdminEmailSettings() {
     toast.success(`Exported ${filteredLogs.length} logs`);
   }
 
-  const filteredTemplates = templates.filter(t => {
-    const matchesSearch = !searchQuery ||
-      t.trigger_label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.trigger_key.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === 'all' || t.category === categoryFilter;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredTemplates = useMemo(() => {
+    let result = templates.filter(t => {
+      const matchesSearch = !searchQuery ||
+        t.trigger_label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.trigger_key.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = categoryFilter === 'all' || t.category === categoryFilter;
+      return matchesSearch && matchesCategory;
+    });
+    return result;
+  }, [templates, searchQuery, categoryFilter]);
+
+  const paginatedTemplates = useMemo(
+    () => paginateItems(filteredTemplates, templatePage, templatePageSize),
+    [filteredTemplates, templatePage, templatePageSize]
+  );
 
   const getCategoryColor = (cat: string) => {
     const colors: Record<string, string> = {
