@@ -653,12 +653,13 @@ export default function AdminEmailSettings() {
                             <TableHead>Status</TableHead>
                             <TableHead>Sent At</TableHead>
                             <TableHead>Error</TableHead>
+                            <TableHead>Action</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {paginatedLogs.length === 0 ? (
                             <TableRow>
-                              <TableCell colSpan={6} className="text-center text-muted-foreground py-8">No email logs found</TableCell>
+                              <TableCell colSpan={7} className="text-center text-muted-foreground py-8">No email logs found</TableCell>
                             </TableRow>
                           ) : paginatedLogs.map((log: EmailLog) => (
                             <TableRow key={log.id}>
@@ -668,6 +669,11 @@ export default function AdminEmailSettings() {
                               <TableCell><StatusBadge status={log.status} /></TableCell>
                               <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(log.sent_at).toLocaleString()}</TableCell>
                               <TableCell className="text-xs text-destructive max-w-[200px] truncate">{log.error_message || '—'}</TableCell>
+                              <TableCell>
+                                <Button size="sm" variant="ghost" onClick={() => setViewingLog(log)} title="View email">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
