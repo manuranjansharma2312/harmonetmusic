@@ -479,11 +479,9 @@ export default function AdminEmailSettings() {
                         </div>
                         <div className="space-y-2">
                           <Label>Body (HTML)</Label>
-                          <Textarea
+                          <RichTextEditor
                             value={editBody}
-                            onChange={(e) => setEditBody(e.target.value)}
-                            rows={10}
-                            className="font-mono text-xs"
+                            onChange={setEditBody}
                           />
                         </div>
                         <div className="flex gap-2">
