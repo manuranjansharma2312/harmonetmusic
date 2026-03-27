@@ -487,6 +487,7 @@ export default function AdminSmartLinks() {
                           }}
                           className="mt-1"
                         />
+                        {c.poster_url ? (
                           <img src={c.poster_url} alt={c.title} className="h-14 w-14 rounded-lg object-cover flex-shrink-0" />
                         ) : (
                           <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
