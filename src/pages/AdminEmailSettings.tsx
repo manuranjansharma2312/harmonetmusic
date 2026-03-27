@@ -718,6 +718,99 @@ export default function AdminEmailSettings() {
             </GlassCard>
           </TabsContent>
 
+          {/* =============== Categories Tab =============== */}
+          <TabsContent value="categories">
+            <GlassCard className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-primary/10">
+                    <Tag className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold">Email Categories</h2>
+                    <p className="text-xs text-muted-foreground">Create categories and assign a default email account to each one</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Add new category */}
+              <div className="flex gap-2">
+                <Input placeholder="New category name..." value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') addCategory(); }}
+                  className="max-w-xs" />
+                <Button size="sm" onClick={addCategory} disabled={saving || !newCategoryName.trim()} className="gap-1.5">
+                  <Plus className="h-4 w-4" /> Add Category
+                </Button>
+              </div>
+
+              {/* Category list */}
+              <div className="space-y-2">
+                {categories.map((cat, idx) => (
+                  <div key={cat.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border bg-muted/20">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <Badge variant="outline" className={`text-[10px] shrink-0 ${CATEGORY_COLORS[idx % CATEGORY_COLORS.length]}`}>
+                        {cat.key}
+                      </Badge>
+                      {editingCategoryId === cat.id ? (
+                        <div className="flex items-center gap-2">
+                          <Input value={editCategoryName} onChange={(e) => setEditCategoryName(e.target.value)}
+                            className="h-7 text-sm w-48" autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') updateCategory(cat.id, { name: editCategoryName });
+                              if (e.key === 'Escape') setEditingCategoryId(null);
+                            }} />
+                          <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => updateCategory(cat.id, { name: editCategoryName })}>
+                            <Save className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="font-medium text-sm">{cat.name}</span>
+                      )}
+                      <span className="text-xs text-muted-foreground">
+                        ({templates.filter(t => t.category === cat.key).length} templates)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={cat.default_account_id || '_none'}
+                        onValueChange={(v) => updateCategory(cat.id, { default_account_id: v === '_none' ? null : v })}
+                      >
+                        <SelectTrigger className="w-[220px] h-8 text-xs">
+                          <SelectValue placeholder="No default account" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="_none">No default account</SelectItem>
+                          {accounts.filter(a => a.is_enabled).map(acc => (
+                            <SelectItem key={acc.id} value={acc.id}>
+                              {acc.account_name} — {acc.from_email || acc.smtp_username}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button size="sm" variant="ghost" onClick={() => { setEditingCategoryId(cat.id); setEditCategoryName(cat.name); }}>
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => deleteCategory(cat.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                {categories.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Tag className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                    <p className="text-sm">No categories yet. Add your first one above.</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-3 bg-muted/30 rounded-lg text-xs text-muted-foreground">
+                <strong>How it works:</strong> Assign a default email account to each category. All templates in that category will use this account unless overridden individually in the template edit form.
+              </div>
+            </GlassCard>
+          </TabsContent>
+
           {/* =============== Templates Tab =============== */}
           <TabsContent value="templates">
             <GlassCard className="p-6 space-y-4">
