@@ -20,6 +20,9 @@ export default function AdminSignatureSettings() {
     signing_email_body: 'You have been requested to sign the following document.',
     completion_email_subject: 'Completed: {{document_title}} - Signed Document & Certificate',
     completion_email_body: 'The following document has been successfully signed by all parties.',
+    issued_by_name: '',
+    issued_by_address: '',
+    issued_by_email: '',
   });
 
   useEffect(() => {
