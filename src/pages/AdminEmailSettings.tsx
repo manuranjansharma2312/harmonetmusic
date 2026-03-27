@@ -128,6 +128,18 @@ export default function AdminEmailSettings() {
 
   useEffect(() => { fetchData(); }, []);
 
+  // Realtime subscription for email logs
+  useEffect(() => {
+    const channel = supabase
+      .channel('email-logs-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'email_send_logs' }, (payload) => {
+        setEmailLogs(prev => [payload.new as EmailLog, ...prev].slice(0, 500));
+        toast.info(`New email log: ${(payload.new as any).recipient_email}`);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
   async function fetchData() {
     try {
       const [accountsRes, templatesRes, logsRes] = await Promise.all([
