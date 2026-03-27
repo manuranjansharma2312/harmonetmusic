@@ -141,6 +141,11 @@ export default function AdminSignatureDetail() {
               <Send className="h-4 w-4 mr-2" /> Resend Emails
             </Button>
           )}
+          {doc.status === 'completed' && (
+            <Button onClick={handleDownloadCertificate} disabled={generatingCert} variant="default">
+              <Award className="h-4 w-4 mr-2" /> {generatingCert ? 'Generating...' : 'Download Certificate'}
+            </Button>
+          )}
         </div>
 
         {/* Recipients */}
