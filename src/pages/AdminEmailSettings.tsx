@@ -17,12 +17,13 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import {
   Mail, Settings, FileText, Save, Send, Eye, EyeOff, Search,
-  ChevronDown, ChevronUp, ToggleLeft, Info, Code, History, Download,
+  ChevronUp, Info, Code, History, Download, Plus, Trash2, Star, Edit2,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-interface EmailSettings {
+interface EmailAccount {
   id: string;
+  account_name: string;
   provider: string;
   smtp_host: string;
   smtp_port: number;
@@ -33,6 +34,7 @@ interface EmailSettings {
   from_name: string;
   reply_to_email: string;
   is_enabled: boolean;
+  is_default: boolean;
 }
 
 interface EmailTemplate {
@@ -44,6 +46,7 @@ interface EmailTemplate {
   body_html: string;
   is_enabled: boolean;
   variables: string[];
+  email_account_id: string | null;
 }
 
 interface EmailLog {
@@ -71,40 +74,65 @@ const CATEGORIES = [
   { key: 'general', label: 'General' },
 ];
 
+const EMPTY_ACCOUNT: Omit<EmailAccount, 'id'> = {
+  account_name: '',
+  provider: 'smtp',
+  smtp_host: '',
+  smtp_port: 587,
+  smtp_username: '',
+  smtp_password: '',
+  smtp_encryption: 'tls',
+  from_email: '',
+  from_name: '',
+  reply_to_email: '',
+  is_enabled: true,
+  is_default: false,
+};
+
 export default function AdminEmailSettings() {
   const { user } = useAuth();
-  const [settings, setSettings] = useState<EmailSettings | null>(null);
+  const [accounts, setAccounts] = useState<EmailAccount[]>([]);
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Account editing
+  const [editingAccount, setEditingAccount] = useState<Partial<EmailAccount> | null>(null);
+  const [isNewAccount, setIsNewAccount] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Template state
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [editingTemplate, setEditingTemplate] = useState<string | null>(null);
   const [editSubject, setEditSubject] = useState('');
   const [editBody, setEditBody] = useState('');
+  const [editAccountId, setEditAccountId] = useState<string | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
-  const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
+
+  // Log state
   const [logSearch, setLogSearch] = useState('');
   const [logStatusFilter, setLogStatusFilter] = useState('all');
   const [logPage, setLogPage] = useState(0);
   const [logPageSize, setLogPageSize] = useState<number | 'all'>(20);
+
+  // Test email
   const [showTestDialog, setShowTestDialog] = useState(false);
   const [testEmail, setTestEmail] = useState('');
+  const [testAccountId, setTestAccountId] = useState('');
   const [sendingTest, setSendingTest] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   async function fetchData() {
     try {
-      const [settingsRes, templatesRes, logsRes] = await Promise.all([
-        supabase.from('email_settings').select('*').limit(1).single(),
+      const [accountsRes, templatesRes, logsRes] = await Promise.all([
+        supabase.from('email_accounts').select('*').order('is_default', { ascending: false }).order('account_name'),
         supabase.from('email_templates').select('*').order('category').order('trigger_label'),
         supabase.from('email_send_logs').select('*').order('sent_at', { ascending: false }).limit(500),
       ]);
-      if (settingsRes.data) setSettings(settingsRes.data as any);
+      if (accountsRes.data) setAccounts(accountsRes.data as any);
       if (templatesRes.data) setTemplates(templatesRes.data as any);
       if (logsRes.data) setEmailLogs(logsRes.data as any);
     } catch (err) {
@@ -114,45 +142,104 @@ export default function AdminEmailSettings() {
     }
   }
 
-  async function saveSettings() {
-    if (!settings || !user) return;
+  // ---- Account CRUD ----
+  function openNewAccount() {
+    setEditingAccount({ ...EMPTY_ACCOUNT });
+    setIsNewAccount(true);
+    setShowPassword(false);
+  }
+
+  function openEditAccount(acc: EmailAccount) {
+    setEditingAccount({ ...acc });
+    setIsNewAccount(false);
+    setShowPassword(false);
+  }
+
+  async function saveAccount() {
+    if (!editingAccount || !user) return;
+    if (!editingAccount.account_name?.trim()) { toast.error('Account name is required'); return; }
+    if (!editingAccount.smtp_host?.trim()) { toast.error('SMTP host is required'); return; }
     setSaving(true);
     try {
-      const { error } = await supabase.from('email_settings').update({
-        provider: settings.provider,
-        smtp_host: settings.smtp_host,
-        smtp_port: settings.smtp_port,
-        smtp_username: settings.smtp_username,
-        smtp_password: settings.smtp_password,
-        smtp_encryption: settings.smtp_encryption,
-        from_email: settings.from_email,
-        from_name: settings.from_name,
-        reply_to_email: settings.reply_to_email,
-        is_enabled: settings.is_enabled,
-        updated_at: new Date().toISOString(),
-        updated_by: user.id,
-      } as any).eq('id', settings.id);
-      if (error) throw error;
-      toast.success('Email settings saved');
+      if (isNewAccount) {
+        const { error } = await supabase.from('email_accounts').insert({
+          account_name: editingAccount.account_name,
+          provider: editingAccount.provider,
+          smtp_host: editingAccount.smtp_host,
+          smtp_port: editingAccount.smtp_port,
+          smtp_username: editingAccount.smtp_username,
+          smtp_password: editingAccount.smtp_password,
+          smtp_encryption: editingAccount.smtp_encryption,
+          from_email: editingAccount.from_email,
+          from_name: editingAccount.from_name,
+          reply_to_email: editingAccount.reply_to_email,
+          is_enabled: editingAccount.is_enabled,
+          is_default: editingAccount.is_default,
+        } as any);
+        if (error) throw error;
+        toast.success('Email account added');
+      } else {
+        const { error } = await supabase.from('email_accounts').update({
+          account_name: editingAccount.account_name,
+          provider: editingAccount.provider,
+          smtp_host: editingAccount.smtp_host,
+          smtp_port: editingAccount.smtp_port,
+          smtp_username: editingAccount.smtp_username,
+          smtp_password: editingAccount.smtp_password,
+          smtp_encryption: editingAccount.smtp_encryption,
+          from_email: editingAccount.from_email,
+          from_name: editingAccount.from_name,
+          reply_to_email: editingAccount.reply_to_email,
+          is_enabled: editingAccount.is_enabled,
+          is_default: editingAccount.is_default,
+          updated_at: new Date().toISOString(),
+        } as any).eq('id', editingAccount.id!);
+        if (error) throw error;
+        toast.success('Email account updated');
+      }
+      setEditingAccount(null);
+      fetchData();
     } catch (err: any) {
-      toast.error(err.message || 'Failed to save settings');
+      toast.error(err.message || 'Failed to save account');
     } finally {
       setSaving(false);
     }
   }
 
+  async function deleteAccount(id: string) {
+    if (!confirm('Delete this email account? Templates using it will fall back to the default account.')) return;
+    const { error } = await supabase.from('email_accounts').delete().eq('id', id);
+    if (error) { toast.error(error.message); return; }
+    toast.success('Account deleted');
+    fetchData();
+  }
+
+  async function setDefault(id: string) {
+    // Unset all defaults first, then set this one
+    await supabase.from('email_accounts').update({ is_default: false } as any).neq('id', id);
+    await supabase.from('email_accounts').update({ is_default: true } as any).eq('id', id);
+    toast.success('Default account updated');
+    fetchData();
+  }
+
+  // ---- Template functions ----
   async function toggleTemplate(id: string, enabled: boolean) {
     const { error } = await supabase.from('email_templates').update({
       is_enabled: enabled,
       updated_at: new Date().toISOString(),
       updated_by: user?.id,
     } as any).eq('id', id);
-    if (error) {
-      toast.error('Failed to update');
-      return;
-    }
+    if (error) { toast.error('Failed to update'); return; }
     setTemplates(prev => prev.map(t => t.id === id ? { ...t, is_enabled: enabled } : t));
     toast.success(enabled ? 'Template enabled' : 'Template disabled');
+  }
+
+  function startEditing(template: EmailTemplate) {
+    setEditingTemplate(template.id);
+    setEditSubject(template.subject);
+    setEditBody(template.body_html);
+    setEditAccountId(template.email_account_id);
+    setPreviewTemplate(null);
   }
 
   async function saveTemplate(id: string) {
@@ -161,11 +248,12 @@ export default function AdminEmailSettings() {
       const { error } = await supabase.from('email_templates').update({
         subject: editSubject,
         body_html: editBody,
+        email_account_id: editAccountId || null,
         updated_at: new Date().toISOString(),
         updated_by: user?.id,
       } as any).eq('id', id);
       if (error) throw error;
-      setTemplates(prev => prev.map(t => t.id === id ? { ...t, subject: editSubject, body_html: editBody } : t));
+      setTemplates(prev => prev.map(t => t.id === id ? { ...t, subject: editSubject, body_html: editBody, email_account_id: editAccountId } : t));
       setEditingTemplate(null);
       toast.success('Template saved');
     } catch (err: any) {
@@ -175,12 +263,13 @@ export default function AdminEmailSettings() {
     }
   }
 
+  // ---- Test email ----
   async function sendTestEmail() {
     if (!testEmail.trim()) { toast.error('Enter a recipient email'); return; }
     setSendingTest(true);
     try {
       const { data, error } = await supabase.functions.invoke('send-test-email', {
-        body: { test_email: testEmail.trim() },
+        body: { test_email: testEmail.trim(), account_id: testAccountId || undefined },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -195,6 +284,7 @@ export default function AdminEmailSettings() {
     }
   }
 
+  // ---- Export ----
   function exportLogsCSV() {
     const filteredLogs = emailLogs.filter(log => {
       const matchesSearch = !logSearch ||
@@ -206,33 +296,20 @@ export default function AdminEmailSettings() {
     if (filteredLogs.length === 0) { toast.error('No logs to export'); return; }
     const headers = ['Template', 'Recipient', 'Subject', 'Status', 'Sent At', 'Error'];
     const rows = filteredLogs.map(l => [
-      l.template_label || l.template_key,
-      l.recipient_email,
-      l.subject || '',
-      l.status,
-      new Date(l.sent_at).toLocaleString(),
-      l.error_message || '',
+      l.template_label || l.template_key, l.recipient_email, l.subject || '', l.status,
+      new Date(l.sent_at).toLocaleString(), l.error_message || '',
     ]);
     const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `email-logs-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
+    a.href = url; a.download = `email-logs-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
     URL.revokeObjectURL(url);
     toast.success(`Exported ${filteredLogs.length} logs`);
   }
 
-  function startEditing(template: EmailTemplate) {
-    setEditingTemplate(template.id);
-    setEditSubject(template.subject);
-    setEditBody(template.body_html);
-    setPreviewTemplate(null);
-  }
-
   const filteredTemplates = templates.filter(t => {
-    const matchesSearch = !searchQuery || 
+    const matchesSearch = !searchQuery ||
       t.trigger_label.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.trigger_key.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === 'all' || t.category === categoryFilter;
@@ -254,6 +331,13 @@ export default function AdminEmailSettings() {
     return colors[cat] || colors.general;
   };
 
+  const getAccountName = (accountId: string | null) => {
+    if (!accountId) return null;
+    return accounts.find(a => a.id === accountId)?.account_name || null;
+  };
+
+  const defaultAccount = accounts.find(a => a.is_default);
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -270,17 +354,17 @@ export default function AdminEmailSettings() {
         <div>
           <h1 className="text-2xl font-bold">Email Settings</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Configure SMTP settings and manage email templates for all notifications
+            Manage email accounts, assign them to triggers, and customize templates
           </p>
         </div>
 
-        <Tabs defaultValue="settings" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="settings" className="gap-2">
-              <Settings className="h-4 w-4" /> SMTP Configuration
+        <Tabs defaultValue="accounts" className="space-y-4">
+          <TabsList className="flex-wrap">
+            <TabsTrigger value="accounts" className="gap-2">
+              <Mail className="h-4 w-4" /> Email Accounts
             </TabsTrigger>
             <TabsTrigger value="templates" className="gap-2">
-              <FileText className="h-4 w-4" /> Email Templates
+              <FileText className="h-4 w-4" /> Templates & Assignment
             </TabsTrigger>
             <TabsTrigger value="logs" className="gap-2">
               <History className="h-4 w-4" /> Email Logs
@@ -290,165 +374,88 @@ export default function AdminEmailSettings() {
             </TabsTrigger>
           </TabsList>
 
-          {/* SMTP Configuration Tab */}
-          <TabsContent value="settings">
-            <GlassCard className="p-6 space-y-6">
+          {/* =============== Email Accounts Tab =============== */}
+          <TabsContent value="accounts">
+            <GlassCard className="p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 rounded-xl bg-primary/10">
                     <Mail className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold">SMTP Server Configuration</h2>
-                    <p className="text-xs text-muted-foreground">Configure your email server for sending notifications</p>
+                    <h2 className="text-lg font-semibold">Email Accounts</h2>
+                    <p className="text-xs text-muted-foreground">Add multiple SMTP accounts and assign each to specific email triggers</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="email-enabled" className="text-sm">Enable Email System</Label>
-                  <Switch
-                    id="email-enabled"
-                    checked={settings?.is_enabled || false}
-                    onCheckedChange={(v) => setSettings(prev => prev ? { ...prev, is_enabled: v } : prev)}
-                  />
-                </div>
+                <Button size="sm" className="gap-2" onClick={openNewAccount}>
+                  <Plus className="h-4 w-4" /> Add Account
+                </Button>
               </div>
 
-              {settings && (
-                <div className="grid gap-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>SMTP Host</Label>
-                      <Input
-                        placeholder="smtp.gmail.com"
-                        value={settings.smtp_host}
-                        onChange={(e) => setSettings({ ...settings, smtp_host: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>SMTP Port</Label>
-                      <Input
-                        type="number"
-                        placeholder="587"
-                        value={settings.smtp_port}
-                        onChange={(e) => setSettings({ ...settings, smtp_port: parseInt(e.target.value) || 587 })}
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>SMTP Username</Label>
-                      <Input
-                        placeholder="your-email@gmail.com"
-                        value={settings.smtp_username}
-                        onChange={(e) => setSettings({ ...settings, smtp_username: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>SMTP Password / App Password</Label>
-                      <div className="relative">
-                        <Input
-                          type={showPassword ? 'text' : 'password'}
-                          placeholder="••••••••••••••••"
-                          value={settings.smtp_password}
-                          onChange={(e) => setSettings({ ...settings, smtp_password: e.target.value })}
-                        />
-                        <button
-                          type="button"
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Encryption</Label>
-                      <Select
-                        value={settings.smtp_encryption}
-                        onValueChange={(v) => setSettings({ ...settings, smtp_encryption: v })}
-                      >
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="tls">TLS (Recommended)</SelectItem>
-                          <SelectItem value="ssl">SSL</SelectItem>
-                          <SelectItem value="none">None</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Provider Preset</Label>
-                      <Select
-                        value={settings.provider}
-                        onValueChange={(v) => {
-                          const presets: Record<string, Partial<EmailSettings>> = {
-                            gmail: { smtp_host: 'smtp.gmail.com', smtp_port: 587, smtp_encryption: 'tls' },
-                            outlook: { smtp_host: 'smtp.office365.com', smtp_port: 587, smtp_encryption: 'tls' },
-                            yahoo: { smtp_host: 'smtp.mail.yahoo.com', smtp_port: 587, smtp_encryption: 'tls' },
-                            zoho: { smtp_host: 'smtp.zoho.com', smtp_port: 587, smtp_encryption: 'tls' },
-                            smtp: {},
-                          };
-                          setSettings({ ...settings, provider: v, ...presets[v] } as EmailSettings);
-                        }}
-                      >
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="smtp">Custom SMTP</SelectItem>
-                          <SelectItem value="gmail">Gmail / Google Workspace</SelectItem>
-                          <SelectItem value="outlook">Outlook / Office 365</SelectItem>
-                          <SelectItem value="yahoo">Yahoo Mail</SelectItem>
-                          <SelectItem value="zoho">Zoho Mail</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-border pt-4 mt-2">
-                    <h3 className="text-sm font-medium mb-3">Sender Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label>From Email</Label>
-                        <Input
-                          placeholder="notifications@yourdomain.com"
-                          value={settings.from_email}
-                          onChange={(e) => setSettings({ ...settings, from_email: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>From Name</Label>
-                        <Input
-                          placeholder="Harmonet Music"
-                          value={settings.from_name}
-                          onChange={(e) => setSettings({ ...settings, from_name: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Reply-To Email</Label>
-                        <Input
-                          placeholder="support@yourdomain.com"
-                          value={settings.reply_to_email}
-                          onChange={(e) => setSettings({ ...settings, reply_to_email: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3 pt-4">
-                    <Button onClick={saveSettings} disabled={saving} className="gap-2">
-                      <Save className="h-4 w-4" />
-                      {saving ? 'Saving...' : 'Save Settings'}
-                    </Button>
-                    <Button variant="outline" className="gap-2" onClick={() => setShowTestDialog(true)}>
-                      <Send className="h-4 w-4" /> Send Test Email
-                    </Button>
-                  </div>
+              {accounts.length === 0 && !editingAccount && (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Mail className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                  <p className="font-medium">No email accounts configured</p>
+                  <p className="text-sm mt-1">Add your first SMTP account to start sending emails</p>
+                  <Button size="sm" className="mt-4 gap-2" onClick={openNewAccount}>
+                    <Plus className="h-4 w-4" /> Add First Account
+                  </Button>
                 </div>
               )}
+
+              {/* Account cards */}
+              <div className="grid gap-3">
+                {accounts.map(acc => (
+                  <div key={acc.id} className="border border-border rounded-lg p-4 flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-sm">{acc.account_name}</span>
+                        {acc.is_default && (
+                          <Badge className="bg-primary/20 text-primary text-[10px] gap-1">
+                            <Star className="h-3 w-3" /> Default
+                          </Badge>
+                        )}
+                        <Badge variant={acc.is_enabled ? 'default' : 'secondary'} className="text-[10px]">
+                          {acc.is_enabled ? 'Active' : 'Disabled'}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {acc.from_name ? `${acc.from_name} <${acc.from_email || acc.smtp_username}>` : acc.from_email || acc.smtp_username}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {acc.smtp_host}:{acc.smtp_port} ({acc.smtp_encryption.toUpperCase()}) • {acc.provider !== 'smtp' ? acc.provider.charAt(0).toUpperCase() + acc.provider.slice(1) : 'Custom SMTP'}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Used by: {templates.filter(t => t.email_account_id === acc.id).length} template(s)
+                        {acc.is_default && ` + ${templates.filter(t => !t.email_account_id).length} unassigned`}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      {!acc.is_default && (
+                        <Button size="sm" variant="ghost" title="Set as default" onClick={() => setDefault(acc.id)}>
+                          <Star className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button size="sm" variant="ghost" onClick={() => openEditAccount(acc)}>
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => deleteAccount(acc.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button variant="outline" className="gap-2" onClick={() => setShowTestDialog(true)} disabled={accounts.length === 0}>
+                  <Send className="h-4 w-4" /> Send Test Email
+                </Button>
+              </div>
             </GlassCard>
           </TabsContent>
 
-          {/* Email Templates Tab */}
+          {/* =============== Templates Tab =============== */}
           <TabsContent value="templates">
             <GlassCard className="p-6 space-y-4">
               <div className="flex items-center gap-3 mb-2">
@@ -456,123 +463,131 @@ export default function AdminEmailSettings() {
                   <FileText className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold">Email Templates</h2>
-                  <p className="text-xs text-muted-foreground">Customize email templates for every trigger and status change</p>
+                  <h2 className="text-lg font-semibold">Email Templates & Account Assignment</h2>
+                  <p className="text-xs text-muted-foreground">Customize templates and assign which email account sends each type</p>
                 </div>
               </div>
 
-              {/* Filters */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search templates..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
-                  />
+                  <Input placeholder="Search templates..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
                 </div>
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                   <SelectTrigger className="w-full sm:w-[200px]"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {CATEGORIES.map(c => (
-                      <SelectItem key={c.key} value={c.key}>{c.label}</SelectItem>
-                    ))}
+                    {CATEGORIES.map(c => <SelectItem key={c.key} value={c.key}>{c.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Template List */}
               <div className="space-y-3">
-                {filteredTemplates.map(template => (
-                  <div key={template.id} className="border border-border rounded-lg overflow-hidden">
-                    <div className="flex items-center justify-between p-4 bg-muted/30">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <Switch
-                          checked={template.is_enabled}
-                          onCheckedChange={(v) => toggleTemplate(template.id, v)}
-                        />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-medium text-sm">{template.trigger_label}</span>
-                            <Badge variant="outline" className={`text-[10px] ${getCategoryColor(template.category)}`}>
-                              {CATEGORIES.find(c => c.key === template.category)?.label || template.category}
-                            </Badge>
+                {filteredTemplates.map(template => {
+                  const assignedName = getAccountName(template.email_account_id);
+                  return (
+                    <div key={template.id} className="border border-border rounded-lg overflow-hidden">
+                      <div className="flex items-center justify-between p-4 bg-muted/30">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <Switch checked={template.is_enabled} onCheckedChange={(v) => toggleTemplate(template.id, v)} />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-medium text-sm">{template.trigger_label}</span>
+                              <Badge variant="outline" className={`text-[10px] ${getCategoryColor(template.category)}`}>
+                                {CATEGORIES.find(c => c.key === template.category)?.label || template.category}
+                              </Badge>
+                              {assignedName ? (
+                                <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary gap-1">
+                                  <Mail className="h-2.5 w-2.5" /> {assignedName}
+                                </Badge>
+                              ) : defaultAccount ? (
+                                <Badge variant="outline" className="text-[10px] text-muted-foreground gap-1">
+                                  <Mail className="h-2.5 w-2.5" /> {defaultAccount.account_name} (default)
+                                </Badge>
+                              ) : null}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5 truncate">Subject: {template.subject}</p>
                           </div>
-                          <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                            Subject: {template.subject}
-                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 ml-2">
+                          {previewTemplate === template.id ? (
+                            <Button size="sm" variant="ghost" onClick={() => setPreviewTemplate(null)}>
+                              <ChevronUp className="h-4 w-4" />
+                            </Button>
+                          ) : (
+                            <Button size="sm" variant="ghost" onClick={() => { setPreviewTemplate(template.id); setEditingTemplate(null); }}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button size="sm" variant="outline" onClick={() => startEditing(template)}>Edit</Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 ml-2">
-                        {previewTemplate === template.id ? (
-                          <Button size="sm" variant="ghost" onClick={() => setPreviewTemplate(null)}>
-                            <ChevronUp className="h-4 w-4" />
-                          </Button>
-                        ) : (
-                          <Button size="sm" variant="ghost" onClick={() => { setPreviewTemplate(template.id); setEditingTemplate(null); }}>
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        )}
-                        <Button size="sm" variant="outline" onClick={() => startEditing(template)}>
-                          Edit
-                        </Button>
-                      </div>
+
+                      {previewTemplate === template.id && (
+                        <div className="p-4 border-t border-border bg-background space-y-3">
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Available Variables</Label>
+                            <div className="flex flex-wrap gap-1.5 mt-1">
+                              {template.variables.map(v => (
+                                <code key={v} className="text-[11px] px-2 py-0.5 bg-muted rounded">{`{{${v}}}`}</code>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Preview</Label>
+                            <div className="mt-1 p-4 bg-white rounded border text-sm text-black" dangerouslySetInnerHTML={{ __html: template.body_html }} />
+                          </div>
+                        </div>
+                      )}
+
+                      {editingTemplate === template.id && (
+                        <div className="p-4 border-t border-border bg-background space-y-3">
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Available Variables</Label>
+                            <div className="flex flex-wrap gap-1.5 mt-1">
+                              {template.variables.map(v => (
+                                <code key={v} className="text-[11px] px-2 py-0.5 bg-muted rounded cursor-pointer hover:bg-primary/20"
+                                  onClick={() => setEditBody(prev => prev + `{{${v}}}`)}>
+                                  {`{{${v}}}`}
+                                </code>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Send From Account</Label>
+                            <Select value={editAccountId || '_default'} onValueChange={(v) => setEditAccountId(v === '_default' ? null : v)}>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="_default">
+                                  {defaultAccount ? `Default (${defaultAccount.account_name})` : 'Default Account'}
+                                </SelectItem>
+                                {accounts.filter(a => a.is_enabled).map(acc => (
+                                  <SelectItem key={acc.id} value={acc.id}>
+                                    {acc.account_name} — {acc.from_email || acc.smtp_username}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Subject</Label>
+                            <Input value={editSubject} onChange={(e) => setEditSubject(e.target.value)} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Body (HTML)</Label>
+                            <RichTextEditor value={editBody} onChange={setEditBody} />
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" onClick={() => saveTemplate(template.id)} disabled={saving}>
+                              <Save className="h-3.5 w-3.5 mr-1.5" />
+                              {saving ? 'Saving...' : 'Save Template'}
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => setEditingTemplate(null)}>Cancel</Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
-
-                    {/* Preview Panel */}
-                    {previewTemplate === template.id && (
-                      <div className="p-4 border-t border-border bg-background space-y-3">
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Available Variables</Label>
-                          <div className="flex flex-wrap gap-1.5 mt-1">
-                            {template.variables.map(v => (
-                              <code key={v} className="text-[11px] px-2 py-0.5 bg-muted rounded">{`{{${v}}}`}</code>
-                            ))}
-                          </div>
-                        </div>
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Preview</Label>
-                          <div className="mt-1 p-4 bg-white rounded border text-sm text-black" dangerouslySetInnerHTML={{ __html: template.body_html }} />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Edit Panel */}
-                    {editingTemplate === template.id && (
-                      <div className="p-4 border-t border-border bg-background space-y-3">
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Available Variables</Label>
-                          <div className="flex flex-wrap gap-1.5 mt-1">
-                            {template.variables.map(v => (
-                              <code key={v} className="text-[11px] px-2 py-0.5 bg-muted rounded cursor-pointer hover:bg-primary/20" onClick={() => {
-                                setEditBody(prev => prev + `{{${v}}}`);
-                              }}>{`{{${v}}}`}</code>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Subject</Label>
-                          <Input value={editSubject} onChange={(e) => setEditSubject(e.target.value)} />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Body (HTML)</Label>
-                          <RichTextEditor
-                            value={editBody}
-                            onChange={setEditBody}
-                          />
-                        </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" onClick={() => saveTemplate(template.id)} disabled={saving}>
-                            <Save className="h-3.5 w-3.5 mr-1.5" />
-                            {saving ? 'Saving...' : 'Save Template'}
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => setEditingTemplate(null)}>Cancel</Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
                 {filteredTemplates.length === 0 && (
                   <p className="text-center text-muted-foreground py-8 text-sm">No templates match your search</p>
                 )}
@@ -580,7 +595,7 @@ export default function AdminEmailSettings() {
             </GlassCard>
           </TabsContent>
 
-          {/* Email Logs Tab */}
+          {/* =============== Email Logs Tab =============== */}
           <TabsContent value="logs">
             <GlassCard className="p-6 space-y-4">
               <div className="flex items-center gap-3 mb-2">
@@ -591,20 +606,16 @@ export default function AdminEmailSettings() {
                   <h2 className="text-lg font-semibold">Email Sending Logs</h2>
                   <p className="text-xs text-muted-foreground">Track all sent emails with status, recipient, and timestamps</p>
                 </div>
-                </div>
-                <Button variant="outline" size="sm" className="gap-2 ml-auto" onClick={exportLogsCSV}>
-                  <Download className="h-4 w-4" /> Export CSV
-                </Button>
+              </div>
+              <Button variant="outline" size="sm" className="gap-2 ml-auto" onClick={exportLogsCSV}>
+                <Download className="h-4 w-4" /> Export CSV
+              </Button>
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by recipient or template..."
-                    value={logSearch}
-                    onChange={(e) => { setLogSearch(e.target.value); setLogPage(0); }}
-                    className="pl-9"
-                  />
+                  <Input placeholder="Search by recipient or template..." value={logSearch}
+                    onChange={(e) => { setLogSearch(e.target.value); setLogPage(0); }} className="pl-9" />
                 </div>
                 <Select value={logStatusFilter} onValueChange={(v) => { setLogStatusFilter(v); setLogPage(0); }}>
                   <SelectTrigger className="w-full sm:w-[160px]"><SelectValue /></SelectTrigger>
@@ -629,9 +640,7 @@ export default function AdminEmailSettings() {
                 const paginatedLogs = paginateItems(filteredLogs, logPage, logPageSize);
                 return (
                   <>
-                    <div className="text-xs text-muted-foreground">
-                      {filteredLogs.length} log{filteredLogs.length !== 1 ? 's' : ''} found
-                    </div>
+                    <div className="text-xs text-muted-foreground">{filteredLogs.length} log{filteredLogs.length !== 1 ? 's' : ''} found</div>
                     <div className="overflow-auto">
                       <Table>
                         <TableHeader>
@@ -647,44 +656,30 @@ export default function AdminEmailSettings() {
                         <TableBody>
                           {paginatedLogs.length === 0 ? (
                             <TableRow>
-                              <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                                No email logs found
-                              </TableCell>
+                              <TableCell colSpan={6} className="text-center text-muted-foreground py-8">No email logs found</TableCell>
                             </TableRow>
                           ) : paginatedLogs.map((log: EmailLog) => (
                             <TableRow key={log.id}>
-                              <TableCell className="font-medium text-sm">
-                                {log.template_label || log.template_key}
-                              </TableCell>
+                              <TableCell className="font-medium text-sm">{log.template_label || log.template_key}</TableCell>
                               <TableCell className="text-sm">{log.recipient_email}</TableCell>
                               <TableCell className="text-sm max-w-[200px] truncate">{log.subject || '—'}</TableCell>
                               <TableCell><StatusBadge status={log.status} /></TableCell>
-                              <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                                {new Date(log.sent_at).toLocaleString()}
-                              </TableCell>
-                              <TableCell className="text-xs text-destructive max-w-[200px] truncate">
-                                {log.error_message || '—'}
-                              </TableCell>
+                              <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(log.sent_at).toLocaleString()}</TableCell>
+                              <TableCell className="text-xs text-destructive max-w-[200px] truncate">{log.error_message || '—'}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
                       </Table>
                     </div>
-                    <TablePagination
-                      totalItems={filteredLogs.length}
-                      currentPage={logPage}
-                      pageSize={logPageSize}
-                      onPageChange={setLogPage}
-                      onPageSizeChange={setLogPageSize}
-                      itemLabel="logs"
-                    />
+                    <TablePagination totalItems={filteredLogs.length} currentPage={logPage} pageSize={logPageSize}
+                      onPageChange={setLogPage} onPageSizeChange={setLogPageSize} itemLabel="logs" />
                   </>
                 );
               })()}
             </GlassCard>
           </TabsContent>
 
-          {/* Setup Guide Tab */}
+          {/* =============== Setup Guide Tab =============== */}
           <TabsContent value="guide">
             <GlassCard className="p-6 space-y-6">
               <div className="flex items-center gap-3">
@@ -693,8 +688,23 @@ export default function AdminEmailSettings() {
                 </div>
                 <h2 className="text-lg font-semibold">Self-Hosting Email Setup Guide</h2>
               </div>
-
               <div className="space-y-6 text-sm">
+                <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-2">
+                  <h3 className="font-semibold">💡 Multiple Email Accounts</h3>
+                  <p className="text-muted-foreground">
+                    You can add multiple email accounts for different purposes. For example:
+                  </p>
+                  <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                    <li><strong>notifications@harmonetmusic.com</strong> — For release updates, status changes</li>
+                    <li><strong>accounts@harmonetmusic.com</strong> — For registration, password reset</li>
+                    <li><strong>payments@harmonetmusic.com</strong> — For revenue & payout emails</li>
+                    <li><strong>support@harmonetmusic.com</strong> — For support-related emails</li>
+                  </ul>
+                  <p className="text-muted-foreground mt-2">
+                    Set one account as <strong>Default</strong> — templates without a specific assignment will use it.
+                    Then assign specific accounts to individual templates in the Templates tab.
+                  </p>
+                </div>
                 <div className="space-y-2">
                   <h3 className="font-semibold text-base">Option 1: Gmail / Google Workspace (Recommended)</h3>
                   <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
@@ -704,17 +714,15 @@ export default function AdminEmailSettings() {
                     <li>Username: Your full Gmail address, Password: The app password you generated</li>
                   </ol>
                 </div>
-
                 <div className="space-y-2">
                   <h3 className="font-semibold text-base">Option 2: Custom SMTP (Any Provider)</h3>
                   <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
                     <li>Get SMTP credentials from your email provider (Zoho, Outlook, etc.)</li>
-                    <li>Enter the host, port, username, and password in the SMTP Configuration tab</li>
+                    <li>Enter the host, port, username, and password</li>
                     <li>Select the correct encryption method (usually TLS)</li>
                     <li>Set your From Email and From Name</li>
                   </ol>
                 </div>
-
                 <div className="space-y-2">
                   <h3 className="font-semibold text-base">Option 3: Transactional Email Services</h3>
                   <p className="text-muted-foreground">For high-volume sending, use services like:</p>
@@ -724,25 +732,17 @@ export default function AdminEmailSettings() {
                     <li><strong>Mailgun</strong> — Free tier: 5,000 emails/month</li>
                     <li><strong>Amazon SES</strong> — Very cheap at scale ($0.10 per 1000 emails)</li>
                   </ul>
-                  <p className="text-muted-foreground">All these services provide SMTP credentials you can use here.</p>
                 </div>
-
                 <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-2">
                   <h3 className="font-semibold flex items-center gap-2">
                     <Code className="h-4 w-4" /> Server-Side Integration Required
                   </h3>
                   <p className="text-muted-foreground">
-                    When you move this project to your own server, you'll need to create a backend service 
-                    (Node.js/Express, PHP, etc.) that reads these SMTP settings from the database and sends 
-                    emails using a library like <code className="bg-muted px-1 rounded">nodemailer</code>. 
+                    When you move this project to your own server, you'll need to create a backend service
+                    that reads these SMTP settings from the database and sends emails using a library like <code className="bg-muted px-1 rounded">nodemailer</code>.
                     The templates and settings stored here will be ready to use.
                   </p>
-                  <p className="text-muted-foreground">
-                    The email templates support <code className="bg-muted px-1 rounded">{"{{variable}}"}</code> syntax — 
-                    your backend should replace these with actual values before sending.
-                  </p>
                 </div>
-
                 <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg space-y-2">
                   <h3 className="font-semibold text-yellow-400">⚠️ Important Notes</h3>
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground">
@@ -758,24 +758,155 @@ export default function AdminEmailSettings() {
         </Tabs>
       </div>
 
-      {/* Test Email Dialog */}
+      {/* =============== Account Edit Dialog =============== */}
+      <Dialog open={!!editingAccount} onOpenChange={(o) => { if (!o) setEditingAccount(null); }}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{isNewAccount ? 'Add Email Account' : 'Edit Email Account'}</DialogTitle>
+          </DialogHeader>
+          {editingAccount && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Account Name *</Label>
+                <Input placeholder="e.g. Notifications, Payments, Support"
+                  value={editingAccount.account_name || ''}
+                  onChange={(e) => setEditingAccount({ ...editingAccount, account_name: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Provider Preset</Label>
+                  <Select value={editingAccount.provider || 'smtp'}
+                    onValueChange={(v) => {
+                      const presets: Record<string, Partial<EmailAccount>> = {
+                        gmail: { smtp_host: 'smtp.gmail.com', smtp_port: 587, smtp_encryption: 'tls' },
+                        outlook: { smtp_host: 'smtp.office365.com', smtp_port: 587, smtp_encryption: 'tls' },
+                        yahoo: { smtp_host: 'smtp.mail.yahoo.com', smtp_port: 587, smtp_encryption: 'tls' },
+                        zoho: { smtp_host: 'smtp.zoho.com', smtp_port: 587, smtp_encryption: 'tls' },
+                        smtp: {},
+                      };
+                      setEditingAccount({ ...editingAccount, provider: v, ...presets[v] });
+                    }}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="smtp">Custom SMTP</SelectItem>
+                      <SelectItem value="gmail">Gmail / Google Workspace</SelectItem>
+                      <SelectItem value="outlook">Outlook / Office 365</SelectItem>
+                      <SelectItem value="yahoo">Yahoo Mail</SelectItem>
+                      <SelectItem value="zoho">Zoho Mail</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Encryption</Label>
+                  <Select value={editingAccount.smtp_encryption || 'tls'}
+                    onValueChange={(v) => setEditingAccount({ ...editingAccount, smtp_encryption: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="tls">TLS (Recommended)</SelectItem>
+                      <SelectItem value="ssl">SSL</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>SMTP Host *</Label>
+                  <Input placeholder="smtp.gmail.com" value={editingAccount.smtp_host || ''}
+                    onChange={(e) => setEditingAccount({ ...editingAccount, smtp_host: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>SMTP Port</Label>
+                  <Input type="number" placeholder="587" value={editingAccount.smtp_port || 587}
+                    onChange={(e) => setEditingAccount({ ...editingAccount, smtp_port: parseInt(e.target.value) || 587 })} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Username</Label>
+                  <Input placeholder="your-email@gmail.com" value={editingAccount.smtp_username || ''}
+                    onChange={(e) => setEditingAccount({ ...editingAccount, smtp_username: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Password / App Password</Label>
+                  <div className="relative">
+                    <Input type={showPassword ? 'text' : 'password'} placeholder="••••••••"
+                      value={editingAccount.smtp_password || ''}
+                      onChange={(e) => setEditingAccount({ ...editingAccount, smtp_password: e.target.value })} />
+                    <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div className="border-t border-border pt-3 space-y-3">
+                <h4 className="text-sm font-medium">Sender Information</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>From Email</Label>
+                    <Input placeholder="notifications@yourdomain.com" value={editingAccount.from_email || ''}
+                      onChange={(e) => setEditingAccount({ ...editingAccount, from_email: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>From Name</Label>
+                    <Input placeholder="Harmonet Music" value={editingAccount.from_name || ''}
+                      onChange={(e) => setEditingAccount({ ...editingAccount, from_name: e.target.value })} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Reply-To Email</Label>
+                  <Input placeholder="support@yourdomain.com" value={editingAccount.reply_to_email || ''}
+                    onChange={(e) => setEditingAccount({ ...editingAccount, reply_to_email: e.target.value })} />
+                </div>
+              </div>
+              <div className="flex items-center gap-4 pt-2">
+                <div className="flex items-center gap-2">
+                  <Switch checked={editingAccount.is_enabled ?? true}
+                    onCheckedChange={(v) => setEditingAccount({ ...editingAccount, is_enabled: v })} />
+                  <Label className="text-sm">Enabled</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch checked={editingAccount.is_default ?? false}
+                    onCheckedChange={(v) => setEditingAccount({ ...editingAccount, is_default: v })} />
+                  <Label className="text-sm">Set as Default</Label>
+                </div>
+              </div>
+              <div className="flex gap-2 justify-end pt-2">
+                <Button variant="outline" onClick={() => setEditingAccount(null)}>Cancel</Button>
+                <Button onClick={saveAccount} disabled={saving} className="gap-2">
+                  <Save className="h-4 w-4" />
+                  {saving ? 'Saving...' : isNewAccount ? 'Add Account' : 'Save Changes'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* =============== Test Email Dialog =============== */}
       <Dialog open={showTestDialog} onOpenChange={setShowTestDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Send Test Email</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Send a test email to verify your SMTP configuration is working correctly.
-            </p>
+            <p className="text-sm text-muted-foreground">Send a test email to verify your SMTP configuration is working.</p>
+            <div className="space-y-2">
+              <Label>Send From Account</Label>
+              <Select value={testAccountId || '_default'} onValueChange={(v) => setTestAccountId(v === '_default' ? '' : v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {defaultAccount && <SelectItem value="_default">Default ({defaultAccount.account_name})</SelectItem>}
+                  {accounts.filter(a => a.is_enabled).map(acc => (
+                    <SelectItem key={acc.id} value={acc.id}>{acc.account_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label>Recipient Email</Label>
-              <Input
-                type="email"
-                placeholder="test@example.com"
-                value={testEmail}
-                onChange={(e) => setTestEmail(e.target.value)}
-              />
+              <Input type="email" placeholder="test@example.com" value={testEmail} onChange={(e) => setTestEmail(e.target.value)} />
             </div>
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setShowTestDialog(false)}>Cancel</Button>
