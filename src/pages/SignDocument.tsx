@@ -187,6 +187,12 @@ export default function SignDocument() {
     if (success) {
       setStep('done');
       toast.success('Document signed successfully!');
+      
+      // Trigger auto-complete (certificate + email) in background
+      // This is fire-and-forget; the edge function checks if auto-send is enabled
+      supabase.functions.invoke('auto-complete-signature', {
+        body: { document_id: data.document.id },
+      }).catch(() => { /* silently ignore - admin can manually trigger */ });
     } else {
       toast.error('Failed to sign. Please try again.');
     }
