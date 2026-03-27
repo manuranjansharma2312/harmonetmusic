@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -34,186 +35,242 @@ serve(async (req) => {
     const { document_id } = await req.json();
     if (!document_id) throw new Error("document_id required");
 
-    // Fetch document
-    const { data: doc, error: docErr } = await supabase
-      .from("signature_documents")
-      .select("*")
-      .eq("id", document_id)
-      .single();
-    if (docErr || !doc) throw new Error("Document not found");
+    // Fetch all data in parallel
+    const [docRes, recipientsRes, auditRes, companyRes] = await Promise.all([
+      supabase.from("signature_documents").select("*").eq("id", document_id).single(),
+      supabase.from("signature_recipients").select("*").eq("document_id", document_id).order("signing_order"),
+      supabase.from("signature_audit_logs").select("*").eq("document_id", document_id).order("created_at", { ascending: true }),
+      supabase.from("company_details").select("*").limit(1).single(),
+    ]);
 
-    // Fetch recipients
-    const { data: recipients } = await supabase
-      .from("signature_recipients")
-      .select("*")
-      .eq("document_id", document_id)
-      .order("signing_order");
-
-    // Fetch audit logs
-    const { data: auditLogs } = await supabase
-      .from("signature_audit_logs")
-      .select("*")
-      .eq("document_id", document_id)
-      .order("created_at", { ascending: true });
-
-    // Fetch company details
-    const { data: company } = await supabase
-      .from("company_details")
-      .select("*")
-      .limit(1)
-      .single();
+    const doc = docRes.data;
+    if (!doc) throw new Error("Document not found");
+    const recipients = recipientsRes.data || [];
+    const auditLogs = auditRes.data || [];
+    const company = companyRes.data;
 
     const companyName = company?.company_name || "Harmonet Music";
     const companyAddress = company?.address || "";
-
-    // Generate certificate HTML
-    const now = new Date().toISOString();
     const certificateId = `CERT-${document_id.slice(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+    const now = new Date();
 
-    const recipientRows = (recipients || []).map((r: any, i: number) => `
-      <tr>
-        <td style="padding:8px;border:1px solid #ddd;">${i + 1}</td>
-        <td style="padding:8px;border:1px solid #ddd;">${escapeHtml(r.name)}</td>
-        <td style="padding:8px;border:1px solid #ddd;">${escapeHtml(r.email)}</td>
-        <td style="padding:8px;border:1px solid #ddd;">${r.status === 'signed' ? '<span style="color:#16a34a;font-weight:bold;">&#10003; Signed</span>' : '<span style="color:#ea580c;">Pending</span>'}</td>
-        <td style="padding:8px;border:1px solid #ddd;">${r.signed_at ? formatDate(r.signed_at) : '-'}</td>
-        <td style="padding:8px;border:1px solid #ddd;">${r.signature_type || '-'}</td>
-        <td style="padding:8px;border:1px solid #ddd;">${escapeHtml(r.ip_address || '-')}</td>
-      </tr>
-    `).join('');
+    // Download the original PDF from storage
+    const { data: pdfFileData, error: downloadErr } = await supabase.storage
+      .from("signature-documents")
+      .download(doc.document_url);
+    if (downloadErr || !pdfFileData) throw new Error("Failed to download original document");
 
-    const auditRows = (auditLogs || []).map((log: any) => `
-      <tr>
-        <td style="padding:6px;border:1px solid #ddd;font-size:12px;">${formatActionLabel(log.action)}</td>
-        <td style="padding:6px;border:1px solid #ddd;font-size:12px;">${escapeHtml(log.ip_address || '-')}</td>
-        <td style="padding:6px;border:1px solid #ddd;font-size:12px;">${formatDate(log.created_at)}</td>
-        <td style="padding:6px;border:1px solid #ddd;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;">${escapeHtml((log.user_agent || '-').substring(0, 60))}</td>
-      </tr>
-    `).join('');
+    const originalPdfBytes = new Uint8Array(await pdfFileData.arrayBuffer());
 
-    const signatureImages = (recipients || [])
-      .filter((r: any) => r.status === 'signed' && r.signature_data)
-      .map((r: any) => `
-        <div style="margin:10px 0;padding:10px;border:1px solid #eee;border-radius:4px;">
-          <p style="margin:0 0 5px;font-size:12px;color:#666;">Signature of ${escapeHtml(r.name)} (${escapeHtml(r.email)})</p>
-          <img src="${r.signature_data}" style="max-height:60px;max-width:250px;" />
-          <p style="margin:5px 0 0;font-size:11px;color:#999;">Signed at: ${formatDate(r.signed_at)} | IP: ${r.ip_address || 'N/A'} | Type: ${r.signature_type || 'N/A'}</p>
-        </div>
-      `).join('');
+    // Load original PDF and create certificate pages
+    const pdfDoc = await PDFDocument.load(originalPdfBytes);
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-    const html = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Certificate of Completion</title></head>
-<body style="font-family:Arial,Helvetica,sans-serif;max-width:800px;margin:0 auto;padding:40px;color:#333;">
-  
-  <!-- Header -->
-  <div style="text-align:center;border-bottom:3px solid #1a1a1a;padding-bottom:20px;margin-bottom:30px;">
-    <h1 style="margin:0;font-size:28px;color:#1a1a1a;letter-spacing:1px;">CERTIFICATE OF COMPLETION</h1>
-    <p style="margin:5px 0 0;font-size:14px;color:#666;">Electronic Signature Verification Certificate</p>
-    <p style="margin:5px 0 0;font-size:12px;color:#999;">Certificate ID: ${certificateId}</p>
-  </div>
+    const PAGE_W = 595.28; // A4 width
+    const PAGE_H = 841.89; // A4 height
+    const MARGIN = 50;
+    const MAX_W = PAGE_W - MARGIN * 2;
 
-  <!-- Document Info -->
-  <div style="background:#f8f9fa;padding:20px;border-radius:8px;margin-bottom:25px;">
-    <h2 style="margin:0 0 15px;font-size:18px;color:#1a1a1a;">Document Information</h2>
-    <table style="width:100%;font-size:14px;">
-      <tr><td style="padding:4px 0;color:#666;width:180px;">Document Title:</td><td style="padding:4px 0;font-weight:bold;">${escapeHtml(doc.title)}</td></tr>
-      <tr><td style="padding:4px 0;color:#666;">Description:</td><td style="padding:4px 0;">${escapeHtml(doc.description || 'N/A')}</td></tr>
-      <tr><td style="padding:4px 0;color:#666;">Document ID:</td><td style="padding:4px 0;font-family:monospace;">${doc.id}</td></tr>
-      <tr><td style="padding:4px 0;color:#666;">Status:</td><td style="padding:4px 0;font-weight:bold;color:${doc.status === 'completed' ? '#16a34a' : '#ea580c'};">${doc.status.toUpperCase()}</td></tr>
-      <tr><td style="padding:4px 0;color:#666;">Created:</td><td style="padding:4px 0;">${formatDate(doc.created_at)}</td></tr>
-      <tr><td style="padding:4px 0;color:#666;">Completed:</td><td style="padding:4px 0;">${doc.status === 'completed' ? formatDate(doc.updated_at) : 'Pending'}</td></tr>
-      <tr><td style="padding:4px 0;color:#666;">SHA-256 Hash:</td><td style="padding:4px 0;font-family:monospace;font-size:12px;word-break:break-all;">${escapeHtml(doc.document_hash)}</td></tr>
-    </table>
-  </div>
+    // Helper to draw wrapped text
+    const drawWrapped = (page: any, text: string, x: number, y: number, size: number, usedFont: any, maxW: number, color = rgb(0.2, 0.2, 0.2)) => {
+      const words = text.split(' ');
+      let line = '';
+      let curY = y;
+      for (const word of words) {
+        const test = line ? `${line} ${word}` : word;
+        if (usedFont.widthOfTextAtSize(test, size) > maxW && line) {
+          page.drawText(line, { x, y: curY, size, font: usedFont, color });
+          curY -= size + 4;
+          line = word;
+        } else {
+          line = test;
+        }
+      }
+      if (line) {
+        page.drawText(line, { x, y: curY, size, font: usedFont, color });
+        curY -= size + 4;
+      }
+      return curY;
+    };
 
-  <!-- Issued By -->
-  <div style="background:#f0f4ff;padding:15px;border-radius:8px;margin-bottom:25px;">
-    <h3 style="margin:0 0 8px;font-size:15px;">Issued By</h3>
-    <p style="margin:0;font-size:14px;font-weight:bold;">${escapeHtml(companyName)}</p>
-    ${companyAddress ? `<p style="margin:3px 0 0;font-size:13px;color:#666;">${escapeHtml(companyAddress)}</p>` : ''}
-  </div>
+    // ---- Certificate Page 1: Header + Document Info + Signers ----
+    let page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+    let y = PAGE_H - MARGIN;
 
-  <!-- Signers -->
-  <div style="margin-bottom:25px;">
-    <h2 style="font-size:18px;color:#1a1a1a;margin-bottom:10px;">Signer Details</h2>
-    <table style="width:100%;border-collapse:collapse;font-size:13px;">
-      <thead>
-        <tr style="background:#1a1a1a;color:#fff;">
-          <th style="padding:8px;text-align:left;">#</th>
-          <th style="padding:8px;text-align:left;">Name</th>
-          <th style="padding:8px;text-align:left;">Email</th>
-          <th style="padding:8px;text-align:left;">Status</th>
-          <th style="padding:8px;text-align:left;">Signed At</th>
-          <th style="padding:8px;text-align:left;">Type</th>
-          <th style="padding:8px;text-align:left;">IP Address</th>
-        </tr>
-      </thead>
-      <tbody>${recipientRows}</tbody>
-    </table>
-  </div>
+    // Header
+    page.drawText("CERTIFICATE OF COMPLETION", { x: MARGIN, y, size: 20, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
+    y -= 22;
+    page.drawText("Electronic Signature Verification Certificate", { x: MARGIN, y, size: 10, font, color: rgb(0.4, 0.4, 0.4) });
+    y -= 14;
+    page.drawText(`Certificate ID: ${certificateId}`, { x: MARGIN, y, size: 8, font, color: rgb(0.5, 0.5, 0.5) });
+    y -= 6;
+    page.drawLine({ start: { x: MARGIN, y }, end: { x: PAGE_W - MARGIN, y }, thickness: 2, color: rgb(0.1, 0.1, 0.1) });
+    y -= 24;
 
-  <!-- Signatures -->
-  ${signatureImages ? `
-  <div style="margin-bottom:25px;">
-    <h2 style="font-size:18px;color:#1a1a1a;margin-bottom:10px;">Captured Signatures</h2>
-    ${signatureImages}
-  </div>
-  ` : ''}
+    // Document Information
+    page.drawText("Document Information", { x: MARGIN, y, size: 13, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
+    y -= 20;
 
-  <!-- Audit Trail -->
-  <div style="margin-bottom:25px;">
-    <h2 style="font-size:18px;color:#1a1a1a;margin-bottom:10px;">Complete Audit Trail</h2>
-    <table style="width:100%;border-collapse:collapse;font-size:12px;">
-      <thead>
-        <tr style="background:#f1f5f9;">
-          <th style="padding:6px;text-align:left;border:1px solid #ddd;">Action</th>
-          <th style="padding:6px;text-align:left;border:1px solid #ddd;">IP Address</th>
-          <th style="padding:6px;text-align:left;border:1px solid #ddd;">Timestamp</th>
-          <th style="padding:6px;text-align:left;border:1px solid #ddd;">User Agent</th>
-        </tr>
-      </thead>
-      <tbody>${auditRows || '<tr><td colspan="4" style="padding:10px;text-align:center;color:#999;">No audit logs</td></tr>'}</tbody>
-    </table>
-  </div>
+    const infoRows = [
+      ["Document Title", doc.title],
+      ["Description", doc.description || "N/A"],
+      ["Document ID", doc.id],
+      ["Status", doc.status.toUpperCase()],
+      ["Created", formatDate(doc.created_at)],
+      ["Completed", doc.status === "completed" ? formatDate(doc.updated_at) : "Pending"],
+      ["SHA-256 Hash", doc.document_hash],
+    ];
 
-  <!-- Legal Disclaimer -->
-  <div style="border-top:2px solid #1a1a1a;padding-top:20px;margin-top:30px;">
-    <h3 style="font-size:14px;margin:0 0 10px;">Legal Disclaimer</h3>
-    <p style="font-size:11px;color:#666;line-height:1.6;">
-      This certificate confirms that the above-mentioned document was electronically signed by the listed parties 
-      using a verified electronic signature process. The document's integrity is verified through SHA-256 cryptographic 
-      hashing. Each signer's identity was verified via Email OTP (One-Time Password) before signing.
-    </p>
-    <p style="font-size:11px;color:#666;line-height:1.6;">
-      This electronic signature is legally valid and enforceable under the <strong>Information Technology Act, 2000 
-      (India)</strong> — Sections 5 and 10A, which recognize electronic signatures as equivalent to handwritten 
-      signatures for private commercial agreements. This certificate does not constitute a government-issued 
-      Digital Signature Certificate (DSC) under Section 35 of the IT Act.
-    </p>
-    <p style="font-size:11px;color:#666;line-height:1.6;">
-      The complete audit trail above serves as evidence of the signing process, including timestamps, 
-      IP addresses, and device information for each action taken during the signing workflow.
-    </p>
-  </div>
+    for (const [label, value] of infoRows) {
+      page.drawText(`${label}:`, { x: MARGIN, y, size: 9, font: fontBold, color: rgb(0.4, 0.4, 0.4) });
+      const valStr = String(value);
+      if (valStr.length > 60) {
+        y = drawWrapped(page, valStr, MARGIN + 130, y, 9, font, MAX_W - 130);
+      } else {
+        page.drawText(valStr, { x: MARGIN + 130, y, size: 9, font, color: rgb(0.2, 0.2, 0.2) });
+        y -= 15;
+      }
+    }
 
-  <!-- Footer -->
-  <div style="text-align:center;margin-top:30px;padding-top:15px;border-top:1px solid #eee;">
-    <p style="font-size:11px;color:#999;">
-      Certificate generated on ${formatDate(now)} | ${escapeHtml(companyName)}
-    </p>
-    <p style="font-size:10px;color:#bbb;">
-      This is a system-generated certificate. No manual signature is required.
-    </p>
-  </div>
-</body>
-</html>`;
+    // Issued By
+    y -= 10;
+    page.drawText("Issued By", { x: MARGIN, y, size: 13, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
+    y -= 18;
+    page.drawText(companyName, { x: MARGIN, y, size: 10, font: fontBold, color: rgb(0.2, 0.2, 0.2) });
+    y -= 14;
+    if (companyAddress) {
+      y = drawWrapped(page, companyAddress, MARGIN, y, 9, font, MAX_W, rgb(0.4, 0.4, 0.4));
+      y -= 4;
+    }
 
-    return new Response(JSON.stringify({ 
-      success: true, 
-      certificate_html: html,
-      certificate_id: certificateId 
+    // Signer Details
+    y -= 10;
+    page.drawText("Signer Details", { x: MARGIN, y, size: 13, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
+    y -= 20;
+
+    // Table header
+    const cols = [MARGIN, MARGIN + 20, MARGIN + 140, MARGIN + 280, MARGIN + 340, MARGIN + 420];
+    const headerLabels = ["#", "Name", "Email", "Status", "Signed At", "IP Address"];
+    page.drawRectangle({ x: MARGIN, y: y - 2, width: MAX_W, height: 16, color: rgb(0.1, 0.1, 0.1) });
+    headerLabels.forEach((h, i) => {
+      page.drawText(h, { x: cols[i] + 4, y: y + 2, size: 8, font: fontBold, color: rgb(1, 1, 1) });
+    });
+    y -= 18;
+
+    for (let i = 0; i < recipients.length; i++) {
+      const r = recipients[i];
+      if (y < MARGIN + 40) {
+        page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+        y = PAGE_H - MARGIN;
+      }
+      const rowData = [
+        `${i + 1}`,
+        r.name || "",
+        r.email || "",
+        r.status === "signed" ? "Signed" : "Pending",
+        r.signed_at ? formatDate(r.signed_at) : "-",
+        r.ip_address || "-",
+      ];
+      rowData.forEach((val, ci) => {
+        const maxColW = ci < cols.length - 1 ? (cols[ci + 1] - cols[ci] - 8) : 70;
+        const display = font.widthOfTextAtSize(val, 8) > maxColW ? val.substring(0, Math.floor(maxColW / 4)) + "..." : val;
+        page.drawText(display, { x: cols[ci] + 4, y, size: 8, font, color: r.status === "signed" && ci === 3 ? rgb(0.09, 0.65, 0.26) : rgb(0.2, 0.2, 0.2) });
+      });
+      y -= 14;
+      page.drawLine({ start: { x: MARGIN, y: y + 10 }, end: { x: PAGE_W - MARGIN, y: y + 10 }, thickness: 0.5, color: rgb(0.85, 0.85, 0.85) });
+    }
+
+    // ---- Certificate Page 2: Audit Trail + Legal ----
+    y -= 20;
+    if (y < MARGIN + 200) {
+      page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+      y = PAGE_H - MARGIN;
+    }
+
+    page.drawText("Complete Audit Trail", { x: MARGIN, y, size: 13, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
+    y -= 20;
+
+    // Audit header
+    const auditCols = [MARGIN, MARGIN + 120, MARGIN + 220, MARGIN + 360];
+    const auditHeaders = ["Action", "IP Address", "Timestamp", "User Agent"];
+    page.drawRectangle({ x: MARGIN, y: y - 2, width: MAX_W, height: 16, color: rgb(0.94, 0.96, 0.97) });
+    auditHeaders.forEach((h, i) => {
+      page.drawText(h, { x: auditCols[i] + 4, y: y + 2, size: 8, font: fontBold, color: rgb(0.3, 0.3, 0.3) });
+    });
+    y -= 18;
+
+    for (const log of auditLogs) {
+      if (y < MARGIN + 40) {
+        page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+        y = PAGE_H - MARGIN;
+      }
+      const actionLabel = formatActionLabel(log.action);
+      const logData = [
+        actionLabel,
+        log.ip_address || "-",
+        formatDate(log.created_at),
+        (log.user_agent || "-").substring(0, 30),
+      ];
+      logData.forEach((val, ci) => {
+        page.drawText(val, { x: auditCols[ci] + 4, y, size: 7, font, color: rgb(0.3, 0.3, 0.3) });
+      });
+      y -= 13;
+      page.drawLine({ start: { x: MARGIN, y: y + 9 }, end: { x: PAGE_W - MARGIN, y: y + 9 }, thickness: 0.3, color: rgb(0.9, 0.9, 0.9) });
+    }
+
+    // Legal Disclaimer
+    y -= 20;
+    if (y < MARGIN + 120) {
+      page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+      y = PAGE_H - MARGIN;
+    }
+    page.drawLine({ start: { x: MARGIN, y }, end: { x: PAGE_W - MARGIN, y }, thickness: 1.5, color: rgb(0.1, 0.1, 0.1) });
+    y -= 18;
+    page.drawText("Legal Disclaimer", { x: MARGIN, y, size: 11, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
+    y -= 16;
+
+    const legalTexts = [
+      "This certificate confirms that the above-mentioned document was electronically signed by the listed parties using a verified electronic signature process. The document's integrity is verified through SHA-256 cryptographic hashing. Each signer's identity was verified via Email OTP (One-Time Password) before signing.",
+      "This electronic signature is legally valid and enforceable under the Information Technology Act, 2000 (India) — Sections 5 and 10A, which recognize electronic signatures as equivalent to handwritten signatures for private commercial agreements. This certificate does not constitute a government-issued Digital Signature Certificate (DSC) under Section 35 of the IT Act.",
+      "The complete audit trail above serves as evidence of the signing process, including timestamps, IP addresses, and device information for each action taken during the signing workflow.",
+    ];
+
+    for (const txt of legalTexts) {
+      y = drawWrapped(page, txt, MARGIN, y, 8, font, MAX_W, rgb(0.4, 0.4, 0.4));
+      y -= 8;
+    }
+
+    // Footer
+    y -= 12;
+    page.drawLine({ start: { x: MARGIN, y }, end: { x: PAGE_W - MARGIN, y }, thickness: 0.5, color: rgb(0.9, 0.9, 0.9) });
+    y -= 14;
+    page.drawText(`Certificate generated on ${formatDate(now.toISOString())} | ${companyName}`, { x: MARGIN, y, size: 8, font, color: rgb(0.6, 0.6, 0.6) });
+    y -= 12;
+    page.drawText("This is a system-generated certificate. No manual signature is required.", { x: MARGIN, y, size: 7, font, color: rgb(0.7, 0.7, 0.7) });
+
+    // Save combined PDF
+    const combinedPdfBytes = await pdfDoc.save();
+    const signedFileName = `signed/${document_id}_signed.pdf`;
+
+    const { error: uploadErr } = await supabase.storage
+      .from("signature-documents")
+      .upload(signedFileName, combinedPdfBytes, {
+        contentType: "application/pdf",
+        upsert: true,
+      });
+    if (uploadErr) throw new Error(`Upload failed: ${uploadErr.message}`);
+
+    // Update document with signed PDF URL
+    await supabase
+      .from("signature_documents")
+      .update({ signed_pdf_url: signedFileName, certificate_url: certificateId })
+      .eq("id", document_id);
+
+    return new Response(JSON.stringify({
+      success: true,
+      certificate_id: certificateId,
+      signed_pdf_url: signedFileName,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -226,30 +283,22 @@ serve(async (req) => {
   }
 });
 
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
-  return d.toLocaleString('en-IN', { 
-    day: '2-digit', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit', second: '2-digit',
-    hour12: true, timeZone: 'Asia/Kolkata'
-  }) + ' IST';
+  return d.toLocaleString("en-IN", {
+    day: "2-digit", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    hour12: true, timeZone: "Asia/Kolkata",
+  }) + " IST";
 }
 
 function formatActionLabel(action: string): string {
   const labels: Record<string, string> = {
-    'email_sent': 'Email Sent',
-    'document_viewed': 'Document Viewed',
-    'otp_requested': 'OTP Requested',
-    'otp_verified': 'OTP Verified',
-    'document_signed': 'Document Signed',
+    "email_sent": "Email Sent",
+    "document_viewed": "Document Viewed",
+    "otp_requested": "OTP Requested",
+    "otp_verified": "OTP Verified",
+    "document_signed": "Document Signed",
   };
   return labels[action] || action;
 }
