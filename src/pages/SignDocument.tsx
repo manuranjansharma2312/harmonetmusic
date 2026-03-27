@@ -28,16 +28,24 @@ export default function SignDocument() {
   useEffect(() => {
     if (!token) return;
     loadData();
-    // Fetch IP + geolocation
-    fetch('https://ipapi.co/json/')
-      .then(r => r.json())
-      .then(d => setGeoInfo({ ip: d.ip || '', city: d.city || '', region: d.region || '', country: d.country_name || '' }))
-      .catch(() => {});
   }, [token]);
 
   const loadData = async () => {
     setLoading(true);
-    const { data: result, error: err } = await supabase.rpc('get_signing_data', { _token: token! }) as { data: any, error: any };
+
+    // Fetch geo and signing data in parallel
+    const [geoResult, signingResult] = await Promise.all([
+      fetch('https://ipapi.co/json/')
+        .then(r => r.json())
+        .then(d => ({ ip: d.ip || '', city: d.city || '', region: d.region || '', country: d.country_name || '' }))
+        .catch(() => ({ ip: '', city: '', region: '', country: '' })),
+      supabase.rpc('get_signing_data', { _token: token! }) as Promise<{ data: any, error: any }>,
+    ]);
+
+    // Set geo info for later use (signing)
+    setGeoInfo(geoResult);
+
+    const { data: result, error: err } = signingResult;
     if (err || !result) {
       setError('This signing link is invalid or has expired.');
       setLoading(false);
@@ -51,14 +59,12 @@ export default function SignDocument() {
       .createSignedUrl(result.document.document_url, 3600);
     if (signedUrl) setPdfUrl(signedUrl.signedUrl);
 
-    // No OTP needed, go directly to sign step
-
-    // Log document viewed
-    const locationStr = [geoInfo.city, geoInfo.region, geoInfo.country].filter(Boolean).join(', ');
+    // Log document viewed with actual geo data
+    const locationStr = [geoResult.city, geoResult.region, geoResult.country].filter(Boolean).join(', ');
     await supabase.rpc('log_signature_audit', {
       _token: token!,
       _action: 'document_viewed',
-      _ip: geoInfo.ip || '',
+      _ip: geoResult.ip || '',
       _user_agent: navigator.userAgent,
       _metadata: { geolocation: locationStr || '' },
     });
