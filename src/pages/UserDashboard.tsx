@@ -177,8 +177,8 @@ export default function UserDashboard() {
         }
       } else {
         const [reportRes, ytReportRes] = await Promise.all([
-          supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot').eq('user_id', effectiveUserId),
-          supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot').eq('user_id', effectiveUserId),
+          supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot, revenue_frozen').eq('user_id', effectiveUserId),
+          supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot, revenue_frozen').eq('user_id', effectiveUserId),
         ]);
         reportData = reportRes.data || [];
         ytReportData = ytReportRes.data || [];
