@@ -10,6 +10,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ImpersonateProvider } from "@/hooks/useImpersonate";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { SiteSettingsRuntime } from "@/components/SiteSettingsRuntime";
 
 // Lazy load all pages for code splitting
 const Auth = lazy(() => import("./pages/Auth"));
