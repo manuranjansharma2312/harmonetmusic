@@ -1273,6 +1273,262 @@ export type Database = {
         }
         Relationships: []
       }
+      signature_audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          document_id: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          recipient_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          document_id: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          recipient_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          document_id?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          recipient_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signature_audit_logs_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "signature_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signature_audit_logs_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "signature_recipients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      signature_documents: {
+        Row: {
+          certificate_url: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          document_hash: string
+          document_url: string
+          expires_at: string | null
+          id: string
+          signed_pdf_url: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          certificate_url?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          document_hash: string
+          document_url: string
+          expires_at?: string | null
+          id?: string
+          signed_pdf_url?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          certificate_url?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          document_hash?: string
+          document_url?: string
+          expires_at?: string | null
+          id?: string
+          signed_pdf_url?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      signature_fields: {
+        Row: {
+          created_at: string
+          document_id: string
+          height: number
+          id: string
+          page_number: number
+          recipient_id: string
+          signature_image_url: string | null
+          signed: boolean
+          width: number
+          x_position: number
+          y_position: number
+        }
+        Insert: {
+          created_at?: string
+          document_id: string
+          height?: number
+          id?: string
+          page_number?: number
+          recipient_id: string
+          signature_image_url?: string | null
+          signed?: boolean
+          width?: number
+          x_position: number
+          y_position: number
+        }
+        Update: {
+          created_at?: string
+          document_id?: string
+          height?: number
+          id?: string
+          page_number?: number
+          recipient_id?: string
+          signature_image_url?: string | null
+          signed?: boolean
+          width?: number
+          x_position?: number
+          y_position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signature_fields_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "signature_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signature_fields_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "signature_recipients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      signature_otp_logs: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          ip_address: string | null
+          otp_code: string
+          recipient_id: string
+          verified: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          ip_address?: string | null
+          otp_code: string
+          recipient_id: string
+          verified?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          ip_address?: string | null
+          otp_code?: string
+          recipient_id?: string
+          verified?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signature_otp_logs_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "signature_recipients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      signature_recipients: {
+        Row: {
+          created_at: string
+          document_id: string
+          email: string
+          geolocation: string | null
+          id: string
+          ip_address: string | null
+          name: string
+          otp_verified: boolean | null
+          signature_data: string | null
+          signature_type: string | null
+          signed_at: string | null
+          signing_order: number
+          signing_token: string | null
+          status: string
+          token_expires_at: string | null
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_id: string
+          email: string
+          geolocation?: string | null
+          id?: string
+          ip_address?: string | null
+          name: string
+          otp_verified?: boolean | null
+          signature_data?: string | null
+          signature_type?: string | null
+          signed_at?: string | null
+          signing_order?: number
+          signing_token?: string | null
+          status?: string
+          token_expires_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_id?: string
+          email?: string
+          geolocation?: string | null
+          id?: string
+          ip_address?: string | null
+          name?: string
+          otp_verified?: boolean | null
+          signature_data?: string | null
+          signature_type?: string | null
+          signed_at?: string | null
+          signing_order?: number
+          signing_token?: string | null
+          status?: string
+          token_expires_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signature_recipients_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "signature_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_settings: {
         Row: {
           auto_clear_cache_enabled: boolean
