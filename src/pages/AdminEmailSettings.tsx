@@ -83,6 +83,11 @@ export default function AdminEmailSettings() {
   const [editSubject, setEditSubject] = useState('');
   const [editBody, setEditBody] = useState('');
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
+  const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
+  const [logSearch, setLogSearch] = useState('');
+  const [logStatusFilter, setLogStatusFilter] = useState('all');
+  const [logPage, setLogPage] = useState(0);
+  const [logPageSize, setLogPageSize] = useState<number | 'all'>(20);
 
   useEffect(() => {
     fetchData();
