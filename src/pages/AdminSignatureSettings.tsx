@@ -6,13 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Save, Loader2, Mail, Clock, Settings2, Building2 } from 'lucide-react';
+import { Save, Loader2, Mail, Clock, Settings2, Building2, Send } from 'lucide-react';
 
 export default function AdminSignatureSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [emailAccounts, setEmailAccounts] = useState<any[]>([]);
   const [settings, setSettings] = useState({
     id: '',
     auto_send_completion: false,
@@ -23,16 +25,17 @@ export default function AdminSignatureSettings() {
     issued_by_name: '',
     issued_by_address: '',
     issued_by_email: '',
+    email_account_id: '',
   });
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase
-        .from('signature_settings')
-        .select('*')
-        .limit(1)
-        .maybeSingle();
-      if (!error && data) {
+      const [settingsRes, accountsRes] = await Promise.all([
+        supabase.from('signature_settings').select('*').limit(1).maybeSingle(),
+        supabase.from('email_accounts').select('id, account_name, from_email, is_enabled').eq('is_enabled', true).order('account_name'),
+      ]);
+      if (!settingsRes.error && settingsRes.data) {
+        const data = settingsRes.data;
         setSettings({
           id: data.id,
           auto_send_completion: (data as any).auto_send_completion ?? false,
@@ -43,8 +46,10 @@ export default function AdminSignatureSettings() {
           issued_by_name: (data as any).issued_by_name ?? '',
           issued_by_address: (data as any).issued_by_address ?? '',
           issued_by_email: (data as any).issued_by_email ?? '',
+          email_account_id: (data as any).email_account_id ?? '',
         });
       }
+      setEmailAccounts(accountsRes.data || []);
       setLoading(false);
     })();
   }, []);
@@ -64,6 +69,7 @@ export default function AdminSignatureSettings() {
           issued_by_name: settings.issued_by_name,
           issued_by_address: settings.issued_by_address,
           issued_by_email: settings.issued_by_email,
+          email_account_id: settings.email_account_id || null,
           updated_by: user?.id,
           updated_at: new Date().toISOString(),
         } as any)
@@ -123,7 +129,37 @@ export default function AdminSignatureSettings() {
           </div>
         </GlassCard>
 
-        {/* Issued By Details */}
+        {/* Sender Email Account */}
+        <GlassCard className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Send className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold">Sender Email Account</h2>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">
+            Select which email account will be used to send all signature-related emails (signing requests, completion emails). If not set, the system default email account will be used.
+          </p>
+          <div>
+            <Label>Email Account</Label>
+            <Select
+              value={settings.email_account_id || 'default'}
+              onValueChange={v => setSettings(s => ({ ...s, email_account_id: v === 'default' ? '' : v }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Use system default" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default">Use System Default Account</SelectItem>
+                {emailAccounts.map(acc => (
+                  <SelectItem key={acc.id} value={acc.id}>
+                    {acc.account_name} ({acc.from_email})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </GlassCard>
+
+
         <GlassCard className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <Building2 className="h-5 w-5 text-primary" />

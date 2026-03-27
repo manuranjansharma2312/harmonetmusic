@@ -70,15 +70,24 @@ serve(async (req) => {
 
     if (!otpData) throw new Error("No OTP found");
 
-    // Get default SMTP account
+    // Get signature settings for configured email account
+    const { data: sigSettings } = await supabase
+      .from("signature_settings")
+      .select("email_account_id")
+      .limit(1)
+      .maybeSingle();
+
+    // Get email accounts
     const { data: emailAccounts } = await supabase
       .from("email_accounts")
       .select("*")
-      .eq("is_default", true)
-      .eq("is_enabled", true)
-      .limit(1);
+      .eq("is_enabled", true);
 
-    const account = emailAccounts?.[0];
+    const configuredAccountId = (sigSettings as any)?.email_account_id;
+    const allAccounts = emailAccounts || [];
+    const account = configuredAccountId
+      ? allAccounts.find((a: any) => a.id === configuredAccountId) || allAccounts.find((a: any) => a.is_default) || allAccounts[0]
+      : allAccounts.find((a: any) => a.is_default) || allAccounts[0];
     if (!account) throw new Error("No email account configured");
 
     // Get company details
