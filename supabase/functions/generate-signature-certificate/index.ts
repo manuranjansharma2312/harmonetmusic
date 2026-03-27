@@ -53,7 +53,7 @@ serve(async (req) => {
     const doc = docRes.data;
     if (!doc) throw new Error("Document not found");
     const recipients = recipientsRes.data || [];
-    const auditLogs = auditRes.data || [];
+    const auditLogs = (auditRes.data || []).filter((l: any) => l.action !== 'otp_requested' && l.action !== 'otp_verified');
     const company = companyRes.data;
     const sigSettings = sigSettingsRes.data;
 
@@ -320,8 +320,6 @@ function formatActionLabel(action: string): string {
   const labels: Record<string, string> = {
     "email_sent": "Email Sent",
     "document_viewed": "Document Viewed",
-    "otp_requested": "OTP Requested",
-    "otp_verified": "OTP Verified",
     "document_signed": "Document Signed",
     "completion_email_sent": "Completion Email Sent",
     "document_sent": "Document Sent",
