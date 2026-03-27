@@ -3,8 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { GlassCard } from '@/components/GlassCard';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
-import { ArrowRightLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ArrowRightLeft, Undo2, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
+import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 
 interface TransferLog {
   id: string;
@@ -20,11 +26,17 @@ interface TransferLog {
   to_display_id?: number;
 }
 
-export function TransferHistory() {
+interface TransferHistoryProps {
+  onReversed?: () => void;
+}
+
+export function TransferHistory({ onReversed }: TransferHistoryProps) {
   const [logs, setLogs] = useState<TransferLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
+  const [reversingId, setReversingId] = useState<string | null>(null);
+  const [confirmLog, setConfirmLog] = useState<TransferLog | null>(null);
 
   useEffect(() => {
     fetchLogs();
@@ -70,62 +82,163 @@ export function TransferHistory() {
     setLoading(false);
   };
 
+  const handleReverse = async (log: TransferLog) => {
+    setReversingId(log.id);
+    try {
+      const originalOwner = log.from_user_id;
+      const currentOwner = log.to_user_id;
+
+      // 1. Transfer release back
+      const { error: relErr } = await supabase
+        .from('releases')
+        .update({ user_id: originalOwner })
+        .eq('id', log.release_id);
+      if (relErr) throw relErr;
+
+      // 2. Transfer tracks back
+      const { error: trkErr } = await supabase
+        .from('tracks')
+        .update({ user_id: originalOwner })
+        .eq('release_id', log.release_id);
+      if (trkErr) throw trkErr;
+
+      // 3. Move report entries back & unfreeze
+      if (log.isrcs.length > 0) {
+        await supabase
+          .from('report_entries')
+          .update({ user_id: originalOwner, revenue_frozen: false } as any)
+          .eq('user_id', currentOwner)
+          .in('isrc', log.isrcs);
+
+        await supabase
+          .from('youtube_report_entries')
+          .update({ user_id: originalOwner, revenue_frozen: false } as any)
+          .eq('user_id', currentOwner)
+          .in('isrc', log.isrcs);
+      }
+
+      // 4. Log the reverse as a new transfer
+      const { data: session } = await supabase.auth.getSession();
+      const adminId = session?.session?.user?.id || originalOwner;
+      await supabase.from('release_transfers').insert({
+        release_id: log.release_id,
+        from_user_id: currentOwner,
+        to_user_id: originalOwner,
+        transferred_by: adminId,
+        release_name: `[Reversed] ${log.release_name}`,
+        isrcs: log.isrcs,
+      } as any);
+
+      // 5. Delete original log entry
+      await supabase.from('release_transfers').delete().eq('id', log.id);
+
+      toast.success(`Transfer reversed — ${log.release_name} returned to ${log.from_name}`);
+      fetchLogs();
+      onReversed?.();
+    } catch (err: any) {
+      toast.error(err.message || 'Reverse failed');
+    }
+    setReversingId(null);
+    setConfirmLog(null);
+  };
+
   const paged = paginateItems(logs, page, pageSize);
 
   if (loading) return null;
   if (logs.length === 0) return null;
 
   return (
-    <GlassCard className="p-0 overflow-hidden mt-6">
-      <div className="p-4 border-b border-border/50">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <ArrowRightLeft className="h-5 w-5 text-primary" />
-          Transfer History
-        </h2>
-        <p className="text-xs text-muted-foreground mt-1">Log of all release ownership transfers</p>
-      </div>
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Release</TableHead>
-              <TableHead>From</TableHead>
-              <TableHead>To</TableHead>
-              <TableHead>ISRCs</TableHead>
-              <TableHead>Date</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paged.map((log) => (
-              <TableRow key={log.id}>
-                <TableCell className="font-medium">{log.release_name}</TableCell>
-                <TableCell>
-                  <span>{log.from_name}</span>
-                  {log.from_display_id && <span className="text-primary font-mono text-xs ml-1">#{log.from_display_id}</span>}
-                </TableCell>
-                <TableCell>
-                  <span>{log.to_name}</span>
-                  {log.to_display_id && <span className="text-primary font-mono text-xs ml-1">#{log.to_display_id}</span>}
-                </TableCell>
-                <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
-                  {(log.isrcs || []).join(', ') || '—'}
-                </TableCell>
-                <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                  {format(new Date(log.transferred_at), 'dd MMM yyyy, hh:mm a')}
-                </TableCell>
+    <>
+      <GlassCard className="p-0 overflow-hidden mt-6">
+        <div className="p-4 border-b border-border/50">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <ArrowRightLeft className="h-5 w-5 text-primary" />
+            Transfer History
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">Log of all release ownership transfers</p>
+        </div>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Release</TableHead>
+                <TableHead>From</TableHead>
+                <TableHead>To</TableHead>
+                <TableHead>ISRCs</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead className="w-[80px]">Action</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-      <TablePagination
-        totalItems={logs.length}
-        currentPage={page}
-        pageSize={pageSize}
-        onPageChange={setPage}
-        onPageSizeChange={setPageSize}
-        itemLabel="transfers"
-      />
-    </GlassCard>
+            </TableHeader>
+            <TableBody>
+              {paged.map((log) => {
+                const isReversed = log.release_name.startsWith('[Reversed]');
+                return (
+                  <TableRow key={log.id}>
+                    <TableCell className="font-medium">{log.release_name}</TableCell>
+                    <TableCell>
+                      <span>{log.from_name}</span>
+                      {log.from_display_id && <span className="text-primary font-mono text-xs ml-1">#{log.from_display_id}</span>}
+                    </TableCell>
+                    <TableCell>
+                      <span>{log.to_name}</span>
+                      {log.to_display_id && <span className="text-primary font-mono text-xs ml-1">#{log.to_display_id}</span>}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
+                      {(log.isrcs || []).join(', ') || '—'}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                      {format(new Date(log.transferred_at), 'dd MMM yyyy, hh:mm a')}
+                    </TableCell>
+                    <TableCell>
+                      {!isReversed && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          disabled={reversingId === log.id}
+                          onClick={() => setConfirmLog(log)}
+                          title="Reverse this transfer"
+                        >
+                          {reversingId === log.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Undo2 className="h-4 w-4" />}
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+        <TablePagination
+          totalItems={logs.length}
+          currentPage={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          itemLabel="transfers"
+        />
+      </GlassCard>
+
+      <AlertDialog open={!!confirmLog} onOpenChange={(v) => !v && setConfirmLog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reverse Transfer?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will return <strong>{confirmLog?.release_name}</strong> back to{' '}
+              <strong>{confirmLog?.from_name} #{confirmLog?.from_display_id}</strong> and unfreeze all historical report entries. This action is logged.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => confirmLog && handleReverse(confirmLog)}
+            >
+              Reverse Transfer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
