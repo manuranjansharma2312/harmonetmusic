@@ -17,8 +17,9 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import {
   Mail, Settings, FileText, Save, Send, Eye, EyeOff, Search,
-  ChevronDown, ChevronUp, ToggleLeft, Info, Code, History,
+  ChevronDown, ChevronUp, ToggleLeft, Info, Code, History, Download,
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface EmailSettings {
   id: string;
