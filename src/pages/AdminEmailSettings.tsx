@@ -270,6 +270,8 @@ export default function AdminEmailSettings() {
   const [editBody, setEditBody] = useState('');
   const [editAccountId, setEditAccountId] = useState<string | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
+  const [templatePage, setTemplatePage] = useState(0);
+  const [templatePageSize, setTemplatePageSize] = useState<number | 'all'>(10);
 
   // Log state
   const [logSearch, setLogSearch] = useState('');
