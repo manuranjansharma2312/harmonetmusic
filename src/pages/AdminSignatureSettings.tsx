@@ -50,7 +50,6 @@ export default function AdminSignatureSettings() {
       const { error } = await supabase
         .from('signature_settings')
         .update({
-          default_expiry_days: settings.default_expiry_days,
           auto_send_completion: settings.auto_send_completion,
           signing_email_subject: settings.signing_email_subject,
           signing_email_body: settings.signing_email_body,
