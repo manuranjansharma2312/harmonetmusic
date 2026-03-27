@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Link2, ExternalLink, Search, Music, Plus, Edit, Trash2 } from 'lucide-react';
+import { Loader2, Link2, ExternalLink, Search, Music, Plus, Edit, Trash2, Share2, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SmartLinkItem {
