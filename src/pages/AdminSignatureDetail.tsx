@@ -25,7 +25,7 @@ export default function AdminSignatureDetail() {
     const [docRes, recRes, auditRes] = await Promise.all([
       supabase.from('signature_documents').select('*').eq('id', id).single(),
       supabase.from('signature_recipients').select('*').eq('document_id', id).order('signing_order'),
-      supabase.from('signature_audit_logs').select('*').eq('document_id', id).order('created_at', { ascending: false }),
+      supabase.from('signature_audit_logs').select('*, recipient:signature_recipients(name, email)').eq('document_id', id).order('created_at', { ascending: false }),
     ]);
     if (!docRes.error) setDoc(docRes.data);
     if (!recRes.error) setRecipients(recRes.data || []);
@@ -270,22 +270,32 @@ export default function AdminSignatureDetail() {
             <TableHeader>
               <TableRow>
                 <TableHead>Action</TableHead>
+                <TableHead>Performed By</TableHead>
                 <TableHead>IP Address</TableHead>
-                <TableHead>User Agent</TableHead>
+                <TableHead>Location</TableHead>
                 <TableHead>Timestamp</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {auditLogs.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-4 text-muted-foreground">No activity yet</TableCell></TableRow>
-              ) : auditLogs.map(log => (
-                <TableRow key={log.id}>
-                  <TableCell className="font-medium">{renderAction(log.action)}</TableCell>
-                  <TableCell className="text-sm">{log.ip_address || '-'}</TableCell>
-                  <TableCell className="text-sm max-w-[200px] truncate">{log.user_agent || '-'}</TableCell>
-                  <TableCell className="text-sm">{format(new Date(log.created_at), 'dd MMM yyyy HH:mm:ss')}</TableCell>
-                </TableRow>
-              ))}
+                <TableRow><TableCell colSpan={5} className="text-center py-4 text-muted-foreground">No activity yet</TableCell></TableRow>
+              ) : auditLogs.map(log => {
+                const recipientName = (log as any).recipient?.name || 'System';
+                const recipientEmail = (log as any).recipient?.email || '';
+                const geo = (log as any).metadata?.geolocation || '';
+                return (
+                  <TableRow key={log.id}>
+                    <TableCell className="font-medium">{renderAction(log.action)}</TableCell>
+                    <TableCell className="text-sm">
+                      <div>{recipientName}</div>
+                      {recipientEmail && <div className="text-xs text-muted-foreground">{recipientEmail}</div>}
+                    </TableCell>
+                    <TableCell className="text-sm">{log.ip_address || '-'}</TableCell>
+                    <TableCell className="text-sm">{geo || '-'}</TableCell>
+                    <TableCell className="text-sm">{format(new Date(log.created_at), 'dd MMM yyyy HH:mm:ss')}</TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </GlassCard>

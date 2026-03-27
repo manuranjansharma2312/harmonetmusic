@@ -10,7 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, Send, Eye, FileSignature, Trash2, RefreshCw, Upload, CheckCircle, Award, Settings2 } from 'lucide-react';
+import { Plus, Send, Eye, FileSignature, Trash2, RefreshCw, Upload, CheckCircle, Award, Settings2, Filter } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -34,7 +35,7 @@ export default function AdminSignatureDocuments() {
   const [recipients, setRecipients] = useState<Recipient[]>([{ name: '', email: '' }]);
   const [page, setPage] = useState(1);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const fetchDocuments = async () => {
     setLoading(true);
@@ -151,8 +152,9 @@ export default function AdminSignatureDocuments() {
     }
   };
 
-  const paginatedDocs = documents.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-  const totalPages = Math.ceil(documents.length / ITEMS_PER_PAGE);
+  const filteredDocs = statusFilter === 'all' ? documents : documents.filter(d => d.status === statusFilter);
+  const paginatedDocs = filteredDocs.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredDocs.length / ITEMS_PER_PAGE);
 
   const statusColor = (s: string) => {
     switch (s) {
@@ -172,6 +174,18 @@ export default function AdminSignatureDocuments() {
             <p className="text-muted-foreground text-sm">Upload, send, and manage signature requests</p>
           </div>
           <div className="flex gap-2">
+            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
+              <SelectTrigger className="w-[140px]">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Filter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="sent">Sent</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
             <Button variant="outline" onClick={() => navigate('/admin/signature-settings')}>
               <Settings2 className="h-4 w-4 mr-2" /> Settings
             </Button>
