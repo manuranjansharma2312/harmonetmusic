@@ -57,15 +57,131 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from('smart_link_platforms')
-        .select('id, name, icon_url, placeholder, sort_order')
-        .eq('is_active', true)
-        .order('sort_order', { ascending: true });
-      setPlatforms((data as any) || []);
+      const [platformsRes, settingsRes] = await Promise.all([
+        supabase
+          .from('smart_link_platforms')
+          .select('id, name, icon_url, placeholder, sort_order')
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true }),
+        supabase
+          .from('smart_link_settings')
+          .select('auto_fetch_enabled, search_enabled')
+          .limit(1)
+          .single(),
+      ]);
+      setPlatforms((platformsRes.data as any) || []);
+      if (settingsRes.data) {
+        setAutoFetchEnabled((settingsRes.data as any).auto_fetch_enabled ?? false);
+        setSearchEnabled((settingsRes.data as any).search_enabled ?? false);
+      }
       setLoadingPlatforms(false);
     })();
   }, []);
+
+  const handleAutoFetch = async () => {
+    if (!searchQuery.trim()) { toast.error('Enter an ISRC, UPC, or link to auto-fetch'); return; }
+    setAutoFetching(true);
+    try {
+      // Fetch the first enabled API config
+      const { data: apis } = await supabase
+        .from('smart_link_api_configs')
+        .select('api_name, api_key, api_url')
+        .eq('is_enabled', true)
+        .limit(1)
+        .single();
+      
+      if (!apis || !(apis as any).api_url || !(apis as any).api_key) {
+        toast.error('No valid API configured. Ask your admin to set up an API.');
+        return;
+      }
+
+      // Try calling the API (generic pattern - works with Odesli/Songlink style)
+      const apiUrl = (apis as any).api_url;
+      const apiKey = (apis as any).api_key;
+      const url = `${apiUrl}?key=${encodeURIComponent(apiKey)}&q=${encodeURIComponent(searchQuery.trim())}`;
+      
+      const response = await fetch(url);
+      if (!response.ok) {
+        toast.error(`API returned error: ${response.status}`);
+        return;
+      }
+      
+      const result = await response.json();
+      
+      // Try to extract platform links from common API response patterns
+      if (result.linksByPlatform || result.links) {
+        const apiLinks = result.linksByPlatform || result.links;
+        const newLinks: Record<string, string> = { ...links };
+        platforms.forEach(p => {
+          const key = getPlatformKey(p);
+          const platformName = p.name.toLowerCase();
+          // Try matching platform names to API response keys
+          for (const [apiKey, value] of Object.entries(apiLinks)) {
+            if (apiKey.toLowerCase().includes(platformName) || platformName.includes(apiKey.toLowerCase())) {
+              const linkUrl = typeof value === 'string' ? value : (value as any)?.url;
+              if (linkUrl) newLinks[key] = linkUrl;
+            }
+          }
+        });
+        setLinks(newLinks);
+        toast.success('Platform links auto-filled from API!');
+      } else {
+        toast.info('API responded but no platform links found in the response.');
+      }
+    } catch (err) {
+      toast.error('Failed to fetch from API. Check API configuration.');
+    } finally {
+      setAutoFetching(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) { toast.error('Enter an ISRC, UPC, or link to search'); return; }
+    setSearching(true);
+    try {
+      const { data: apis } = await supabase
+        .from('smart_link_api_configs')
+        .select('api_name, api_key, api_url')
+        .eq('is_enabled', true)
+        .limit(1)
+        .single();
+      
+      if (!apis || !(apis as any).api_url || !(apis as any).api_key) {
+        toast.error('No valid API configured.');
+        return;
+      }
+
+      const apiUrl = (apis as any).api_url;
+      const apiKey = (apis as any).api_key;
+      const url = `${apiUrl}?key=${encodeURIComponent(apiKey)}&q=${encodeURIComponent(searchQuery.trim())}`;
+      
+      const response = await fetch(url);
+      if (!response.ok) {
+        toast.error(`API returned error: ${response.status}`);
+        return;
+      }
+      
+      const result = await response.json();
+      
+      // Try to extract song info
+      if (result.entitiesByUniqueId || result.title || result.name) {
+        const entities = result.entitiesByUniqueId ? Object.values(result.entitiesByUniqueId) : [result];
+        const firstEntity = (entities as any[])[0];
+        if (firstEntity) {
+          if (firstEntity.title && !title) setTitle(firstEntity.title);
+          if (firstEntity.artistName && !artistName) setArtistName(firstEntity.artistName);
+          if (firstEntity.thumbnailUrl && !posterUrl) setPosterUrl(firstEntity.thumbnailUrl);
+        }
+        toast.success('Song info found!');
+      } else {
+        toast.info('No song info found in API response.');
+      }
+    } catch (err) {
+      toast.error('Failed to search. Check API configuration.');
+    } finally {
+      setSearching(false);
+    }
+  };
 
   const compressImage = (file: File, maxSize: number = 500): Promise<Blob> => {
     return new Promise((resolve, reject) => {
