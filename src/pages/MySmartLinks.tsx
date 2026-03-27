@@ -21,6 +21,7 @@ interface SmartLinkItem {
   platform_links: Record<string, string>;
   slug: string | null;
   created_at: string;
+  status: string;
 }
 
 export default function MySmartLinks() {
