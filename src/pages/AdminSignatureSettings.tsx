@@ -98,19 +98,7 @@ export default function AdminSignatureSettings() {
             <h2 className="text-lg font-semibold">General Settings</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label>Default Link Expiry (Days)</Label>
-              <p className="text-xs text-muted-foreground mb-1.5">How long signing links remain valid</p>
-              <Input
-                type="number"
-                min={1}
-                max={365}
-                value={settings.default_expiry_days}
-                onChange={e => setSettings(s => ({ ...s, default_expiry_days: parseInt(e.target.value) || 30 }))}
-              />
-            </div>
-
+          <div className="grid grid-cols-1 gap-6">
             <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
               <div>
                 <Label>Auto-Send Completion Email</Label>
