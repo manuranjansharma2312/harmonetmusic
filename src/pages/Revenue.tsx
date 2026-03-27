@@ -171,8 +171,8 @@ export default function Revenue() {
       } else {
         // Regular user or admin not impersonating - rely on RLS
         const [{ data: ottData }, { data: ytData }] = await Promise.all([
-          supabase.from('report_entries').select('net_generated_revenue, cut_percent_snapshot'),
-          supabase.from('youtube_report_entries').select('net_generated_revenue, cut_percent_snapshot'),
+          supabase.from('report_entries').select('net_generated_revenue, cut_percent_snapshot').eq('revenue_frozen', false),
+          supabase.from('youtube_report_entries').select('net_generated_revenue, cut_percent_snapshot').eq('revenue_frozen', false),
         ]);
         ottTotal = (ottData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
         ytTotal = (ytData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
