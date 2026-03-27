@@ -527,6 +527,107 @@ export default function AdminEmailSettings() {
             </GlassCard>
           </TabsContent>
 
+          {/* Email Logs Tab */}
+          <TabsContent value="logs">
+            <GlassCard className="p-6 space-y-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2.5 rounded-xl bg-primary/10">
+                  <History className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold">Email Sending Logs</h2>
+                  <p className="text-xs text-muted-foreground">Track all sent emails with status, recipient, and timestamps</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by recipient or template..."
+                    value={logSearch}
+                    onChange={(e) => { setLogSearch(e.target.value); setLogPage(0); }}
+                    className="pl-9"
+                  />
+                </div>
+                <Select value={logStatusFilter} onValueChange={(v) => { setLogStatusFilter(v); setLogPage(0); }}>
+                  <SelectTrigger className="w-full sm:w-[160px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="sent">Sent</SelectItem>
+                    <SelectItem value="failed">Failed</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {(() => {
+                const filteredLogs = emailLogs.filter(log => {
+                  const matchesSearch = !logSearch ||
+                    log.recipient_email.toLowerCase().includes(logSearch.toLowerCase()) ||
+                    (log.template_label || log.template_key).toLowerCase().includes(logSearch.toLowerCase()) ||
+                    (log.subject || '').toLowerCase().includes(logSearch.toLowerCase());
+                  const matchesStatus = logStatusFilter === 'all' || log.status === logStatusFilter;
+                  return matchesSearch && matchesStatus;
+                });
+                const paginatedLogs = paginateItems(filteredLogs, logPage, logPageSize);
+                return (
+                  <>
+                    <div className="text-xs text-muted-foreground">
+                      {filteredLogs.length} log{filteredLogs.length !== 1 ? 's' : ''} found
+                    </div>
+                    <div className="overflow-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Template</TableHead>
+                            <TableHead>Recipient</TableHead>
+                            <TableHead>Subject</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Sent At</TableHead>
+                            <TableHead>Error</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {paginatedLogs.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                                No email logs found
+                              </TableCell>
+                            </TableRow>
+                          ) : paginatedLogs.map((log: EmailLog) => (
+                            <TableRow key={log.id}>
+                              <TableCell className="font-medium text-sm">
+                                {log.template_label || log.template_key}
+                              </TableCell>
+                              <TableCell className="text-sm">{log.recipient_email}</TableCell>
+                              <TableCell className="text-sm max-w-[200px] truncate">{log.subject || '—'}</TableCell>
+                              <TableCell><StatusBadge status={log.status} /></TableCell>
+                              <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                                {new Date(log.sent_at).toLocaleString()}
+                              </TableCell>
+                              <TableCell className="text-xs text-destructive max-w-[200px] truncate">
+                                {log.error_message || '—'}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    <TablePagination
+                      totalItems={filteredLogs.length}
+                      currentPage={logPage}
+                      pageSize={logPageSize}
+                      onPageChange={setLogPage}
+                      onPageSizeChange={setLogPageSize}
+                      itemLabel="logs"
+                    />
+                  </>
+                );
+              })()}
+            </GlassCard>
+          </TabsContent>
+
           {/* Setup Guide Tab */}
           <TabsContent value="guide">
             <GlassCard className="p-6 space-y-6">
