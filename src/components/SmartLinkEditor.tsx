@@ -319,6 +319,46 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
         </div>
       )}
 
+      {/* Auto-fetch / Search section */}
+      {(autoFetchEnabled || searchEnabled) && (
+        <div className="p-3 rounded-lg border border-border bg-muted/30 space-y-2">
+          <div className="flex items-center gap-2">
+            <Zap className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">
+              {autoFetchEnabled && searchEnabled ? 'Search & Auto-fetch' : autoFetchEnabled ? 'Auto-fetch Links' : 'Search Song'}
+            </h3>
+            <Badge variant="secondary" className="text-[10px]">API Connected</Badge>
+          </div>
+          <div className="flex gap-2">
+            <Input
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Enter ISRC, UPC, or song link..."
+              className="text-xs h-8 flex-1"
+            />
+            {searchEnabled && (
+              <Button size="sm" variant="outline" className="h-8 text-xs" onClick={handleSearch} disabled={searching || !searchQuery.trim()}>
+                {searching ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Search className="h-3 w-3 mr-1" />}
+                Search
+              </Button>
+            )}
+            {autoFetchEnabled && (
+              <Button size="sm" className="h-8 text-xs" onClick={handleAutoFetch} disabled={autoFetching || !searchQuery.trim()}>
+                {autoFetching ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Zap className="h-3 w-3 mr-1" />}
+                Auto-fill
+              </Button>
+            )}
+          </div>
+          <p className="text-[10px] text-muted-foreground">
+            {autoFetchEnabled && searchEnabled
+              ? 'Search to find song details, or Auto-fill to fetch all platform links automatically.'
+              : autoFetchEnabled
+              ? 'Paste an ISRC, UPC, or streaming link to auto-fill all platform URLs.'
+              : 'Search by ISRC, UPC, or link to find song info.'}
+          </p>
+        </div>
+      )}
+
       {/* Platform Links */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
