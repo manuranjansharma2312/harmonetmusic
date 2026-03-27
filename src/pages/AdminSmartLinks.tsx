@@ -75,12 +75,6 @@ function autoCropImage(file: File, size: number): Promise<Blob> {
 
 export default function AdminSmartLinks() {
   const { user } = useAuth();
-  // ─── Releases state ───
-  const [releases, setReleases] = useState<SmartLinkRelease[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [editRelease, setEditRelease] = useState<SmartLinkRelease | null>(null);
-
   // ─── Platforms state ───
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [platformsLoading, setPlatformsLoading] = useState(true);
