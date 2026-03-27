@@ -229,6 +229,7 @@ export default function AdminSignatureDetail() {
                 <TableHead>Email</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Signed At</TableHead>
+                <TableHead>Location</TableHead>
                 <TableHead>Signing Link</TableHead>
               </TableRow>
             </TableHeader>
