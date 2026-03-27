@@ -117,8 +117,8 @@ export default function AdminSignatureDetail() {
             <h1 className="text-2xl font-bold">{doc.title}</h1>
             <p className="text-muted-foreground text-sm">{doc.description}</p>
           </div>
-          <Badge variant={doc.status === 'completed' ? 'default' : 'secondary'}>
-            {doc.status === 'completed' ? '✅ Completed' : doc.status === 'sent' ? '📨 Sent' : '📝 Draft'}
+          <Badge variant={doc.status === 'completed' ? 'default' : 'secondary'} className="flex items-center gap-1.5">
+            {doc.status === 'completed' ? <><CheckCircle className="h-3.5 w-3.5" /> Completed</> : doc.status === 'sent' ? <><Send className="h-3.5 w-3.5" /> Sent</> : <><FileSignature className="h-3.5 w-3.5" /> Draft</>}
           </Badge>
         </div>
 
