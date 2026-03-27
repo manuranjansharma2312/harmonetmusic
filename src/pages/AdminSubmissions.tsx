@@ -3,7 +3,8 @@ import { PlatformLinksEditor } from '@/components/PlatformLinksEditor';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Eye, Pencil, Trash2, Download, Search, ChevronDown, ChevronRight, Music, Save, Users, Image, Volume2, ImageOff, VolumeX, Upload } from 'lucide-react';
+import { Loader2, Eye, Pencil, Trash2, Download, Search, ChevronDown, ChevronRight, Music, Save, Users, Image, Volume2, ImageOff, VolumeX, Upload, ArrowRightLeft } from 'lucide-react';
+import { TransferOwnershipModal } from '@/components/TransferOwnershipModal';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -119,6 +120,7 @@ export default function AdminSubmissions() {
   const [rejectTrackTarget, setRejectTrackTarget] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
+  const [transferRelease, setTransferRelease] = useState<Release | null>(null);
 
   // ISRC/UPC inline editing
   const [editingIsrc, setEditingIsrc] = useState<Record<string, string>>({});
@@ -1075,6 +1077,7 @@ export default function AdminSubmissions() {
                         </td>
                         <td className="py-3 px-3">
                           <div className="flex items-center justify-end gap-0.5">
+                            <button onClick={() => setTransferRelease(release)} className="p-1.5 rounded-lg hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all" title="Transfer Ownership"><ArrowRightLeft className="h-4 w-4" /></button>
                             <button onClick={() => navigate(`/submit?edit=${release.id}`)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"><Pencil className="h-4 w-4" /></button>
                             <button onClick={() => setViewRelease(release)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"><Eye className="h-4 w-4" /></button>
                             <button onClick={() => setDeleteRelease(release)} className="p-1.5 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all"><Trash2 className="h-4 w-4" /></button>
@@ -1387,6 +1390,13 @@ export default function AdminSubmissions() {
         title="Reject Track"
         onConfirm={handleTrackRejectConfirm}
         onCancel={() => setRejectTrackTarget(null)}
+      />
+
+      <TransferOwnershipModal
+        open={!!transferRelease}
+        onClose={() => setTransferRelease(null)}
+        release={transferRelease}
+        onTransferred={fetchReleases}
       />
 
       {/* Import CSV Modal */}

@@ -169,16 +169,16 @@ export default function UserDashboard() {
 
         if (ownedIsrcs.length > 0) {
           const [{ data: ottData }, { data: ytData }] = await Promise.all([
-            supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot').in('isrc', ownedIsrcs),
-            supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot').in('isrc', ownedIsrcs),
+            supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot, revenue_frozen').in('isrc', ownedIsrcs),
+            supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot, revenue_frozen').in('isrc', ownedIsrcs),
           ]);
           reportData = ottData || [];
           ytReportData = ytData || [];
         }
       } else {
         const [reportRes, ytReportRes] = await Promise.all([
-          supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot').eq('user_id', effectiveUserId),
-          supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot').eq('user_id', effectiveUserId),
+          supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot, revenue_frozen').eq('user_id', effectiveUserId),
+          supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot, revenue_frozen').eq('user_id', effectiveUserId),
         ]);
         reportData = reportRes.data || [];
         ytReportData = ytReportRes.data || [];
@@ -196,8 +196,9 @@ export default function UserDashboard() {
         const countryMap: Record<string, number> = {};
 
         allReports.forEach((r: any) => {
+          const isFrozen = r.revenue_frozen === true;
           const grossRevenue = Number(r.net_generated_revenue || 0);
-          const rev = applySnapshotCut(grossRevenue, r.cut_percent_snapshot, effectiveCutPercent, shouldApplyCut);
+          const rev = isFrozen ? 0 : applySnapshotCut(grossRevenue, r.cut_percent_snapshot, effectiveCutPercent, shouldApplyCut);
           const str = Number(r.streams || 0);
           const dl = Number(r.downloads || 0);
           totalRev += rev;

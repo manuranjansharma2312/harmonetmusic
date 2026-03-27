@@ -928,6 +928,7 @@ export type Database = {
           net_generated_revenue: number | null
           p_line: string | null
           reporting_month: string
+          revenue_frozen: boolean
           sales_type: string | null
           store: string | null
           streams: number | null
@@ -950,6 +951,7 @@ export type Database = {
           net_generated_revenue?: number | null
           p_line?: string | null
           reporting_month: string
+          revenue_frozen?: boolean
           sales_type?: string | null
           store?: string | null
           streams?: number | null
@@ -972,6 +974,7 @@ export type Database = {
           net_generated_revenue?: number | null
           p_line?: string | null
           reporting_month?: string
+          revenue_frozen?: boolean
           sales_type?: string | null
           store?: string | null
           streams?: number | null
@@ -1443,6 +1446,7 @@ export type Database = {
           net_generated_revenue: number | null
           p_line: string | null
           reporting_month: string
+          revenue_frozen: boolean
           sales_type: string | null
           store: string | null
           streams: number | null
@@ -1465,6 +1469,7 @@ export type Database = {
           net_generated_revenue?: number | null
           p_line?: string | null
           reporting_month: string
+          revenue_frozen?: boolean
           sales_type?: string | null
           store?: string | null
           streams?: number | null
@@ -1487,6 +1492,7 @@ export type Database = {
           net_generated_revenue?: number | null
           p_line?: string | null
           reporting_month?: string
+          revenue_frozen?: boolean
           sales_type?: string | null
           store?: string | null
           streams?: number | null
