@@ -905,6 +905,17 @@ export default function AdminEmailSettings() {
                     <div key={template.id} className="border border-border rounded-lg overflow-hidden">
                       <div className="flex items-center justify-between p-4 bg-muted/30">
                         <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <input
+                            type="checkbox"
+                            className="rounded border-border shrink-0"
+                            checked={selectedTemplates.has(template.id)}
+                            onChange={(e) => {
+                              const next = new Set(selectedTemplates);
+                              if (e.target.checked) next.add(template.id);
+                              else next.delete(template.id);
+                              setSelectedTemplates(next);
+                            }}
+                          />
                           <Switch checked={template.is_enabled} onCheckedChange={(v) => toggleTemplate(template.id, v)} />
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
