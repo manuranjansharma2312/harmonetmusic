@@ -1076,6 +1076,7 @@ export type Database = {
           platform_links: Json
           poster_url: string | null
           slug: string | null
+          status: string
           title: string
           updated_at: string
           user_id: string
@@ -1087,6 +1088,7 @@ export type Database = {
           platform_links?: Json
           poster_url?: string | null
           slug?: string | null
+          status?: string
           title: string
           updated_at?: string
           user_id: string
@@ -1098,6 +1100,7 @@ export type Database = {
           platform_links?: Json
           poster_url?: string | null
           slug?: string | null
+          status?: string
           title?: string
           updated_at?: string
           user_id?: string

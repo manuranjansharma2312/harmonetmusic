@@ -14,7 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Link2, ExternalLink, Search, Music, Edit, Plus, Trash2, GripVertical, Settings, ImageIcon, Key, Eye, EyeOff, User } from 'lucide-react';
+import { Loader2, Link2, ExternalLink, Search, Music, Edit, Plus, Trash2, GripVertical, Settings, ImageIcon, Key, Eye, EyeOff, User, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 
 // ─── Types ───
@@ -137,7 +137,7 @@ export default function AdminSmartLinks() {
   const fetchCustomLinks = async () => {
     const { data } = await supabase
       .from('smart_links')
-      .select('id, title, artist_name, poster_url, platform_links, slug, created_at, user_id')
+      .select('id, title, artist_name, poster_url, platform_links, slug, created_at, user_id, status')
       .order('created_at', { ascending: false });
     const links = (data as any) || [];
 
@@ -313,6 +313,19 @@ export default function AdminSmartLinks() {
     fetchApiConfigs();
   };
 
+  // ─── Smart Link Approve/Reject ───
+  const approveSmartLink = async (id: string) => {
+    await supabase.from('smart_links').update({ status: 'approved', updated_at: new Date().toISOString() } as any).eq('id', id);
+    toast.success('Smart link approved');
+    fetchCustomLinks();
+  };
+
+  const rejectSmartLink = async (id: string) => {
+    await supabase.from('smart_links').update({ status: 'rejected', updated_at: new Date().toISOString() } as any).eq('id', id);
+    toast.success('Smart link rejected');
+    fetchCustomLinks();
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -452,12 +465,32 @@ export default function AdminSmartLinks() {
                             </div>
                           )}
                           {active ? (
-                            <Badge variant="default" className="mt-1 text-[10px]">{linkCount} platforms</Badge>
+                            <Badge variant="outline" className="mt-1 text-[10px]">{linkCount} platforms</Badge>
                           ) : (
                             <Badge variant="outline" className="mt-1 text-[10px]">No links</Badge>
                           )}
+                          {/* Status badge */}
+                          {c.status === 'pending' && (
+                            <Badge variant="secondary" className="mt-1 text-[10px] gap-0.5"><Clock className="h-2.5 w-2.5" /> Pending</Badge>
+                          )}
+                          {c.status === 'approved' && (
+                            <Badge className="mt-1 text-[10px] gap-0.5 bg-green-600"><CheckCircle className="h-2.5 w-2.5" /> Approved</Badge>
+                          )}
+                          {c.status === 'rejected' && (
+                            <Badge variant="destructive" className="mt-1 text-[10px] gap-0.5"><XCircle className="h-2.5 w-2.5" /> Rejected</Badge>
+                          )}
                         </div>
                         <div className="flex gap-1">
+                          {c.status !== 'approved' && (
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-green-500 hover:text-green-600" onClick={() => approveSmartLink(c.id)} title="Approve">
+                              <CheckCircle className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                          {c.status !== 'rejected' && (
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => rejectSmartLink(c.id)} title="Reject">
+                              <XCircle className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditCustom(c)}>
                             <Edit className="h-3.5 w-3.5" />
                           </Button>

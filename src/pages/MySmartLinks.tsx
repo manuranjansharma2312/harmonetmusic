@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Link2, ExternalLink, Search, Music, Plus, Edit, Trash2 } from 'lucide-react';
+import { Loader2, Link2, ExternalLink, Search, Music, Plus, Edit, Trash2, Share2, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SmartLinkItem {
@@ -21,6 +21,7 @@ interface SmartLinkItem {
   platform_links: Record<string, string>;
   slug: string | null;
   created_at: string;
+  status: string;
 }
 
 export default function MySmartLinks() {
@@ -35,7 +36,7 @@ export default function MySmartLinks() {
     if (!user) return;
     const { data } = await supabase
       .from('smart_links')
-      .select('id, title, artist_name, poster_url, platform_links, slug, created_at')
+      .select('id, title, artist_name, poster_url, platform_links, slug, created_at, status')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     setSmartLinks((data as any) || []);
@@ -99,6 +100,9 @@ export default function MySmartLinks() {
               const active = hasLinks(s);
               const url = getUrl(s);
               const linkCount = active ? Object.values(s.platform_links).filter(v => v?.trim()).length : 0;
+              const isApproved = s.status === 'approved';
+              const isPending = s.status === 'pending';
+              const isRejected = s.status === 'rejected';
 
               return (
                 <GlassCard key={s.id} className="p-4 space-y-3">
@@ -113,11 +117,20 @@ export default function MySmartLinks() {
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm text-foreground truncate">{s.title}</p>
                       <p className="text-xs text-muted-foreground">{s.artist_name || 'Unknown Artist'}</p>
-                      {active ? (
-                        <Badge variant="default" className="mt-1 text-[10px]">{linkCount} platforms</Badge>
-                      ) : (
-                        <Badge variant="secondary" className="mt-1 text-[10px]">No links yet</Badge>
-                      )}
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        {isPending && (
+                          <Badge variant="secondary" className="text-[10px] gap-0.5"><Clock className="h-2.5 w-2.5" /> Pending</Badge>
+                        )}
+                        {isApproved && (
+                          <Badge variant="default" className="text-[10px] gap-0.5 bg-green-600"><CheckCircle className="h-2.5 w-2.5" /> Approved</Badge>
+                        )}
+                        {isRejected && (
+                          <Badge variant="destructive" className="text-[10px] gap-0.5"><XCircle className="h-2.5 w-2.5" /> Rejected</Badge>
+                        )}
+                        {active && (
+                          <Badge variant="outline" className="text-[10px]">{linkCount} platforms</Badge>
+                        )}
+                      </div>
                     </div>
                     <div className="flex gap-1">
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditLink(s)}>
@@ -129,7 +142,7 @@ export default function MySmartLinks() {
                     </div>
                   </div>
 
-                  {active && (
+                  {isApproved && active && (
                     <div className="flex items-center gap-2 p-2 rounded-md bg-primary/5 border border-primary/20">
                       <Link2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
                       <span className="text-[11px] text-muted-foreground flex-1 truncate font-mono">{url}</span>
@@ -137,10 +150,24 @@ export default function MySmartLinks() {
                       <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80">
                         <ExternalLink className="h-3.5 w-3.5" />
                       </a>
+                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => {
+                        if (navigator.share) {
+                          navigator.share({ title: s.title, url });
+                        } else {
+                          navigator.clipboard.writeText(url);
+                          toast.success('Link copied!');
+                        }
+                      }}>
+                        <Share2 className="h-3.5 w-3.5 text-primary" />
+                      </Button>
                     </div>
                   )}
 
-                  {!active && (
+                  {isPending && (
+                    <p className="text-[11px] text-muted-foreground text-center py-1">Waiting for admin approval before sharing.</p>
+                  )}
+
+                  {!active && !isPending && (
                     <Button size="sm" variant="outline" className="w-full text-xs" onClick={() => setEditLink(s)}>
                       <Link2 className="h-3.5 w-3.5 mr-1" /> Add Platform Links
                     </Button>

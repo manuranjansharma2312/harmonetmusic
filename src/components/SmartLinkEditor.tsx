@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CopyButton } from '@/components/CopyButton';
 import { toast } from 'sonner';
-import { Save, Link, ExternalLink, Loader2, Music, Upload, ImageIcon } from 'lucide-react';
+import { Save, Link, ExternalLink, Loader2, Music, Upload, ImageIcon, AlertCircle } from 'lucide-react';
 
 interface Platform {
   id: string;
@@ -59,18 +59,47 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
     })();
   }, []);
 
+  const compressImage = (file: File, maxSize: number = 500): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const min = Math.min(img.width, img.height);
+        const sx = (img.width - min) / 2;
+        const sy = (img.height - min) / 2;
+        canvas.width = maxSize;
+        canvas.height = maxSize;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, sx, sy, min, min, 0, 0, maxSize, maxSize);
+        canvas.toBlob(
+          blob => blob ? resolve(blob) : reject(new Error('Compression failed')),
+          'image/jpeg',
+          0.8
+        );
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const handlePosterUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { toast.error('Image must be under 5MB'); return; }
     setUploadingPoster(true);
-    const path = `smart-link-posters/${userId}/${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from('posters').upload(path, file, { upsert: true });
-    if (error) { toast.error('Upload failed'); setUploadingPoster(false); return; }
-    const { data: urlData } = supabase.storage.from('posters').getPublicUrl(path);
-    setPosterUrl(urlData.publicUrl);
-    setUploadingPoster(false);
-    toast.success('Poster uploaded');
+    try {
+      const compressed = await compressImage(file, 500);
+      const path = `smart-link-posters/${userId}/${Date.now()}.jpg`;
+      const { error } = await supabase.storage.from('posters').upload(path, compressed, { upsert: true, contentType: 'image/jpeg' });
+      if (error) { toast.error('Upload failed'); setUploadingPoster(false); return; }
+      const { data: urlData } = supabase.storage.from('posters').getPublicUrl(path);
+      setPosterUrl(urlData.publicUrl);
+      toast.success('Cover art compressed & uploaded (500×500)');
+    } catch {
+      toast.error('Failed to process image');
+    } finally {
+      setUploadingPoster(false);
+    }
   };
 
   const handleSave = async () => {
@@ -138,7 +167,7 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
 
       {/* Poster */}
       <div>
-        <Label className="text-xs text-muted-foreground">Cover Art / Poster</Label>
+        <Label className="text-xs text-muted-foreground">Cover Art / Poster (auto-compressed to 500×500)</Label>
         <div className="flex items-center gap-3 mt-1">
           {posterUrl ? (
             <img src={posterUrl} alt="poster" className="h-16 w-16 rounded-lg object-cover border border-border" />
