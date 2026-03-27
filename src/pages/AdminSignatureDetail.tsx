@@ -247,6 +247,9 @@ export default function AdminSignatureDetail() {
                   <TableCell>
                     {r.signed_at ? format(new Date(r.signed_at), 'dd MMM yyyy HH:mm') : '-'}
                   </TableCell>
+                  <TableCell className="text-sm">
+                    {r.geolocation || '-'}
+                  </TableCell>
                   <TableCell>
                     {r.signing_token && (
                       <CopyButton value={getSigningUrl(r.signing_token)} />
