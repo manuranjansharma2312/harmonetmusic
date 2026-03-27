@@ -10,7 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, Send, Eye, FileSignature, Trash2, RefreshCw, Upload, CheckCircle, Award, Settings2 } from 'lucide-react';
+import { Plus, Send, Eye, FileSignature, Trash2, RefreshCw, Upload, CheckCircle, Award, Settings2, Filter } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
