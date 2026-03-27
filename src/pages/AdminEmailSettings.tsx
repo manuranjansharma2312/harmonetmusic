@@ -849,17 +849,24 @@ export default function AdminEmailSettings() {
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-medium text-sm">{template.trigger_label}</span>
                               <Badge variant="outline" className={`text-[10px] ${getCategoryColor(template.category)}`}>
-                                {CATEGORIES.find(c => c.key === template.category)?.label || template.category}
+                                {getCategoryLabel(template.category)}
                               </Badge>
-                              {assignedName ? (
-                                <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary gap-1">
-                                  <Mail className="h-2.5 w-2.5" /> {assignedName}
-                                </Badge>
-                              ) : defaultAccount ? (
-                                <Badge variant="outline" className="text-[10px] text-muted-foreground gap-1">
-                                  <Mail className="h-2.5 w-2.5" /> {defaultAccount.account_name} (default)
-                                </Badge>
-                              ) : null}
+                              {(() => {
+                                const catDefault = getCategoryDefaultAccount(template.category);
+                                const effectiveAccount = assignedName
+                                  ? assignedName
+                                  : catDefault
+                                    ? `${catDefault.account_name} (category)`
+                                    : defaultAccount
+                                      ? `${defaultAccount.account_name} (default)`
+                                      : null;
+                                const isOverride = !!assignedName;
+                                return effectiveAccount ? (
+                                  <Badge variant="outline" className={`text-[10px] gap-1 ${isOverride ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}>
+                                    <Mail className="h-2.5 w-2.5" /> {effectiveAccount}
+                                  </Badge>
+                                ) : null;
+                              })()}
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5 truncate">Subject: {template.subject}</p>
                           </div>
