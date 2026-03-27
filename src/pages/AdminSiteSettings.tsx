@@ -162,6 +162,9 @@ export default function AdminSiteSettings() {
             <button onClick={() => applyPreset('quality')} className="px-4 py-2 rounded-lg bg-purple-500/10 text-purple-400 text-sm font-medium hover:bg-purple-500/20 transition-colors border border-purple-500/20">
               💎 Max Quality
             </button>
+            <button onClick={handleResetDefaults} className="px-4 py-2 rounded-lg bg-destructive/10 text-destructive text-sm font-medium hover:bg-destructive/20 transition-colors border border-destructive/20 flex items-center gap-1.5">
+              <RotateCcw className="h-3.5 w-3.5" /> Reset to Defaults
+            </button>
           </div>
         </GlassCard>
 
