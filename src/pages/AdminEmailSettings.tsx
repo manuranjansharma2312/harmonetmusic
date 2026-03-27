@@ -500,6 +500,63 @@ export default function AdminEmailSettings() {
     toast.success(`Exported ${filteredLogs.length} logs`);
   }
 
+  // ---- Category CRUD ----
+  async function addCategory() {
+    if (!newCategoryName.trim()) { toast.error('Category name is required'); return; }
+    const key = newCategoryName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    if (categories.some(c => c.key === key)) { toast.error('Category already exists'); return; }
+    setSaving(true);
+    try {
+      const { error } = await supabase.from('email_categories').insert({
+        name: newCategoryName.trim(),
+        key,
+        sort_order: categories.length + 1,
+      } as any);
+      if (error) throw error;
+      setNewCategoryName('');
+      toast.success('Category added');
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to add category');
+    } finally { setSaving(false); }
+  }
+
+  async function updateCategory(id: string, updates: Partial<EmailCategory>) {
+    setSaving(true);
+    try {
+      const { error } = await supabase.from('email_categories').update({
+        ...updates,
+        updated_at: new Date().toISOString(),
+      } as any).eq('id', id);
+      if (error) throw error;
+      setCategories(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+      setEditingCategoryId(null);
+      toast.success('Category updated');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update');
+    } finally { setSaving(false); }
+  }
+
+  async function deleteCategory(id: string) {
+    const cat = categories.find(c => c.id === id);
+    if (!cat) return;
+    const usedBy = templates.filter(t => t.category === cat.key).length;
+    if (usedBy > 0) {
+      toast.error(`Cannot delete: ${usedBy} template(s) are using this category. Reassign them first.`);
+      return;
+    }
+    if (!confirm(`Delete category "${cat.name}"?`)) return;
+    const { error } = await supabase.from('email_categories').delete().eq('id', id);
+    if (error) { toast.error(error.message); return; }
+    toast.success('Category deleted');
+    fetchData();
+  }
+
+  const categoriesWithAll = useMemo(() =>
+    [{ key: 'all', name: 'All' } as any, ...categories],
+    [categories]
+  );
+
   const filteredTemplates = useMemo(() => {
     let result = templates.filter(t => {
       const matchesSearch = !searchQuery ||
@@ -517,18 +574,18 @@ export default function AdminEmailSettings() {
   );
 
   const getCategoryColor = (cat: string) => {
-    const colors: Record<string, string> = {
-      authentication: 'bg-blue-500/20 text-blue-400',
-      releases: 'bg-green-500/20 text-green-400',
-      revenue: 'bg-yellow-500/20 text-yellow-400',
-      labels: 'bg-purple-500/20 text-purple-400',
-      content_requests: 'bg-orange-500/20 text-orange-400',
-      sub_labels: 'bg-pink-500/20 text-pink-400',
-      smart_links: 'bg-cyan-500/20 text-cyan-400',
-      promotions: 'bg-red-500/20 text-red-400',
-      general: 'bg-muted text-muted-foreground',
-    };
-    return colors[cat] || colors.general;
+    const idx = categories.findIndex(c => c.key === cat);
+    return CATEGORY_COLORS[idx >= 0 ? idx % CATEGORY_COLORS.length : CATEGORY_COLORS.length - 1];
+  };
+
+  const getCategoryLabel = (catKey: string) => {
+    return categories.find(c => c.key === catKey)?.name || catKey;
+  };
+
+  const getCategoryDefaultAccount = (catKey: string) => {
+    const cat = categories.find(c => c.key === catKey);
+    if (!cat?.default_account_id) return null;
+    return accounts.find(a => a.id === cat.default_account_id) || null;
   };
 
   const getAccountName = (accountId: string | null) => {
