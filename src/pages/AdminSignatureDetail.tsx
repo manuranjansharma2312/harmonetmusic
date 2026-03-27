@@ -50,34 +50,63 @@ export default function AdminSignatureDetail() {
   };
 
   const [generatingCert, setGeneratingCert] = useState(false);
+  const [sendingCompletion, setSendingCompletion] = useState(false);
 
   const getSigningUrl = (token: string) => {
     return `${window.location.origin}/sign/${token}`;
   };
 
-  const handleDownloadCertificate = async () => {
+  const handleGenerateCertificate = async () => {
     setGeneratingCert(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-signature-certificate', {
         body: { document_id: id },
       });
       if (error) throw error;
-      if (!data?.certificate_html) throw new Error('Failed to generate certificate');
-      
-      const blob = new Blob([data.certificate_html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${doc?.title || 'Document'} - Signature Certificate.html`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast.success('Certificate downloaded');
+      if (!data?.success) throw new Error('Failed to generate certificate');
+      toast.success('Certificate generated and bound to document');
+      fetchData();
     } catch (err: any) {
       toast.error(err.message || 'Failed to generate certificate');
     }
     setGeneratingCert(false);
+  };
+
+  const handleDownloadSignedPdf = async () => {
+    if (!doc?.signed_pdf_url) {
+      toast.error('Signed PDF not available. Generate the certificate first.');
+      return;
+    }
+    try {
+      const { data, error } = await supabase.storage
+        .from('signature-documents')
+        .createSignedUrl(doc.signed_pdf_url, 3600);
+      if (error || !data?.signedUrl) throw new Error('Failed to get download URL');
+      window.open(data.signedUrl, '_blank');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to download');
+    }
+  };
+
+  const handleSendCompletionEmail = async () => {
+    setSendingCompletion(true);
+    try {
+      if (!doc?.signed_pdf_url) {
+        toast.error('Generate the certificate first before sending emails');
+        setSendingCompletion(false);
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke('send-completion-email', {
+        body: { document_id: id },
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error('Failed to send emails');
+      toast.success(`Completion emails sent to ${data.emails_sent} recipients`);
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send completion emails');
+    }
+    setSendingCompletion(false);
   };
 
   const actionIcons: Record<string, React.ReactNode> = {
