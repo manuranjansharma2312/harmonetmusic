@@ -92,6 +92,12 @@ export default function AdminSmartLinks() {
   const [systemEnabled, setSystemEnabled] = useState(true);
   const [togglingSystem, setTogglingSystem] = useState(false);
 
+  // ─── Auto-fetch & search settings ───
+  const [autoFetchEnabled, setAutoFetchEnabled] = useState(false);
+  const [searchEnabled, setSearchEnabled] = useState(false);
+  const [togglingAutoFetch, setTogglingAutoFetch] = useState(false);
+  const [togglingSearch, setTogglingSearch] = useState(false);
+
   // ─── Fetchers ───
 
   const fetchPlatforms = async () => {
