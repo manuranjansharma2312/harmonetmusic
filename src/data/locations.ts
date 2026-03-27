@@ -12,41 +12,35 @@ const toFlagEmoji = (countryCode: string) =>
     .toUpperCase()
     .replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
 
-let _countriesCache: LocationCountry[] | null = null;
+// Lazy-initialize on first access to avoid blocking initial render
+let _cache: LocationCountry[] | null = null;
 
-async function loadCountryLib() {
-  const { Country } = await import('country-state-city');
-  return Country;
+function getCountryList(): LocationCountry[] {
+  if (!_cache) {
+    _cache = Country.getAllCountries().map((country) => ({
+      name: country.name,
+      code: country.isoCode,
+      dialCode: `+${country.phonecode}`,
+      flag: toFlagEmoji(country.isoCode),
+    })).sort((a, b) => a.name.localeCompare(b.name));
+  }
+  return _cache;
 }
 
-async function loadStateLib() {
-  const { State } = await import('country-state-city');
-  return State;
-}
+// Proxy that lazily initializes
+export const countries: LocationCountry[] = new Proxy([] as LocationCountry[], {
+  get(_, prop) {
+    const list = getCountryList();
+    const val = (list as any)[prop];
+    return typeof val === 'function' ? val.bind(list) : val;
+  },
+});
 
-export async function getCountries(): Promise<LocationCountry[]> {
-  if (_countriesCache) return _countriesCache;
-  const Country = await loadCountryLib();
-  _countriesCache = Country.getAllCountries().map((country) => ({
-    name: country.name,
-    code: country.isoCode,
-    dialCode: `+${country.phonecode}`,
-    flag: toFlagEmoji(country.isoCode),
-  })).sort((a, b) => a.name.localeCompare(b.name));
-  return _countriesCache;
-}
-
-// Keep synchronous export for backward compat — populated after first async load
-export let countries: LocationCountry[] = [];
-
-// Preload on first import (non-blocking)
-getCountries().then((c) => { countries = c; });
-
-export const getStatesForCountry = async (countryName: string): Promise<string[]> => {
-  const list = await getCountries();
+export const getStatesForCountry = (countryName: string): string[] => {
+  const list = getCountryList();
   const selectedCountry = list.find((country) => country.name === countryName);
   if (!selectedCountry) return [];
-  const State = await loadStateLib();
+
   return State.getStatesOfCountry(selectedCountry.code)
     .map((state) => state.name)
     .sort((a, b) => a.localeCompare(b));
