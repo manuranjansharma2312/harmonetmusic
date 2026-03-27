@@ -247,13 +247,15 @@ export default function AdminSiteSettings() {
             {form.auto_clear_cache_enabled && (
               <NumberRow
                 label="Auto Clear Interval"
-                description="How often to automatically clear the cache."
+                description={`How often to automatically clear the cache. Current: ${form.auto_clear_cache_interval >= 86400000 ? `${(form.auto_clear_cache_interval / 86400000).toFixed(0)} day(s)` : form.auto_clear_cache_interval >= 3600000 ? `${(form.auto_clear_cache_interval / 3600000).toFixed(1)} hour(s)` : `${(form.auto_clear_cache_interval / 60000).toFixed(0)} min`}`}
                 value={form.auto_clear_cache_interval}
                 onChange={(v) => update('auto_clear_cache_interval', v)}
-                min={600000}
+                min={300000}
                 max={86400000}
-                step={600000}
+                step={300000}
                 presets={[
+                  { label: '5 min', value: 300000 },
+                  { label: '15 min', value: 900000 },
                   { label: '30 min', value: 1800000 },
                   { label: '1 hour', value: 3600000 },
                   { label: '6 hours', value: 21600000 },
@@ -367,13 +369,15 @@ export default function AdminSiteSettings() {
               value={form.max_upload_size_mb}
               onChange={(v) => update('max_upload_size_mb', v)}
               min={5}
-              max={200}
+              max={999}
               step={5}
               presets={[
-                { label: '10 MB', value: 10 },
                 { label: '25 MB', value: 25 },
                 { label: '50 MB', value: 50 },
                 { label: '100 MB', value: 100 },
+                { label: '250 MB', value: 250 },
+                { label: '500 MB', value: 500 },
+                { label: '999 MB', value: 999 },
               ]}
             />
           </div>
