@@ -432,6 +432,7 @@ export default function AdminEmailSettings() {
     setEditSubject(template.subject);
     setEditBody(template.body_html);
     setEditAccountId(template.email_account_id);
+    setEditCategory(template.category);
     setPreviewTemplate(null);
   }
 
