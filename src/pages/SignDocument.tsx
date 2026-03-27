@@ -183,12 +183,14 @@ export default function SignDocument() {
       return;
     }
     setSigning(true);
+    const locationStr = [geoInfo.city, geoInfo.region, geoInfo.country].filter(Boolean).join(', ');
     const { data: success } = await supabase.rpc('submit_signature', {
       _token: token!,
       _signature_data: sigData,
       _signature_type: signatureTab,
-      _ip: '',
+      _ip: geoInfo.ip || '',
       _user_agent: navigator.userAgent,
+      _geolocation: locationStr,
     });
     if (success) {
       setStep('done');
