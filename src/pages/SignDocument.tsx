@@ -64,44 +64,7 @@ export default function SignDocument() {
     setLoading(false);
   };
 
-  const sendOtp = async () => {
-    setOtpSending(true);
-    const { data: success } = await supabase.rpc('request_signing_otp', {
-      _token: token!,
-      _ip: geoInfo.ip || '',
-    });
-    if (success) {
-      setOtpSent(true);
-      toast.success('OTP sent to your email');
-      // Call edge function to actually send the OTP email
-      await supabase.functions.invoke('send-signing-otp', {
-        body: { token: token },
-      });
-    } else {
-      toast.error('Failed to send OTP. Please try again later.');
-    }
-    setOtpSending(false);
-  };
-
-  const verifyOtp = async () => {
-    if (otp.length !== 6) {
-      toast.error('Enter the 6-digit OTP');
-      return;
-    }
-    setVerifying(true);
-    const { data: valid } = await supabase.rpc('verify_signing_otp', {
-      _token: token!,
-      _otp: otp,
-      _ip: geoInfo.ip || '',
-    });
-    if (valid) {
-      toast.success('OTP verified');
-      setStep('sign');
-    } else {
-      toast.error('Invalid or expired OTP');
-    }
-    setVerifying(false);
-  };
+  // OTP removed - direct signing flow
 
   // Canvas drawing
   const startDraw = (e: React.MouseEvent | React.TouchEvent) => {
