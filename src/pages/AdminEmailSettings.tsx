@@ -288,6 +288,8 @@ export default function AdminEmailSettings() {
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
   const [templatePage, setTemplatePage] = useState(0);
   const [templatePageSize, setTemplatePageSize] = useState<number | 'all'>(10);
+  const [selectedTemplates, setSelectedTemplates] = useState<Set<string>>(new Set());
+  const [bulkCategory, setBulkCategory] = useState<string>('');
 
   // Log state
   const [logSearch, setLogSearch] = useState('');
