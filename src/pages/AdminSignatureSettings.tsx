@@ -32,7 +32,6 @@ export default function AdminSignatureSettings() {
       if (!error && data) {
         setSettings({
           id: data.id,
-          default_expiry_days: (data as any).default_expiry_days ?? 30,
           auto_send_completion: (data as any).auto_send_completion ?? false,
           signing_email_subject: (data as any).signing_email_subject ?? '',
           signing_email_body: (data as any).signing_email_body ?? '',
