@@ -174,6 +174,18 @@ export default function AdminSignatureDocuments() {
             <p className="text-muted-foreground text-sm">Upload, send, and manage signature requests</p>
           </div>
           <div className="flex gap-2">
+            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
+              <SelectTrigger className="w-[140px]">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Filter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="sent">Sent</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
             <Button variant="outline" onClick={() => navigate('/admin/signature-settings')}>
               <Settings2 className="h-4 w-4 mr-2" /> Settings
             </Button>
