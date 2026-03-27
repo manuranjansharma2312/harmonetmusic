@@ -384,14 +384,28 @@ export default function AdminSmartLinks() {
               <p className="text-sm text-muted-foreground">Standalone smart links created by users or admin.</p>
               <Button size="sm" onClick={() => setCreatingCustom(true)}><Plus className="h-3.5 w-3.5 mr-1" /> Create Smart Link</Button>
             </div>
-            <div className="relative max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search custom links..." value={customSearch} onChange={e => setCustomSearch(e.target.value)} className="pl-9" />
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="relative max-w-sm flex-1 min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Search custom links..." value={customSearch} onChange={e => setCustomSearch(e.target.value)} className="pl-9" />
+              </div>
+              <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+                <SelectTrigger className="w-[160px]">
+                  <Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {customLoading ? (
               <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-            ) : customLinks.filter(c => c.title.toLowerCase().includes(customSearch.toLowerCase())).length === 0 ? (
+            ) : customLinks.filter(c => c.title.toLowerCase().includes(customSearch.toLowerCase()) && (statusFilter === 'all' || c.status === statusFilter)).length === 0 ? (
               <GlassCard className="p-8 text-center">
                 <Music className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                 <p className="text-muted-foreground">No custom smart links yet</p>
