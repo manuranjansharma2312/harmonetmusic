@@ -102,15 +102,11 @@ serve(async (req) => {
 
     const companyName = companyRes.data?.company_name || "Harmonet Music";
 
-    // Get signed PDF download URL
-    let downloadUrl = "";
-    if (doc.signed_pdf_url) {
-      const { data: signedUrl } = await supabase.storage
-        .from("signature-documents")
-        .createSignedUrl(doc.signed_pdf_url, 60 * 60 * 24 * 7);
-      if (signedUrl) downloadUrl = signedUrl.signedUrl;
-    }
-    if (!downloadUrl) throw new Error("Signed PDF not found. Generate certificate first.");
+    // Build download page URL (handles expiry gracefully)
+    const siteUrl = Deno.env.get("SITE_URL") || supabaseUrl.replace('.supabase.co', '.lovable.app').replace('https://api.', 'https://');
+    const downloadUrl = `${siteUrl}/download/${document_id}`;
+
+    if (!doc.signed_pdf_url) throw new Error("Signed PDF not found. Generate certificate first.");
 
     const subjectTemplate = sigSettings?.completion_email_subject || "Completed: {{document_title}} - Signed Document & Certificate";
     const bodyIntro = sigSettings?.completion_email_body || "The following document has been successfully signed by all parties.";
