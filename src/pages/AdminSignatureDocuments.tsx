@@ -35,7 +35,7 @@ export default function AdminSignatureDocuments() {
   const [recipients, setRecipients] = useState<Recipient[]>([{ name: '', email: '' }]);
   const [page, setPage] = useState(1);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const fetchDocuments = async () => {
     setLoading(true);
