@@ -59,6 +59,7 @@ interface EmailLog {
   error_message: string | null;
   sent_at: string;
   sent_by: string | null;
+  body_html: string | null;
 }
 
 const CATEGORIES = [
