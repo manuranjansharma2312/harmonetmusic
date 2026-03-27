@@ -45,6 +45,18 @@ interface EmailTemplate {
   variables: string[];
 }
 
+interface EmailLog {
+  id: string;
+  template_key: string;
+  template_label: string | null;
+  recipient_email: string;
+  subject: string | null;
+  status: string;
+  error_message: string | null;
+  sent_at: string;
+  sent_by: string | null;
+}
+
 const CATEGORIES = [
   { key: 'all', label: 'All' },
   { key: 'authentication', label: 'Authentication' },
