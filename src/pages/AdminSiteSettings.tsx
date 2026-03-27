@@ -369,13 +369,15 @@ export default function AdminSiteSettings() {
               value={form.max_upload_size_mb}
               onChange={(v) => update('max_upload_size_mb', v)}
               min={5}
-              max={200}
+              max={999}
               step={5}
               presets={[
-                { label: '10 MB', value: 10 },
                 { label: '25 MB', value: 25 },
                 { label: '50 MB', value: 50 },
                 { label: '100 MB', value: 100 },
+                { label: '250 MB', value: 250 },
+                { label: '500 MB', value: 500 },
+                { label: '999 MB', value: 999 },
               ]}
             />
           </div>
