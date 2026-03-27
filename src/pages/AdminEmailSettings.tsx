@@ -17,8 +17,9 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import {
   Mail, Settings, FileText, Save, Send, Eye, EyeOff, Search,
-  ChevronDown, ChevronUp, ToggleLeft, Info, Code, History,
+  ChevronDown, ChevronUp, ToggleLeft, Info, Code, History, Download,
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface EmailSettings {
   id: string;
@@ -88,6 +89,9 @@ export default function AdminEmailSettings() {
   const [logStatusFilter, setLogStatusFilter] = useState('all');
   const [logPage, setLogPage] = useState(0);
   const [logPageSize, setLogPageSize] = useState<number | 'all'>(20);
+  const [showTestDialog, setShowTestDialog] = useState(false);
+  const [testEmail, setTestEmail] = useState('');
+  const [sendingTest, setSendingTest] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -169,6 +173,55 @@ export default function AdminEmailSettings() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function sendTestEmail() {
+    if (!testEmail.trim()) { toast.error('Enter a recipient email'); return; }
+    setSendingTest(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-test-email', {
+        body: { test_email: testEmail.trim() },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(data.message || 'Test email sent!');
+      setShowTestDialog(false);
+      setTestEmail('');
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send test email');
+    } finally {
+      setSendingTest(false);
+    }
+  }
+
+  function exportLogsCSV() {
+    const filteredLogs = emailLogs.filter(log => {
+      const matchesSearch = !logSearch ||
+        log.recipient_email.toLowerCase().includes(logSearch.toLowerCase()) ||
+        (log.template_label || log.template_key).toLowerCase().includes(logSearch.toLowerCase());
+      const matchesStatus = logStatusFilter === 'all' || log.status === logStatusFilter;
+      return matchesSearch && matchesStatus;
+    });
+    if (filteredLogs.length === 0) { toast.error('No logs to export'); return; }
+    const headers = ['Template', 'Recipient', 'Subject', 'Status', 'Sent At', 'Error'];
+    const rows = filteredLogs.map(l => [
+      l.template_label || l.template_key,
+      l.recipient_email,
+      l.subject || '',
+      l.status,
+      new Date(l.sent_at).toLocaleString(),
+      l.error_message || '',
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `email-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${filteredLogs.length} logs`);
   }
 
   function startEditing(template: EmailTemplate) {
@@ -386,7 +439,7 @@ export default function AdminEmailSettings() {
                       <Save className="h-4 w-4" />
                       {saving ? 'Saving...' : 'Save Settings'}
                     </Button>
-                    <Button variant="outline" className="gap-2" onClick={() => toast.info('Test email feature will work after server-side integration')}>
+                    <Button variant="outline" className="gap-2" onClick={() => setShowTestDialog(true)}>
                       <Send className="h-4 w-4" /> Send Test Email
                     </Button>
                   </div>
@@ -538,7 +591,10 @@ export default function AdminEmailSettings() {
                   <h2 className="text-lg font-semibold">Email Sending Logs</h2>
                   <p className="text-xs text-muted-foreground">Track all sent emails with status, recipient, and timestamps</p>
                 </div>
-              </div>
+                </div>
+                <Button variant="outline" size="sm" className="gap-2 ml-auto" onClick={exportLogsCSV}>
+                  <Download className="h-4 w-4" /> Export CSV
+                </Button>
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
@@ -701,6 +757,36 @@ export default function AdminEmailSettings() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Test Email Dialog */}
+      <Dialog open={showTestDialog} onOpenChange={setShowTestDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send Test Email</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Send a test email to verify your SMTP configuration is working correctly.
+            </p>
+            <div className="space-y-2">
+              <Label>Recipient Email</Label>
+              <Input
+                type="email"
+                placeholder="test@example.com"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowTestDialog(false)}>Cancel</Button>
+              <Button onClick={sendTestEmail} disabled={sendingTest} className="gap-2">
+                <Send className="h-4 w-4" />
+                {sendingTest ? 'Sending...' : 'Send Test'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
