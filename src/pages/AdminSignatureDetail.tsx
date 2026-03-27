@@ -80,16 +80,28 @@ export default function AdminSignatureDetail() {
     setGeneratingCert(false);
   };
 
-  const actionLabel = (action: string) => {
-    const labels: Record<string, string> = {
-      'email_sent': '📧 Email Sent',
-      'document_viewed': '👁️ Document Viewed',
-      'otp_requested': '🔑 OTP Requested',
-      'otp_verified': '✅ OTP Verified',
-      'document_signed': '✍️ Document Signed',
-    };
-    return labels[action] || action;
+  const actionIcons: Record<string, React.ReactNode> = {
+    'email_sent': <Mail className="h-3.5 w-3.5 mr-1.5 text-blue-500" />,
+    'document_viewed': <Eye className="h-3.5 w-3.5 mr-1.5 text-amber-500" />,
+    'otp_requested': <KeyRound className="h-3.5 w-3.5 mr-1.5 text-orange-500" />,
+    'otp_verified': <CheckCircle className="h-3.5 w-3.5 mr-1.5 text-green-500" />,
+    'document_signed': <PenLine className="h-3.5 w-3.5 mr-1.5 text-primary" />,
   };
+
+  const actionLabels: Record<string, string> = {
+    'email_sent': 'Email Sent',
+    'document_viewed': 'Document Viewed',
+    'otp_requested': 'OTP Requested',
+    'otp_verified': 'OTP Verified',
+    'document_signed': 'Document Signed',
+  };
+
+  const renderAction = (action: string) => (
+    <span className="flex items-center">
+      {actionIcons[action] || null}
+      {actionLabels[action] || action}
+    </span>
+  );
 
   if (loading) return <DashboardLayout><div className="flex items-center justify-center h-64 text-muted-foreground">Loading...</div></DashboardLayout>;
   if (!doc) return <DashboardLayout><div className="text-center py-12 text-muted-foreground">Document not found</div></DashboardLayout>;
