@@ -591,7 +591,10 @@ export default function AdminEmailSettings() {
                   <h2 className="text-lg font-semibold">Email Sending Logs</h2>
                   <p className="text-xs text-muted-foreground">Track all sent emails with status, recipient, and timestamps</p>
                 </div>
-              </div>
+                </div>
+                <Button variant="outline" size="sm" className="gap-2 ml-auto" onClick={exportLogsCSV}>
+                  <Download className="h-4 w-4" /> Export CSV
+                </Button>
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
