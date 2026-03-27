@@ -18,7 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 import {
   Mail, Settings, FileText, Save, Send, Eye, EyeOff, Search,
   ChevronUp, Info, Code, History, Download, Plus, Trash2, Star, Edit2, BarChart3,
-  Tag,
+  Tag, CheckSquare,
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -288,6 +288,8 @@ export default function AdminEmailSettings() {
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
   const [templatePage, setTemplatePage] = useState(0);
   const [templatePageSize, setTemplatePageSize] = useState<number | 'all'>(10);
+  const [selectedTemplates, setSelectedTemplates] = useState<Set<string>>(new Set());
+  const [bulkCategory, setBulkCategory] = useState<string>('');
 
   // Log state
   const [logSearch, setLogSearch] = useState('');
@@ -840,6 +842,62 @@ export default function AdminEmailSettings() {
                 </Select>
               </div>
 
+              {/* Bulk select actions */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer text-sm">
+                  <input
+                    type="checkbox"
+                    className="rounded border-border"
+                    checked={paginatedTemplates.length > 0 && paginatedTemplates.every(t => selectedTemplates.has(t.id))}
+                    onChange={(e) => {
+                      const next = new Set(selectedTemplates);
+                      if (e.target.checked) {
+                        paginatedTemplates.forEach(t => next.add(t.id));
+                      } else {
+                        paginatedTemplates.forEach(t => next.delete(t.id));
+                      }
+                      setSelectedTemplates(next);
+                    }}
+                  />
+                  <CheckSquare className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Select All</span>
+                </label>
+                {selectedTemplates.size > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="secondary" className="text-xs">{selectedTemplates.size} selected</Badge>
+                    <Select value={bulkCategory} onValueChange={setBulkCategory}>
+                      <SelectTrigger className="w-[180px] h-8 text-xs">
+                        <SelectValue placeholder="Assign category..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map(c => (
+                          <SelectItem key={c.key} value={c.key}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button size="sm" variant="default" disabled={!bulkCategory}
+                      onClick={async () => {
+                        if (!bulkCategory) return;
+                        const ids = Array.from(selectedTemplates);
+                        let success = 0;
+                        for (const id of ids) {
+                          const { error } = await supabase.from('email_templates').update({ category: bulkCategory }).eq('id', id);
+                          if (!error) success++;
+                        }
+                        toast.success(`Updated category for ${success} template(s)`);
+                        setSelectedTemplates(new Set());
+                        setBulkCategory('');
+                        fetchData();
+                      }}>
+                      Apply Category
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => { setSelectedTemplates(new Set()); setBulkCategory(''); }}>
+                      Clear
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-3">
                 {paginatedTemplates.map(template => {
                   const assignedName = getAccountName(template.email_account_id);
@@ -847,6 +905,17 @@ export default function AdminEmailSettings() {
                     <div key={template.id} className="border border-border rounded-lg overflow-hidden">
                       <div className="flex items-center justify-between p-4 bg-muted/30">
                         <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <input
+                            type="checkbox"
+                            className="rounded border-border shrink-0"
+                            checked={selectedTemplates.has(template.id)}
+                            onChange={(e) => {
+                              const next = new Set(selectedTemplates);
+                              if (e.target.checked) next.add(template.id);
+                              else next.delete(template.id);
+                              setSelectedTemplates(next);
+                            }}
+                          />
                           <Switch checked={template.is_enabled} onCheckedChange={(v) => toggleTemplate(template.id, v)} />
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
