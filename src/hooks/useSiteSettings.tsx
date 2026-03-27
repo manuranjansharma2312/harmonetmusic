@@ -43,7 +43,12 @@ export function useSiteSettings() {
         .limit(1)
         .maybeSingle();
       if (error) throw error;
-      return (data as unknown as SiteSettings) ?? DEFAULTS;
+      const settings = (data as unknown as SiteSettings) ?? DEFAULTS;
+      // Sync anti-inspection to localStorage for main.tsx to read on next load
+      try {
+        localStorage.setItem('site_anti_inspection', String(settings.enable_anti_inspection));
+      } catch {}
+      return settings;
     },
     staleTime: 120000,
     gcTime: 600000,
