@@ -372,8 +372,8 @@ export default function AdminSmartLinks() {
           </div>
         </div>
 
-        <Tabs defaultValue="custom" className="w-full">
-          <TabsList>
+        <Tabs defaultValue="custom" className="w-full responsive-tabs">
+          <TabsList className="flex flex-wrap h-auto gap-1">
             <TabsTrigger value="custom"><Music className="h-3.5 w-3.5 mr-1.5" />Custom Links</TabsTrigger>
             <TabsTrigger value="platforms"><Settings className="h-3.5 w-3.5 mr-1.5" />Platforms</TabsTrigger>
             <TabsTrigger value="apis"><Key className="h-3.5 w-3.5 mr-1.5" />API Integrations</TabsTrigger>
