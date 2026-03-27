@@ -560,28 +560,8 @@ export default function AdminSmartLinks() {
         </Tabs>
       </div>
 
-      {/* Edit Release Dialog */}
-      <Dialog open={!!editRelease} onOpenChange={open => !open && setEditRelease(null)}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Smart Link — {editRelease?.album_name || editRelease?.ep_name || 'Untitled'}</DialogTitle>
-            <DialogDescription>Add platform URLs for this release's smart link page.</DialogDescription>
-          </DialogHeader>
-          {editRelease && (
-            <PlatformLinksEditor
-              releaseId={editRelease.id}
-              releaseSlug={editRelease.slug}
-              initialLinks={editRelease.platform_links || {}}
-              onSaved={(links) => {
-                setReleases(prev => prev.map(r => r.id === editRelease.id ? { ...r, platform_links: links } : r));
-                setEditRelease(null);
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
 
-      {/* Add/Edit Platform Dialog */}
+
       <Dialog open={newPlatform} onOpenChange={open => { if (!open) { setNewPlatform(false); setEditPlatform(null); } }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
