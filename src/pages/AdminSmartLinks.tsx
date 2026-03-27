@@ -85,6 +85,7 @@ export default function AdminSmartLinks() {
   const [customLinks, setCustomLinks] = useState<any[]>([]);
   const [customLoading, setCustomLoading] = useState(true);
   const [customSearch, setCustomSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
   const [editCustom, setEditCustom] = useState<any | null>(null);
   const [creatingCustom, setCreatingCustom] = useState(false);
 
