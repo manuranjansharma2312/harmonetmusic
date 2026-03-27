@@ -239,7 +239,7 @@ serve(async (req) => {
     const legalTexts = [
       "This certificate confirms that the above-mentioned document was electronically signed by the listed parties using a verified electronic signature process. The document's integrity is verified through SHA-256 cryptographic hashing. Each signer's identity was verified via Email OTP (One-Time Password) before signing.",
       "This electronic signature is legally valid and enforceable under the Information Technology Act, 2000 (India) - Sections 5 and 10A, which recognize electronic signatures as equivalent to handwritten signatures for private commercial agreements. This certificate does not constitute a government-issued Digital Signature Certificate (DSC) under Section 35 of the IT Act.",
-      "The complete audit trail above serves as evidence of the signing process, including timestamps, IP addresses, and device information for each action taken during the signing workflow.",
+      "The complete audit trail above serves as evidence of the signing process, including timestamps, IP addresses, geographic locations, and device information for each action taken during the signing workflow.",
     ];
 
     for (const txt of legalTexts) {
