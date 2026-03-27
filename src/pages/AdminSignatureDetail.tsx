@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ArrowLeft, Send, FileSignature, Download, Copy, CheckCircle, Clock, Eye } from 'lucide-react';
+import { ArrowLeft, Send, FileSignature, Download, Copy, CheckCircle, Clock, Eye, Award } from 'lucide-react';
 import { format } from 'date-fns';
 import { CopyButton } from '@/components/CopyButton';
 
@@ -49,8 +49,35 @@ export default function AdminSignatureDetail() {
     }
   };
 
+  const [generatingCert, setGeneratingCert] = useState(false);
+
   const getSigningUrl = (token: string) => {
     return `${window.location.origin}/sign/${token}`;
+  };
+
+  const handleDownloadCertificate = async () => {
+    setGeneratingCert(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-signature-certificate', {
+        body: { document_id: id },
+      });
+      if (error) throw error;
+      if (!data?.certificate_html) throw new Error('Failed to generate certificate');
+      
+      const blob = new Blob([data.certificate_html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${doc?.title || 'Document'} - Signature Certificate.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success('Certificate downloaded');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to generate certificate');
+    }
+    setGeneratingCert(false);
   };
 
   const actionLabel = (action: string) => {
@@ -112,6 +139,11 @@ export default function AdminSignatureDetail() {
           {doc.status === 'sent' && (
             <Button onClick={handleSend} variant="outline">
               <Send className="h-4 w-4 mr-2" /> Resend Emails
+            </Button>
+          )}
+          {doc.status === 'completed' && (
+            <Button onClick={handleDownloadCertificate} disabled={generatingCert} variant="default">
+              <Award className="h-4 w-4 mr-2" /> {generatingCert ? 'Generating...' : 'Download Certificate'}
             </Button>
           )}
         </div>
