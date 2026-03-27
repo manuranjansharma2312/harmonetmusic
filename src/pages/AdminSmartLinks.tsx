@@ -825,6 +825,13 @@ export default function AdminSmartLinks() {
           )}
         </DialogContent>
       </Dialog>
+      {/* Reject Reason Modal */}
+      <RejectReasonModal
+        open={!!rejectingId}
+        title="Reject Smart Link"
+        onConfirm={(reason) => rejectingId && rejectSmartLink(rejectingId, reason)}
+        onCancel={() => setRejectingId(null)}
+      />
     </DashboardLayout>
   );
 }
