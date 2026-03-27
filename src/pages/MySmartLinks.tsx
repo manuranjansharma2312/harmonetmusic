@@ -43,7 +43,7 @@ export default function MySmartLinks() {
     if (!user) return;
     const { data } = await supabase
       .from('smart_links')
-      .select('id, title, artist_name, poster_url, platform_links, slug, created_at, status')
+      .select('id, title, artist_name, poster_url, platform_links, slug, created_at, status, rejection_reason')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     setSmartLinks((data as any) || []);
