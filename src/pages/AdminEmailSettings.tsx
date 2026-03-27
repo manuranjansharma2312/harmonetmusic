@@ -64,17 +64,25 @@ interface EmailLog {
   body_html: string | null;
 }
 
-const CATEGORIES = [
-  { key: 'all', label: 'All' },
-  { key: 'authentication', label: 'Authentication' },
-  { key: 'releases', label: 'Releases' },
-  { key: 'revenue', label: 'Revenue & Payouts' },
-  { key: 'labels', label: 'Labels' },
-  { key: 'content_requests', label: 'Content Requests' },
-  { key: 'sub_labels', label: 'Sub Labels' },
-  { key: 'smart_links', label: 'Smart Links' },
-  { key: 'promotions', label: 'Promotions' },
-  { key: 'general', label: 'General' },
+interface EmailCategory {
+  id: string;
+  name: string;
+  key: string;
+  default_account_id: string | null;
+  sort_order: number;
+}
+
+const CATEGORY_COLORS = [
+  'bg-blue-500/20 text-blue-400',
+  'bg-green-500/20 text-green-400',
+  'bg-yellow-500/20 text-yellow-400',
+  'bg-purple-500/20 text-purple-400',
+  'bg-orange-500/20 text-orange-400',
+  'bg-pink-500/20 text-pink-400',
+  'bg-cyan-500/20 text-cyan-400',
+  'bg-red-500/20 text-red-400',
+  'bg-teal-500/20 text-teal-400',
+  'bg-indigo-500/20 text-indigo-400',
 ];
 
 const EMPTY_ACCOUNT: Omit<EmailAccount, 'id'> = {
