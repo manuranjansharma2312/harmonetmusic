@@ -91,6 +91,164 @@ const EMPTY_ACCOUNT: Omit<EmailAccount, 'id'> = {
   is_default: false,
 };
 
+const CHART_COLORS = {
+  sent: 'hsl(142, 71%, 45%)',
+  failed: 'hsl(0, 84%, 60%)',
+  pending: 'hsl(48, 96%, 53%)',
+};
+
+const PIE_COLORS = ['hsl(142, 71%, 45%)', 'hsl(0, 84%, 60%)', 'hsl(48, 96%, 53%)'];
+
+function EmailAnalytics({ logs }: { logs: EmailLog[] }) {
+  const [timeRange, setTimeRange] = useState('7d');
+
+  const filteredLogs = useMemo(() => {
+    const now = new Date();
+    const ranges: Record<string, number> = { '24h': 1, '7d': 7, '30d': 30, '90d': 90 };
+    const days = ranges[timeRange] || 7;
+    const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+    return logs.filter(l => new Date(l.sent_at) >= cutoff);
+  }, [logs, timeRange]);
+
+  const stats = useMemo(() => {
+    const total = filteredLogs.length;
+    const sent = filteredLogs.filter(l => l.status === 'sent').length;
+    const failed = filteredLogs.filter(l => l.status === 'failed').length;
+    const pending = filteredLogs.filter(l => l.status === 'pending').length;
+    return { total, sent, failed, pending, successRate: total > 0 ? ((sent / total) * 100).toFixed(1) : '0' };
+  }, [filteredLogs]);
+
+  const dailyData = useMemo(() => {
+    const map = new Map<string, { date: string; sent: number; failed: number; pending: number }>();
+    filteredLogs.forEach(log => {
+      const date = new Date(log.sent_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      if (!map.has(date)) map.set(date, { date, sent: 0, failed: 0, pending: 0 });
+      const entry = map.get(date)!;
+      if (log.status === 'sent') entry.sent++;
+      else if (log.status === 'failed') entry.failed++;
+      else entry.pending++;
+    });
+    return Array.from(map.values()).reverse();
+  }, [filteredLogs]);
+
+  const templateData = useMemo(() => {
+    const map = new Map<string, number>();
+    filteredLogs.forEach(log => {
+      const name = log.template_label || log.template_key;
+      map.set(name, (map.get(name) || 0) + 1);
+    });
+    return Array.from(map.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8);
+  }, [filteredLogs]);
+
+  const pieData = useMemo(() => [
+    { name: 'Sent', value: stats.sent },
+    { name: 'Failed', value: stats.failed },
+    { name: 'Pending', value: stats.pending },
+  ].filter(d => d.value > 0), [stats]);
+
+  return (
+    <div className="space-y-6">
+      {/* Time range selector */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-primary/10">
+            <BarChart3 className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold">Email Analytics</h2>
+            <p className="text-xs text-muted-foreground">Overview of email delivery performance</p>
+          </div>
+        </div>
+        <div className="flex gap-1.5">
+          {[{ key: '24h', label: '24h' }, { key: '7d', label: '7 Days' }, { key: '30d', label: '30 Days' }, { key: '90d', label: '90 Days' }].map(r => (
+            <Button key={r.key} size="sm" variant={timeRange === r.key ? 'default' : 'outline'}
+              onClick={() => setTimeRange(r.key)}>{r.label}</Button>
+          ))}
+        </div>
+      </div>
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {[
+          { label: 'Total Emails', value: stats.total, color: 'text-foreground' },
+          { label: 'Sent', value: stats.sent, color: 'text-green-400' },
+          { label: 'Failed', value: stats.failed, color: 'text-red-400' },
+          { label: 'Pending', value: stats.pending, color: 'text-yellow-400' },
+          { label: 'Success Rate', value: `${stats.successRate}%`, color: 'text-primary' },
+        ].map(s => (
+          <GlassCard key={s.label} className="p-4 text-center">
+            <p className="text-xs text-muted-foreground">{s.label}</p>
+            <p className={`text-2xl font-bold mt-1 ${s.color}`}>{s.value}</p>
+          </GlassCard>
+        ))}
+      </div>
+
+      {/* Charts row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Bar chart - daily breakdown */}
+        <GlassCard className="p-4 lg:col-span-2">
+          <h3 className="text-sm font-semibold mb-3">Emails Over Time</h3>
+          {dailyData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={dailyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} />
+                <Legend />
+                <Bar dataKey="sent" fill={CHART_COLORS.sent} radius={[4, 4, 0, 0]} name="Sent" />
+                <Bar dataKey="failed" fill={CHART_COLORS.failed} radius={[4, 4, 0, 0]} name="Failed" />
+                <Bar dataKey="pending" fill={CHART_COLORS.pending} radius={[4, 4, 0, 0]} name="Pending" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[280px] text-muted-foreground text-sm">No data for this period</div>
+          )}
+        </GlassCard>
+
+        {/* Pie chart - status breakdown */}
+        <GlassCard className="p-4">
+          <h3 className="text-sm font-semibold mb-3">Status Breakdown</h3>
+          {pieData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                  {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                </Pie>
+                <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[280px] text-muted-foreground text-sm">No data</div>
+          )}
+        </GlassCard>
+      </div>
+
+      {/* Top templates */}
+      <GlassCard className="p-4">
+        <h3 className="text-sm font-semibold mb-3">Top Email Templates</h3>
+        {templateData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={Math.max(200, templateData.length * 40)}>
+            <BarChart data={templateData} layout="vertical" margin={{ left: 120 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis type="number" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" width={120} />
+              <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} />
+              <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} name="Emails Sent" />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="text-center text-muted-foreground text-sm py-8">No template data</div>
+        )}
+      </GlassCard>
+    </div>
+  );
+}
+
 export default function AdminEmailSettings() {
   const { user } = useAuth();
   const [accounts, setAccounts] = useState<EmailAccount[]>([]);
