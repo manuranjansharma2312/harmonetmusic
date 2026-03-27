@@ -178,6 +178,7 @@ function App() {
                       <Route path="/admin/signature/:id" element={<ProtectedRoute requiredRole="admin"><AdminSignatureDetail /></ProtectedRoute>} />
                       <Route path="/admin/signature/:id/fields" element={<ProtectedRoute requiredRole="admin"><AdminSignatureFields /></ProtectedRoute>} />
                       <Route path="/sign/:token" element={<SignDocument />} />
+                      <Route path="/download/:documentId" element={<DownloadSignedPdf />} />
                       <Route path="/r/:slug" element={<SmartLink />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
