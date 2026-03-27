@@ -63,7 +63,7 @@ export default function SignDocument() {
     await supabase.rpc('log_signature_audit', {
       _token: token!,
       _action: 'document_viewed',
-      _ip: '',
+      _ip: geoInfo.ip || '',
       _user_agent: navigator.userAgent,
       _metadata: {},
     });
