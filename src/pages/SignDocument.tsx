@@ -54,12 +54,13 @@ export default function SignDocument() {
     // No OTP needed, go directly to sign step
 
     // Log document viewed
+    const locationStr = [geoInfo.city, geoInfo.region, geoInfo.country].filter(Boolean).join(', ');
     await supabase.rpc('log_signature_audit', {
       _token: token!,
       _action: 'document_viewed',
       _ip: geoInfo.ip || '',
       _user_agent: navigator.userAgent,
-      _metadata: {},
+      _metadata: { geolocation: locationStr || '' },
     });
     setLoading(false);
   };
