@@ -657,9 +657,9 @@ export default function AdminEmailSettings() {
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Search templates..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
+                <Input placeholder="Search templates..." value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setTemplatePage(0); }} className="pl-9" />
                 </div>
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setTemplatePage(0); }}>
                   <SelectTrigger className="w-full sm:w-[200px]"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.map(c => <SelectItem key={c.key} value={c.key}>{c.label}</SelectItem>)}
