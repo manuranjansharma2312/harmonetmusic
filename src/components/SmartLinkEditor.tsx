@@ -41,6 +41,13 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
   const [loadingPlatforms, setLoadingPlatforms] = useState(true);
   const [uploadingPoster, setUploadingPoster] = useState(false);
 
+  // Auto-fetch & search settings
+  const [autoFetchEnabled, setAutoFetchEnabled] = useState(false);
+  const [searchEnabled, setSearchEnabled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [autoFetching, setAutoFetching] = useState(false);
+  const [searching, setSearching] = useState(false);
+
   const isEdit = !!smartLink?.id;
   const smartLinkUrl = smartLink?.slug
     ? `${window.location.origin}/r/${smartLink.slug}`
