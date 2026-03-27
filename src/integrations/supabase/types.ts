@@ -476,6 +476,99 @@ export type Database = {
         }
         Relationships: []
       }
+      email_settings: {
+        Row: {
+          from_email: string | null
+          from_name: string | null
+          id: string
+          is_enabled: boolean | null
+          provider: string
+          reply_to_email: string | null
+          smtp_encryption: string | null
+          smtp_host: string | null
+          smtp_password: string | null
+          smtp_port: number | null
+          smtp_username: string | null
+          test_email_sent_at: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          from_email?: string | null
+          from_name?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          provider?: string
+          reply_to_email?: string | null
+          smtp_encryption?: string | null
+          smtp_host?: string | null
+          smtp_password?: string | null
+          smtp_port?: number | null
+          smtp_username?: string | null
+          test_email_sent_at?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          from_email?: string | null
+          from_name?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          provider?: string
+          reply_to_email?: string | null
+          smtp_encryption?: string | null
+          smtp_host?: string | null
+          smtp_password?: string | null
+          smtp_port?: number | null
+          smtp_username?: string | null
+          test_email_sent_at?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          body_html: string
+          category: string
+          created_at: string | null
+          id: string
+          is_enabled: boolean | null
+          subject: string
+          trigger_key: string
+          trigger_label: string
+          updated_at: string | null
+          updated_by: string | null
+          variables: string[] | null
+        }
+        Insert: {
+          body_html?: string
+          category?: string
+          created_at?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          subject?: string
+          trigger_key: string
+          trigger_label: string
+          updated_at?: string | null
+          updated_by?: string | null
+          variables?: string[] | null
+        }
+        Update: {
+          body_html?: string
+          category?: string
+          created_at?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          subject?: string
+          trigger_key?: string
+          trigger_label?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          variables?: string[] | null
+        }
+        Relationships: []
+      }
       genres: {
         Row: {
           created_at: string
