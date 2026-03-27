@@ -1070,20 +1070,26 @@ export type Database = {
       }
       smart_link_settings: {
         Row: {
+          auto_fetch_enabled: boolean
           id: string
           is_enabled: boolean
+          search_enabled: boolean
           updated_at: string
           updated_by: string | null
         }
         Insert: {
+          auto_fetch_enabled?: boolean
           id?: string
           is_enabled?: boolean
+          search_enabled?: boolean
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
+          auto_fetch_enabled?: boolean
           id?: string
           is_enabled?: boolean
+          search_enabled?: boolean
           updated_at?: string
           updated_by?: string | null
         }
