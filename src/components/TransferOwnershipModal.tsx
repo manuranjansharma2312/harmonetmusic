@@ -111,6 +111,18 @@ export function TransferOwnershipModal({ open, onClose, release, onTransferred }
         if (ytErr) console.error('YT report transfer error:', ytErr);
       }
 
+      // 5. Log the transfer
+      const { data: sessionData } = await supabase.auth.getSession();
+      const adminId = sessionData?.session?.user?.id || newUserId;
+      await supabase.from('release_transfers').insert({
+        release_id: release.id,
+        from_user_id: oldUserId,
+        to_user_id: newUserId,
+        transferred_by: adminId,
+        release_name: releaseName,
+        isrcs: isrcs,
+      } as any);
+
       toast.success(`Release transferred to ${selectedUser.legal_name} (#${selectedUser.display_id}). Historical reports are view-only for the new owner.`);
       onTransferred();
       onClose();
