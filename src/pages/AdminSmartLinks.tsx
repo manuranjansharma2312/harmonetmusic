@@ -313,6 +313,19 @@ export default function AdminSmartLinks() {
     fetchApiConfigs();
   };
 
+  // ─── Smart Link Approve/Reject ───
+  const approveSmartLink = async (id: string) => {
+    await supabase.from('smart_links').update({ status: 'approved', updated_at: new Date().toISOString() } as any).eq('id', id);
+    toast.success('Smart link approved');
+    fetchCustomLinks();
+  };
+
+  const rejectSmartLink = async (id: string) => {
+    await supabase.from('smart_links').update({ status: 'rejected', updated_at: new Date().toISOString() } as any).eq('id', id);
+    toast.success('Smart link rejected');
+    fetchCustomLinks();
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
