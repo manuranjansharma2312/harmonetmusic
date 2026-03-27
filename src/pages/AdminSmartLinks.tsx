@@ -465,12 +465,32 @@ export default function AdminSmartLinks() {
                             </div>
                           )}
                           {active ? (
-                            <Badge variant="default" className="mt-1 text-[10px]">{linkCount} platforms</Badge>
+                            <Badge variant="outline" className="mt-1 text-[10px]">{linkCount} platforms</Badge>
                           ) : (
                             <Badge variant="outline" className="mt-1 text-[10px]">No links</Badge>
                           )}
+                          {/* Status badge */}
+                          {c.status === 'pending' && (
+                            <Badge variant="secondary" className="mt-1 text-[10px] gap-0.5"><Clock className="h-2.5 w-2.5" /> Pending</Badge>
+                          )}
+                          {c.status === 'approved' && (
+                            <Badge className="mt-1 text-[10px] gap-0.5 bg-green-600"><CheckCircle className="h-2.5 w-2.5" /> Approved</Badge>
+                          )}
+                          {c.status === 'rejected' && (
+                            <Badge variant="destructive" className="mt-1 text-[10px] gap-0.5"><XCircle className="h-2.5 w-2.5" /> Rejected</Badge>
+                          )}
                         </div>
                         <div className="flex gap-1">
+                          {c.status !== 'approved' && (
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-green-500 hover:text-green-600" onClick={() => approveSmartLink(c.id)} title="Approve">
+                              <CheckCircle className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                          {c.status !== 'rejected' && (
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => rejectSmartLink(c.id)} title="Reject">
+                              <XCircle className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditCustom(c)}>
                             <Edit className="h-3.5 w-3.5" />
                           </Button>
