@@ -17,6 +17,8 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 
+const ITEMS_PER_PAGE = 10;
+
 interface Recipient {
   name: string;
   email: string;
