@@ -120,6 +120,7 @@ export default function AdminSubmissions() {
   const [rejectTrackTarget, setRejectTrackTarget] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
+  const [transferRelease, setTransferRelease] = useState<Release | null>(null);
 
   // ISRC/UPC inline editing
   const [editingIsrc, setEditingIsrc] = useState<Record<string, string>>({});
