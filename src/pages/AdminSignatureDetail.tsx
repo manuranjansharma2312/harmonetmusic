@@ -148,7 +148,7 @@ export default function AdminSignatureDetail() {
                   </TableCell>
                   <TableCell>
                     {r.signing_token && (
-                      <CopyButton value={getSigningUrl(r.signing_token)} label="Copy Link" />
+                      <CopyButton value={getSigningUrl(r.signing_token)} />
                     )}
                   </TableCell>
                 </TableRow>

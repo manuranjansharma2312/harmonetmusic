@@ -35,7 +35,7 @@ export default function SignDocument() {
 
   const loadData = async () => {
     setLoading(true);
-    const { data: result, error: err } = await supabase.rpc('get_signing_data', { _token: token! });
+    const { data: result, error: err } = await supabase.rpc('get_signing_data', { _token: token! }) as { data: any, error: any };
     if (err || !result) {
       setError('This signing link is invalid or has expired.');
       setLoading(false);

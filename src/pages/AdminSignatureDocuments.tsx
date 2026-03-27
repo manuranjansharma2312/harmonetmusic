@@ -318,13 +318,14 @@ export default function AdminSignatureDocuments() {
         </GlassCard>
       </div>
 
-      <ConfirmDialog
-        open={!!deleteId}
-        onOpenChange={() => setDeleteId(null)}
-        onConfirm={handleDelete}
-        title="Delete Document"
-        description="This will permanently delete this document and all related data."
-      />
+      {deleteId && (
+        <ConfirmDialog
+          title="Delete Document"
+          message="This will permanently delete this document and all related data."
+          onConfirm={() => { handleDelete(); }}
+          onCancel={() => setDeleteId(null)}
+        />
+      )}
     </DashboardLayout>
   );
 }
