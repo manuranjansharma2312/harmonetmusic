@@ -82,6 +82,7 @@
   #root {
     width: 100%;
     min-height: 100vh;
+    min-height: 100dvh;
   }
 
   body {
@@ -89,12 +90,18 @@
     font-family: 'Inter', sans-serif;
     background: var(--gradient-bg);
     min-height: 100vh;
+    min-height: 100dvh;
     overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Space Grotesk', sans-serif;
   }
+
+  /* Responsive headings */
+  h1 { @apply text-xl sm:text-2xl lg:text-3xl; }
+  h2 { @apply text-lg sm:text-xl; }
 }
 
 @layer components {
