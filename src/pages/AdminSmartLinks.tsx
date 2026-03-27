@@ -531,9 +531,48 @@ export default function AdminSmartLinks() {
 
           {/* === API INTEGRATIONS TAB === */}
           <TabsContent value="apis" className="space-y-4 mt-4">
+            {/* Feature toggles */}
+            <GlassCard className="p-4 space-y-4">
+              <h3 className="text-sm font-semibold text-foreground">Feature Settings</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Auto-fetch Links</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {hasEnabledApi ? 'Users can auto-fill platform links via API' : 'Add & enable an API first to use this'}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={autoFetchEnabled}
+                    onCheckedChange={toggleAutoFetch}
+                    disabled={togglingAutoFetch || !hasEnabledApi}
+                  />
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Search by ISRC/UPC</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {hasEnabledApi ? 'Users can search songs by ISRC, UPC, or link' : 'Add & enable an API first to use this'}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={searchEnabled}
+                    onCheckedChange={toggleSearchEnabled}
+                    disabled={togglingSearch || !hasEnabledApi}
+                  />
+                </div>
+              </div>
+              {!hasEnabledApi && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  These features require at least one enabled API with a valid key and URL configured below.
+                </p>
+              )}
+            </GlassCard>
+
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Add external API keys for auto-filling platform links in the future.</p>
+                <p className="text-sm text-muted-foreground">Add external API keys for auto-filling platform links.</p>
                 <p className="text-xs text-muted-foreground/70 mt-0.5">e.g., Songlink/Odesli, MusicBrainz, or custom APIs</p>
               </div>
               <Button size="sm" onClick={openNewApi}><Plus className="h-3.5 w-3.5 mr-1" /> Add API</Button>
