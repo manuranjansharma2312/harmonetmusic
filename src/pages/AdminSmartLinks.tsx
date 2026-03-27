@@ -14,7 +14,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Link2, ExternalLink, Search, Music, Edit, Plus, Trash2, GripVertical, Settings, ImageIcon, Key, Eye, EyeOff, User, CheckCircle, XCircle, Clock, AlertCircle, Filter } from 'lucide-react';
+import { Loader2, Link2, ExternalLink, Search, Music, Edit, Plus, Trash2, GripVertical, Settings, ImageIcon, Key, Eye, EyeOff, User, CheckCircle, XCircle, Clock, AlertCircle, Filter, SquareCheck } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
 
@@ -87,6 +88,7 @@ export default function AdminSmartLinks() {
   const [customLoading, setCustomLoading] = useState(true);
   const [customSearch, setCustomSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editCustom, setEditCustom] = useState<any | null>(null);
   const [creatingCustom, setCreatingCustom] = useState(false);
 
@@ -403,34 +405,59 @@ export default function AdminSmartLinks() {
               </Select>
               {/* Bulk Actions */}
               {(() => {
-                const pendingCount = customLinks.filter(c => c.status === 'pending').length;
-                const rejectedCount = customLinks.filter(c => c.status === 'rejected').length;
-                return (pendingCount > 0 || rejectedCount > 0) ? (
+                const filtered = customLinks.filter(c => c.title.toLowerCase().includes(customSearch.toLowerCase()) && (statusFilter === 'all' || c.status === statusFilter));
+                const allFilteredSelected = filtered.length > 0 && filtered.every(c => selectedIds.has(c.id));
+                const hasSelection = selectedIds.size > 0;
+                const selectedPending = customLinks.filter(c => selectedIds.has(c.id) && c.status === 'pending').length;
+                const selectedRejected = customLinks.filter(c => selectedIds.has(c.id) && c.status === 'rejected').length;
+                return (
                   <div className="flex items-center gap-2 ml-auto">
-                    {pendingCount > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <Checkbox
+                        checked={allFilteredSelected}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedIds(new Set(filtered.map(c => c.id)));
+                          } else {
+                            setSelectedIds(new Set());
+                          }
+                        }}
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        {hasSelection ? `${selectedIds.size} selected` : 'Select all'}
+                      </span>
+                    </div>
+                    {hasSelection && selectedPending > 0 && (
                       <Button size="sm" variant="outline" className="text-xs" onClick={async () => {
-                        const pendingIds = customLinks.filter(c => c.status === 'pending').map(c => c.id);
-                        const { error } = await supabase.from('smart_links').update({ status: 'approved' }).in('id', pendingIds);
+                        const ids = customLinks.filter(c => selectedIds.has(c.id) && c.status === 'pending').map(c => c.id);
+                        const { error } = await supabase.from('smart_links').update({ status: 'approved' }).in('id', ids);
                         if (error) { toast.error('Failed to approve'); return; }
-                        toast.success(`Approved ${pendingIds.length} link(s)`);
+                        toast.success(`Approved ${ids.length} link(s)`);
+                        setSelectedIds(new Set());
                         fetchCustomLinks();
                       }}>
-                        <CheckCircle className="h-3.5 w-3.5 mr-1" />Approve All Pending ({pendingCount})
+                        <CheckCircle className="h-3.5 w-3.5 mr-1" />Approve ({selectedPending})
                       </Button>
                     )}
-                    {rejectedCount > 0 && (
+                    {hasSelection && selectedRejected > 0 && (
                       <Button size="sm" variant="destructive" className="text-xs" onClick={async () => {
-                        const rejectedIds = customLinks.filter(c => c.status === 'rejected').map(c => c.id);
-                        const { error } = await supabase.from('smart_links').delete().in('id', rejectedIds);
+                        const ids = customLinks.filter(c => selectedIds.has(c.id) && c.status === 'rejected').map(c => c.id);
+                        const { error } = await supabase.from('smart_links').delete().in('id', ids);
                         if (error) { toast.error('Failed to delete'); return; }
-                        toast.success(`Deleted ${rejectedIds.length} rejected link(s)`);
+                        toast.success(`Deleted ${ids.length} link(s)`);
+                        setSelectedIds(new Set());
                         fetchCustomLinks();
                       }}>
-                        <Trash2 className="h-3.5 w-3.5 mr-1" />Delete All Rejected ({rejectedCount})
+                        <Trash2 className="h-3.5 w-3.5 mr-1" />Delete ({selectedRejected})
+                      </Button>
+                    )}
+                    {hasSelection && (
+                      <Button size="sm" variant="ghost" className="text-xs" onClick={() => setSelectedIds(new Set())}>
+                        Clear
                       </Button>
                     )}
                   </div>
-                ) : null;
+                );
               })()}
             </div>
 
@@ -449,8 +476,17 @@ export default function AdminSmartLinks() {
                   const linkCount = active ? Object.values(c.platform_links).filter((v: any) => v?.trim()).length : 0;
 
                   return (
-                    <GlassCard key={c.id} className="p-4 space-y-3">
+                    <GlassCard key={c.id} className={`p-4 space-y-3 ${selectedIds.has(c.id) ? 'ring-2 ring-primary' : ''}`}>
                       <div className="flex items-start gap-3">
+                        <Checkbox
+                          checked={selectedIds.has(c.id)}
+                          onCheckedChange={(checked) => {
+                            const next = new Set(selectedIds);
+                            checked ? next.add(c.id) : next.delete(c.id);
+                            setSelectedIds(next);
+                          }}
+                          className="mt-1"
+                        />
                         {c.poster_url ? (
                           <img src={c.poster_url} alt={c.title} className="h-14 w-14 rounded-lg object-cover flex-shrink-0" />
                         ) : (
