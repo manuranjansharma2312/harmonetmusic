@@ -1,11 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { GlassCard } from '@/components/GlassCard';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { Button } from '@/components/ui/button';
-import { ArrowRightLeft, Undo2, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { Input } from '@/components/ui/input';
+import { ArrowRightLeft, Undo2, Loader2, Search, X, CalendarIcon } from 'lucide-react';
+import { format, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
@@ -37,6 +41,27 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
   const [reversingId, setReversingId] = useState<string | null>(null);
   const [confirmLog, setConfirmLog] = useState<TransferLog | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
+
+  const filteredLogs = useMemo(() => {
+    return logs.filter((log) => {
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const match = log.release_name.toLowerCase().includes(q)
+          || (log.from_name || '').toLowerCase().includes(q)
+          || (log.to_name || '').toLowerCase().includes(q);
+        if (!match) return false;
+      }
+      if (dateFrom || dateTo) {
+        const d = new Date(log.transferred_at);
+        if (dateFrom && d < startOfDay(dateFrom)) return false;
+        if (dateTo && d > endOfDay(dateTo)) return false;
+      }
+      return true;
+    });
+  }, [logs, searchQuery, dateFrom, dateTo]);
 
   useEffect(() => {
     fetchLogs();
@@ -142,7 +167,8 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
     setConfirmLog(null);
   };
 
-  const paged = paginateItems(logs, page, pageSize);
+  const paged = paginateItems(filteredLogs, page, pageSize);
+  const hasFilters = searchQuery || dateFrom || dateTo;
 
   if (loading) return null;
   if (logs.length === 0) return null;
@@ -150,12 +176,52 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
   return (
     <>
       <GlassCard className="p-0 overflow-hidden">
-        <div className="p-4 border-b border-border/50">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <ArrowRightLeft className="h-5 w-5 text-primary" />
-            Transfer History
-          </h2>
-          <p className="text-xs text-muted-foreground mt-1">Log of all release ownership transfers</p>
+        <div className="p-4 border-b border-border/50 space-y-3">
+          <div>
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <ArrowRightLeft className="h-5 w-5 text-primary" />
+              Transfer History
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">Log of all release ownership transfers</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search release, user..."
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
+                className="pl-9 h-9"
+              />
+            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", dateFrom && "text-foreground")}>
+                  <CalendarIcon className="h-3.5 w-3.5" />
+                  {dateFrom ? format(dateFrom, 'dd MMM yyyy') : 'From'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={dateFrom} onSelect={(d) => { setDateFrom(d); setPage(0); }} className="p-3 pointer-events-auto" />
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", dateTo && "text-foreground")}>
+                  <CalendarIcon className="h-3.5 w-3.5" />
+                  {dateTo ? format(dateTo, 'dd MMM yyyy') : 'To'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={dateTo} onSelect={(d) => { setDateTo(d); setPage(0); }} className="p-3 pointer-events-auto" />
+              </PopoverContent>
+            </Popover>
+            {hasFilters && (
+              <Button variant="ghost" size="sm" className="h-9 gap-1 text-muted-foreground" onClick={() => { setSearchQuery(''); setDateFrom(undefined); setDateTo(undefined); setPage(0); }}>
+                <X className="h-3.5 w-3.5" /> Clear
+              </Button>
+            )}
+          </div>
         </div>
         <div className="overflow-x-auto">
           <Table>
@@ -210,7 +276,7 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
           </Table>
         </div>
         <TablePagination
-          totalItems={logs.length}
+          totalItems={filteredLogs.length}
           currentPage={page}
           pageSize={pageSize}
           onPageChange={setPage}
