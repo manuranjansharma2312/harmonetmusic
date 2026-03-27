@@ -39,7 +39,7 @@ export default function SignDocument() {
         .then(r => r.json())
         .then(d => ({ ip: d.ip || '', city: d.city || '', region: d.region || '', country: d.country_name || '' }))
         .catch(() => ({ ip: '', city: '', region: '', country: '' })),
-      supabase.rpc('get_signing_data', { _token: token! }) as Promise<{ data: any, error: any }>,
+      supabase.rpc('get_signing_data', { _token: token! }) as unknown as Promise<{ data: any, error: any }>,
     ]);
 
     // Set geo info for later use (signing)
