@@ -169,8 +169,8 @@ export default function UserDashboard() {
 
         if (ownedIsrcs.length > 0) {
           const [{ data: ottData }, { data: ytData }] = await Promise.all([
-            supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot').in('isrc', ownedIsrcs),
-            supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot').in('isrc', ownedIsrcs),
+            supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot, revenue_frozen').in('isrc', ownedIsrcs),
+            supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot, revenue_frozen').in('isrc', ownedIsrcs),
           ]);
           reportData = ottData || [];
           ytReportData = ytData || [];
