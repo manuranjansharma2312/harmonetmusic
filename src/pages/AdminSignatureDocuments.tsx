@@ -253,6 +253,7 @@ export default function AdminSignatureDocuments() {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         <GlassCard>
