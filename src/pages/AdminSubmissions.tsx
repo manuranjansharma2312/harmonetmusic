@@ -5,7 +5,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Eye, Pencil, Trash2, Download, Search, ChevronDown, ChevronRight, Music, Save, Users, Image, Volume2, ImageOff, VolumeX, Upload, ArrowRightLeft } from 'lucide-react';
 import { TransferOwnershipModal } from '@/components/TransferOwnershipModal';
-import { TransferHistory } from '@/components/TransferHistory';
+
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -1184,7 +1184,7 @@ export default function AdminSubmissions() {
         )}
       </GlassCard>
 
-      <TransferHistory onReversed={fetchReleases} />
+      
 
       {/* View Release Detail Modal */}
       {viewRelease && (

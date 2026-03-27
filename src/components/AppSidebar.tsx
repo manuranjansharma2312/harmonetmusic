@@ -5,7 +5,7 @@ import {
   Merge, Youtube, Trash2, ChevronDown, MessageSquare,
   BarChart3, MonitorPlay, Wallet, FileText, Receipt,
   Image as ImageIcon, Bell, BookOpen, FileSignature,
-  Megaphone, Landmark, CreditCard, UsersRound, Sparkles, Link2,
+  Megaphone, Landmark, CreditCard, UsersRound, Sparkles, Link2, ArrowRightLeft,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { supabase } from '@/integrations/supabase/client';
@@ -50,6 +50,7 @@ const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/submissions', label: 'All Submissions', icon: ListMusic },
+  { to: '/admin/transfer-history', label: 'Transfer History', icon: ArrowRightLeft },
   { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
   { to: '/admin/labels', label: 'Labels', icon: Tag },
   { to: '/admin/content-requests', label: 'Content Requests', icon: Headset },

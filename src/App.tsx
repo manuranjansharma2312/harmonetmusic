@@ -19,6 +19,7 @@ const AdminGenresLanguages = lazy(() => import("./pages/AdminGenresLanguages"));
 const MyReleases = lazy(() => import("./pages/MyReleases"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminSubmissions = lazy(() => import("./pages/AdminSubmissions"));
+const AdminTransferHistory = lazy(() => import("./pages/AdminTransferHistory"));
 const AdminUsers = lazy(() => import("./pages/AdminUsers"));
 const MyProfile = lazy(() => import("./pages/MyProfile"));
 const MyLabels = lazy(() => import("./pages/MyLabels"));
@@ -117,6 +118,7 @@ function App() {
                       <Route path="/bank-details" element={<ProtectedRoute><BankDetails /></ProtectedRoute>} />
                       <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
                       <Route path="/admin/submissions" element={<ProtectedRoute requiredRole="admin"><AdminSubmissions /></ProtectedRoute>} />
+                      <Route path="/admin/transfer-history" element={<ProtectedRoute requiredRole="admin"><AdminTransferHistory /></ProtectedRoute>} />
                       <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
                       <Route path="/admin/labels" element={<ProtectedRoute requiredRole="admin"><AdminLabels /></ProtectedRoute>} />
                       <Route path="/admin/sub-labels" element={<ProtectedRoute requiredRole="admin"><AdminSubLabels /></ProtectedRoute>} />

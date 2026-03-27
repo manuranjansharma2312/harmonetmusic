@@ -30,7 +30,7 @@ interface TransferHistoryProps {
   onReversed?: () => void;
 }
 
-export function TransferHistory({ onReversed }: TransferHistoryProps) {
+export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
   const [logs, setLogs] = useState<TransferLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -149,7 +149,7 @@ export function TransferHistory({ onReversed }: TransferHistoryProps) {
 
   return (
     <>
-      <GlassCard className="p-0 overflow-hidden mt-6">
+      <GlassCard className="p-0 overflow-hidden">
         <div className="p-4 border-b border-border/50">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <ArrowRightLeft className="h-5 w-5 text-primary" />
