@@ -105,6 +105,10 @@ export default function AdminSmartLinks() {
   const [editCustom, setEditCustom] = useState<any | null>(null);
   const [creatingCustom, setCreatingCustom] = useState(false);
 
+  // ─── System enable/disable ───
+  const [systemEnabled, setSystemEnabled] = useState(true);
+  const [togglingSystem, setTogglingSystem] = useState(false);
+
   // ─── Fetchers ───
   const fetchReleases = async () => {
     const { data } = await supabase
