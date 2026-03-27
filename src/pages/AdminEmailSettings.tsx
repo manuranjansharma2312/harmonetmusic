@@ -10,11 +10,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { RichTextEditor } from '@/components/RichTextEditor';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { StatusBadge } from '@/components/StatusBadge';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import {
   Mail, Settings, FileText, Save, Send, Eye, EyeOff, Search,
-  ChevronDown, ChevronUp, ToggleLeft, Info, Code,
+  ChevronDown, ChevronUp, ToggleLeft, Info, Code, History,
 } from 'lucide-react';
 
 interface EmailSettings {
