@@ -51,8 +51,9 @@ export default function SmartLink() {
 
       const { data: slBySlug } = await supabase
         .from('smart_links')
-        .select('title, artist_name, poster_url, platform_links')
+        .select('title, artist_name, poster_url, platform_links, status')
         .eq('slug', slug)
+        .eq('status', 'approved')
         .maybeSingle();
 
       if (slBySlug && slBySlug.platform_links && Object.keys(slBySlug.platform_links as Record<string, string>).length > 0) {
