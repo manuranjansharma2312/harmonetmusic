@@ -401,6 +401,37 @@ export default function AdminSmartLinks() {
                   <SelectItem value="rejected">Rejected</SelectItem>
                 </SelectContent>
               </Select>
+              {/* Bulk Actions */}
+              {(() => {
+                const pendingCount = customLinks.filter(c => c.status === 'pending').length;
+                const rejectedCount = customLinks.filter(c => c.status === 'rejected').length;
+                return (pendingCount > 0 || rejectedCount > 0) ? (
+                  <div className="flex items-center gap-2 ml-auto">
+                    {pendingCount > 0 && (
+                      <Button size="sm" variant="outline" className="text-xs" onClick={async () => {
+                        const pendingIds = customLinks.filter(c => c.status === 'pending').map(c => c.id);
+                        const { error } = await supabase.from('smart_links').update({ status: 'approved' }).in('id', pendingIds);
+                        if (error) { toast.error('Failed to approve'); return; }
+                        toast.success(`Approved ${pendingIds.length} link(s)`);
+                        fetchCustomLinks();
+                      }}>
+                        <CheckCircle className="h-3.5 w-3.5 mr-1" />Approve All Pending ({pendingCount})
+                      </Button>
+                    )}
+                    {rejectedCount > 0 && (
+                      <Button size="sm" variant="destructive" className="text-xs" onClick={async () => {
+                        const rejectedIds = customLinks.filter(c => c.status === 'rejected').map(c => c.id);
+                        const { error } = await supabase.from('smart_links').delete().in('id', rejectedIds);
+                        if (error) { toast.error('Failed to delete'); return; }
+                        toast.success(`Deleted ${rejectedIds.length} rejected link(s)`);
+                        fetchCustomLinks();
+                      }}>
+                        <Trash2 className="h-3.5 w-3.5 mr-1" />Delete All Rejected ({rejectedCount})
+                      </Button>
+                    )}
+                  </div>
+                ) : null;
+              })()}
             </div>
 
             {customLoading ? (
