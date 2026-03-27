@@ -521,6 +521,9 @@ export default function AdminSmartLinks() {
                           {c.status === 'rejected' && (
                             <Badge variant="destructive" className="mt-1 text-[10px] gap-0.5"><XCircle className="h-2.5 w-2.5" /> Rejected</Badge>
                           )}
+                          {c.status === 'rejected' && c.rejection_reason && (
+                            <p className="text-[10px] text-destructive/80 mt-0.5 truncate" title={c.rejection_reason}>Reason: {c.rejection_reason}</p>
+                          )}
                         </div>
                         <div className="flex gap-1">
                           {c.status !== 'approved' && (
