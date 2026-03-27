@@ -41,6 +41,27 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
   const [reversingId, setReversingId] = useState<string | null>(null);
   const [confirmLog, setConfirmLog] = useState<TransferLog | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
+
+  const filteredLogs = useMemo(() => {
+    return logs.filter((log) => {
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const match = log.release_name.toLowerCase().includes(q)
+          || (log.from_name || '').toLowerCase().includes(q)
+          || (log.to_name || '').toLowerCase().includes(q);
+        if (!match) return false;
+      }
+      if (dateFrom || dateTo) {
+        const d = new Date(log.transferred_at);
+        if (dateFrom && d < startOfDay(dateFrom)) return false;
+        if (dateTo && d > endOfDay(dateTo)) return false;
+      }
+      return true;
+    });
+  }, [logs, searchQuery, dateFrom, dateTo]);
 
   useEffect(() => {
     fetchLogs();
