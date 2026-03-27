@@ -34,18 +34,12 @@ export default function AdminSignatureDocuments() {
   const [recipients, setRecipients] = useState<Recipient[]>([{ name: '', email: '' }]);
   const [page, setPage] = useState(1);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [expiryDays, setExpiryDays] = useState(30);
+  
 
   const fetchDocuments = async () => {
     setLoading(true);
-    const [docsRes, settingsRes] = await Promise.all([
-      supabase.from('signature_documents').select('*').order('created_at', { ascending: false }),
-      supabase.from('signature_settings').select('default_expiry_days').limit(1).maybeSingle(),
-    ]);
+    const docsRes = await supabase.from('signature_documents').select('*').order('created_at', { ascending: false });
     if (!docsRes.error) setDocuments(docsRes.data || []);
-    if (!settingsRes.error && settingsRes.data) {
-      setExpiryDays((settingsRes.data as any).default_expiry_days ?? 30);
-    }
     setLoading(false);
   };
 
@@ -96,7 +90,7 @@ export default function AdminSignatureDocuments() {
           document_hash: hash,
           created_by: user!.id,
           status: 'draft',
-          expires_at: new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString(),
+          expires_at: null,
         })
         .select()
         .single();
@@ -111,7 +105,7 @@ export default function AdminSignatureDocuments() {
           email: validRecipients[i].email.trim().toLowerCase(),
           signing_order: i + 1,
           signing_token: token,
-          token_expires_at: new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString(),
+          token_expires_at: new Date('2099-12-31T23:59:59Z').toISOString(),
         });
       }
 

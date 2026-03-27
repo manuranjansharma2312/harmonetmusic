@@ -15,7 +15,6 @@ export default function AdminSignatureSettings() {
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState({
     id: '',
-    default_expiry_days: 30,
     auto_send_completion: false,
     signing_email_subject: 'Please sign: {{document_title}}',
     signing_email_body: 'You have been requested to sign the following document.',
@@ -33,7 +32,6 @@ export default function AdminSignatureSettings() {
       if (!error && data) {
         setSettings({
           id: data.id,
-          default_expiry_days: (data as any).default_expiry_days ?? 30,
           auto_send_completion: (data as any).auto_send_completion ?? false,
           signing_email_subject: (data as any).signing_email_subject ?? '',
           signing_email_body: (data as any).signing_email_body ?? '',
@@ -52,7 +50,6 @@ export default function AdminSignatureSettings() {
       const { error } = await supabase
         .from('signature_settings')
         .update({
-          default_expiry_days: settings.default_expiry_days,
           auto_send_completion: settings.auto_send_completion,
           signing_email_subject: settings.signing_email_subject,
           signing_email_body: settings.signing_email_body,
@@ -101,19 +98,7 @@ export default function AdminSignatureSettings() {
             <h2 className="text-lg font-semibold">General Settings</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label>Default Link Expiry (Days)</Label>
-              <p className="text-xs text-muted-foreground mb-1.5">How long signing links remain valid</p>
-              <Input
-                type="number"
-                min={1}
-                max={365}
-                value={settings.default_expiry_days}
-                onChange={e => setSettings(s => ({ ...s, default_expiry_days: parseInt(e.target.value) || 30 }))}
-              />
-            </div>
-
+          <div className="grid grid-cols-1 gap-6">
             <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
               <div>
                 <Label>Auto-Send Completion Email</Label>

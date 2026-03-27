@@ -54,11 +54,17 @@ serve(async (req) => {
     const certificateId = `CERT-${document_id.slice(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
     const now = new Date();
 
-    // Download the original PDF from storage
+    // Extract storage path from document_url (handle both full URLs and plain paths)
+    let storagePath = doc.document_url;
+    if (storagePath.startsWith("http")) {
+      const match = storagePath.match(/signature-documents\/(.+)/);
+      if (match) storagePath = match[1];
+    }
+
     const { data: pdfFileData, error: downloadErr } = await supabase.storage
       .from("signature-documents")
-      .download(doc.document_url);
-    if (downloadErr || !pdfFileData) throw new Error("Failed to download original document");
+      .download(storagePath);
+    if (downloadErr || !pdfFileData) throw new Error(`Failed to download original document: ${downloadErr?.message || 'no data'} (path: ${storagePath})`);
 
     const originalPdfBytes = new Uint8Array(await pdfFileData.arrayBuffer());
 
