@@ -384,6 +384,9 @@ export default function AdminEmailSettings() {
             <TabsTrigger value="logs" className="gap-2">
               <History className="h-4 w-4" /> Email Logs
             </TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-2">
+              <BarChart3 className="h-4 w-4" /> Analytics
+            </TabsTrigger>
             <TabsTrigger value="guide" className="gap-2">
               <Info className="h-4 w-4" /> Setup Guide
             </TabsTrigger>
