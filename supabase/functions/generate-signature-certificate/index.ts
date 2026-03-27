@@ -42,11 +42,12 @@ serve(async (req) => {
     if (!document_id) throw new Error("document_id required");
 
     // Fetch all data in parallel
-    const [docRes, recipientsRes, auditRes, companyRes] = await Promise.all([
+    const [docRes, recipientsRes, auditRes, companyRes, sigSettingsRes] = await Promise.all([
       supabase.from("signature_documents").select("*").eq("id", document_id).single(),
       supabase.from("signature_recipients").select("*").eq("document_id", document_id).order("signing_order"),
       supabase.from("signature_audit_logs").select("*").eq("document_id", document_id).order("created_at", { ascending: true }),
       supabase.from("company_details").select("*").limit(1).maybeSingle(),
+      supabase.from("signature_settings").select("*").limit(1).maybeSingle(),
     ]);
 
     const doc = docRes.data;
@@ -54,9 +55,12 @@ serve(async (req) => {
     const recipients = recipientsRes.data || [];
     const auditLogs = auditRes.data || [];
     const company = companyRes.data;
+    const sigSettings = sigSettingsRes.data;
 
-    const companyName = company?.company_name || "Harmonet Music";
-    const companyAddress = company?.address || "";
+    // Use issued_by from signature_settings if set, otherwise fall back to company_details
+    const companyName = (sigSettings as any)?.issued_by_name || company?.company_name || "Harmonet Music";
+    const companyAddress = (sigSettings as any)?.issued_by_address || company?.address || "";
+    const issuerEmail = (sigSettings as any)?.issued_by_email || "";
     const certificateId = `CERT-${document_id.slice(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
     const now = new Date();
 
@@ -150,6 +154,10 @@ serve(async (req) => {
     if (companyAddress) {
       y = drawWrapped(page, companyAddress, MARGIN, y, 9, font, MAX_W, rgb(0.4, 0.4, 0.4));
       y -= 4;
+    }
+    if (issuerEmail) {
+      page.drawText(`Email: ${issuerEmail}`, { x: MARGIN, y, size: 9, font, color: rgb(0.4, 0.4, 0.4) });
+      y -= 14;
     }
 
     y -= 10;

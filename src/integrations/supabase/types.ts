@@ -1536,6 +1536,9 @@ export type Database = {
           completion_email_subject: string
           default_expiry_days: number
           id: string
+          issued_by_address: string
+          issued_by_email: string
+          issued_by_name: string
           signing_email_body: string
           signing_email_subject: string
           updated_at: string
@@ -1547,6 +1550,9 @@ export type Database = {
           completion_email_subject?: string
           default_expiry_days?: number
           id?: string
+          issued_by_address?: string
+          issued_by_email?: string
+          issued_by_name?: string
           signing_email_body?: string
           signing_email_subject?: string
           updated_at?: string
@@ -1558,6 +1564,9 @@ export type Database = {
           completion_email_subject?: string
           default_expiry_days?: number
           id?: string
+          issued_by_address?: string
+          issued_by_email?: string
+          issued_by_name?: string
           signing_email_body?: string
           signing_email_subject?: string
           updated_at?: string
