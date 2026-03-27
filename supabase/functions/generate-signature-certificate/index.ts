@@ -53,7 +53,7 @@ serve(async (req) => {
     const doc = docRes.data;
     if (!doc) throw new Error("Document not found");
     const recipients = recipientsRes.data || [];
-    const auditLogs = auditRes.data || [];
+    const auditLogs = (auditRes.data || []).filter((l: any) => l.action !== 'otp_requested' && l.action !== 'otp_verified');
     const company = companyRes.data;
     const sigSettings = sigSettingsRes.data;
 
