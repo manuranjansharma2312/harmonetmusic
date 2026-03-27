@@ -13,7 +13,8 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Link2, ExternalLink, Search, Music, Edit, Plus, Trash2, GripVertical, Settings, ImageIcon, Key, Eye, EyeOff, User, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, Link2, ExternalLink, Search, Music, Edit, Plus, Trash2, GripVertical, Settings, ImageIcon, Key, Eye, EyeOff, User, CheckCircle, XCircle, Clock, AlertCircle, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
 
@@ -85,6 +86,7 @@ export default function AdminSmartLinks() {
   const [customLinks, setCustomLinks] = useState<any[]>([]);
   const [customLoading, setCustomLoading] = useState(true);
   const [customSearch, setCustomSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
   const [editCustom, setEditCustom] = useState<any | null>(null);
   const [creatingCustom, setCreatingCustom] = useState(false);
 
@@ -382,21 +384,35 @@ export default function AdminSmartLinks() {
               <p className="text-sm text-muted-foreground">Standalone smart links created by users or admin.</p>
               <Button size="sm" onClick={() => setCreatingCustom(true)}><Plus className="h-3.5 w-3.5 mr-1" /> Create Smart Link</Button>
             </div>
-            <div className="relative max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search custom links..." value={customSearch} onChange={e => setCustomSearch(e.target.value)} className="pl-9" />
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="relative max-w-sm flex-1 min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Search custom links..." value={customSearch} onChange={e => setCustomSearch(e.target.value)} className="pl-9" />
+              </div>
+              <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+                <SelectTrigger className="w-[160px]">
+                  <Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {customLoading ? (
               <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-            ) : customLinks.filter(c => c.title.toLowerCase().includes(customSearch.toLowerCase())).length === 0 ? (
+            ) : customLinks.filter(c => c.title.toLowerCase().includes(customSearch.toLowerCase()) && (statusFilter === 'all' || c.status === statusFilter)).length === 0 ? (
               <GlassCard className="p-8 text-center">
                 <Music className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                 <p className="text-muted-foreground">No custom smart links yet</p>
               </GlassCard>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {customLinks.filter(c => c.title.toLowerCase().includes(customSearch.toLowerCase())).map(c => {
+                {customLinks.filter(c => c.title.toLowerCase().includes(customSearch.toLowerCase()) && (statusFilter === 'all' || c.status === statusFilter)).map(c => {
                   const url = c.slug ? `${window.location.origin}/r/${c.slug}` : `${window.location.origin}/r/${c.id}`;
                   const active = c.platform_links && Object.values(c.platform_links).some((v: any) => v?.trim());
                   const linkCount = active ? Object.values(c.platform_links).filter((v: any) => v?.trim()).length : 0;
