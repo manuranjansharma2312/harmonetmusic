@@ -5,8 +5,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowRightLeft, Undo2, Loader2, Search, X, CalendarIcon } from 'lucide-react';
-import { format, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ArrowRightLeft, Undo2, Loader2, Search, X, CalendarIcon, Download } from 'lucide-react';
+import { format, startOfDay, endOfDay } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
@@ -44,6 +45,8 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [exporting, setExporting] = useState(false);
 
   const filteredLogs = useMemo(() => {
     return logs.filter((log) => {
@@ -63,9 +66,7 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
     });
   }, [logs, searchQuery, dateFrom, dateTo]);
 
-  useEffect(() => {
-    fetchLogs();
-  }, []);
+  useEffect(() => { fetchLogs(); }, []);
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -113,21 +114,18 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
       const originalOwner = log.from_user_id;
       const currentOwner = log.to_user_id;
 
-      // 1. Transfer release back
       const { error: relErr } = await supabase
         .from('releases')
         .update({ user_id: originalOwner })
         .eq('id', log.release_id);
       if (relErr) throw relErr;
 
-      // 2. Transfer tracks back
       const { error: trkErr } = await supabase
         .from('tracks')
         .update({ user_id: originalOwner })
         .eq('release_id', log.release_id);
       if (trkErr) throw trkErr;
 
-      // 3. Move report entries back & unfreeze
       if (log.isrcs.length > 0) {
         await supabase
           .from('report_entries')
@@ -142,7 +140,6 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
           .in('isrc', log.isrcs);
       }
 
-      // 4. Log the reverse as a new transfer
       const { data: session } = await supabase.auth.getSession();
       const adminId = session?.session?.user?.id || originalOwner;
       await supabase.from('release_transfers').insert({
@@ -154,7 +151,6 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
         isrcs: log.isrcs,
       } as any);
 
-      // 5. Delete original log entry
       await supabase.from('release_transfers').delete().eq('id', log.id);
 
       toast.success(`Transfer reversed — ${log.release_name} returned to ${log.from_name}`);
@@ -167,8 +163,140 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
     setConfirmLog(null);
   };
 
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.size === filteredLogs.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(filteredLogs.map((l) => l.id)));
+    }
+  };
+
+  const handleExport = async () => {
+    const toExport = selected.size > 0
+      ? filteredLogs.filter((l) => selected.has(l.id))
+      : filteredLogs;
+    if (toExport.length === 0) { toast.error('No transfers to export'); return; }
+
+    setExporting(true);
+    try {
+      const releaseIds = [...new Set(toExport.map((l) => l.release_id))];
+      const { data: releases } = await supabase
+        .from('releases')
+        .select('*')
+        .in('id', releaseIds);
+      const { data: tracks } = await supabase
+        .from('tracks')
+        .select('*')
+        .in('release_id', releaseIds)
+        .order('track_order');
+
+      const userIds = [...new Set([
+        ...(releases || []).map((r) => r.user_id),
+        ...toExport.flatMap((l) => [l.from_user_id, l.to_user_id]),
+      ])];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, legal_name, artist_name, record_label_name, display_id, user_type, email')
+        .in('user_id', userIds);
+
+      const profileMap: Record<string, any> = {};
+      profiles?.forEach((p) => { profileMap[p.user_id] = p; });
+
+      const getName = (uid: string) => {
+        const p = profileMap[uid];
+        if (!p) return 'Unknown';
+        return p.user_type === 'label' ? (p.record_label_name || p.legal_name) : (p.artist_name || p.legal_name);
+      };
+
+      const fmt = (s: string) => s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
+      const headers = [
+        'Release Name', 'Release Type', 'Content Type', 'UPC', 'Status',
+        'Release Date', 'Store Selection', 'Copyright ©', 'Phonogram ℗',
+        'Poster URL', 'Rejection Reason',
+        'Submitted By', 'User ID', 'User Email',
+        'Track #', 'Song Title', 'ISRC', 'Primary Artist', 'New Artist Profile',
+        'New Profile Artists',
+        'Audio Type', 'Language', 'Genre',
+        'Singer', 'Lyricist', 'Composer', 'Producer',
+        'Spotify Link', 'Apple Music Link', 'Instagram Link',
+        'Callertune Time', 'Audio URL',
+        'Transfer From', 'Transfer To', 'Transfer Date',
+      ];
+
+      const releaseMap: Record<string, any> = {};
+      releases?.forEach((r) => { releaseMap[r.id] = r; });
+      const trackMap: Record<string, any[]> = {};
+      tracks?.forEach((t) => {
+        if (!trackMap[t.release_id]) trackMap[t.release_id] = [];
+        trackMap[t.release_id].push(t);
+      });
+
+      const getReleaseName = (r: any) => r.content_type === 'album' ? (r.album_name || '') : r.content_type === 'ep' ? (r.ep_name || '') : (trackMap[r.id]?.[0]?.song_title || '');
+
+      const rows: string[][] = [];
+      toExport.forEach((log) => {
+        const r = releaseMap[log.release_id];
+        if (!r) return;
+        const p = profileMap[r.user_id];
+        const releaseFields = [
+          getReleaseName(r), fmt(r.release_type), fmt(r.content_type), r.upc || '', fmt(r.status),
+          r.release_date, fmt(r.store_selection), r.copyright_line || '', r.phonogram_line || '',
+          r.poster_url || '', r.rejection_reason || '',
+          getName(r.user_id), p ? `#${p.display_id}` : '', p?.email || '',
+        ];
+
+        const relTracks = trackMap[r.id] || [null];
+        relTracks.forEach((t: any) => {
+          const newProfileArtists = t && t.is_new_artist_profile ? (t.primary_artist || '') : '';
+          const trackFields = t ? [
+            String(t.track_order), t.song_title || '', t.isrc || '', t.primary_artist || '',
+            t.is_new_artist_profile ? 'Yes' : 'No', newProfileArtists,
+            fmt(t.audio_type || ''), t.language || '', t.genre || '',
+            t.singer || '', t.lyricist || '', t.composer || '', t.producer || '',
+            t.spotify_link || '', t.apple_music_link || '', t.instagram_link || '',
+            t.callertune_time || '', t.audio_url || '',
+          ] : Array(18).fill('');
+
+          const transferFields = [
+            `${log.from_name || 'Unknown'} #${log.from_display_id || ''}`,
+            `${log.to_name || 'Unknown'} #${log.to_display_id || ''}`,
+            format(new Date(log.transferred_at), 'dd MMM yyyy, hh:mm a'),
+          ];
+
+          rows.push([...releaseFields, ...trackFields, ...transferFields]);
+        });
+      });
+
+      const csvContent = [headers, ...rows]
+        .map((row) => row.map((cell: string) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `transfer-history-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${toExport.length} transfer(s)`);
+    } catch (err: any) {
+      toast.error('Export failed');
+    }
+    setExporting(false);
+  };
+
   const paged = paginateItems(filteredLogs, page, pageSize);
   const hasFilters = searchQuery || dateFrom || dateTo;
+  const allSelected = filteredLogs.length > 0 && selected.size === filteredLogs.length;
 
   if (loading) return null;
   if (logs.length === 0) return null;
@@ -177,12 +305,18 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
     <>
       <GlassCard className="p-0 overflow-hidden">
         <div className="p-4 border-b border-border/50 space-y-3">
-          <div>
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <ArrowRightLeft className="h-5 w-5 text-primary" />
-              Transfer History
-            </h2>
-            <p className="text-xs text-muted-foreground mt-1">Log of all release ownership transfers</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <ArrowRightLeft className="h-5 w-5 text-primary" />
+                Transfer History
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">Log of all release ownership transfers</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
+              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              {selected.size > 0 ? `Export (${selected.size})` : 'Export CSV'}
+            </Button>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative flex-1 min-w-[200px] max-w-sm">
@@ -227,6 +361,9 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[40px]">
+                  <Checkbox checked={allSelected} onCheckedChange={toggleSelectAll} />
+                </TableHead>
                 <TableHead>Release</TableHead>
                 <TableHead>From</TableHead>
                 <TableHead>To</TableHead>
@@ -239,7 +376,10 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
               {paged.map((log) => {
                 const isReversed = log.release_name.startsWith('[Reversed]');
                 return (
-                  <TableRow key={log.id}>
+                  <TableRow key={log.id} className={selected.has(log.id) ? 'bg-muted/50' : ''}>
+                    <TableCell>
+                      <Checkbox checked={selected.has(log.id)} onCheckedChange={() => toggleSelect(log.id)} />
+                    </TableCell>
                     <TableCell className="font-medium">{log.release_name}</TableCell>
                     <TableCell>
                       <span>{log.from_name}</span>
