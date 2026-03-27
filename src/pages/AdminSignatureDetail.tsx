@@ -182,10 +182,26 @@ export default function AdminSignatureDetail() {
               <Send className="h-4 w-4 mr-2" /> Resend Emails
             </Button>
           )}
-          {doc.status === 'completed' && (
-            <Button onClick={handleDownloadCertificate} disabled={generatingCert} variant="default">
-              <Award className="h-4 w-4 mr-2" /> {generatingCert ? 'Generating...' : 'Download Certificate'}
+          {doc.status === 'completed' && !doc.signed_pdf_url && (
+            <Button onClick={handleGenerateCertificate} disabled={generatingCert} variant="default">
+              {generatingCert ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Award className="h-4 w-4 mr-2" />}
+              {generatingCert ? 'Generating Certificate...' : 'Generate & Bind Certificate'}
             </Button>
+          )}
+          {doc.status === 'completed' && doc.signed_pdf_url && (
+            <>
+              <Button onClick={handleDownloadSignedPdf} variant="default">
+                <FileDown className="h-4 w-4 mr-2" /> Download Signed PDF
+              </Button>
+              <Button onClick={handleSendCompletionEmail} disabled={sendingCompletion} variant="secondary">
+                {sendingCompletion ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
+                {sendingCompletion ? 'Sending...' : 'Send to Recipients'}
+              </Button>
+              <Button onClick={handleGenerateCertificate} disabled={generatingCert} variant="outline" size="sm">
+                {generatingCert ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Award className="h-4 w-4 mr-2" />}
+                Regenerate
+              </Button>
+            </>
           )}
         </div>
 
