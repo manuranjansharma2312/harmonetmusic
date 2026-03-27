@@ -494,6 +494,12 @@ export default function AdminSubmissions() {
       .from('sub_labels')
       .select('sub_user_id, sub_label_name, parent_label_name');
 
+    // Fetch transfer log to identify transferred releases
+    const { data: transfersData } = await supabase
+      .from('release_transfers')
+      .select('release_id');
+    const transferredReleaseIds = new Set((transfersData || []).map((t: any) => t.release_id));
+
     const subLabelInfoMap: Record<string, { sub_label_name: string; parent_label_name: string }> = {};
     subLabelsData?.forEach((sl) => {
       if (sl.sub_user_id) {
@@ -543,6 +549,7 @@ export default function AdminSubmissions() {
         user_type: userTypeMap[r.user_id],
         sub_label_name: subLabelInfoMap[r.user_id]?.sub_label_name,
         parent_label_name: subLabelInfoMap[r.user_id]?.parent_label_name,
+        was_transferred: transferredReleaseIds.has(r.id),
       }))
     );
     setLoading(false);
