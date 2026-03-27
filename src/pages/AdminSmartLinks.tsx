@@ -137,7 +137,7 @@ export default function AdminSmartLinks() {
   const fetchCustomLinks = async () => {
     const { data } = await supabase
       .from('smart_links')
-      .select('id, title, artist_name, poster_url, platform_links, slug, created_at, user_id')
+      .select('id, title, artist_name, poster_url, platform_links, slug, created_at, user_id, status')
       .order('created_at', { ascending: false });
     const links = (data as any) || [];
 
