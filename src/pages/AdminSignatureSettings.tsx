@@ -123,7 +123,45 @@ export default function AdminSignatureSettings() {
           </div>
         </GlassCard>
 
-        {/* Signing Request Email Template */}
+        {/* Issued By Details */}
+        <GlassCard className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Building2 className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold">Issued By Details</h2>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">
+            These details appear on the Certificate of Completion as the issuing authority. Leave blank to use Company Details instead.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Issuer Name</Label>
+              <Input
+                value={settings.issued_by_name}
+                onChange={e => setSettings(s => ({ ...s, issued_by_name: e.target.value }))}
+                placeholder="e.g. Harmonet Music Pvt Ltd"
+              />
+            </div>
+            <div>
+              <Label>Issuer Email</Label>
+              <Input
+                value={settings.issued_by_email}
+                onChange={e => setSettings(s => ({ ...s, issued_by_email: e.target.value }))}
+                placeholder="e.g. legal@harmonet.com"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <Label>Issuer Address</Label>
+              <Textarea
+                value={settings.issued_by_address}
+                onChange={e => setSettings(s => ({ ...s, issued_by_address: e.target.value }))}
+                placeholder="Full address of the issuing organization"
+                rows={2}
+              />
+            </div>
+          </div>
+        </GlassCard>
+
+
         <GlassCard className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <Mail className="h-5 w-5 text-blue-500" />
