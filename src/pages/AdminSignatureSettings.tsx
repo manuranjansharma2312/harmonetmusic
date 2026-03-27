@@ -69,6 +69,7 @@ export default function AdminSignatureSettings() {
           issued_by_name: settings.issued_by_name,
           issued_by_address: settings.issued_by_address,
           issued_by_email: settings.issued_by_email,
+          email_account_id: settings.email_account_id || null,
           updated_by: user?.id,
           updated_at: new Date().toISOString(),
         } as any)
