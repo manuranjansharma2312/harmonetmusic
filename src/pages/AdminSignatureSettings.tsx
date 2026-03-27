@@ -40,6 +40,9 @@ export default function AdminSignatureSettings() {
           signing_email_body: (data as any).signing_email_body ?? '',
           completion_email_subject: (data as any).completion_email_subject ?? '',
           completion_email_body: (data as any).completion_email_body ?? '',
+          issued_by_name: (data as any).issued_by_name ?? '',
+          issued_by_address: (data as any).issued_by_address ?? '',
+          issued_by_email: (data as any).issued_by_email ?? '',
         });
       }
       setLoading(false);
