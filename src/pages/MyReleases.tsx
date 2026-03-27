@@ -148,10 +148,17 @@ export default function MyReleases() {
       tracksByRelease[t.release_id].push(t);
     });
 
+    // Check for transferred releases
+    const { data: transfersData } = releaseIds.length > 0
+      ? await supabase.from('release_transfers').select('release_id').in('release_id', releaseIds)
+      : { data: [] };
+    const transferredIds = new Set((transfersData || []).map((t: any) => t.release_id));
+
     setReleases(allReleases.map((r: any) => ({
       ...r,
       tracks: tracksByRelease[r.id] || [],
       submitted_by_label: subLabelMap[r.user_id] || undefined,
+      was_transferred: transferredIds.has(r.id),
     })));
     setLoading(false);
   };
