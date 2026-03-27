@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { CopyButton } from '@/components/CopyButton';
-import { PlatformLinksEditor } from '@/components/PlatformLinksEditor';
 import { SmartLinkEditor } from '@/components/SmartLinkEditor';
 import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
