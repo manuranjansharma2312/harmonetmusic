@@ -926,6 +926,63 @@ export default function AdminEmailSettings() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* =============== Email Preview Dialog =============== */}
+      <Dialog open={!!viewingLog} onOpenChange={(o) => { if (!o) setViewingLog(null); }}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" /> Email Preview
+            </DialogTitle>
+          </DialogHeader>
+          {viewingLog && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Template</Label>
+                  <p className="font-medium">{viewingLog.template_label || viewingLog.template_key}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Status</Label>
+                  <div className="mt-0.5"><StatusBadge status={viewingLog.status} /></div>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Recipient</Label>
+                  <p>{viewingLog.recipient_email}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Sent At</Label>
+                  <p>{new Date(viewingLog.sent_at).toLocaleString()}</p>
+                </div>
+                <div className="col-span-2">
+                  <Label className="text-xs text-muted-foreground">Subject</Label>
+                  <p className="font-medium">{viewingLog.subject || '—'}</p>
+                </div>
+                {viewingLog.error_message && (
+                  <div className="col-span-2">
+                    <Label className="text-xs text-destructive">Error</Label>
+                    <p className="text-sm text-destructive">{viewingLog.error_message}</p>
+                  </div>
+                )}
+              </div>
+              <div className="border-t border-border pt-4">
+                <Label className="text-xs text-muted-foreground mb-2 block">Email Body</Label>
+                {viewingLog.body_html ? (
+                  <div className="p-4 bg-white rounded-lg border text-sm text-black max-h-[400px] overflow-y-auto"
+                    dangerouslySetInnerHTML={{ __html: viewingLog.body_html }} />
+                ) : (
+                  <div className="p-4 bg-muted/30 rounded-lg text-center text-muted-foreground text-sm">
+                    Email body not available for this log entry
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-end">
+                <Button variant="outline" onClick={() => setViewingLog(null)}>Close</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
