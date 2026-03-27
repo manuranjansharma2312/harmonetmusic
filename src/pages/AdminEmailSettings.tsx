@@ -123,6 +123,7 @@ export default function AdminEmailSettings() {
   const [testEmail, setTestEmail] = useState('');
   const [testAccountId, setTestAccountId] = useState('');
   const [sendingTest, setSendingTest] = useState(false);
+  const [viewingLog, setViewingLog] = useState<EmailLog | null>(null);
 
   useEffect(() => { fetchData(); }, []);
 
