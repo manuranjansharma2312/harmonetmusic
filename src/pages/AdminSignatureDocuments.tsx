@@ -309,8 +309,10 @@ export default function AdminSignatureDocuments() {
             </TableBody>
           </Table>
           {totalPages > 1 && (
-            <div className="p-4 border-t">
-              <TablePagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+            <div className="p-4 border-t flex justify-center gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
+              <span className="text-sm text-muted-foreground flex items-center px-2">Page {page} of {totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
             </div>
           )}
         </GlassCard>
