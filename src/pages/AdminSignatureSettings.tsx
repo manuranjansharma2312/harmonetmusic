@@ -15,7 +15,6 @@ export default function AdminSignatureSettings() {
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState({
     id: '',
-    default_expiry_days: 30,
     auto_send_completion: false,
     signing_email_subject: 'Please sign: {{document_title}}',
     signing_email_body: 'You have been requested to sign the following document.',
