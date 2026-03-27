@@ -61,6 +61,9 @@ export default function AdminSignatureSettings() {
           signing_email_body: settings.signing_email_body,
           completion_email_subject: settings.completion_email_subject,
           completion_email_body: settings.completion_email_body,
+          issued_by_name: settings.issued_by_name,
+          issued_by_address: settings.issued_by_address,
+          issued_by_email: settings.issued_by_email,
           updated_by: user?.id,
           updated_at: new Date().toISOString(),
         } as any)
