@@ -7,9 +7,9 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Loader2, Settings, Zap, Image, Monitor, Shield, Database, RefreshCw,
-  Bell, Wifi, Clock, Upload, Terminal, AlertTriangle, Type, Gauge,
+  Bell, Wifi, Clock, Upload, Terminal, AlertTriangle, Type, Gauge, RotateCcw,
 } from 'lucide-react';
-import { useSiteSettings, type SiteSettings } from '@/hooks/useSiteSettings';
+import { useSiteSettings, SITE_SETTINGS_DEFAULTS, type SiteSettings } from '@/hooks/useSiteSettings';
 
 export default function AdminSiteSettings() {
   const { user } = useAuth();
@@ -104,6 +104,12 @@ export default function AdminSiteSettings() {
     toast.success(`Applied "${preset}" preset. Click Save to apply.`);
   };
 
+  const handleResetDefaults = () => {
+    if (!form) return;
+    setForm((p) => (p ? { ...p, ...SITE_SETTINGS_DEFAULTS, id: p.id, updated_at: p.updated_at, updated_by: p.updated_by } : p));
+    toast.success('Reset to defaults (Max Performance). Click Save to apply.');
+  };
+
   if (isLoading || !form) {
     return (
       <DashboardLayout>
@@ -154,6 +160,9 @@ export default function AdminSiteSettings() {
             </button>
             <button onClick={() => applyPreset('quality')} className="px-4 py-2 rounded-lg bg-purple-500/10 text-purple-400 text-sm font-medium hover:bg-purple-500/20 transition-colors border border-purple-500/20">
               💎 Max Quality
+            </button>
+            <button onClick={handleResetDefaults} className="px-4 py-2 rounded-lg bg-destructive/10 text-destructive text-sm font-medium hover:bg-destructive/20 transition-colors border border-destructive/20 flex items-center gap-1.5">
+              <RotateCcw className="h-3.5 w-3.5" /> Reset to Defaults
             </button>
           </div>
         </GlassCard>

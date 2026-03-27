@@ -33,33 +33,35 @@ export interface SiteSettings {
 
 const DEFAULTS: SiteSettings = {
   id: '',
-  enable_background_animations: true,
+  enable_background_animations: false,
   enable_anti_inspection: true,
-  query_stale_time: 60000,
-  query_cache_time: 300000,
+  query_stale_time: 300000,
+  query_cache_time: 600000,
   query_retry_count: 1,
   enable_lazy_loading: true,
-  image_quality: 80,
+  image_quality: 60,
   enable_image_lazy_load: true,
-  enable_page_transitions: true,
-  max_table_rows: 50,
+  enable_page_transitions: false,
+  max_table_rows: 25,
   auto_clear_cache_enabled: false,
   auto_clear_cache_interval: 3600000,
   enable_error_reporting: true,
   enable_toast_notifications: true,
-  toast_duration: 4000,
+  toast_duration: 3000,
   enable_realtime: true,
   session_timeout: 0,
-  enable_prefetch: true,
+  enable_prefetch: false,
   max_upload_size_mb: 50,
   enable_console_logs: false,
-  debounce_delay: 300,
+  debounce_delay: 500,
   enable_text_selection: false,
   maintenance_mode: false,
   maintenance_message: 'We are currently performing maintenance. Please check back soon.',
   updated_at: '',
   updated_by: null,
 };
+
+export { DEFAULTS as SITE_SETTINGS_DEFAULTS };
 
 export function useSiteSettings() {
   const { data, isLoading } = useQuery({
