@@ -220,7 +220,7 @@ export default function AdminSignatureDetail() {
                 <TableRow><TableCell colSpan={4} className="text-center py-4 text-muted-foreground">No activity yet</TableCell></TableRow>
               ) : auditLogs.map(log => (
                 <TableRow key={log.id}>
-                  <TableCell className="font-medium">{actionLabel(log.action)}</TableCell>
+                  <TableCell className="font-medium">{renderAction(log.action)}</TableCell>
                   <TableCell className="text-sm">{log.ip_address || '-'}</TableCell>
                   <TableCell className="text-sm max-w-[200px] truncate">{log.user_agent || '-'}</TableCell>
                   <TableCell className="text-sm">{format(new Date(log.created_at), 'dd MMM yyyy HH:mm:ss')}</TableCell>
