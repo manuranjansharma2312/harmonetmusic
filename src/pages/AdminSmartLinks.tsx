@@ -476,9 +476,17 @@ export default function AdminSmartLinks() {
                   const linkCount = active ? Object.values(c.platform_links).filter((v: any) => v?.trim()).length : 0;
 
                   return (
-                    <GlassCard key={c.id} className="p-4 space-y-3">
+                    <GlassCard key={c.id} className={`p-4 space-y-3 ${selectedIds.has(c.id) ? 'ring-2 ring-primary' : ''}`}>
                       <div className="flex items-start gap-3">
-                        {c.poster_url ? (
+                        <Checkbox
+                          checked={selectedIds.has(c.id)}
+                          onCheckedChange={(checked) => {
+                            const next = new Set(selectedIds);
+                            checked ? next.add(c.id) : next.delete(c.id);
+                            setSelectedIds(next);
+                          }}
+                          className="mt-1"
+                        />
                           <img src={c.poster_url} alt={c.title} className="h-14 w-14 rounded-lg object-cover flex-shrink-0" />
                         ) : (
                           <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
