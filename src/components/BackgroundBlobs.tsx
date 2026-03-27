@@ -1,6 +1,11 @@
 import { memo } from 'react';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 export const BackgroundBlobs = memo(function BackgroundBlobs() {
+  const { settings } = useSiteSettings();
+
+  if (!settings.enable_background_animations) return null;
+
   return (
     <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
       <div
