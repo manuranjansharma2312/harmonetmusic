@@ -167,6 +167,33 @@
   .neon-glow {
     text-shadow: 0 0 10px hsla(0 67% 25% / 0.5);
   }
+
+  /* Responsive table wrapper */
+  .responsive-table-wrap {
+    @apply w-full overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Mobile-friendly tabs */
+  .responsive-tabs [role="tablist"] {
+    @apply flex-wrap gap-1;
+  }
+
+  @media (max-width: 640px) {
+    .responsive-tabs [role="tablist"] button {
+      @apply text-xs px-2 py-1.5;
+    }
+    .responsive-tabs [role="tablist"] button svg {
+      @apply hidden;
+    }
+  }
+
+  /* Touch-friendly buttons on mobile */
+  @media (max-width: 640px) {
+    button, [role="button"], a[href] {
+      min-height: 36px;
+    }
+  }
 }
 
 @keyframes float {
