@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ArrowLeft, Send, FileSignature, Download, Copy, CheckCircle, Clock, Eye, Award, Mail, KeyRound, PenLine } from 'lucide-react';
+import { ArrowLeft, Send, FileSignature, Download, CheckCircle, Clock, Eye, Award, Mail, KeyRound, PenLine, FileDown, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { CopyButton } from '@/components/CopyButton';
 
@@ -50,34 +50,63 @@ export default function AdminSignatureDetail() {
   };
 
   const [generatingCert, setGeneratingCert] = useState(false);
+  const [sendingCompletion, setSendingCompletion] = useState(false);
 
   const getSigningUrl = (token: string) => {
     return `${window.location.origin}/sign/${token}`;
   };
 
-  const handleDownloadCertificate = async () => {
+  const handleGenerateCertificate = async () => {
     setGeneratingCert(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-signature-certificate', {
         body: { document_id: id },
       });
       if (error) throw error;
-      if (!data?.certificate_html) throw new Error('Failed to generate certificate');
-      
-      const blob = new Blob([data.certificate_html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${doc?.title || 'Document'} - Signature Certificate.html`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast.success('Certificate downloaded');
+      if (!data?.success) throw new Error('Failed to generate certificate');
+      toast.success('Certificate generated and bound to document');
+      fetchData();
     } catch (err: any) {
       toast.error(err.message || 'Failed to generate certificate');
     }
     setGeneratingCert(false);
+  };
+
+  const handleDownloadSignedPdf = async () => {
+    if (!doc?.signed_pdf_url) {
+      toast.error('Signed PDF not available. Generate the certificate first.');
+      return;
+    }
+    try {
+      const { data, error } = await supabase.storage
+        .from('signature-documents')
+        .createSignedUrl(doc.signed_pdf_url, 3600);
+      if (error || !data?.signedUrl) throw new Error('Failed to get download URL');
+      window.open(data.signedUrl, '_blank');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to download');
+    }
+  };
+
+  const handleSendCompletionEmail = async () => {
+    setSendingCompletion(true);
+    try {
+      if (!doc?.signed_pdf_url) {
+        toast.error('Generate the certificate first before sending emails');
+        setSendingCompletion(false);
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke('send-completion-email', {
+        body: { document_id: id },
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error('Failed to send emails');
+      toast.success(`Completion emails sent to ${data.emails_sent} recipients`);
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send completion emails');
+    }
+    setSendingCompletion(false);
   };
 
   const actionIcons: Record<string, React.ReactNode> = {
@@ -86,6 +115,7 @@ export default function AdminSignatureDetail() {
     'otp_requested': <KeyRound className="h-3.5 w-3.5 mr-1.5 text-orange-500" />,
     'otp_verified': <CheckCircle className="h-3.5 w-3.5 mr-1.5 text-green-500" />,
     'document_signed': <PenLine className="h-3.5 w-3.5 mr-1.5 text-primary" />,
+    'completion_email_sent': <FileDown className="h-3.5 w-3.5 mr-1.5 text-green-600" />,
   };
 
   const actionLabels: Record<string, string> = {
@@ -94,6 +124,7 @@ export default function AdminSignatureDetail() {
     'otp_requested': 'OTP Requested',
     'otp_verified': 'OTP Verified',
     'document_signed': 'Document Signed',
+    'completion_email_sent': 'Completion Email Sent',
   };
 
   const renderAction = (action: string) => (
@@ -153,10 +184,26 @@ export default function AdminSignatureDetail() {
               <Send className="h-4 w-4 mr-2" /> Resend Emails
             </Button>
           )}
-          {doc.status === 'completed' && (
-            <Button onClick={handleDownloadCertificate} disabled={generatingCert} variant="default">
-              <Award className="h-4 w-4 mr-2" /> {generatingCert ? 'Generating...' : 'Download Certificate'}
+          {doc.status === 'completed' && !doc.signed_pdf_url && (
+            <Button onClick={handleGenerateCertificate} disabled={generatingCert} variant="default">
+              {generatingCert ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Award className="h-4 w-4 mr-2" />}
+              {generatingCert ? 'Generating Certificate...' : 'Generate & Bind Certificate'}
             </Button>
+          )}
+          {doc.status === 'completed' && doc.signed_pdf_url && (
+            <>
+              <Button onClick={handleDownloadSignedPdf} variant="default">
+                <FileDown className="h-4 w-4 mr-2" /> Download Signed PDF
+              </Button>
+              <Button onClick={handleSendCompletionEmail} disabled={sendingCompletion} variant="secondary">
+                {sendingCompletion ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
+                {sendingCompletion ? 'Sending...' : 'Send to Recipients'}
+              </Button>
+              <Button onClick={handleGenerateCertificate} disabled={generatingCert} variant="outline" size="sm">
+                {generatingCert ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Award className="h-4 w-4 mr-2" />}
+                Regenerate
+              </Button>
+            </>
           )}
         </div>
 
