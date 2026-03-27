@@ -1184,6 +1184,8 @@ export default function AdminSubmissions() {
         )}
       </GlassCard>
 
+      <TransferHistory />
+
       {/* View Release Detail Modal */}
       {viewRelease && (
         <Dialog open={!!viewRelease} onOpenChange={() => setViewRelease(null)}>
