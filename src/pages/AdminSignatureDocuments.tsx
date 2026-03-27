@@ -38,14 +38,8 @@ export default function AdminSignatureDocuments() {
 
   const fetchDocuments = async () => {
     setLoading(true);
-    const [docsRes, settingsRes] = await Promise.all([
-      supabase.from('signature_documents').select('*').order('created_at', { ascending: false }),
-      supabase.from('signature_settings').select('default_expiry_days').limit(1).maybeSingle(),
-    ]);
+    const docsRes = await supabase.from('signature_documents').select('*').order('created_at', { ascending: false });
     if (!docsRes.error) setDocuments(docsRes.data || []);
-    if (!settingsRes.error && settingsRes.data) {
-      setExpiryDays((settingsRes.data as any).default_expiry_days ?? 30);
-    }
     setLoading(false);
   };
 
