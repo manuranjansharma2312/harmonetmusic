@@ -530,6 +530,44 @@ export type Database = {
         }
         Relationships: []
       }
+      email_categories: {
+        Row: {
+          created_at: string
+          default_account_id: string | null
+          id: string
+          key: string
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_account_id?: string | null
+          id?: string
+          key: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_account_id?: string | null
+          id?: string
+          key?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_categories_default_account_id_fkey"
+            columns: ["default_account_id"]
+            isOneToOne: false
+            referencedRelation: "email_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_send_logs: {
         Row: {
           body_html: string | null

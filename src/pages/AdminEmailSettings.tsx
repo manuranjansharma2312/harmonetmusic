@@ -18,6 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 import {
   Mail, Settings, FileText, Save, Send, Eye, EyeOff, Search,
   ChevronUp, Info, Code, History, Download, Plus, Trash2, Star, Edit2, BarChart3,
+  Tag,
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -63,17 +64,25 @@ interface EmailLog {
   body_html: string | null;
 }
 
-const CATEGORIES = [
-  { key: 'all', label: 'All' },
-  { key: 'authentication', label: 'Authentication' },
-  { key: 'releases', label: 'Releases' },
-  { key: 'revenue', label: 'Revenue & Payouts' },
-  { key: 'labels', label: 'Labels' },
-  { key: 'content_requests', label: 'Content Requests' },
-  { key: 'sub_labels', label: 'Sub Labels' },
-  { key: 'smart_links', label: 'Smart Links' },
-  { key: 'promotions', label: 'Promotions' },
-  { key: 'general', label: 'General' },
+interface EmailCategory {
+  id: string;
+  name: string;
+  key: string;
+  default_account_id: string | null;
+  sort_order: number;
+}
+
+const CATEGORY_COLORS = [
+  'bg-blue-500/20 text-blue-400',
+  'bg-green-500/20 text-green-400',
+  'bg-yellow-500/20 text-yellow-400',
+  'bg-purple-500/20 text-purple-400',
+  'bg-orange-500/20 text-orange-400',
+  'bg-pink-500/20 text-pink-400',
+  'bg-cyan-500/20 text-cyan-400',
+  'bg-red-500/20 text-red-400',
+  'bg-teal-500/20 text-teal-400',
+  'bg-indigo-500/20 text-indigo-400',
 ];
 
 const EMPTY_ACCOUNT: Omit<EmailAccount, 'id'> = {
@@ -254,8 +263,14 @@ export default function AdminEmailSettings() {
   const [accounts, setAccounts] = useState<EmailAccount[]>([]);
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
+  const [categories, setCategories] = useState<EmailCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Category management
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [editCategoryName, setEditCategoryName] = useState('');
 
   // Account editing
   const [editingAccount, setEditingAccount] = useState<Partial<EmailAccount> | null>(null);
@@ -269,6 +284,7 @@ export default function AdminEmailSettings() {
   const [editSubject, setEditSubject] = useState('');
   const [editBody, setEditBody] = useState('');
   const [editAccountId, setEditAccountId] = useState<string | null>(null);
+  const [editCategory, setEditCategory] = useState('');
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
   const [templatePage, setTemplatePage] = useState(0);
   const [templatePageSize, setTemplatePageSize] = useState<number | 'all'>(10);
@@ -302,14 +318,16 @@ export default function AdminEmailSettings() {
 
   async function fetchData() {
     try {
-      const [accountsRes, templatesRes, logsRes] = await Promise.all([
+      const [accountsRes, templatesRes, logsRes, categoriesRes] = await Promise.all([
         supabase.from('email_accounts').select('*').order('is_default', { ascending: false }).order('account_name'),
         supabase.from('email_templates').select('*').order('category').order('trigger_label'),
         supabase.from('email_send_logs').select('*').order('sent_at', { ascending: false }).limit(500),
+        supabase.from('email_categories').select('*').order('sort_order'),
       ]);
       if (accountsRes.data) setAccounts(accountsRes.data as any);
       if (templatesRes.data) setTemplates(templatesRes.data as any);
       if (logsRes.data) setEmailLogs(logsRes.data as any);
+      if (categoriesRes.data) setCategories(categoriesRes.data as any);
     } catch (err) {
       console.error(err);
     } finally {
@@ -414,6 +432,7 @@ export default function AdminEmailSettings() {
     setEditSubject(template.subject);
     setEditBody(template.body_html);
     setEditAccountId(template.email_account_id);
+    setEditCategory(template.category);
     setPreviewTemplate(null);
   }
 
@@ -424,11 +443,12 @@ export default function AdminEmailSettings() {
         subject: editSubject,
         body_html: editBody,
         email_account_id: editAccountId || null,
+        category: editCategory,
         updated_at: new Date().toISOString(),
         updated_by: user?.id,
       } as any).eq('id', id);
       if (error) throw error;
-      setTemplates(prev => prev.map(t => t.id === id ? { ...t, subject: editSubject, body_html: editBody, email_account_id: editAccountId } : t));
+      setTemplates(prev => prev.map(t => t.id === id ? { ...t, subject: editSubject, body_html: editBody, email_account_id: editAccountId, category: editCategory } : t));
       setEditingTemplate(null);
       toast.success('Template saved');
     } catch (err: any) {
@@ -483,6 +503,63 @@ export default function AdminEmailSettings() {
     toast.success(`Exported ${filteredLogs.length} logs`);
   }
 
+  // ---- Category CRUD ----
+  async function addCategory() {
+    if (!newCategoryName.trim()) { toast.error('Category name is required'); return; }
+    const key = newCategoryName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    if (categories.some(c => c.key === key)) { toast.error('Category already exists'); return; }
+    setSaving(true);
+    try {
+      const { error } = await supabase.from('email_categories').insert({
+        name: newCategoryName.trim(),
+        key,
+        sort_order: categories.length + 1,
+      } as any);
+      if (error) throw error;
+      setNewCategoryName('');
+      toast.success('Category added');
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to add category');
+    } finally { setSaving(false); }
+  }
+
+  async function updateCategory(id: string, updates: Partial<EmailCategory>) {
+    setSaving(true);
+    try {
+      const { error } = await supabase.from('email_categories').update({
+        ...updates,
+        updated_at: new Date().toISOString(),
+      } as any).eq('id', id);
+      if (error) throw error;
+      setCategories(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+      setEditingCategoryId(null);
+      toast.success('Category updated');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update');
+    } finally { setSaving(false); }
+  }
+
+  async function deleteCategory(id: string) {
+    const cat = categories.find(c => c.id === id);
+    if (!cat) return;
+    const usedBy = templates.filter(t => t.category === cat.key).length;
+    if (usedBy > 0) {
+      toast.error(`Cannot delete: ${usedBy} template(s) are using this category. Reassign them first.`);
+      return;
+    }
+    if (!confirm(`Delete category "${cat.name}"?`)) return;
+    const { error } = await supabase.from('email_categories').delete().eq('id', id);
+    if (error) { toast.error(error.message); return; }
+    toast.success('Category deleted');
+    fetchData();
+  }
+
+  const categoriesWithAll = useMemo(() =>
+    [{ key: 'all', name: 'All' } as any, ...categories],
+    [categories]
+  );
+
   const filteredTemplates = useMemo(() => {
     let result = templates.filter(t => {
       const matchesSearch = !searchQuery ||
@@ -500,18 +577,18 @@ export default function AdminEmailSettings() {
   );
 
   const getCategoryColor = (cat: string) => {
-    const colors: Record<string, string> = {
-      authentication: 'bg-blue-500/20 text-blue-400',
-      releases: 'bg-green-500/20 text-green-400',
-      revenue: 'bg-yellow-500/20 text-yellow-400',
-      labels: 'bg-purple-500/20 text-purple-400',
-      content_requests: 'bg-orange-500/20 text-orange-400',
-      sub_labels: 'bg-pink-500/20 text-pink-400',
-      smart_links: 'bg-cyan-500/20 text-cyan-400',
-      promotions: 'bg-red-500/20 text-red-400',
-      general: 'bg-muted text-muted-foreground',
-    };
-    return colors[cat] || colors.general;
+    const idx = categories.findIndex(c => c.key === cat);
+    return CATEGORY_COLORS[idx >= 0 ? idx % CATEGORY_COLORS.length : CATEGORY_COLORS.length - 1];
+  };
+
+  const getCategoryLabel = (catKey: string) => {
+    return categories.find(c => c.key === catKey)?.name || catKey;
+  };
+
+  const getCategoryDefaultAccount = (catKey: string) => {
+    const cat = categories.find(c => c.key === catKey);
+    if (!cat?.default_account_id) return null;
+    return accounts.find(a => a.id === cat.default_account_id) || null;
   };
 
   const getAccountName = (accountId: string | null) => {
@@ -545,6 +622,9 @@ export default function AdminEmailSettings() {
           <TabsList className="flex-wrap">
             <TabsTrigger value="accounts" className="gap-2">
               <Mail className="h-4 w-4" /> Email Accounts
+            </TabsTrigger>
+            <TabsTrigger value="categories" className="gap-2">
+              <Tag className="h-4 w-4" /> Categories
             </TabsTrigger>
             <TabsTrigger value="templates" className="gap-2">
               <FileText className="h-4 w-4" /> Templates & Assignment
@@ -641,6 +721,99 @@ export default function AdminEmailSettings() {
             </GlassCard>
           </TabsContent>
 
+          {/* =============== Categories Tab =============== */}
+          <TabsContent value="categories">
+            <GlassCard className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-primary/10">
+                    <Tag className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold">Email Categories</h2>
+                    <p className="text-xs text-muted-foreground">Create categories and assign a default email account to each one</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Add new category */}
+              <div className="flex gap-2">
+                <Input placeholder="New category name..." value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') addCategory(); }}
+                  className="max-w-xs" />
+                <Button size="sm" onClick={addCategory} disabled={saving || !newCategoryName.trim()} className="gap-1.5">
+                  <Plus className="h-4 w-4" /> Add Category
+                </Button>
+              </div>
+
+              {/* Category list */}
+              <div className="space-y-2">
+                {categories.map((cat, idx) => (
+                  <div key={cat.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border bg-muted/20">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <Badge variant="outline" className={`text-[10px] shrink-0 ${CATEGORY_COLORS[idx % CATEGORY_COLORS.length]}`}>
+                        {cat.key}
+                      </Badge>
+                      {editingCategoryId === cat.id ? (
+                        <div className="flex items-center gap-2">
+                          <Input value={editCategoryName} onChange={(e) => setEditCategoryName(e.target.value)}
+                            className="h-7 text-sm w-48" autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') updateCategory(cat.id, { name: editCategoryName });
+                              if (e.key === 'Escape') setEditingCategoryId(null);
+                            }} />
+                          <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => updateCategory(cat.id, { name: editCategoryName })}>
+                            <Save className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="font-medium text-sm">{cat.name}</span>
+                      )}
+                      <span className="text-xs text-muted-foreground">
+                        ({templates.filter(t => t.category === cat.key).length} templates)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={cat.default_account_id || '_none'}
+                        onValueChange={(v) => updateCategory(cat.id, { default_account_id: v === '_none' ? null : v })}
+                      >
+                        <SelectTrigger className="w-[220px] h-8 text-xs">
+                          <SelectValue placeholder="No default account" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="_none">No default account</SelectItem>
+                          {accounts.filter(a => a.is_enabled).map(acc => (
+                            <SelectItem key={acc.id} value={acc.id}>
+                              {acc.account_name} — {acc.from_email || acc.smtp_username}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button size="sm" variant="ghost" onClick={() => { setEditingCategoryId(cat.id); setEditCategoryName(cat.name); }}>
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => deleteCategory(cat.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                {categories.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Tag className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                    <p className="text-sm">No categories yet. Add your first one above.</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-3 bg-muted/30 rounded-lg text-xs text-muted-foreground">
+                <strong>How it works:</strong> Assign a default email account to each category. All templates in that category will use this account unless overridden individually in the template edit form.
+              </div>
+            </GlassCard>
+          </TabsContent>
+
           {/* =============== Templates Tab =============== */}
           <TabsContent value="templates">
             <GlassCard className="p-6 space-y-4">
@@ -662,7 +835,7 @@ export default function AdminEmailSettings() {
                 <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setTemplatePage(0); }}>
                   <SelectTrigger className="w-full sm:w-[200px]"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {CATEGORIES.map(c => <SelectItem key={c.key} value={c.key}>{c.label}</SelectItem>)}
+                    {categoriesWithAll.map((c: any) => <SelectItem key={c.key} value={c.key}>{c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -679,17 +852,24 @@ export default function AdminEmailSettings() {
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-medium text-sm">{template.trigger_label}</span>
                               <Badge variant="outline" className={`text-[10px] ${getCategoryColor(template.category)}`}>
-                                {CATEGORIES.find(c => c.key === template.category)?.label || template.category}
+                                {getCategoryLabel(template.category)}
                               </Badge>
-                              {assignedName ? (
-                                <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary gap-1">
-                                  <Mail className="h-2.5 w-2.5" /> {assignedName}
-                                </Badge>
-                              ) : defaultAccount ? (
-                                <Badge variant="outline" className="text-[10px] text-muted-foreground gap-1">
-                                  <Mail className="h-2.5 w-2.5" /> {defaultAccount.account_name} (default)
-                                </Badge>
-                              ) : null}
+                              {(() => {
+                                const catDefault = getCategoryDefaultAccount(template.category);
+                                const effectiveAccount = assignedName
+                                  ? assignedName
+                                  : catDefault
+                                    ? `${catDefault.account_name} (category)`
+                                    : defaultAccount
+                                      ? `${defaultAccount.account_name} (default)`
+                                      : null;
+                                const isOverride = !!assignedName;
+                                return effectiveAccount ? (
+                                  <Badge variant="outline" className={`text-[10px] gap-1 ${isOverride ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}>
+                                    <Mail className="h-2.5 w-2.5" /> {effectiveAccount}
+                                  </Badge>
+                                ) : null;
+                              })()}
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5 truncate">Subject: {template.subject}</p>
                           </div>
@@ -738,21 +918,39 @@ export default function AdminEmailSettings() {
                               ))}
                             </div>
                           </div>
-                          <div className="space-y-2">
-                            <Label>Send From Account</Label>
-                            <Select value={editAccountId || '_default'} onValueChange={(v) => setEditAccountId(v === '_default' ? null : v)}>
-                              <SelectTrigger><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="_default">
-                                  {defaultAccount ? `Default (${defaultAccount.account_name})` : 'Default Account'}
-                                </SelectItem>
-                                {accounts.filter(a => a.is_enabled).map(acc => (
-                                  <SelectItem key={acc.id} value={acc.id}>
-                                    {acc.account_name} — {acc.from_email || acc.smtp_username}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                              <Label>Category</Label>
+                              <Select value={editCategory} onValueChange={setEditCategory}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {categories.map(c => (
+                                    <SelectItem key={c.key} value={c.key}>{c.name}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Send From Account</Label>
+                              <Select value={editAccountId || '_category_default'} onValueChange={(v) => setEditAccountId(v === '_category_default' ? null : v)}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="_category_default">
+                                    {(() => {
+                                      const catDefault = getCategoryDefaultAccount(editCategory);
+                                      if (catDefault) return `Category default (${catDefault.account_name})`;
+                                      if (defaultAccount) return `Default (${defaultAccount.account_name})`;
+                                      return 'Default Account';
+                                    })()}
                                   </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                                  {accounts.filter(a => a.is_enabled).map(acc => (
+                                    <SelectItem key={acc.id} value={acc.id}>
+                                      {acc.account_name} — {acc.from_email || acc.smtp_username}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
                           <div className="space-y-2">
                             <Label>Subject</Label>
