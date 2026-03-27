@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Link2, ExternalLink, Search, Music, Edit, Plus, Trash2, GripVertical, Settings, ImageIcon, Key, Eye, EyeOff, User, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Loader2, Link2, ExternalLink, Search, Music, Edit, Plus, Trash2, GripVertical, Settings, ImageIcon, Key, Eye, EyeOff, User, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
 
@@ -92,6 +92,12 @@ export default function AdminSmartLinks() {
   const [systemEnabled, setSystemEnabled] = useState(true);
   const [togglingSystem, setTogglingSystem] = useState(false);
 
+  // ─── Auto-fetch & search settings ───
+  const [autoFetchEnabled, setAutoFetchEnabled] = useState(false);
+  const [searchEnabled, setSearchEnabled] = useState(false);
+  const [togglingAutoFetch, setTogglingAutoFetch] = useState(false);
+  const [togglingSearch, setTogglingSearch] = useState(false);
+
   // ─── Fetchers ───
 
   const fetchPlatforms = async () => {
@@ -151,8 +157,12 @@ export default function AdminSmartLinks() {
   };
 
   const fetchSystemSetting = async () => {
-    const { data } = await supabase.from('smart_link_settings').select('is_enabled').limit(1).single();
-    if (data) setSystemEnabled((data as any).is_enabled);
+    const { data } = await supabase.from('smart_link_settings').select('is_enabled, auto_fetch_enabled, search_enabled').limit(1).single();
+    if (data) {
+      setSystemEnabled((data as any).is_enabled);
+      setAutoFetchEnabled((data as any).auto_fetch_enabled ?? false);
+      setSearchEnabled((data as any).search_enabled ?? false);
+    }
   };
 
   const toggleSystem = async (val: boolean) => {
@@ -167,6 +177,30 @@ export default function AdminSmartLinks() {
   };
 
   useEffect(() => { fetchPlatforms(); fetchApiConfigs(); fetchCustomLinks(); fetchSystemSetting(); }, []);
+
+  const hasEnabledApi = apiConfigs.some(a => a.is_enabled && a.api_key?.trim() && a.api_url?.trim());
+
+  const toggleAutoFetch = async (val: boolean) => {
+    setTogglingAutoFetch(true);
+    const { data } = await supabase.from('smart_link_settings').select('id').limit(1).single();
+    if (data) {
+      await supabase.from('smart_link_settings').update({ auto_fetch_enabled: val, updated_at: new Date().toISOString(), updated_by: user?.id } as any).eq('id', (data as any).id);
+    }
+    setAutoFetchEnabled(val);
+    setTogglingAutoFetch(false);
+    toast.success(val ? 'Auto-fetch enabled' : 'Auto-fetch disabled');
+  };
+
+  const toggleSearchEnabled = async (val: boolean) => {
+    setTogglingSearch(true);
+    const { data } = await supabase.from('smart_link_settings').select('id').limit(1).single();
+    if (data) {
+      await supabase.from('smart_link_settings').update({ search_enabled: val, updated_at: new Date().toISOString(), updated_by: user?.id } as any).eq('id', (data as any).id);
+    }
+    setSearchEnabled(val);
+    setTogglingSearch(false);
+    toast.success(val ? 'Search by ISRC/UPC enabled' : 'Search by ISRC/UPC disabled');
+  };
 
 
   // ─── Platform handlers ───
@@ -497,9 +531,48 @@ export default function AdminSmartLinks() {
 
           {/* === API INTEGRATIONS TAB === */}
           <TabsContent value="apis" className="space-y-4 mt-4">
+            {/* Feature toggles */}
+            <GlassCard className="p-4 space-y-4">
+              <h3 className="text-sm font-semibold text-foreground">Feature Settings</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Auto-fetch Links</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {hasEnabledApi ? 'Users can auto-fill platform links via API' : 'Add & enable an API first to use this'}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={autoFetchEnabled}
+                    onCheckedChange={toggleAutoFetch}
+                    disabled={togglingAutoFetch || !hasEnabledApi}
+                  />
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Search by ISRC/UPC</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {hasEnabledApi ? 'Users can search songs by ISRC, UPC, or link' : 'Add & enable an API first to use this'}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={searchEnabled}
+                    onCheckedChange={toggleSearchEnabled}
+                    disabled={togglingSearch || !hasEnabledApi}
+                  />
+                </div>
+              </div>
+              {!hasEnabledApi && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  These features require at least one enabled API with a valid key and URL configured below.
+                </p>
+              )}
+            </GlassCard>
+
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Add external API keys for auto-filling platform links in the future.</p>
+                <p className="text-sm text-muted-foreground">Add external API keys for auto-filling platform links.</p>
                 <p className="text-xs text-muted-foreground/70 mt-0.5">e.g., Songlink/Odesli, MusicBrainz, or custom APIs</p>
               </div>
               <Button size="sm" onClick={openNewApi}><Plus className="h-3.5 w-3.5 mr-1" /> Add API</Button>
