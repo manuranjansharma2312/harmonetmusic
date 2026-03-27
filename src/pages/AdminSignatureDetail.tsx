@@ -49,8 +49,35 @@ export default function AdminSignatureDetail() {
     }
   };
 
+  const [generatingCert, setGeneratingCert] = useState(false);
+
   const getSigningUrl = (token: string) => {
     return `${window.location.origin}/sign/${token}`;
+  };
+
+  const handleDownloadCertificate = async () => {
+    setGeneratingCert(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-signature-certificate', {
+        body: { document_id: id },
+      });
+      if (error) throw error;
+      if (!data?.certificate_html) throw new Error('Failed to generate certificate');
+      
+      const blob = new Blob([data.certificate_html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${doc?.title || 'Document'} - Signature Certificate.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success('Certificate downloaded');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to generate certificate');
+    }
+    setGeneratingCert(false);
   };
 
   const actionLabel = (action: string) => {
