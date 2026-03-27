@@ -1184,7 +1184,7 @@ export default function AdminSubmissions() {
         )}
       </GlassCard>
 
-      <TransferHistory onReversed={fetchReleases} />
+      
 
       {/* View Release Detail Modal */}
       {viewRelease && (
