@@ -106,6 +106,7 @@ function App() {
             <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
               <AuthProvider>
                 <ImpersonateProvider>
+                  <SiteSettingsRuntime />
                   <Suspense fallback={<PageLoader />}>
                     <Routes>
                       <Route path="/" element={<Navigate to="/auth" replace />} />
