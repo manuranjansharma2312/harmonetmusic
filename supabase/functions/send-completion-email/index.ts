@@ -11,6 +11,14 @@ function escapeHtml(str: string): string {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+function replaceVars(template: string, vars: Record<string, string>): string {
+  let result = template;
+  for (const [key, value] of Object.entries(vars)) {
+    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+  }
+  return result;
+}
+
 async function sendSmtp(account: any, to: string, subject: string, html: string) {
   const client = new SMTPClient({
     connection: {
@@ -48,30 +56,33 @@ serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Verify admin
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Unauthorized");
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user } } = await supabase.auth.getUser(token);
-    if (!user) throw new Error("Unauthorized");
-
-    const { data: roleCheck } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .single();
-    if (!roleCheck) throw new Error("Admin access required");
-
-    const { document_id } = await req.json();
+    const { document_id, auto_triggered } = await req.json();
     if (!document_id) throw new Error("document_id required");
 
+    // If not auto-triggered, verify admin auth
+    if (!auto_triggered) {
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader) throw new Error("Unauthorized");
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user } } = await supabase.auth.getUser(token);
+      if (!user) throw new Error("Unauthorized");
+
+      const { data: roleCheck } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .single();
+      if (!roleCheck) throw new Error("Admin access required");
+    }
+
     // Fetch all needed data in parallel
-    const [docRes, recipientsRes, companyRes, emailAccountsRes] = await Promise.all([
+    const [docRes, recipientsRes, companyRes, emailAccountsRes, settingsRes] = await Promise.all([
       supabase.from("signature_documents").select("*").eq("id", document_id).single(),
       supabase.from("signature_recipients").select("*").eq("document_id", document_id).order("signing_order"),
       supabase.from("company_details").select("*").limit(1).single(),
       supabase.from("email_accounts").select("*").eq("is_default", true).eq("is_enabled", true).limit(1),
+      supabase.from("signature_settings").select("*").limit(1).maybeSingle(),
     ]);
 
     const doc = docRes.data;
@@ -85,21 +96,34 @@ serve(async (req) => {
     if (!account) throw new Error("No email account configured. Please set up an email account in Admin Email Settings first.");
 
     const companyName = companyRes.data?.company_name || "Harmonet Music";
+    const sigSettings = settingsRes.data as any;
 
     // Get signed PDF download URL
     let downloadUrl = "";
     if (doc.signed_pdf_url) {
       const { data: signedUrl } = await supabase.storage
         .from("signature-documents")
-        .createSignedUrl(doc.signed_pdf_url, 60 * 60 * 24 * 7); // 7 days
+        .createSignedUrl(doc.signed_pdf_url, 60 * 60 * 24 * 7);
       if (signedUrl) downloadUrl = signedUrl.signedUrl;
     }
     if (!downloadUrl) throw new Error("Signed PDF not found. Generate certificate first.");
 
+    const subjectTemplate = sigSettings?.completion_email_subject || "Completed: {{document_title}} - Signed Document & Certificate";
+    const bodyIntro = sigSettings?.completion_email_body || "The following document has been successfully signed by all parties.";
+
     let emailsSent = 0;
 
-    // Send email to all recipients
     for (const recipient of recipients) {
+      const vars = {
+        document_title: doc.title,
+        company_name: companyName,
+        recipient_name: recipient.name,
+        certificate_id: doc.certificate_url || "N/A",
+      };
+
+      const subject = replaceVars(subjectTemplate, vars);
+      const introText = replaceVars(bodyIntro, vars);
+
       const emailHtml = `
         <div style="font-family: Arial, Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; color: #333;">
           <div style="border-bottom: 2px solid #1a1a1a; padding-bottom: 15px; margin-bottom: 25px;">
@@ -110,7 +134,7 @@ serve(async (req) => {
           
           <p>Hello ${escapeHtml(recipient.name)},</p>
           
-          <p>The following document has been successfully signed by all parties:</p>
+          <p>${escapeHtml(introText)}</p>
           
           <div style="background: #f8f9fa; padding: 18px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #16a34a;">
             <p style="font-weight: bold; margin: 0 0 5px; font-size: 16px;">${escapeHtml(doc.title)}</p>
@@ -147,7 +171,6 @@ serve(async (req) => {
         </div>
       `;
 
-      const subject = `Completed: ${doc.title} - Signed Document & Certificate`;
       let status = "sent";
       let errorMessage = null;
 
@@ -159,7 +182,6 @@ serve(async (req) => {
         errorMessage = smtpErr.message || "SMTP send failed";
       }
 
-      // Log email
       await supabase.from("email_send_logs").insert({
         template_key: "signature_completed",
         template_label: "Signature Completed",
@@ -168,10 +190,9 @@ serve(async (req) => {
         body_html: emailHtml,
         status,
         error_message: errorMessage,
-        sent_by: user.id,
+        sent_by: doc.created_by,
       });
 
-      // Audit log
       await supabase.from("signature_audit_logs").insert({
         document_id,
         recipient_id: recipient.id,
