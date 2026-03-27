@@ -5,7 +5,7 @@ import {
   Merge, Youtube, Trash2, ChevronDown, MessageSquare,
   BarChart3, MonitorPlay, Wallet, FileText, Receipt,
   Image as ImageIcon, Bell, BookOpen, FileSignature,
-  Megaphone, Landmark, CreditCard, UsersRound, Sparkles, Link2, ArrowRightLeft,
+  Megaphone, Landmark, CreditCard, UsersRound, Sparkles, Link2, ArrowRightLeft, Mail,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { supabase } from '@/integrations/supabase/client';
@@ -66,6 +66,7 @@ const adminLinksTop = [
   { to: '/admin/ai-image-system', label: 'AI Poster Generate', icon: Sparkles },
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
+  { to: '/admin/email-settings', label: 'Email Settings', icon: Mail },
 ];
 
 export function AppSidebar() {

@@ -63,6 +63,7 @@ const AIImageGeneration = lazy(() => import("./pages/AIImageGeneration"));
 const SmartLink = lazy(() => import("./pages/SmartLink"));
 const MySmartLinks = lazy(() => import("./pages/MySmartLinks"));
 const AdminSmartLinks = lazy(() => import("./pages/AdminSmartLinks"));
+const AdminEmailSettings = lazy(() => import("./pages/AdminEmailSettings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -141,6 +142,7 @@ function App() {
                       <Route path="/admin/promotion-tools" element={<ProtectedRoute requiredRole="admin"><AdminPromotionTools /></ProtectedRoute>} />
                       <Route path="/admin/payment-settings" element={<ProtectedRoute requiredRole="admin"><AdminPaymentSettings /></ProtectedRoute>} />
                       <Route path="/admin/contact-support" element={<ProtectedRoute requiredRole="admin"><AdminContactSupport /></ProtectedRoute>} />
+                      <Route path="/admin/email-settings" element={<ProtectedRoute requiredRole="admin"><AdminEmailSettings /></ProtectedRoute>} />
                       <Route path="/admin/ai-image-system" element={<ProtectedRoute requiredRole="admin"><AdminAIImageSystem /></ProtectedRoute>} />
                       <Route path="/ai-images" element={<ProtectedRoute><AIImageGeneration /></ProtectedRoute>} />
                       <Route path="/promotion-tools" element={<ProtectedRoute><PromotionTools /></ProtectedRoute>} />
