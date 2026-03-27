@@ -121,8 +121,6 @@ export default function AdminSignatureDetail() {
   const actionIcons: Record<string, React.ReactNode> = {
     'email_sent': <Mail className="h-3.5 w-3.5 mr-1.5 text-blue-500" />,
     'document_viewed': <Eye className="h-3.5 w-3.5 mr-1.5 text-amber-500" />,
-    'otp_requested': <KeyRound className="h-3.5 w-3.5 mr-1.5 text-orange-500" />,
-    'otp_verified': <CheckCircle className="h-3.5 w-3.5 mr-1.5 text-green-500" />,
     'document_signed': <PenLine className="h-3.5 w-3.5 mr-1.5 text-primary" />,
     'completion_email_sent': <FileDown className="h-3.5 w-3.5 mr-1.5 text-green-600" />,
   };
@@ -130,8 +128,6 @@ export default function AdminSignatureDetail() {
   const actionLabels: Record<string, string> = {
     'email_sent': 'Email Sent',
     'document_viewed': 'Document Viewed',
-    'otp_requested': 'OTP Requested',
-    'otp_verified': 'OTP Verified',
     'document_signed': 'Document Signed',
     'completion_email_sent': 'Completion Email Sent',
   };
