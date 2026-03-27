@@ -22,6 +22,7 @@ interface SmartLinkItem {
   slug: string | null;
   created_at: string;
   status: string;
+  rejection_reason: string | null;
 }
 
 export default function MySmartLinks() {
