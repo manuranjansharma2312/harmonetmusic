@@ -105,7 +105,7 @@ export default function AdminSignatureDocuments() {
           email: validRecipients[i].email.trim().toLowerCase(),
           signing_order: i + 1,
           signing_token: token,
-          token_expires_at: new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString(),
+          token_expires_at: new Date('2099-12-31T23:59:59Z').toISOString(),
         });
       }
 
