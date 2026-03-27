@@ -167,7 +167,7 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
 
       {/* Poster */}
       <div>
-        <Label className="text-xs text-muted-foreground">Cover Art / Poster</Label>
+        <Label className="text-xs text-muted-foreground">Cover Art / Poster (auto-compressed to 500×500)</Label>
         <div className="flex items-center gap-3 mt-1">
           {posterUrl ? (
             <img src={posterUrl} alt="poster" className="h-16 w-16 rounded-lg object-cover border border-border" />
