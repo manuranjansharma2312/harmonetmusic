@@ -1,11 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { GlassCard } from '@/components/GlassCard';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { Button } from '@/components/ui/button';
-import { ArrowRightLeft, Undo2, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { Input } from '@/components/ui/input';
+import { ArrowRightLeft, Undo2, Loader2, Search, X, CalendarIcon } from 'lucide-react';
+import { format, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
