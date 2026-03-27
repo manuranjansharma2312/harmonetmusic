@@ -443,11 +443,12 @@ export default function AdminEmailSettings() {
         subject: editSubject,
         body_html: editBody,
         email_account_id: editAccountId || null,
+        category: editCategory,
         updated_at: new Date().toISOString(),
         updated_by: user?.id,
       } as any).eq('id', id);
       if (error) throw error;
-      setTemplates(prev => prev.map(t => t.id === id ? { ...t, subject: editSubject, body_html: editBody, email_account_id: editAccountId } : t));
+      setTemplates(prev => prev.map(t => t.id === id ? { ...t, subject: editSubject, body_html: editBody, email_account_id: editAccountId, category: editCategory } : t));
       setEditingTemplate(null);
       toast.success('Template saved');
     } catch (err: any) {
