@@ -620,8 +620,8 @@ export default function AdminEmailSettings() {
           </p>
         </div>
 
-        <Tabs defaultValue="accounts" className="space-y-4">
-          <TabsList className="flex-wrap">
+        <Tabs defaultValue="accounts" className="space-y-4 responsive-tabs">
+          <TabsList className="flex-wrap h-auto gap-1">
             <TabsTrigger value="accounts" className="gap-2">
               <Mail className="h-4 w-4" /> Email Accounts
             </TabsTrigger>

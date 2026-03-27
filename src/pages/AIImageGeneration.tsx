@@ -257,7 +257,7 @@ export default function AIImageGeneration() {
           </Card>
         </div>
 
-        <Tabs value={tab} onValueChange={setTab}>
+        <Tabs value={tab} onValueChange={setTab} className="responsive-tabs">
           <TabsList className="flex flex-wrap h-auto gap-1">
             <TabsTrigger value="generate" className="gap-1"><Wand2 className="h-4 w-4" />Generate</TabsTrigger>
             <TabsTrigger value="gallery" className="gap-1"><ImageIcon className="h-4 w-4" />My Posters</TabsTrigger>

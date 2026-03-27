@@ -296,7 +296,7 @@ export default function AdminAIImageSystem() {
           <h1 className="text-2xl font-bold">AI Poster Generate</h1>
         </div>
 
-        <Tabs value={tab} onValueChange={setTab}>
+        <Tabs value={tab} onValueChange={setTab} className="responsive-tabs">
           <TabsList className="flex flex-wrap h-auto gap-1">
             <TabsTrigger value="plans" className="gap-1"><CreditCard className="h-4 w-4" />Plans</TabsTrigger>
             <TabsTrigger value="orders" className="gap-1"><History className="h-4 w-4" />Orders</TabsTrigger>
