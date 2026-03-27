@@ -1,0 +1,1 @@
+ALTER TABLE public.email_send_logs ADD COLUMN body_html text;

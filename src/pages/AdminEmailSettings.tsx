@@ -59,6 +59,7 @@ interface EmailLog {
   error_message: string | null;
   sent_at: string;
   sent_by: string | null;
+  body_html: string | null;
 }
 
 const CATEGORIES = [
@@ -122,6 +123,7 @@ export default function AdminEmailSettings() {
   const [testEmail, setTestEmail] = useState('');
   const [testAccountId, setTestAccountId] = useState('');
   const [sendingTest, setSendingTest] = useState(false);
+  const [viewingLog, setViewingLog] = useState<EmailLog | null>(null);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -651,12 +653,13 @@ export default function AdminEmailSettings() {
                             <TableHead>Status</TableHead>
                             <TableHead>Sent At</TableHead>
                             <TableHead>Error</TableHead>
+                            <TableHead>Action</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {paginatedLogs.length === 0 ? (
                             <TableRow>
-                              <TableCell colSpan={6} className="text-center text-muted-foreground py-8">No email logs found</TableCell>
+                              <TableCell colSpan={7} className="text-center text-muted-foreground py-8">No email logs found</TableCell>
                             </TableRow>
                           ) : paginatedLogs.map((log: EmailLog) => (
                             <TableRow key={log.id}>
@@ -666,6 +669,11 @@ export default function AdminEmailSettings() {
                               <TableCell><StatusBadge status={log.status} /></TableCell>
                               <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(log.sent_at).toLocaleString()}</TableCell>
                               <TableCell className="text-xs text-destructive max-w-[200px] truncate">{log.error_message || '—'}</TableCell>
+                              <TableCell>
+                                <Button size="sm" variant="ghost" onClick={() => setViewingLog(log)} title="View email">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -916,6 +924,63 @@ export default function AdminEmailSettings() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* =============== Email Preview Dialog =============== */}
+      <Dialog open={!!viewingLog} onOpenChange={(o) => { if (!o) setViewingLog(null); }}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" /> Email Preview
+            </DialogTitle>
+          </DialogHeader>
+          {viewingLog && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Template</Label>
+                  <p className="font-medium">{viewingLog.template_label || viewingLog.template_key}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Status</Label>
+                  <div className="mt-0.5"><StatusBadge status={viewingLog.status} /></div>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Recipient</Label>
+                  <p>{viewingLog.recipient_email}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Sent At</Label>
+                  <p>{new Date(viewingLog.sent_at).toLocaleString()}</p>
+                </div>
+                <div className="col-span-2">
+                  <Label className="text-xs text-muted-foreground">Subject</Label>
+                  <p className="font-medium">{viewingLog.subject || '—'}</p>
+                </div>
+                {viewingLog.error_message && (
+                  <div className="col-span-2">
+                    <Label className="text-xs text-destructive">Error</Label>
+                    <p className="text-sm text-destructive">{viewingLog.error_message}</p>
+                  </div>
+                )}
+              </div>
+              <div className="border-t border-border pt-4">
+                <Label className="text-xs text-muted-foreground mb-2 block">Email Body</Label>
+                {viewingLog.body_html ? (
+                  <div className="p-4 bg-white rounded-lg border text-sm text-black max-h-[400px] overflow-y-auto"
+                    dangerouslySetInnerHTML={{ __html: viewingLog.body_html }} />
+                ) : (
+                  <div className="p-4 bg-muted/30 rounded-lg text-center text-muted-foreground text-sm">
+                    Email body not available for this log entry
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-end">
+                <Button variant="outline" onClick={() => setViewingLog(null)}>Close</Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </DashboardLayout>

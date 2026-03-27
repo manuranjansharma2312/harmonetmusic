@@ -182,6 +182,7 @@ serve(async (req) => {
       status: sendStatus,
       error_message: errorMessage,
       sent_by: user.id,
+      body_html: htmlBody,
     });
 
     if (sendStatus === "failed") {
