@@ -231,42 +231,7 @@ export default function SignDocument() {
       </div>
 
       <div className="max-w-4xl mx-auto p-4 md:p-8">
-        {step === 'otp' && (
-          <div className="max-w-md mx-auto space-y-6">
-            <div className="text-center">
-              <Shield className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h2 className="text-xl font-bold">Verify Your Identity</h2>
-              <p className="text-muted-foreground mt-2">
-                Hi {data?.recipient?.name}, to sign this document we need to verify your identity via email OTP.
-              </p>
-            </div>
-
-            {!otpSent ? (
-              <Button className="w-full" onClick={sendOtp} disabled={otpSending}>
-                {otpSending ? 'Sending...' : `Send OTP to ${data?.recipient?.email}`}
-              </Button>
-            ) : (
-              <div className="space-y-4">
-                <div>
-                  <Label>Enter 6-digit OTP</Label>
-                  <Input
-                    value={otp}
-                    onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    placeholder="000000"
-                    className="text-center text-2xl tracking-widest"
-                    maxLength={6}
-                  />
-                </div>
-                <Button className="w-full" onClick={verifyOtp} disabled={verifying}>
-                  {verifying ? 'Verifying...' : 'Verify OTP'}
-                </Button>
-                <Button variant="ghost" className="w-full" onClick={sendOtp} disabled={otpSending}>
-                  Resend OTP
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
+        {/* OTP step removed - direct signing */}
 
         {step === 'sign' && (
           <div className="space-y-6">
