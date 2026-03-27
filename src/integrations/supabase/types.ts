@@ -1529,6 +1529,42 @@ export type Database = {
           },
         ]
       }
+      signature_settings: {
+        Row: {
+          auto_send_completion: boolean
+          completion_email_body: string
+          completion_email_subject: string
+          default_expiry_days: number
+          id: string
+          signing_email_body: string
+          signing_email_subject: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          auto_send_completion?: boolean
+          completion_email_body?: string
+          completion_email_subject?: string
+          default_expiry_days?: number
+          id?: string
+          signing_email_body?: string
+          signing_email_subject?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          auto_send_completion?: boolean
+          completion_email_body?: string
+          completion_email_subject?: string
+          default_expiry_days?: number
+          id?: string
+          signing_email_body?: string
+          signing_email_subject?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           auto_clear_cache_enabled: boolean
