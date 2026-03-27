@@ -232,7 +232,7 @@ serve(async (req) => {
         performedBy,
         actionLabel,
         log.ip_address || "-",
-        typeof geo === 'string' ? geo.substring(0, 25) : "-",
+        typeof geo === 'string' && geo.length > 0 ? geo.substring(0, 35) : "-",
         formatDate(log.created_at),
       ];
       logData.forEach((val, ci) => {
