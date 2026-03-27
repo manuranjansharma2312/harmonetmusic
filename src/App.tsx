@@ -71,6 +71,7 @@ const AdminSignatureDetail = lazy(() => import("./pages/AdminSignatureDetail"));
 const AdminSignatureFields = lazy(() => import("./pages/AdminSignatureFields"));
 const AdminSignatureSettings = lazy(() => import("./pages/AdminSignatureSettings"));
 const SignDocument = lazy(() => import("./pages/SignDocument"));
+const DownloadSignedPdf = lazy(() => import("./pages/DownloadSignedPdf"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -177,6 +178,7 @@ function App() {
                       <Route path="/admin/signature/:id" element={<ProtectedRoute requiredRole="admin"><AdminSignatureDetail /></ProtectedRoute>} />
                       <Route path="/admin/signature/:id/fields" element={<ProtectedRoute requiredRole="admin"><AdminSignatureFields /></ProtectedRoute>} />
                       <Route path="/sign/:token" element={<SignDocument />} />
+                      <Route path="/download/:documentId" element={<DownloadSignedPdf />} />
                       <Route path="/r/:slug" element={<SmartLink />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
