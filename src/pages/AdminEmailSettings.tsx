@@ -175,6 +175,55 @@ export default function AdminEmailSettings() {
     }
   }
 
+  async function sendTestEmail() {
+    if (!testEmail.trim()) { toast.error('Enter a recipient email'); return; }
+    setSendingTest(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-test-email', {
+        body: { test_email: testEmail.trim() },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(data.message || 'Test email sent!');
+      setShowTestDialog(false);
+      setTestEmail('');
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send test email');
+    } finally {
+      setSendingTest(false);
+    }
+  }
+
+  function exportLogsCSV() {
+    const filteredLogs = emailLogs.filter(log => {
+      const matchesSearch = !logSearch ||
+        log.recipient_email.toLowerCase().includes(logSearch.toLowerCase()) ||
+        (log.template_label || log.template_key).toLowerCase().includes(logSearch.toLowerCase());
+      const matchesStatus = logStatusFilter === 'all' || log.status === logStatusFilter;
+      return matchesSearch && matchesStatus;
+    });
+    if (filteredLogs.length === 0) { toast.error('No logs to export'); return; }
+    const headers = ['Template', 'Recipient', 'Subject', 'Status', 'Sent At', 'Error'];
+    const rows = filteredLogs.map(l => [
+      l.template_label || l.template_key,
+      l.recipient_email,
+      l.subject || '',
+      l.status,
+      new Date(l.sent_at).toLocaleString(),
+      l.error_message || '',
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `email-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${filteredLogs.length} logs`);
+  }
+
   function startEditing(template: EmailTemplate) {
     setEditingTemplate(template.id);
     setEditSubject(template.subject);
