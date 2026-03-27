@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { CopyButton } from '@/components/CopyButton';
-import { PlatformLinksEditor } from '@/components/PlatformLinksEditor';
 import { SmartLinkEditor } from '@/components/SmartLinkEditor';
 import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
@@ -19,17 +18,6 @@ import { toast } from 'sonner';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
 
 // ─── Types ───
-interface SmartLinkRelease {
-  id: string;
-  album_name: string | null;
-  ep_name: string | null;
-  poster_url: string | null;
-  platform_links: Record<string, string>;
-  slug: string | null;
-  status: string;
-  content_type: string;
-  release_date: string;
-}
 
 interface Platform {
   id: string;
@@ -75,12 +63,6 @@ function autoCropImage(file: File, size: number): Promise<Blob> {
 
 export default function AdminSmartLinks() {
   const { user } = useAuth();
-  // ─── Releases state ───
-  const [releases, setReleases] = useState<SmartLinkRelease[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [editRelease, setEditRelease] = useState<SmartLinkRelease | null>(null);
-
   // ─── Platforms state ───
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [platformsLoading, setPlatformsLoading] = useState(true);
@@ -111,15 +93,6 @@ export default function AdminSmartLinks() {
   const [togglingSystem, setTogglingSystem] = useState(false);
 
   // ─── Fetchers ───
-  const fetchReleases = async () => {
-    const { data } = await supabase
-      .from('releases')
-      .select('id, album_name, ep_name, poster_url, platform_links, slug, status, content_type, release_date')
-      .eq('status', 'approved')
-      .order('release_date', { ascending: false });
-    setReleases((data as any) || []);
-    setLoading(false);
-  };
 
   const fetchPlatforms = async () => {
     const { data } = await supabase
@@ -193,23 +166,8 @@ export default function AdminSmartLinks() {
     toast.success(val ? 'Smart Links system enabled' : 'Smart Links system disabled');
   };
 
-  useEffect(() => { fetchReleases(); fetchPlatforms(); fetchApiConfigs(); fetchCustomLinks(); fetchSystemSetting(); }, []);
+  useEffect(() => { fetchPlatforms(); fetchApiConfigs(); fetchCustomLinks(); fetchSystemSetting(); }, []);
 
-  // ─── Release helpers ───
-  const filtered = releases.filter(r => {
-    const name = r.album_name || r.ep_name || '';
-    return name.toLowerCase().includes(search.toLowerCase());
-  });
-
-  const getSmartLinkUrl = (r: SmartLinkRelease) => {
-    const base = window.location.origin;
-    return r.slug ? `${base}/r/${r.slug}` : `${base}/r/${r.id}`;
-  };
-
-  const hasLinks = (r: SmartLinkRelease) => {
-    const links = r.platform_links as Record<string, string>;
-    return links && Object.values(links).some(v => v?.trim());
-  };
 
   // ─── Platform handlers ───
   const openNewPlatform = () => {
@@ -376,84 +334,15 @@ export default function AdminSmartLinks() {
           </div>
         </div>
 
-        <Tabs defaultValue="releases" className="w-full">
+        <Tabs defaultValue="custom" className="w-full">
           <TabsList>
-            <TabsTrigger value="releases"><Link2 className="h-3.5 w-3.5 mr-1.5" />Releases</TabsTrigger>
             <TabsTrigger value="custom"><Music className="h-3.5 w-3.5 mr-1.5" />Custom Links</TabsTrigger>
             <TabsTrigger value="platforms"><Settings className="h-3.5 w-3.5 mr-1.5" />Platforms</TabsTrigger>
             <TabsTrigger value="apis"><Key className="h-3.5 w-3.5 mr-1.5" />API Integrations</TabsTrigger>
           </TabsList>
 
-          {/* === RELEASES TAB === */}
-          <TabsContent value="releases" className="space-y-4 mt-4">
-            <div className="relative max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search releases..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-            </div>
 
-            {loading ? (
-              <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-            ) : filtered.length === 0 ? (
-              <GlassCard className="p-8 text-center">
-                <Music className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">No approved releases found</p>
-              </GlassCard>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filtered.map(r => {
-                  const name = r.album_name || r.ep_name || 'Untitled';
-                  const active = hasLinks(r);
-                  const url = getSmartLinkUrl(r);
-                  const linkCount = active ? Object.values(r.platform_links).filter(v => v?.trim()).length : 0;
 
-                  return (
-                    <GlassCard key={r.id} className="p-4 space-y-3">
-                      <div className="flex items-start gap-3">
-                        {r.poster_url ? (
-                          <img src={r.poster_url} alt={name} className="h-14 w-14 rounded-lg object-cover flex-shrink-0" />
-                        ) : (
-                          <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                            <Music className="h-6 w-6 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm text-foreground truncate">{name}</p>
-                          <p className="text-xs text-muted-foreground capitalize">{r.content_type} • {r.release_date}</p>
-                          {active ? (
-                            <Badge variant="default" className="mt-1 text-[10px]">{linkCount} platforms</Badge>
-                          ) : (
-                            <Badge variant="outline" className="mt-1 text-[10px]">No links</Badge>
-                          )}
-                        </div>
-                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setEditRelease(r)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      {active && (
-                        <div className="flex items-center gap-2 p-2 rounded-md bg-primary/5 border border-primary/20">
-                          <Link2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-                          <span className="text-[11px] text-muted-foreground flex-1 truncate font-mono">{url}</span>
-                          <CopyButton value={url} />
-                          <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80">
-                            <ExternalLink className="h-3.5 w-3.5" />
-                          </a>
-                        </div>
-                      )}
-
-                      {!active && (
-                        <Button size="sm" variant="outline" className="w-full text-xs" onClick={() => setEditRelease(r)}>
-                          <Link2 className="h-3.5 w-3.5 mr-1" /> Add Platform Links
-                        </Button>
-                      )}
-                    </GlassCard>
-                  );
-                })}
-              </div>
-            )}
-          </TabsContent>
-
-          {/* === CUSTOM SMART LINKS TAB === */}
           <TabsContent value="custom" className="space-y-4 mt-4">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Standalone smart links created by users or admin.</p>
@@ -659,28 +548,8 @@ export default function AdminSmartLinks() {
         </Tabs>
       </div>
 
-      {/* Edit Release Dialog */}
-      <Dialog open={!!editRelease} onOpenChange={open => !open && setEditRelease(null)}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Smart Link — {editRelease?.album_name || editRelease?.ep_name || 'Untitled'}</DialogTitle>
-            <DialogDescription>Add platform URLs for this release's smart link page.</DialogDescription>
-          </DialogHeader>
-          {editRelease && (
-            <PlatformLinksEditor
-              releaseId={editRelease.id}
-              releaseSlug={editRelease.slug}
-              initialLinks={editRelease.platform_links || {}}
-              onSaved={(links) => {
-                setReleases(prev => prev.map(r => r.id === editRelease.id ? { ...r, platform_links: links } : r));
-                setEditRelease(null);
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
 
-      {/* Add/Edit Platform Dialog */}
+
       <Dialog open={newPlatform} onOpenChange={open => { if (!open) { setNewPlatform(false); setEditPlatform(null); } }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
