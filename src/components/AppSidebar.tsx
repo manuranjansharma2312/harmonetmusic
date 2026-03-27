@@ -5,7 +5,7 @@ import {
   Merge, Youtube, Trash2, ChevronDown, MessageSquare,
   BarChart3, MonitorPlay, Wallet, FileText, Receipt,
   Image as ImageIcon, Bell, BookOpen, FileSignature,
-  Megaphone, Landmark, CreditCard, UsersRound, Sparkles, Link2, ArrowRightLeft,
+  Megaphone, Landmark, CreditCard, UsersRound, Sparkles, Link2, ArrowRightLeft, Mail,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { supabase } from '@/integrations/supabase/client';
