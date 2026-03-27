@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Save, Loader2, Mail, Clock, Settings2 } from 'lucide-react';
+import { Save, Loader2, Mail, Clock, Settings2, Building2 } from 'lucide-react';
 
 export default function AdminSignatureSettings() {
   const [loading, setLoading] = useState(true);
