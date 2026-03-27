@@ -668,7 +668,7 @@ export default function AdminEmailSettings() {
               </div>
 
               <div className="space-y-3">
-                {filteredTemplates.map(template => {
+                {paginatedTemplates.map(template => {
                   const assignedName = getAccountName(template.email_account_id);
                   return (
                     <div key={template.id} className="border border-border rounded-lg overflow-hidden">
