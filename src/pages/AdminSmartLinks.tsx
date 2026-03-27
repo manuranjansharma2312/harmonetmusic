@@ -335,15 +335,25 @@ export default function AdminSmartLinks() {
   };
 
   // ─── Smart Link Approve/Reject ───
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+
   const approveSmartLink = async (id: string) => {
-    await supabase.from('smart_links').update({ status: 'approved', updated_at: new Date().toISOString() } as any).eq('id', id);
+    await supabase.from('smart_links').update({ status: 'approved', rejection_reason: null, updated_at: new Date().toISOString() } as any).eq('id', id);
     toast.success('Smart link approved');
     fetchCustomLinks();
   };
 
-  const rejectSmartLink = async (id: string) => {
-    await supabase.from('smart_links').update({ status: 'rejected', updated_at: new Date().toISOString() } as any).eq('id', id);
-    toast.success('Smart link rejected');
+  const rejectSmartLink = async (id: string, reason: string) => {
+    await supabase.from('smart_links').update({ status: 'rejected', rejection_reason: reason, updated_at: new Date().toISOString() } as any).eq('id', id);
+    toast.success('Smart link rejected — will be auto-deleted in 1 hour');
+    setRejectingId(null);
+    fetchCustomLinks();
+  };
+
+  const deleteSmartLink = async (id: string) => {
+    if (!confirm('Delete this smart link permanently?')) return;
+    await supabase.from('smart_links').delete().eq('id', id);
+    toast.success('Smart link deleted');
     fetchCustomLinks();
   };
 
