@@ -918,21 +918,39 @@ export default function AdminEmailSettings() {
                               ))}
                             </div>
                           </div>
-                          <div className="space-y-2">
-                            <Label>Send From Account</Label>
-                            <Select value={editAccountId || '_default'} onValueChange={(v) => setEditAccountId(v === '_default' ? null : v)}>
-                              <SelectTrigger><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="_default">
-                                  {defaultAccount ? `Default (${defaultAccount.account_name})` : 'Default Account'}
-                                </SelectItem>
-                                {accounts.filter(a => a.is_enabled).map(acc => (
-                                  <SelectItem key={acc.id} value={acc.id}>
-                                    {acc.account_name} — {acc.from_email || acc.smtp_username}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                              <Label>Category</Label>
+                              <Select value={editCategory} onValueChange={setEditCategory}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {categories.map(c => (
+                                    <SelectItem key={c.key} value={c.key}>{c.name}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Send From Account</Label>
+                              <Select value={editAccountId || '_category_default'} onValueChange={(v) => setEditAccountId(v === '_category_default' ? null : v)}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="_category_default">
+                                    {(() => {
+                                      const catDefault = getCategoryDefaultAccount(editCategory);
+                                      if (catDefault) return `Category default (${catDefault.account_name})`;
+                                      if (defaultAccount) return `Default (${defaultAccount.account_name})`;
+                                      return 'Default Account';
+                                    })()}
                                   </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                                  {accounts.filter(a => a.is_enabled).map(acc => (
+                                    <SelectItem key={acc.id} value={acc.id}>
+                                      {acc.account_name} — {acc.from_email || acc.smtp_username}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
                           <div className="space-y-2">
                             <Label>Subject</Label>
