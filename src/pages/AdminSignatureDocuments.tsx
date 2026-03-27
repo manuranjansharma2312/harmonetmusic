@@ -270,8 +270,8 @@ export default function AdminSignatureDocuments() {
                 <TableRow key={doc.id}>
                   <TableCell className="font-medium">{doc.title}</TableCell>
                   <TableCell>
-                    <Badge variant={statusColor(doc.status) as any}>
-                      {doc.status === 'completed' ? '✅ Completed' : doc.status === 'sent' ? '📨 Sent' : '📝 Draft'}
+                    <Badge variant={statusColor(doc.status) as any} className="flex items-center gap-1.5 w-fit">
+                      {doc.status === 'completed' ? <><CheckCircle className="h-3 w-3" /> Completed</> : doc.status === 'sent' ? <><Send className="h-3 w-3" /> Sent</> : <><FileSignature className="h-3 w-3" /> Draft</>}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
