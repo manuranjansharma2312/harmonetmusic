@@ -263,8 +263,14 @@ export default function AdminEmailSettings() {
   const [accounts, setAccounts] = useState<EmailAccount[]>([]);
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
+  const [categories, setCategories] = useState<EmailCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Category management
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [editCategoryName, setEditCategoryName] = useState('');
 
   // Account editing
   const [editingAccount, setEditingAccount] = useState<Partial<EmailAccount> | null>(null);
