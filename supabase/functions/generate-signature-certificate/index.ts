@@ -17,20 +17,26 @@ serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Verify admin
+    // Check if called with service role key (internal call) or user token
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("Unauthorized");
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user } } = await supabase.auth.getUser(token);
-    if (!user) throw new Error("Unauthorized");
 
-    const { data: roleCheck } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .single();
-    if (!roleCheck) throw new Error("Admin access required");
+    // If token is the service role key, skip admin check (internal call from auto-complete)
+    const isServiceCall = token === serviceKey;
+
+    if (!isServiceCall) {
+      const { data: { user } } = await supabase.auth.getUser(token);
+      if (!user) throw new Error("Unauthorized");
+
+      const { data: roleCheck } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .single();
+      if (!roleCheck) throw new Error("Admin access required");
+    }
 
     const { document_id } = await req.json();
     if (!document_id) throw new Error("document_id required");
@@ -40,7 +46,7 @@ serve(async (req) => {
       supabase.from("signature_documents").select("*").eq("id", document_id).single(),
       supabase.from("signature_recipients").select("*").eq("document_id", document_id).order("signing_order"),
       supabase.from("signature_audit_logs").select("*").eq("document_id", document_id).order("created_at", { ascending: true }),
-      supabase.from("company_details").select("*").limit(1).single(),
+      supabase.from("company_details").select("*").limit(1).maybeSingle(),
     ]);
 
     const doc = docRes.data;
@@ -54,7 +60,7 @@ serve(async (req) => {
     const certificateId = `CERT-${document_id.slice(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
     const now = new Date();
 
-    // Extract storage path from document_url (handle both full URLs and plain paths)
+    // Extract storage path from document_url
     let storagePath = doc.document_url;
     if (storagePath.startsWith("http")) {
       const match = storagePath.match(/signature-documents\/(.+)/);
@@ -73,12 +79,11 @@ serve(async (req) => {
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-    const PAGE_W = 595.28; // A4 width
-    const PAGE_H = 841.89; // A4 height
+    const PAGE_W = 595.28;
+    const PAGE_H = 841.89;
     const MARGIN = 50;
     const MAX_W = PAGE_W - MARGIN * 2;
 
-    // Helper to draw wrapped text
     const drawWrapped = (page: any, text: string, x: number, y: number, size: number, usedFont: any, maxW: number, color = rgb(0.2, 0.2, 0.2)) => {
       const words = text.split(' ');
       let line = '';
@@ -100,11 +105,10 @@ serve(async (req) => {
       return curY;
     };
 
-    // ---- Certificate Page 1: Header + Document Info + Signers ----
+    // Certificate Page 1
     let page = pdfDoc.addPage([PAGE_W, PAGE_H]);
     let y = PAGE_H - MARGIN;
 
-    // Header
     page.drawText("CERTIFICATE OF COMPLETION", { x: MARGIN, y, size: 20, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
     y -= 22;
     page.drawText("Electronic Signature Verification Certificate", { x: MARGIN, y, size: 10, font, color: rgb(0.4, 0.4, 0.4) });
@@ -114,7 +118,6 @@ serve(async (req) => {
     page.drawLine({ start: { x: MARGIN, y }, end: { x: PAGE_W - MARGIN, y }, thickness: 2, color: rgb(0.1, 0.1, 0.1) });
     y -= 24;
 
-    // Document Information
     page.drawText("Document Information", { x: MARGIN, y, size: 13, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
     y -= 20;
 
@@ -139,7 +142,6 @@ serve(async (req) => {
       }
     }
 
-    // Issued By
     y -= 10;
     page.drawText("Issued By", { x: MARGIN, y, size: 13, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
     y -= 18;
@@ -150,12 +152,10 @@ serve(async (req) => {
       y -= 4;
     }
 
-    // Signer Details
     y -= 10;
     page.drawText("Signer Details", { x: MARGIN, y, size: 13, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
     y -= 20;
 
-    // Table header
     const cols = [MARGIN, MARGIN + 20, MARGIN + 140, MARGIN + 280, MARGIN + 340, MARGIN + 420];
     const headerLabels = ["#", "Name", "Email", "Status", "Signed At", "IP Address"];
     page.drawRectangle({ x: MARGIN, y: y - 2, width: MAX_W, height: 16, color: rgb(0.1, 0.1, 0.1) });
@@ -187,7 +187,7 @@ serve(async (req) => {
       page.drawLine({ start: { x: MARGIN, y: y + 10 }, end: { x: PAGE_W - MARGIN, y: y + 10 }, thickness: 0.5, color: rgb(0.85, 0.85, 0.85) });
     }
 
-    // ---- Certificate Page 2: Audit Trail + Legal ----
+    // Audit Trail
     y -= 20;
     if (y < MARGIN + 200) {
       page = pdfDoc.addPage([PAGE_W, PAGE_H]);
@@ -197,7 +197,6 @@ serve(async (req) => {
     page.drawText("Complete Audit Trail", { x: MARGIN, y, size: 13, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
     y -= 20;
 
-    // Audit header
     const auditCols = [MARGIN, MARGIN + 120, MARGIN + 220, MARGIN + 360];
     const auditHeaders = ["Action", "IP Address", "Timestamp", "User Agent"];
     page.drawRectangle({ x: MARGIN, y: y - 2, width: MAX_W, height: 16, color: rgb(0.94, 0.96, 0.97) });
@@ -238,7 +237,7 @@ serve(async (req) => {
 
     const legalTexts = [
       "This certificate confirms that the above-mentioned document was electronically signed by the listed parties using a verified electronic signature process. The document's integrity is verified through SHA-256 cryptographic hashing. Each signer's identity was verified via Email OTP (One-Time Password) before signing.",
-      "This electronic signature is legally valid and enforceable under the Information Technology Act, 2000 (India) — Sections 5 and 10A, which recognize electronic signatures as equivalent to handwritten signatures for private commercial agreements. This certificate does not constitute a government-issued Digital Signature Certificate (DSC) under Section 35 of the IT Act.",
+      "This electronic signature is legally valid and enforceable under the Information Technology Act, 2000 (India) - Sections 5 and 10A, which recognize electronic signatures as equivalent to handwritten signatures for private commercial agreements. This certificate does not constitute a government-issued Digital Signature Certificate (DSC) under Section 35 of the IT Act.",
       "The complete audit trail above serves as evidence of the signing process, including timestamps, IP addresses, and device information for each action taken during the signing workflow.",
     ];
 
@@ -247,7 +246,6 @@ serve(async (req) => {
       y -= 8;
     }
 
-    // Footer
     y -= 12;
     page.drawLine({ start: { x: MARGIN, y }, end: { x: PAGE_W - MARGIN, y }, thickness: 0.5, color: rgb(0.9, 0.9, 0.9) });
     y -= 14;
@@ -267,7 +265,7 @@ serve(async (req) => {
       });
     if (uploadErr) throw new Error(`Upload failed: ${uploadErr.message}`);
 
-    // Update document with signed PDF URL
+    // Update document
     await supabase
       .from("signature_documents")
       .update({ signed_pdf_url: signedFileName, certificate_url: certificateId })
@@ -305,6 +303,8 @@ function formatActionLabel(action: string): string {
     "otp_requested": "OTP Requested",
     "otp_verified": "OTP Verified",
     "document_signed": "Document Signed",
+    "completion_email_sent": "Completion Email Sent",
+    "document_sent": "Document Sent",
   };
   return labels[action] || action;
 }

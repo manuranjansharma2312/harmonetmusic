@@ -32,7 +32,7 @@ serve(async (req) => {
       });
     }
 
-    // Step 1: Generate certificate
+    // Step 1: Generate certificate (using service role key for auth)
     const certRes = await fetch(`${supabaseUrl}/functions/v1/generate-signature-certificate`, {
       method: "POST",
       headers: {

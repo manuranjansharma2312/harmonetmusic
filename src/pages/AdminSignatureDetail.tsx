@@ -78,11 +78,20 @@ export default function AdminSignatureDetail() {
       return;
     }
     try {
-      const { data, error } = await supabase.storage
+      // Download the file as blob and trigger browser download
+      const { data: fileData, error } = await supabase.storage
         .from('signature-documents')
-        .createSignedUrl(doc.signed_pdf_url, 3600);
-      if (error || !data?.signedUrl) throw new Error('Failed to get download URL');
-      window.open(data.signedUrl, '_blank');
+        .download(doc.signed_pdf_url);
+      if (error || !fileData) throw new Error('Failed to download file');
+      
+      const url = URL.createObjectURL(fileData);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${doc.title.replace(/[^a-zA-Z0-9 ]/g, '')}_signed.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (err: any) {
       toast.error(err.message || 'Failed to download');
     }
