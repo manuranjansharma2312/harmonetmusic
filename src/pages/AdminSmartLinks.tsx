@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Link2, ExternalLink, Search, Music, Edit, Plus, Trash2, GripVertical, Settings, ImageIcon, Key, Eye, EyeOff, User, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { RejectReasonModal } from '@/components/RejectReasonModal';
 
 // ─── Types ───
 interface SmartLinkRelease {
@@ -334,15 +335,25 @@ export default function AdminSmartLinks() {
   };
 
   // ─── Smart Link Approve/Reject ───
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+
   const approveSmartLink = async (id: string) => {
-    await supabase.from('smart_links').update({ status: 'approved', updated_at: new Date().toISOString() } as any).eq('id', id);
+    await supabase.from('smart_links').update({ status: 'approved', rejection_reason: null, updated_at: new Date().toISOString() } as any).eq('id', id);
     toast.success('Smart link approved');
     fetchCustomLinks();
   };
 
-  const rejectSmartLink = async (id: string) => {
-    await supabase.from('smart_links').update({ status: 'rejected', updated_at: new Date().toISOString() } as any).eq('id', id);
-    toast.success('Smart link rejected');
+  const rejectSmartLink = async (id: string, reason: string) => {
+    await supabase.from('smart_links').update({ status: 'rejected', rejection_reason: reason, updated_at: new Date().toISOString() } as any).eq('id', id);
+    toast.success('Smart link rejected — will be auto-deleted in 1 hour');
+    setRejectingId(null);
+    fetchCustomLinks();
+  };
+
+  const deleteSmartLink = async (id: string) => {
+    if (!confirm('Delete this smart link permanently?')) return;
+    await supabase.from('smart_links').delete().eq('id', id);
+    toast.success('Smart link deleted');
     fetchCustomLinks();
   };
 
@@ -510,6 +521,9 @@ export default function AdminSmartLinks() {
                           {c.status === 'rejected' && (
                             <Badge variant="destructive" className="mt-1 text-[10px] gap-0.5"><XCircle className="h-2.5 w-2.5" /> Rejected</Badge>
                           )}
+                          {c.status === 'rejected' && c.rejection_reason && (
+                            <p className="text-[10px] text-destructive/80 mt-0.5 truncate" title={c.rejection_reason}>Reason: {c.rejection_reason}</p>
+                          )}
                         </div>
                         <div className="flex gap-1">
                           {c.status !== 'approved' && (
@@ -518,19 +532,14 @@ export default function AdminSmartLinks() {
                             </Button>
                           )}
                           {c.status !== 'rejected' && (
-                            <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => rejectSmartLink(c.id)} title="Reject">
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => setRejectingId(c.id)} title="Reject">
                               <XCircle className="h-3.5 w-3.5" />
                             </Button>
                           )}
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditCustom(c)}>
                             <Edit className="h-3.5 w-3.5" />
                           </Button>
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={async () => {
-                            if (!confirm('Delete this smart link?')) return;
-                            await supabase.from('smart_links').delete().eq('id', c.id);
-                            toast.success('Smart link deleted');
-                            fetchCustomLinks();
-                          }}>
+                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteSmartLink(c.id)}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         </div>
@@ -816,6 +825,13 @@ export default function AdminSmartLinks() {
           )}
         </DialogContent>
       </Dialog>
+      {/* Reject Reason Modal */}
+      <RejectReasonModal
+        open={!!rejectingId}
+        title="Reject Smart Link"
+        onConfirm={(reason) => rejectingId && rejectSmartLink(rejectingId, reason)}
+        onCancel={() => setRejectingId(null)}
+      />
     </DashboardLayout>
   );
 }

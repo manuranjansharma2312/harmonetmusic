@@ -22,6 +22,7 @@ interface SmartLinkItem {
   slug: string | null;
   created_at: string;
   status: string;
+  rejection_reason: string | null;
 }
 
 export default function MySmartLinks() {
@@ -42,7 +43,7 @@ export default function MySmartLinks() {
     if (!user) return;
     const { data } = await supabase
       .from('smart_links')
-      .select('id, title, artist_name, poster_url, platform_links, slug, created_at, status')
+      .select('id, title, artist_name, poster_url, platform_links, slug, created_at, status, rejection_reason')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     setSmartLinks((data as any) || []);
@@ -186,6 +187,15 @@ export default function MySmartLinks() {
 
                   {isPending && (
                     <p className="text-[11px] text-muted-foreground text-center py-1">Waiting for admin approval before sharing.</p>
+                  )}
+
+                  {isRejected && (
+                    <div className="p-2 rounded-md bg-destructive/10 border border-destructive/20">
+                      <p className="text-[11px] text-destructive font-medium">Rejected — will be removed automatically</p>
+                      {s.rejection_reason && (
+                        <p className="text-[10px] text-destructive/80 mt-0.5">Reason: {s.rejection_reason}</p>
+                      )}
+                    </div>
                   )}
 
                   {!active && !isPending && (

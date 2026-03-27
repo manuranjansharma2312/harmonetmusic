@@ -1096,6 +1096,7 @@ export type Database = {
           id: string
           platform_links: Json
           poster_url: string | null
+          rejection_reason: string | null
           slug: string | null
           status: string
           title: string
@@ -1108,6 +1109,7 @@ export type Database = {
           id?: string
           platform_links?: Json
           poster_url?: string | null
+          rejection_reason?: string | null
           slug?: string | null
           status?: string
           title: string
@@ -1120,6 +1122,7 @@ export type Database = {
           id?: string
           platform_links?: Json
           poster_url?: string | null
+          rejection_reason?: string | null
           slug?: string | null
           status?: string
           title?: string
@@ -1493,6 +1496,7 @@ export type Database = {
     }
     Functions: {
       cleanup_old_ai_images: { Args: never; Returns: undefined }
+      cleanup_rejected_smart_links: { Args: never; Returns: undefined }
       deduct_ai_credit: {
         Args: { _amount: number; _user_id: string }
         Returns: boolean
