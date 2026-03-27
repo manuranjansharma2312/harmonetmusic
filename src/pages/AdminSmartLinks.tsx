@@ -529,19 +529,14 @@ export default function AdminSmartLinks() {
                             </Button>
                           )}
                           {c.status !== 'rejected' && (
-                            <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => rejectSmartLink(c.id)} title="Reject">
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => setRejectingId(c.id)} title="Reject">
                               <XCircle className="h-3.5 w-3.5" />
                             </Button>
                           )}
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditCustom(c)}>
                             <Edit className="h-3.5 w-3.5" />
                           </Button>
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={async () => {
-                            if (!confirm('Delete this smart link?')) return;
-                            await supabase.from('smart_links').delete().eq('id', c.id);
-                            toast.success('Smart link deleted');
-                            fetchCustomLinks();
-                          }}>
+                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteSmartLink(c.id)}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         </div>
