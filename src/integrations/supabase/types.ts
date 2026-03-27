@@ -2147,6 +2147,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_signing_data: { Args: { _token: string }; Returns: Json }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -2173,8 +2174,36 @@ export type Database = {
         }
         Returns: undefined
       }
+      log_signature_audit: {
+        Args: {
+          _action: string
+          _ip: string
+          _metadata?: Json
+          _token: string
+          _user_agent: string
+        }
+        Returns: undefined
+      }
+      request_signing_otp: {
+        Args: { _ip: string; _token: string }
+        Returns: boolean
+      }
+      submit_signature: {
+        Args: {
+          _ip: string
+          _signature_data: string
+          _signature_type: string
+          _token: string
+          _user_agent: string
+        }
+        Returns: boolean
+      }
       user_owns_isrc: {
         Args: { _isrc: string; _user_id: string }
+        Returns: boolean
+      }
+      verify_signing_otp: {
+        Args: { _ip: string; _otp: string; _token: string }
         Returns: boolean
       }
     }
