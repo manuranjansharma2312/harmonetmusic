@@ -832,7 +832,7 @@ export default function AdminEmailSettings() {
                 <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setTemplatePage(0); }}>
                   <SelectTrigger className="w-full sm:w-[200px]"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {CATEGORIES.map(c => <SelectItem key={c.key} value={c.key}>{c.label}</SelectItem>)}
+                    {categoriesWithAll.map((c: any) => <SelectItem key={c.key} value={c.key}>{c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
