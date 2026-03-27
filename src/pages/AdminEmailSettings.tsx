@@ -95,12 +95,14 @@ export default function AdminEmailSettings() {
 
   async function fetchData() {
     try {
-      const [settingsRes, templatesRes] = await Promise.all([
+      const [settingsRes, templatesRes, logsRes] = await Promise.all([
         supabase.from('email_settings').select('*').limit(1).single(),
         supabase.from('email_templates').select('*').order('category').order('trigger_label'),
+        supabase.from('email_send_logs').select('*').order('sent_at', { ascending: false }).limit(500),
       ]);
       if (settingsRes.data) setSettings(settingsRes.data as any);
       if (templatesRes.data) setTemplates(templatesRes.data as any);
+      if (logsRes.data) setEmailLogs(logsRes.data as any);
     } catch (err) {
       console.error(err);
     } finally {
