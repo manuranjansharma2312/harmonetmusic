@@ -68,6 +68,7 @@ type Release = {
   parent_label_name?: string;
   platform_links?: any;
   slug?: string | null;
+  was_transferred?: boolean;
 };
 
 type ParsedImportTrack = {
