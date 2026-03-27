@@ -1392,6 +1392,13 @@ export default function AdminSubmissions() {
         onCancel={() => setRejectTrackTarget(null)}
       />
 
+      <TransferOwnershipModal
+        open={!!transferRelease}
+        onClose={() => setTransferRelease(null)}
+        release={transferRelease}
+        onTransferred={fetchReleases}
+      />
+
       {/* Import CSV Modal */}
       <Dialog open={showImportModal} onOpenChange={(v) => { if (!v) { setShowImportModal(false); setImportParsedData([]); setImportErrors([]); } }}>
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
