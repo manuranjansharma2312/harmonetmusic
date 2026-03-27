@@ -34,14 +34,18 @@ export default function AdminSignatureDocuments() {
   const [recipients, setRecipients] = useState<Recipient[]>([{ name: '', email: '' }]);
   const [page, setPage] = useState(1);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [expiryDays, setExpiryDays] = useState(30);
 
   const fetchDocuments = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('signature_documents')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (!error) setDocuments(data || []);
+    const [docsRes, settingsRes] = await Promise.all([
+      supabase.from('signature_documents').select('*').order('created_at', { ascending: false }),
+      supabase.from('signature_settings').select('default_expiry_days').limit(1).maybeSingle(),
+    ]);
+    if (!docsRes.error) setDocuments(docsRes.data || []);
+    if (!settingsRes.error && settingsRes.data) {
+      setExpiryDays((settingsRes.data as any).default_expiry_days ?? 30);
+    }
     setLoading(false);
   };
 
