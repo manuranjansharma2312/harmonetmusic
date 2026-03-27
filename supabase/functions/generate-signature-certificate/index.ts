@@ -320,8 +320,6 @@ function formatActionLabel(action: string): string {
   const labels: Record<string, string> = {
     "email_sent": "Email Sent",
     "document_viewed": "Document Viewed",
-    "otp_requested": "OTP Requested",
-    "otp_verified": "OTP Verified",
     "document_signed": "Document Signed",
     "completion_email_sent": "Completion Email Sent",
     "document_sent": "Document Sent",
