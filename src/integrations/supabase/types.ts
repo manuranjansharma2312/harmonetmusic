@@ -1535,6 +1535,7 @@ export type Database = {
           completion_email_body: string
           completion_email_subject: string
           default_expiry_days: number
+          email_account_id: string | null
           id: string
           issued_by_address: string
           issued_by_email: string
@@ -1549,6 +1550,7 @@ export type Database = {
           completion_email_body?: string
           completion_email_subject?: string
           default_expiry_days?: number
+          email_account_id?: string | null
           id?: string
           issued_by_address?: string
           issued_by_email?: string
@@ -1563,6 +1565,7 @@ export type Database = {
           completion_email_body?: string
           completion_email_subject?: string
           default_expiry_days?: number
+          email_account_id?: string | null
           id?: string
           issued_by_address?: string
           issued_by_email?: string
@@ -1572,7 +1575,15 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "signature_settings_email_account_id_fkey"
+            columns: ["email_account_id"]
+            isOneToOne: false
+            referencedRelation: "email_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_settings: {
         Row: {
