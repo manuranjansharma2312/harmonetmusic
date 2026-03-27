@@ -1033,41 +1033,30 @@ export default function AdminEmailSettings() {
                 return (
                   <>
                     <div className="text-xs text-muted-foreground">{filteredLogs.length} log{filteredLogs.length !== 1 ? 's' : ''} found</div>
-                    <div className="overflow-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Template</TableHead>
-                            <TableHead>Recipient</TableHead>
-                            <TableHead>Subject</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Sent At</TableHead>
-                            <TableHead>Error</TableHead>
-                            <TableHead>Action</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {paginatedLogs.length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={7} className="text-center text-muted-foreground py-8">No email logs found</TableCell>
-                            </TableRow>
-                          ) : paginatedLogs.map((log: EmailLog) => (
-                            <TableRow key={log.id}>
-                              <TableCell className="font-medium text-sm">{log.template_label || log.template_key}</TableCell>
-                              <TableCell className="text-sm">{log.recipient_email}</TableCell>
-                              <TableCell className="text-sm max-w-[200px] truncate">{log.subject || '—'}</TableCell>
-                              <TableCell><StatusBadge status={log.status} /></TableCell>
-                              <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(log.sent_at).toLocaleString()}</TableCell>
-                              <TableCell className="text-xs text-destructive max-w-[200px] truncate">{log.error_message || '—'}</TableCell>
-                              <TableCell>
-                                <Button size="sm" variant="ghost" onClick={() => setViewingLog(log)} title="View email">
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
+                    <div className="space-y-2">
+                      {paginatedLogs.length === 0 ? (
+                        <div className="text-center text-muted-foreground py-8">No email logs found</div>
+                      ) : paginatedLogs.map((log: EmailLog) => (
+                        <div key={log.id} className="p-3 rounded-lg border border-border bg-card/50 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium text-sm truncate">{log.template_label || log.template_key}</p>
+                              <p className="text-xs text-muted-foreground truncate">{log.recipient_email}</p>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <StatusBadge status={log.status} />
+                              <Button size="sm" variant="ghost" onClick={() => setViewingLog(log)} title="View email" className="h-7 w-7 p-0">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          {log.subject && <p className="text-xs text-muted-foreground truncate">Subject: {log.subject}</p>}
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs text-muted-foreground">{new Date(log.sent_at).toLocaleString()}</span>
+                            {log.error_message && <span className="text-xs text-destructive truncate max-w-[50%]">{log.error_message}</span>}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                     <TablePagination totalItems={filteredLogs.length} currentPage={logPage} pageSize={logPageSize}
                       onPageChange={setLogPage} onPageSizeChange={setLogPageSize} itemLabel="logs" />
