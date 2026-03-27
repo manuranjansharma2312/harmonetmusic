@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ArrowLeft, Send, FileSignature, Download, Copy, CheckCircle, Clock, Eye, Award } from 'lucide-react';
+import { ArrowLeft, Send, FileSignature, Download, Copy, CheckCircle, Clock, Eye, Award, Mail, KeyRound, PenLine } from 'lucide-react';
 import { format } from 'date-fns';
 import { CopyButton } from '@/components/CopyButton';
 
