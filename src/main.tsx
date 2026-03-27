@@ -12,8 +12,14 @@ window.addEventListener('error', (event) => {
   console.error('Global error:', event.error);
 });
 
-// ── Anti-inspection (production only, lightweight) ──
-if (import.meta.env.PROD) {
+// ── Anti-inspection — reads from DB setting via localStorage cache ──
+function applyAntiInspection() {
+  if (!import.meta.env.PROD) return;
+  
+  // Check cached setting (updated by useSiteSettings hook)
+  const cached = localStorage.getItem('site_anti_inspection');
+  if (cached === 'false') return;
+
   document.addEventListener('contextmenu', (e) => e.preventDefault());
   document.addEventListener('keydown', (e) => {
     if (e.key === 'F12') { e.preventDefault(); return; }
@@ -21,6 +27,6 @@ if (import.meta.env.PROD) {
     if ((e.ctrlKey || e.metaKey) && e.key === 'u') { e.preventDefault(); return; }
   });
 }
-
+applyAntiInspection();
 
 createRoot(document.getElementById("root")!).render(<App />);

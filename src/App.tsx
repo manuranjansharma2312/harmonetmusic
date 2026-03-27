@@ -64,6 +64,7 @@ const SmartLink = lazy(() => import("./pages/SmartLink"));
 const MySmartLinks = lazy(() => import("./pages/MySmartLinks"));
 const AdminSmartLinks = lazy(() => import("./pages/AdminSmartLinks"));
 const AdminEmailSettings = lazy(() => import("./pages/AdminEmailSettings"));
+const AdminSiteSettings = lazy(() => import("./pages/AdminSiteSettings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -145,6 +146,7 @@ function App() {
                       <Route path="/admin/contact-support" element={<ProtectedRoute requiredRole="admin"><AdminContactSupport /></ProtectedRoute>} />
                       <Route path="/admin/email-settings" element={<ProtectedRoute requiredRole="admin"><AdminEmailSettings /></ProtectedRoute>} />
                       <Route path="/admin/ai-image-system" element={<ProtectedRoute requiredRole="admin"><AdminAIImageSystem /></ProtectedRoute>} />
+                      <Route path="/admin/site-settings" element={<ProtectedRoute requiredRole="admin"><AdminSiteSettings /></ProtectedRoute>} />
                       <Route path="/ai-images" element={<ProtectedRoute><AIImageGeneration /></ProtectedRoute>} />
                       <Route path="/promotion-tools" element={<ProtectedRoute><PromotionTools /></ProtectedRoute>} />
                       <Route path="/terms" element={<ProtectedRoute><TermsConditions /></ProtectedRoute>} />

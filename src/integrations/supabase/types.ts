@@ -1273,6 +1273,54 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          enable_anti_inspection: boolean
+          enable_background_animations: boolean
+          enable_image_lazy_load: boolean
+          enable_lazy_loading: boolean
+          enable_page_transitions: boolean
+          id: string
+          image_quality: number
+          max_table_rows: number
+          query_cache_time: number
+          query_retry_count: number
+          query_stale_time: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          enable_anti_inspection?: boolean
+          enable_background_animations?: boolean
+          enable_image_lazy_load?: boolean
+          enable_lazy_loading?: boolean
+          enable_page_transitions?: boolean
+          id?: string
+          image_quality?: number
+          max_table_rows?: number
+          query_cache_time?: number
+          query_retry_count?: number
+          query_stale_time?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          enable_anti_inspection?: boolean
+          enable_background_animations?: boolean
+          enable_image_lazy_load?: boolean
+          enable_lazy_loading?: boolean
+          enable_page_transitions?: boolean
+          id?: string
+          image_quality?: number
+          max_table_rows?: number
+          query_cache_time?: number
+          query_retry_count?: number
+          query_stale_time?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       smart_link_api_configs: {
         Row: {
           api_key: string | null

@@ -6,6 +6,7 @@ import {
   BarChart3, MonitorPlay, Wallet, FileText, Receipt,
   Image as ImageIcon, Bell, BookOpen, FileSignature,
   Megaphone, Landmark, CreditCard, UsersRound, Sparkles, Link2, ArrowRightLeft, Mail,
+  Settings,
 } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 import { supabase } from '@/integrations/supabase/client';
@@ -67,6 +68,7 @@ const adminLinksTop = [
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
   { to: '/admin/email-settings', label: 'Email Settings', icon: Mail },
+  { to: '/admin/site-settings', label: 'Site Settings', icon: Settings },
 ];
 
 export function AppSidebar() {
