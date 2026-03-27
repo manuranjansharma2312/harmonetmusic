@@ -14,11 +14,7 @@ export default function SignDocument() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [step, setStep] = useState<'otp' | 'sign' | 'done'>('otp');
-  const [otp, setOtp] = useState('');
-  const [otpSending, setOtpSending] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [verifying, setVerifying] = useState(false);
+  const [step, setStep] = useState<'sign' | 'done'>('sign');
   const [signing, setSigning] = useState(false);
   const [consent, setConsent] = useState(false);
   const [signatureTab, setSignatureTab] = useState('draw');
@@ -55,9 +51,7 @@ export default function SignDocument() {
       .createSignedUrl(result.document.document_url, 3600);
     if (signedUrl) setPdfUrl(signedUrl.signedUrl);
 
-    if (result.recipient.otp_verified) {
-      setStep('sign');
-    }
+    // No OTP needed, go directly to sign step
 
     // Log document viewed
     await supabase.rpc('log_signature_audit', {
@@ -70,44 +64,7 @@ export default function SignDocument() {
     setLoading(false);
   };
 
-  const sendOtp = async () => {
-    setOtpSending(true);
-    const { data: success } = await supabase.rpc('request_signing_otp', {
-      _token: token!,
-      _ip: geoInfo.ip || '',
-    });
-    if (success) {
-      setOtpSent(true);
-      toast.success('OTP sent to your email');
-      // Call edge function to actually send the OTP email
-      await supabase.functions.invoke('send-signing-otp', {
-        body: { token: token },
-      });
-    } else {
-      toast.error('Failed to send OTP. Please try again later.');
-    }
-    setOtpSending(false);
-  };
-
-  const verifyOtp = async () => {
-    if (otp.length !== 6) {
-      toast.error('Enter the 6-digit OTP');
-      return;
-    }
-    setVerifying(true);
-    const { data: valid } = await supabase.rpc('verify_signing_otp', {
-      _token: token!,
-      _otp: otp,
-      _ip: geoInfo.ip || '',
-    });
-    if (valid) {
-      toast.success('OTP verified');
-      setStep('sign');
-    } else {
-      toast.error('Invalid or expired OTP');
-    }
-    setVerifying(false);
-  };
+  // OTP removed - direct signing flow
 
   // Canvas drawing
   const startDraw = (e: React.MouseEvent | React.TouchEvent) => {
@@ -274,42 +231,7 @@ export default function SignDocument() {
       </div>
 
       <div className="max-w-4xl mx-auto p-4 md:p-8">
-        {step === 'otp' && (
-          <div className="max-w-md mx-auto space-y-6">
-            <div className="text-center">
-              <Shield className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h2 className="text-xl font-bold">Verify Your Identity</h2>
-              <p className="text-muted-foreground mt-2">
-                Hi {data?.recipient?.name}, to sign this document we need to verify your identity via email OTP.
-              </p>
-            </div>
-
-            {!otpSent ? (
-              <Button className="w-full" onClick={sendOtp} disabled={otpSending}>
-                {otpSending ? 'Sending...' : `Send OTP to ${data?.recipient?.email}`}
-              </Button>
-            ) : (
-              <div className="space-y-4">
-                <div>
-                  <Label>Enter 6-digit OTP</Label>
-                  <Input
-                    value={otp}
-                    onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    placeholder="000000"
-                    className="text-center text-2xl tracking-widest"
-                    maxLength={6}
-                  />
-                </div>
-                <Button className="w-full" onClick={verifyOtp} disabled={verifying}>
-                  {verifying ? 'Verifying...' : 'Verify OTP'}
-                </Button>
-                <Button variant="ghost" className="w-full" onClick={sendOtp} disabled={otpSending}>
-                  Resend OTP
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
+        {/* OTP step removed - direct signing */}
 
         {step === 'sign' && (
           <div className="space-y-6">
