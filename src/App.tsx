@@ -66,6 +66,10 @@ const MySmartLinks = lazy(() => import("./pages/MySmartLinks"));
 const AdminSmartLinks = lazy(() => import("./pages/AdminSmartLinks"));
 const AdminEmailSettings = lazy(() => import("./pages/AdminEmailSettings"));
 const AdminSiteSettings = lazy(() => import("./pages/AdminSiteSettings"));
+const AdminSignatureDocuments = lazy(() => import("./pages/AdminSignatureDocuments"));
+const AdminSignatureDetail = lazy(() => import("./pages/AdminSignatureDetail"));
+const AdminSignatureFields = lazy(() => import("./pages/AdminSignatureFields"));
+const SignDocument = lazy(() => import("./pages/SignDocument"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -167,6 +171,10 @@ function App() {
                       <Route path="/reports" element={<Navigate to="/reports/ott" replace />} />
                       <Route path="/smart-links" element={<ProtectedRoute><MySmartLinks /></ProtectedRoute>} />
                       <Route path="/admin/smart-links" element={<ProtectedRoute requiredRole="admin"><AdminSmartLinks /></ProtectedRoute>} />
+                      <Route path="/admin/signatures" element={<ProtectedRoute requiredRole="admin"><AdminSignatureDocuments /></ProtectedRoute>} />
+                      <Route path="/admin/signature/:id" element={<ProtectedRoute requiredRole="admin"><AdminSignatureDetail /></ProtectedRoute>} />
+                      <Route path="/admin/signature/:id/fields" element={<ProtectedRoute requiredRole="admin"><AdminSignatureFields /></ProtectedRoute>} />
+                      <Route path="/sign/:token" element={<SignDocument />} />
                       <Route path="/r/:slug" element={<SmartLink />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>

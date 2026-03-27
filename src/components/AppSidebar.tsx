@@ -68,6 +68,7 @@ const adminLinksTop = [
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
   { to: '/admin/email-settings', label: 'Email Settings', icon: Mail },
+  { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
   { to: '/admin/site-settings', label: 'Site Settings', icon: Settings },
 ];
 
