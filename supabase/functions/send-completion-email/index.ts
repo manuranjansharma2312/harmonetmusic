@@ -1,10 +1,42 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+async function sendSmtp(account: any, to: string, subject: string, html: string) {
+  const client = new SMTPClient({
+    connection: {
+      hostname: account.smtp_host,
+      port: account.smtp_port,
+      tls: account.smtp_encryption === "ssl",
+      auth: {
+        username: account.smtp_username,
+        password: account.smtp_password,
+      },
+    },
+  });
+
+  await client.send({
+    from: `${account.from_name} <${account.from_email}>`,
+    to,
+    subject,
+    content: "Please view this email in an HTML-compatible client.",
+    html,
+    headers: {
+      "Reply-To": account.reply_to_email || account.from_email,
+    },
+  });
+
+  await client.close();
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -34,14 +66,25 @@ serve(async (req) => {
     const { document_id } = await req.json();
     if (!document_id) throw new Error("document_id required");
 
-    // Fetch document
-    const { data: doc } = await supabase
-      .from("signature_documents")
-      .select("*")
-      .eq("id", document_id)
-      .single();
+    // Fetch all needed data in parallel
+    const [docRes, recipientsRes, companyRes, emailAccountsRes] = await Promise.all([
+      supabase.from("signature_documents").select("*").eq("id", document_id).single(),
+      supabase.from("signature_recipients").select("*").eq("document_id", document_id).order("signing_order"),
+      supabase.from("company_details").select("*").limit(1).single(),
+      supabase.from("email_accounts").select("*").eq("is_default", true).eq("is_enabled", true).limit(1),
+    ]);
+
+    const doc = docRes.data;
     if (!doc) throw new Error("Document not found");
     if (doc.status !== "completed") throw new Error("Document not yet completed");
+
+    const recipients = recipientsRes.data;
+    if (!recipients || recipients.length === 0) throw new Error("No recipients found");
+
+    const account = emailAccountsRes.data?.[0];
+    if (!account) throw new Error("No email account configured. Please set up an email account in Admin Email Settings first.");
+
+    const companyName = companyRes.data?.company_name || "Harmonet Music";
 
     // Get signed PDF download URL
     let downloadUrl = "";
@@ -53,40 +96,14 @@ serve(async (req) => {
     }
     if (!downloadUrl) throw new Error("Signed PDF not found. Generate certificate first.");
 
-    // Fetch recipients
-    const { data: recipients } = await supabase
-      .from("signature_recipients")
-      .select("*")
-      .eq("document_id", document_id)
-      .order("signing_order");
-
-    if (!recipients || recipients.length === 0) throw new Error("No recipients found");
-
-    // Fetch company details
-    const { data: company } = await supabase
-      .from("company_details")
-      .select("*")
-      .limit(1)
-      .single();
-
-    const companyName = company?.company_name || "Harmonet Music";
-
-    // Get email account (default enabled)
-    const { data: emailAccounts } = await supabase
-      .from("email_accounts")
-      .select("*")
-      .eq("is_default", true)
-      .eq("is_enabled", true)
-      .limit(1);
-
-    const account = emailAccounts?.[0];
+    let emailsSent = 0;
 
     // Send email to all recipients
     for (const recipient of recipients) {
       const emailHtml = `
         <div style="font-family: Arial, Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; color: #333;">
           <div style="border-bottom: 2px solid #1a1a1a; padding-bottom: 15px; margin-bottom: 25px;">
-            <h2 style="margin: 0; color: #1a1a1a;">${companyName}</h2>
+            <h2 style="margin: 0; color: #1a1a1a;">${escapeHtml(companyName)}</h2>
           </div>
 
           <h3 style="color: #16a34a; margin: 0 0 10px;">Document Signing Completed</h3>
@@ -125,19 +142,32 @@ serve(async (req) => {
             This is a legally valid electronic signature under the Information Technology Act, 2000 (India) - Sections 5 and 10A.
           </p>
           <p style="color: #bbb; font-size: 10px;">
-            ${companyName} | Secured Electronic Signature System
+            ${escapeHtml(companyName)} | Secured Electronic Signature System
           </p>
         </div>
       `;
+
+      const subject = `Completed: ${doc.title} - Signed Document & Certificate`;
+      let status = "sent";
+      let errorMessage = null;
+
+      try {
+        await sendSmtp(account, recipient.email, subject, emailHtml);
+        emailsSent++;
+      } catch (smtpErr: any) {
+        status = "failed";
+        errorMessage = smtpErr.message || "SMTP send failed";
+      }
 
       // Log email
       await supabase.from("email_send_logs").insert({
         template_key: "signature_completed",
         template_label: "Signature Completed",
         recipient_email: recipient.email,
-        subject: `Completed: ${doc.title} - Signed Document & Certificate`,
+        subject,
         body_html: emailHtml,
-        status: "sent",
+        status,
+        error_message: errorMessage,
         sent_by: user.id,
       });
 
@@ -146,13 +176,13 @@ serve(async (req) => {
         document_id,
         recipient_id: recipient.id,
         action: "completion_email_sent",
-        metadata: { email: recipient.email },
+        metadata: { email: recipient.email, status },
       });
     }
 
     return new Response(JSON.stringify({ 
       success: true, 
-      emails_sent: recipients.length 
+      emails_sent: emailsSent,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -164,11 +194,3 @@ serve(async (req) => {
     });
   }
 });
-
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
