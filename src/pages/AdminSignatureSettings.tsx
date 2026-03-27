@@ -14,6 +14,7 @@ import { Save, Loader2, Mail, Clock, Settings2, Building2, Send } from 'lucide-r
 export default function AdminSignatureSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [emailAccounts, setEmailAccounts] = useState<any[]>([]);
   const [settings, setSettings] = useState({
     id: '',
     auto_send_completion: false,
@@ -24,6 +25,7 @@ export default function AdminSignatureSettings() {
     issued_by_name: '',
     issued_by_address: '',
     issued_by_email: '',
+    email_account_id: '',
   });
 
   useEffect(() => {
