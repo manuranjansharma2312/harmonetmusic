@@ -155,6 +155,10 @@ serve(async (req) => {
       y = drawWrapped(page, companyAddress, MARGIN, y, 9, font, MAX_W, rgb(0.4, 0.4, 0.4));
       y -= 4;
     }
+    if (issuerEmail) {
+      page.drawText(`Email: ${issuerEmail}`, { x: MARGIN, y, size: 9, font, color: rgb(0.4, 0.4, 0.4) });
+      y -= 14;
+    }
 
     y -= 10;
     page.drawText("Signer Details", { x: MARGIN, y, size: 13, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
