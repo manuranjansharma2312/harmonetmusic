@@ -189,6 +189,15 @@ export default function MySmartLinks() {
                     <p className="text-[11px] text-muted-foreground text-center py-1">Waiting for admin approval before sharing.</p>
                   )}
 
+                  {isRejected && (
+                    <div className="p-2 rounded-md bg-destructive/10 border border-destructive/20">
+                      <p className="text-[11px] text-destructive font-medium">Rejected — will be removed automatically</p>
+                      {s.rejection_reason && (
+                        <p className="text-[10px] text-destructive/80 mt-0.5">Reason: {s.rejection_reason}</p>
+                      )}
+                    </div>
+                  )}
+
                   {!active && !isPending && (
                     <Button size="sm" variant="outline" className="w-full text-xs" onClick={() => setEditLink(s)}>
                       <Link2 className="h-3.5 w-3.5 mr-1" /> Add Platform Links
