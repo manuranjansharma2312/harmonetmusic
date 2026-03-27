@@ -69,12 +69,13 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 2,
+      retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 30000, // 30s — avoid redundant refetches
+      staleTime: 60000, // 60s — reduce redundant refetches
+      gcTime: 300000, // 5min — keep cache longer
     },
     mutations: {
-      retry: 1,
+      retry: 0,
     },
   },
 });
