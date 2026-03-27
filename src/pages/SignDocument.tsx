@@ -27,10 +27,16 @@ export default function SignDocument() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [pdfUrl, setPdfUrl] = useState('');
+  const [geoInfo, setGeoInfo] = useState<{ ip: string; city: string; region: string; country: string }>({ ip: '', city: '', region: '', country: '' });
 
   useEffect(() => {
     if (!token) return;
     loadData();
+    // Fetch IP + geolocation
+    fetch('https://ipapi.co/json/')
+      .then(r => r.json())
+      .then(d => setGeoInfo({ ip: d.ip || '', city: d.city || '', region: d.region || '', country: d.country_name || '' }))
+      .catch(() => {});
   }, [token]);
 
   const loadData = async () => {
