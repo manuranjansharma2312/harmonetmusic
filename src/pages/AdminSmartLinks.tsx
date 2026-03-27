@@ -18,17 +18,6 @@ import { toast } from 'sonner';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
 
 // ─── Types ───
-interface SmartLinkRelease {
-  id: string;
-  album_name: string | null;
-  ep_name: string | null;
-  poster_url: string | null;
-  platform_links: Record<string, string>;
-  slug: string | null;
-  status: string;
-  content_type: string;
-  release_date: string;
-}
 
 interface Platform {
   id: string;
