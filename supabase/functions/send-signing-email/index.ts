@@ -60,7 +60,7 @@ serve(async (req) => {
     const [docRes, recipientsRes, emailAccountsRes, companyRes, settingsRes] = await Promise.all([
       supabase.from("signature_documents").select("*").eq("id", document_id).single(),
       supabase.from("signature_recipients").select("*").eq("document_id", document_id).neq("status", "signed"),
-      supabase.from("email_accounts").select("*").eq("is_default", true).eq("is_enabled", true).limit(1),
+      supabase.from("email_accounts").select("*").eq("is_enabled", true),
       supabase.from("company_details").select("*").limit(1).single(),
       supabase.from("signature_settings").select("*").limit(1).maybeSingle(),
     ]);
