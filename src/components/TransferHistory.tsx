@@ -30,7 +30,7 @@ interface TransferHistoryProps {
   onReversed?: () => void;
 }
 
-export function TransferHistory({ onReversed }: TransferHistoryProps) {
+export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
   const [logs, setLogs] = useState<TransferLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
