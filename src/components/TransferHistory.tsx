@@ -276,7 +276,7 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
           </Table>
         </div>
         <TablePagination
-          totalItems={logs.length}
+          totalItems={filteredLogs.length}
           currentPage={page}
           pageSize={pageSize}
           onPageChange={setPage}
