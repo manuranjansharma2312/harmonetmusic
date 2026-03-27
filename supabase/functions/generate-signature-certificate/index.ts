@@ -212,7 +212,7 @@ serve(async (req) => {
       recipientMap[r.id] = r.name || r.email || "Unknown";
     }
 
-    const auditCols = [MARGIN, MARGIN + 100, MARGIN + 200, MARGIN + 295, MARGIN + 395];
+    const auditCols = [MARGIN, MARGIN + 90, MARGIN + 185, MARGIN + 260, MARGIN + 370];
     const auditHeaders = ["Performed By", "Action", "IP Address", "Location", "Timestamp"];
     page.drawRectangle({ x: MARGIN, y: y - 2, width: MAX_W, height: 16, color: rgb(0.94, 0.96, 0.97) });
     auditHeaders.forEach((h, i) => {
@@ -232,7 +232,7 @@ serve(async (req) => {
         performedBy,
         actionLabel,
         log.ip_address || "-",
-        typeof geo === 'string' ? geo.substring(0, 25) : "-",
+        typeof geo === 'string' && geo.length > 0 ? geo.substring(0, 35) : "-",
         formatDate(log.created_at),
       ];
       logData.forEach((val, ci) => {
@@ -256,7 +256,7 @@ serve(async (req) => {
     y -= 16;
 
     const legalTexts = [
-      "This certificate confirms that the above-mentioned document was electronically signed by the listed parties using a verified electronic signature process. The document's integrity is verified through SHA-256 cryptographic hashing. Each signer's identity was verified via Email OTP (One-Time Password) before signing.",
+      "This certificate confirms that the above-mentioned document was electronically signed by the listed parties using a verified electronic signature process. The document's integrity is verified through SHA-256 cryptographic hashing.",
       "This electronic signature is legally valid and enforceable under the Information Technology Act, 2000 (India) - Sections 5 and 10A, which recognize electronic signatures as equivalent to handwritten signatures for private commercial agreements. This certificate does not constitute a government-issued Digital Signature Certificate (DSC) under Section 35 of the IT Act.",
       "The complete audit trail above serves as evidence of the signing process, including timestamps, IP addresses, geographic locations, and device information for each action taken during the signing workflow.",
     ];
