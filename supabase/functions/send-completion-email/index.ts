@@ -101,7 +101,6 @@ serve(async (req) => {
     if (!account) throw new Error("No email account configured. Please set up an email account in Admin Email Settings first.");
 
     const companyName = companyRes.data?.company_name || "Harmonet Music";
-    const sigSettings = settingsRes.data as any;
 
     // Get signed PDF download URL
     let downloadUrl = "";
