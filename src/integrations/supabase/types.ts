@@ -1068,6 +1068,27 @@ export type Database = {
         }
         Relationships: []
       }
+      smart_link_settings: {
+        Row: {
+          id: string
+          is_enabled: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          is_enabled?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          is_enabled?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       smart_links: {
         Row: {
           artist_name: string
