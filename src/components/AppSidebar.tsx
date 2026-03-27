@@ -66,6 +66,7 @@ const adminLinksTop = [
   { to: '/admin/ai-image-system', label: 'AI Poster Generate', icon: Sparkles },
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
+  { to: '/admin/email-settings', label: 'Email Settings', icon: Mail },
 ];
 
 export function AppSidebar() {
