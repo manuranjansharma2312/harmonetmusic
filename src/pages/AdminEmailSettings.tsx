@@ -229,6 +229,9 @@ export default function AdminEmailSettings() {
             <TabsTrigger value="templates" className="gap-2">
               <FileText className="h-4 w-4" /> Email Templates
             </TabsTrigger>
+            <TabsTrigger value="logs" className="gap-2">
+              <History className="h-4 w-4" /> Email Logs
+            </TabsTrigger>
             <TabsTrigger value="guide" className="gap-2">
               <Info className="h-4 w-4" /> Setup Guide
             </TabsTrigger>
