@@ -75,7 +75,12 @@ serve(async (req) => {
       });
     }
 
-    const account = emailAccountsRes.data?.[0];
+    const sigSettings = settingsRes.data as any;
+    const configuredAccountId = sigSettings?.email_account_id;
+    const allAccounts = emailAccountsRes.data || [];
+    const account = configuredAccountId
+      ? allAccounts.find((a: any) => a.id === configuredAccountId) || allAccounts.find((a: any) => a.is_default) || allAccounts[0]
+      : allAccounts.find((a: any) => a.is_default) || allAccounts[0];
     if (!account) throw new Error("No email account configured. Please set up an email account in Admin Email Settings first.");
 
     const companyName = companyRes.data?.company_name || "Harmonet Music";
