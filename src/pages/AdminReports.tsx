@@ -453,6 +453,16 @@ export default function AdminReports() {
           </p>
           <div className="flex items-center gap-3">
             <Input ref={fileRef} type="file" accept=".csv,.txt" onChange={handleFileSelect} className="max-w-xs" />
+            <Button variant="outline" size="sm" onClick={() => {
+              const csv = CSV_HEADERS.map(h => `"${h}"`).join(',') + '\n';
+              const blob = new Blob([csv], { type: 'text/csv' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url; a.download = 'ott-report-template.csv'; a.click();
+              URL.revokeObjectURL(url);
+            }}>
+              <Download className="h-4 w-4 mr-1" /> Download Template
+            </Button>
           </div>
 
           {preview && (
