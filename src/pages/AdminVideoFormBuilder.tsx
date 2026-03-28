@@ -30,6 +30,7 @@ const FIELD_TYPES = [
   { value: 'video_upload', label: 'Video Upload' },
   { value: 'document_upload', label: 'Document Upload' },
   { value: 'drag_drop_upload', label: 'Drag & Drop Upload' },
+  { value: 'link', label: 'Link / URL' },
 ];
 
 interface FormField {
