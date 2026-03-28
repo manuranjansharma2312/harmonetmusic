@@ -6,7 +6,7 @@ import {
   BarChart3, MonitorPlay, Wallet, FileText, Receipt,
   Image as ImageIcon, Bell, BookOpen, FileSignature,
   Megaphone, Landmark, CreditCard, UsersRound, Sparkles, Link2, ArrowRightLeft, Mail,
-  Settings, Globe,
+  Settings, Globe, Video, Tv,
 } from 'lucide-react';
 import { useBranding } from '@/hooks/useBranding';
 import { supabase } from '@/integrations/supabase/client';
@@ -69,6 +69,8 @@ const adminLinksTop = [
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
   { to: '/admin/email-settings', label: 'Email Settings', icon: Mail },
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
+  { to: '/admin/video-forms', label: 'Video Form Builder', icon: Video },
+  { to: '/admin/video-submissions', label: 'Video Submissions', icon: Video },
   { to: '/admin/branding-settings', label: 'Site Settings', icon: Globe },
   { to: '/admin/site-settings', label: 'System Settings', icon: Settings },
 ];
@@ -86,6 +88,7 @@ export function AppSidebar() {
   const [userSubLabelsOpen, setUserSubLabelsOpen] = useState(false);
   const [impUserType, setImpUserType] = useState<string | null>(null);
   const [impIsSubLabel, setImpIsSubLabel] = useState(false);
+  const [userVideoOpen, setUserVideoOpen] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
 
   // Fetch impersonated user's profile when impersonating
@@ -121,6 +124,14 @@ export function AppSidebar() {
     { to: '/my-releases', label: 'My Releases', icon: ListMusic },
     { to: '/smart-links', label: 'Smart Links', icon: Link2 },
     { to: '/my-labels', label: 'My Labels', icon: Tag },
+  ];
+
+  // Video Distribution collapsible links
+  const userVideoLinks = [
+    { to: '/video/upload?type=upload_video', label: 'Upload Video', icon: Upload },
+    { to: '/video/vevo-channel?type=vevo_channel', label: 'Create Vevo Channel', icon: Tv },
+    { to: '/my-videos', label: 'My Videos', icon: Video },
+    { to: '/vevo-channels', label: 'Vevo Channels', icon: Tv },
   ];
 
   // Sub Labels collapsible links (only for record_label users who are NOT sub-labels)
@@ -236,6 +247,7 @@ export function AppSidebar() {
               {showUserView ? (
                 <>
                   {userLinksTop.map(renderNavLink)}
+                  {renderCollapsibleGroup('Video Distribution', Video, userVideoLinks, userVideoOpen, setUserVideoOpen)}
                   {showUserSubLabels && renderCollapsibleGroup('Sub Labels', UsersRound, userSubLabelLinks, userSubLabelsOpen, setUserSubLabelsOpen)}
                   {renderCollapsibleGroup('Support', Headset, contentToolLinks, toolsOpen, setToolsOpen)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, reportLinks, reportsOpen, setReportsOpen)}

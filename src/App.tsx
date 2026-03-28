@@ -74,6 +74,12 @@ const AdminSignatureFields = lazy(() => import("./pages/AdminSignatureFields"));
 const AdminSignatureSettings = lazy(() => import("./pages/AdminSignatureSettings"));
 const SignDocument = lazy(() => import("./pages/SignDocument"));
 const DownloadSignedPdf = lazy(() => import("./pages/DownloadSignedPdf"));
+const AdminVideoForms = lazy(() => import("./pages/AdminVideoForms"));
+const AdminVideoFormBuilder = lazy(() => import("./pages/AdminVideoFormBuilder"));
+const AdminVideoSubmissions = lazy(() => import("./pages/AdminVideoSubmissions"));
+const VideoSubmit = lazy(() => import("./pages/VideoSubmit"));
+const MyVideos = lazy(() => import("./pages/MyVideos"));
+const VevoChannels = lazy(() => import("./pages/VevoChannels"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -184,6 +190,13 @@ function App() {
                       <Route path="/sign/:token" element={<SignDocument />} />
                       <Route path="/download/:documentId" element={<DownloadSignedPdf />} />
                       <Route path="/r/:slug" element={<SmartLink />} />
+                      <Route path="/video/upload" element={<ProtectedRoute><VideoSubmit /></ProtectedRoute>} />
+                      <Route path="/video/vevo-channel" element={<ProtectedRoute><VideoSubmit /></ProtectedRoute>} />
+                      <Route path="/my-videos" element={<ProtectedRoute><MyVideos /></ProtectedRoute>} />
+                      <Route path="/vevo-channels" element={<ProtectedRoute><VevoChannels /></ProtectedRoute>} />
+                      <Route path="/admin/video-forms" element={<ProtectedRoute requiredRole="admin"><AdminVideoForms /></ProtectedRoute>} />
+                      <Route path="/admin/video-forms/builder" element={<ProtectedRoute requiredRole="admin"><AdminVideoFormBuilder /></ProtectedRoute>} />
+                      <Route path="/admin/video-submissions" element={<ProtectedRoute requiredRole="admin"><AdminVideoSubmissions /></ProtectedRoute>} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>
