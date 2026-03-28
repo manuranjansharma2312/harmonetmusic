@@ -23,8 +23,8 @@ export default function MyVideos() {
   const [viewSubmission, setViewSubmission] = useState<any>(null);
   const [viewValues, setViewValues] = useState<any[]>([]);
   const [viewFields, setViewFields] = useState<any[]>([]);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(25);
 
   const fetchSubmissions = async () => {
     if (!user) return;
