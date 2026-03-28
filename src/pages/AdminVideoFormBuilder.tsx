@@ -258,6 +258,10 @@ export default function AdminVideoFormBuilder() {
                     <Input value={field.placeholder} onChange={e => updateField(index, { placeholder: e.target.value })} placeholder="Placeholder text" />
                   </div>
                 </div>
+                <div>
+                  <Label className="text-xs">Description <span className="text-muted-foreground font-normal">(shown below the field)</span></Label>
+                  <Input value={field.description} onChange={e => updateField(index, { description: e.target.value })} placeholder="Help text or instructions for this field" />
+                </div>
 
                 <div className="flex items-center gap-2">
                   <Checkbox checked={field.is_required} onCheckedChange={v => updateField(index, { is_required: !!v })} />
