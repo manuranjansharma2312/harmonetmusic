@@ -270,6 +270,7 @@ export default function Analytics() {
       .channel('analytics-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'report_entries' }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'youtube_report_entries' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'vevo_report_entries' }, () => fetchData())
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
