@@ -86,6 +86,7 @@ export default function Reports() {
   const [hiddenCut, setHiddenCut] = useState(0);
   const [subLabelCut, setSubLabelCut] = useState(0);
   const [isSubLabelUser, setIsSubLabelUser] = useState(false);
+  const [formatColumns, setFormatColumns] = useState<FormatColumn[]>([]);
 
   const { impersonatedUserId, isImpersonating } = useImpersonate();
   const activeUserId = (isImpersonating && impersonatedUserId) ? impersonatedUserId : user?.id;
