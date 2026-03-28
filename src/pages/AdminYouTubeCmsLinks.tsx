@@ -175,14 +175,14 @@ export default function AdminYouTubeCmsLinks() {
 
   const getSubmittedBy = (userId: string) => {
     const prof = profiles[userId];
-    if (!prof) return { name: '—', sub: '' };
-    const name = prof.user_type === 'artist' ? (prof.artist_name || prof.legal_name) : (prof.record_label_name || prof.legal_name);
+    if (!prof) return { name: '—', sub: '', email: '', displayId: undefined as number | undefined };
     const subLabel = subLabels.find(s => s.sub_user_id === userId);
+    const name = subLabel?.sub_label_name || (prof.user_type === 'artist' ? (prof.artist_name || prof.legal_name) : (prof.record_label_name || prof.legal_name));
     let sub = '';
     if (subLabel) {
       const parent = profiles[subLabel.parent_user_id];
-      const parentName = parent ? (parent.record_label_name || parent.legal_name) : 'Parent';
-      sub = `Sub-Label ↳ Under: ${parentName}`;
+      const parentName = subLabel.parent_label_name || (parent ? (parent.record_label_name || parent.legal_name) : 'Parent Label');
+      sub = `${subLabel.sub_label_name || name} ↳ Under: ${parentName}`;
     }
     return { name, sub, email: prof.email, displayId: prof.display_id };
   };
