@@ -77,6 +77,7 @@ const DownloadSignedPdf = lazy(() => import("./pages/DownloadSignedPdf"));
 const AdminVideoForms = lazy(() => import("./pages/AdminVideoForms"));
 const AdminVideoFormBuilder = lazy(() => import("./pages/AdminVideoFormBuilder"));
 const AdminVideoSubmissions = lazy(() => import("./pages/AdminVideoSubmissions"));
+const AdminVevoChannels = lazy(() => import("./pages/AdminVevoChannels"));
 const VideoSubmit = lazy(() => import("./pages/VideoSubmit"));
 const MyVideos = lazy(() => import("./pages/MyVideos"));
 const VevoChannels = lazy(() => import("./pages/VevoChannels"));
@@ -199,6 +200,7 @@ function App() {
                       <Route path="/admin/video-forms" element={<ProtectedRoute requiredRole="admin"><AdminVideoForms /></ProtectedRoute>} />
                       <Route path="/admin/video-forms/builder" element={<ProtectedRoute requiredRole="admin"><AdminVideoFormBuilder /></ProtectedRoute>} />
                       <Route path="/admin/video-submissions" element={<ProtectedRoute requiredRole="admin"><AdminVideoSubmissions /></ProtectedRoute>} />
+                      <Route path="/admin/vevo-channels" element={<ProtectedRoute requiredRole="admin"><AdminVevoChannels /></ProtectedRoute>} />
                       <Route path="/admin/video-guidelines" element={<ProtectedRoute requiredRole="admin"><AdminVideoGuidelines /></ProtectedRoute>} />
                       <Route path="/video-guidelines" element={<ProtectedRoute><VideoGuidelines /></ProtectedRoute>} />
                       <Route path="*" element={<NotFound />} />
