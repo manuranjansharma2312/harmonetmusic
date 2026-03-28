@@ -160,6 +160,7 @@ export default function YouTubeReports() {
   useEffect(() => {
     if (!user) return;
     fetchReports();
+    fetchFormat();
 
     const channel = supabase
       .channel('yt-reports-realtime')
