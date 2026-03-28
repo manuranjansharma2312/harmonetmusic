@@ -414,6 +414,7 @@ export default function AdminVevoReports() {
     setSavingFormat(true);
     try {
       for (const col of editingFormat) {
+        if (col.id.startsWith('new-')) continue; // new columns handled separately
         const { error } = await supabase
           .from('vevo_report_format')
           .update({ csv_header: col.csv_header, is_enabled: col.is_enabled, updated_at: new Date().toISOString() })
@@ -421,12 +422,48 @@ export default function AdminVevoReports() {
         if (error) throw error;
       }
       toast.success('Format saved successfully');
-      setFormatColumns(editingFormat.map(c => ({ ...c })));
+      setFormatColumns(editingFormat.filter(c => !c.id.startsWith('new-')).map(c => ({ ...c })));
       setShowFormatConfig(false);
     } catch (err: any) {
       toast.error(err.message || 'Failed to save format');
     }
     setSavingFormat(false);
+  };
+
+  const handleAddCustomColumn = async () => {
+    const name = newColumnName.trim();
+    if (!name) { toast.error('Please enter a column name'); return; }
+    const columnKey = 'custom_' + name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    const exists = editingFormat.some(c => c.column_key === columnKey);
+    if (exists) { toast.error('A column with this key already exists'); return; }
+    
+    const maxOrder = Math.max(...editingFormat.map(c => c.sort_order), 0);
+    const { data, error } = await supabase.from('vevo_report_format').insert({
+      column_key: columnKey,
+      csv_header: name,
+      is_enabled: true,
+      is_required: false,
+      is_custom: true,
+      sort_order: maxOrder + 1,
+    }).select().single();
+
+    if (error) { toast.error(error.message); return; }
+    const newCol = data as FormatColumn;
+    setEditingFormat(prev => [...prev, newCol]);
+    setFormatColumns(prev => [...prev, newCol]);
+    setNewColumnName('');
+    toast.success(`Column "${name}" added`);
+  };
+
+  const handleDeleteCustomColumn = async () => {
+    if (!deletingColumnId) return;
+    const { error } = await supabase.from('vevo_report_format').delete().eq('id', deletingColumnId);
+    if (error) { toast.error(error.message); } else {
+      setEditingFormat(prev => prev.filter(c => c.id !== deletingColumnId));
+      setFormatColumns(prev => prev.filter(c => c.id !== deletingColumnId));
+      toast.success('Custom column removed');
+    }
+    setDeletingColumnId(null);
   };
 
   const downloadTemplate = () => {
