@@ -525,13 +525,14 @@ export default function AdminYouTubeCmsLinks() {
 
       <RejectReasonModal open={!!rejectItem} title="Reject CMS Link Request" onConfirm={handleReject} onCancel={() => setRejectItem(null)} />
 
-      <ConfirmDialog
-        open={!!deleteConfirm}
-        title="Delete CMS Link Request(s)"
-        description={`Are you sure you want to delete ${deleteConfirm?.ids.length || 0} record(s)? This action cannot be undone.`}
-        onConfirm={() => deleteConfirm && handleDelete(deleteConfirm.ids)}
-        onCancel={() => setDeleteConfirm(null)}
-      />
+      {deleteConfirm && (
+        <ConfirmDialog
+          title="Delete CMS Link Request(s)"
+          message={`Are you sure you want to delete ${deleteConfirm.ids.length} record(s)? This action cannot be undone.`}
+          onConfirm={() => handleDelete(deleteConfirm.ids)}
+          onCancel={() => setDeleteConfirm(null)}
+        />
+      )}
     </DashboardLayout>
   );
 }
