@@ -63,7 +63,7 @@ export default function AdminBrandingSettings() {
     setUploading(field);
     try {
       const path = `branding/${field}-${Date.now()}.png`;
-      const { error } = await supabase.storage.from('posters').upload(path, file, { upsert: true });
+      const { error } = await supabase.storage.from('posters').upload(path, file, { upsert: false });
       if (error) throw error;
       const { data: urlData } = supabase.storage.from('posters').getPublicUrl(path);
       setForm(f => ({ ...f, [field]: urlData.publicUrl }));
@@ -191,7 +191,7 @@ export default function AdminBrandingSettings() {
                       setUploading('logo_url');
                       const ext = file.name.split('.').pop();
                       const path = `branding/logo_url-${Date.now()}.${ext}`;
-                      supabase.storage.from('posters').upload(path, file, { upsert: true }).then(({ error }) => {
+                      supabase.storage.from('posters').upload(path, file, { upsert: false }).then(({ error }) => {
                         if (error) { toast.error(error.message); setUploading(null); return; }
                         const { data: urlData } = supabase.storage.from('posters').getPublicUrl(path);
                         setForm(f => ({ ...f, logo_url: urlData.publicUrl }));
