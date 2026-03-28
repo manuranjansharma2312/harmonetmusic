@@ -85,10 +85,23 @@ export default function YouTubeReports() {
   const [hiddenCut, setHiddenCut] = useState(0);
   const [subLabelCut, setSubLabelCut] = useState(0);
   const [isSubLabelUser, setIsSubLabelUser] = useState(false);
+  const [formatColumns, setFormatColumns] = useState<FormatColumn[]>([]);
 
   const { impersonatedUserId, isImpersonating } = useImpersonate();
   const activeUserId = (isImpersonating && impersonatedUserId) ? impersonatedUserId : user?.id;
 
+  const COLUMNS = useMemo(() =>
+    formatColumns
+      .filter(c => c.is_enabled && c.column_key !== 'reporting_month')
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map(c => ({ key: c.column_key, label: ALL_COLUMN_LABELS[c.column_key] || c.csv_header })),
+    [formatColumns]
+  );
+
+  const fetchFormat = async () => {
+    const { data } = await supabase.from('youtube_report_format').select('*').order('sort_order', { ascending: true });
+    if (data) setFormatColumns(data as FormatColumn[]);
+  };
   const fetchReports = async () => {
     if (!user) return;
     setLoading(true);
