@@ -123,6 +123,14 @@ export function AppSidebar() {
     { to: '/my-labels', label: 'My Labels', icon: Tag },
   ];
 
+  // Video Distribution collapsible links
+  const userVideoLinks = [
+    { to: '/video/upload?type=upload_video', label: 'Upload Video', icon: Upload },
+    { to: '/video/vevo-channel?type=vevo_channel', label: 'Create Vevo Channel', icon: Tv },
+    { to: '/my-videos', label: 'My Videos', icon: Video },
+    { to: '/vevo-channels', label: 'Vevo Channels', icon: Tv },
+  ];
+
   // Sub Labels collapsible links (only for record_label users who are NOT sub-labels)
   const userSubLabelLinks = [
     { to: '/sub-labels', label: 'All Sub Labels', icon: UsersRound },
