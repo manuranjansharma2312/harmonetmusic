@@ -336,7 +336,17 @@ export default function AdminVideoSubmissions() {
     }
 
     if (isFile && !val?.file_url) {
-      return <p className="text-sm text-muted-foreground mt-1">No file uploaded</p>;
+      const placeholderIcon = field.field_type === 'image_upload'
+        ? <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+        : field.field_type === 'video_upload'
+        ? <VideoIcon className="h-8 w-8 text-muted-foreground/50" />
+        : <FileIcon className="h-8 w-8 text-muted-foreground/50" />;
+      return (
+        <div className="mt-1 h-32 rounded-lg border border-dashed border-border bg-muted/30 flex flex-col items-center justify-center gap-2">
+          {placeholderIcon}
+          <span className="text-xs text-muted-foreground">No file uploaded</span>
+        </div>
+      );
     }
 
     if (isEditing) {
