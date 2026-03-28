@@ -55,6 +55,7 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [vevoChannelName, setVevoChannelName] = useState<string | null>(null);
   const [vevoFieldNames, setVevoFieldNames] = useState<Record<string, string>>({});
+  const [transferSubmission, setTransferSubmission] = useState<any>(null);
   const statuses = submissionType === 'upload_video' ? VIDEO_STATUSES : CHANNEL_STATUSES;
 
   const fetchSubmissions = async () => {
