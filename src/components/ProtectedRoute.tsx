@@ -4,7 +4,7 @@ import { Loader2, ShieldAlert, Clock, XCircle, Ban } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { BackgroundBlobs } from '@/components/BackgroundBlobs';
-import logoWhite from '@/assets/logo-white.png';
+import { useBranding } from '@/hooks/useBranding';
 
 function AccountBlockedScreen({ status }: { status: string }) {
   const { signOut } = useAuth();
