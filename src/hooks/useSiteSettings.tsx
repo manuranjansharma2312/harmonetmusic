@@ -60,6 +60,9 @@ const DEFAULTS: SiteSettings = {
   enable_text_selection: false,
   maintenance_mode: false,
   maintenance_message: 'We are currently performing maintenance. Please check back soon.',
+  enable_vevo: true,
+  enable_video_distribution: true,
+  enable_reports: true,
   updated_at: '',
   updated_by: null,
 };
