@@ -284,9 +284,13 @@ export default function AdminYouTubeCmsLinks() {
                   </TableBody>
                 </Table>
               </div>
-              {totalPages > 1 && (
-                <TablePagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
-              )}
+              <TablePagination
+                totalItems={filtered.length}
+                currentPage={page}
+                pageSize={perPage}
+                onPageChange={setPage}
+                onPageSizeChange={(s) => { setPerPage(s); setPage(1); }}
+              />
             </>
           )}
         </GlassCard>
