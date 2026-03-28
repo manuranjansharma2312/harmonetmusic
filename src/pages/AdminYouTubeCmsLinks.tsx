@@ -351,6 +351,7 @@ export default function AdminYouTubeCmsLinks() {
                       <TableHead>CMS Company</TableHead>
                       <TableHead>CMS Linked Date</TableHead>
                       <TableHead>Submitted</TableHead>
+                      <TableHead>Change Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
