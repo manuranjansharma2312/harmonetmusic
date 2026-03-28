@@ -143,6 +143,7 @@ export function AppSidebar() {
     { to: '/admin/video-submissions', label: 'Video Submissions', icon: Video },
     { to: '/admin/vevo-channels', label: 'Vevo Channels', icon: Tv },
     { to: '/admin/video-guidelines', label: 'Video Guidelines', icon: FileText },
+    { to: '/admin/vevo-settings', label: 'Vevo Settings', icon: Settings },
   ];
 
   // Sub Labels collapsible links (only for record_label users who are NOT sub-labels)
