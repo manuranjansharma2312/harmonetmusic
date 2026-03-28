@@ -69,9 +69,6 @@ const adminLinksTop = [
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
   { to: '/admin/email-settings', label: 'Email Settings', icon: Mail },
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
-  { to: '/admin/video-forms', label: 'Video Form Builder', icon: Video },
-  { to: '/admin/video-submissions', label: 'Video Submissions', icon: Video },
-  { to: '/admin/video-guidelines', label: 'Video Guidelines', icon: FileText },
   { to: '/admin/branding-settings', label: 'Site Settings', icon: Globe },
   { to: '/admin/site-settings', label: 'System Settings', icon: Settings },
 ];
