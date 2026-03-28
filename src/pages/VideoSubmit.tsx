@@ -176,8 +176,11 @@ export default function VideoSubmit() {
       const { error: valError } = await supabase.from('video_submission_values').insert(valueInserts);
       if (valError) throw valError;
 
+      setSubmitted(true);
       toast.success('Submission sent successfully!');
-      navigate(submissionType === 'vevo_channel' ? '/vevo-channels' : '/my-videos');
+      setTimeout(() => {
+        navigate(submissionType === 'vevo_channel' ? '/vevo-channels' : '/my-videos');
+      }, 3000);
     } catch (err: any) {
       toast.error(err.message || 'Failed to submit');
     } finally {
