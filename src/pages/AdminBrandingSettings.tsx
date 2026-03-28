@@ -13,6 +13,7 @@ export default function AdminBrandingSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [cropState, setCropState] = useState<{ field: 'logo_url' | 'favicon_url'; src: string } | null>(null);
   const [form, setForm] = useState({
     id: '',
     site_name: 'Harmonet Music',
