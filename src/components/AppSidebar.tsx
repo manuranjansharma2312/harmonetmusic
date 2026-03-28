@@ -69,9 +69,6 @@ const adminLinksTop = [
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
   { to: '/admin/email-settings', label: 'Email Settings', icon: Mail },
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
-  { to: '/admin/video-forms', label: 'Video Form Builder', icon: Video },
-  { to: '/admin/video-submissions', label: 'Video Submissions', icon: Video },
-  { to: '/admin/video-guidelines', label: 'Video Guidelines', icon: FileText },
   { to: '/admin/branding-settings', label: 'Site Settings', icon: Globe },
   { to: '/admin/site-settings', label: 'System Settings', icon: Settings },
 ];
@@ -90,6 +87,7 @@ export function AppSidebar() {
   const [impUserType, setImpUserType] = useState<string | null>(null);
   const [impIsSubLabel, setImpIsSubLabel] = useState(false);
   const [userVideoOpen, setUserVideoOpen] = useState(false);
+  const [adminVideoOpen, setAdminVideoOpen] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
 
   // Fetch impersonated user's profile when impersonating
@@ -134,6 +132,12 @@ export function AppSidebar() {
     { to: '/my-videos', label: 'My Videos', icon: Video },
     { to: '/vevo-channels', label: 'Vevo Channels', icon: Tv },
     { to: '/video-guidelines', label: 'Guidelines', icon: FileText },
+  ];
+
+  const adminVideoLinks = [
+    { to: '/admin/video-forms', label: 'Video Form Builder', icon: Video },
+    { to: '/admin/video-submissions', label: 'Video Submissions', icon: Video },
+    { to: '/admin/video-guidelines', label: 'Video Guidelines', icon: FileText },
   ];
 
   // Sub Labels collapsible links (only for record_label users who are NOT sub-labels)
@@ -258,6 +262,7 @@ export function AppSidebar() {
               ) : (
                 <>
                   {adminLinksTop.map(renderNavLink)}
+                  {renderCollapsibleGroup('Video Distribution', Video, adminVideoLinks, adminVideoOpen, setAdminVideoOpen)}
                   {renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}
                 </>
