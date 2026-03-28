@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StatusBadge } from '@/components/StatusBadge';
 import { toast } from 'sonner';
-import { Eye, Search, Upload, Pencil, Check, X, Download, Trash2, CheckSquare, Image as ImageIcon, Film as VideoIcon, FileText as FileIcon } from 'lucide-react';
+import { Eye, Search, Upload, Pencil, Check, X, Download, Trash2, CheckSquare, Image as ImageIcon, Film as VideoIcon, FileText as FileIcon, ArrowRightLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
