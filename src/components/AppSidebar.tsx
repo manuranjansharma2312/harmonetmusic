@@ -12,6 +12,7 @@ import { useBranding } from '@/hooks/useBranding';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { NavLink } from '@/components/NavLink';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
@@ -30,17 +31,17 @@ const contentToolLinks = [
   { to: '/tools/custom-support', label: 'Custom Support', icon: MessageSquare },
 ];
 
-const reportLinks = [
+const reportLinksBase = [
   { to: '/reports/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/reports/youtube', label: 'YouTube Reports', icon: Youtube },
-  { to: '/reports/vevo', label: 'Vevo Reports', icon: Tv },
+  { to: '/reports/vevo', label: 'Vevo Reports', icon: Tv, vevoOnly: true },
   { to: '/reports/ott', label: 'OTT Reports', icon: MonitorPlay },
 ];
 
-const adminReportLinks = [
+const adminReportLinksBase = [
   { to: '/admin/reports/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/admin/reports/youtube', label: 'YouTube Reports', icon: Youtube },
-  { to: '/admin/reports/vevo', label: 'Vevo Reports', icon: Tv },
+  { to: '/admin/reports/vevo', label: 'Vevo Reports', icon: Tv, vevoOnly: true },
   { to: '/admin/reports/ott', label: 'OTT Reports', icon: MonitorPlay },
 ];
 
@@ -81,6 +82,7 @@ export function AppSidebar() {
   const { state, setOpenMobile, isMobile } = useSidebar();
   const collapsed = state === 'collapsed';
   const { logoSrc, branding } = useBranding();
+  const { settings } = useSiteSettings();
   const showUserView = isImpersonating || role !== 'admin';
   const [toolsOpen, setToolsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
@@ -149,6 +151,10 @@ export function AppSidebar() {
     { to: '/sub-labels/withdrawals', label: 'Withdraw Requests', icon: Wallet },
   ];
   const showUserSubLabels = effectiveUserType === 'record_label' && !effectiveIsSubLabel;
+
+  // Filter report links based on settings
+  const reportLinks = reportLinksBase.filter(l => !l.vevoOnly || settings.enable_vevo);
+  const adminReportLinks = adminReportLinksBase.filter(l => !l.vevoOnly || settings.enable_vevo);
 
   const userLinksBottom = [
     ...(aiEnabled ? [{ to: '/ai-images', label: 'AI Poster Generate', icon: Sparkles }] : []),
@@ -256,16 +262,16 @@ export function AppSidebar() {
               {showUserView ? (
                 <>
                   {userLinksTop.map(renderNavLink)}
-                  {renderCollapsibleGroup('Video Distribution', Video, userVideoLinks, userVideoOpen, setUserVideoOpen)}
+                  {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, userVideoLinks, userVideoOpen, setUserVideoOpen)}
                   {showUserSubLabels && renderCollapsibleGroup('Sub Labels', UsersRound, userSubLabelLinks, userSubLabelsOpen, setUserSubLabelsOpen)}
                   {renderCollapsibleGroup('Support', Headset, contentToolLinks, toolsOpen, setToolsOpen)}
-                  {renderCollapsibleGroup('Reports & Analytics', BarChart3, reportLinks, reportsOpen, setReportsOpen)}
+                  {settings.enable_reports && renderCollapsibleGroup('Reports & Analytics', BarChart3, reportLinks, reportsOpen, setReportsOpen)}
                   {userLinksBottom.map(renderNavLink)}
                 </>
               ) : (
                 <>
                   {adminLinksTop.map(renderNavLink)}
-                  {renderCollapsibleGroup('Video Distribution', Video, adminVideoLinks, adminVideoOpen, setAdminVideoOpen)}
+                  {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, adminVideoLinks, adminVideoOpen, setAdminVideoOpen)}
                   {renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}
                 </>
