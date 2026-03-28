@@ -77,13 +77,23 @@ export default function VideoSubmit() {
   const handleFileSelect = (fieldId: string, file: File | null, field: FieldDef) => {
     if (!file) return;
 
-    // Check if image_upload with aspect ratio -> show crop
-    if (field.field_type === 'image_upload' && field.settings.aspect_ratio) {
-      const parts = field.settings.aspect_ratio.split(':').map(Number);
-      const aspect = parts.length === 2 && parts[1] ? parts[0] / parts[1] : undefined;
-      const src = URL.createObjectURL(file);
-      setCropField({ fieldId, src, aspect });
-      return;
+    // Check if image_upload with aspect ratio or output size -> show crop
+    if (field.field_type === 'image_upload') {
+      const hasAspect = !!field.settings.aspect_ratio;
+      const hasOutput = field.settings.output_width && field.settings.output_height;
+      if (hasAspect || hasOutput) {
+        let aspect: number | undefined;
+        if (hasAspect) {
+          const parts = field.settings.aspect_ratio.split(':').map(Number);
+          aspect = parts.length === 2 && parts[1] ? parts[0] / parts[1] : undefined;
+        } else if (hasOutput) {
+          aspect = field.settings.output_width / field.settings.output_height;
+        }
+        const outputSize = hasOutput ? { width: field.settings.output_width, height: field.settings.output_height } : undefined;
+        const src = URL.createObjectURL(file);
+        setCropField({ fieldId, src, aspect, outputSize });
+        return;
+      }
     }
 
     setFileValues(prev => ({ ...prev, [fieldId]: file }));
