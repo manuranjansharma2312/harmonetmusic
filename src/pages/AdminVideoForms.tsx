@@ -107,13 +107,14 @@ export default function AdminVideoForms() {
         </Tabs>
       </div>
 
-      <ConfirmDialog
-        open={!!deleteId}
-        onOpenChange={() => setDeleteId(null)}
-        onConfirm={handleDelete}
-        title="Delete Form"
-        description="This will delete the form and all its fields. Existing submissions will remain. Are you sure?"
-      />
+      {deleteId && (
+        <ConfirmDialog
+          title="Delete Form"
+          message="This will delete the form and all its fields. Existing submissions will remain. Are you sure?"
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteId(null)}
+        />
+      )}
     </DashboardLayout>
   );
 }

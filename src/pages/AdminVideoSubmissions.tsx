@@ -178,9 +178,7 @@ export default function AdminVideoSubmissions() {
                 )}
               </CardContent>
             </Card>
-            {pageSize !== -1 && (
-              <TablePagination page={page} totalPages={totalPages} pageSize={pageSize} setPage={setPage} setPageSize={(v) => { setPageSize(v); setPage(1); }} totalItems={filtered.length} />
-            )}
+            <TablePagination totalItems={filtered.length} currentPage={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={v => { setPageSize(v); setPage(0); }} />
           </TabsContent>
         </Tabs>
       </div>
