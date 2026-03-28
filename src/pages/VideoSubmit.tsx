@@ -41,7 +41,7 @@ export default function VideoSubmit() {
   const [multiSelectValues, setMultiSelectValues] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [cropField, setCropField] = useState<{ fieldId: string; src: string; aspect?: number } | null>(null);
+  const [cropField, setCropField] = useState<{ fieldId: string; src: string; aspect?: number; outputSize?: { width: number; height: number } } | null>(null);
 
   useEffect(() => { loadForm(); }, [submissionType]);
 
