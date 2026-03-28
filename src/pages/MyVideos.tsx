@@ -108,7 +108,7 @@ export default function MyVideos() {
         </div>
 
         <Card>
-          <CardContent className="p-0">
+          <CardContent className="p-0 overflow-x-hidden">
             {loading ? (
               <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
             ) : paginated.length === 0 ? (
