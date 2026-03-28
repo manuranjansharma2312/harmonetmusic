@@ -1677,8 +1677,11 @@ export type Database = {
           enable_page_transitions: boolean
           enable_prefetch: boolean
           enable_realtime: boolean
+          enable_reports: boolean
           enable_text_selection: boolean
           enable_toast_notifications: boolean
+          enable_vevo: boolean
+          enable_video_distribution: boolean
           id: string
           image_quality: number
           maintenance_message: string
@@ -1706,8 +1709,11 @@ export type Database = {
           enable_page_transitions?: boolean
           enable_prefetch?: boolean
           enable_realtime?: boolean
+          enable_reports?: boolean
           enable_text_selection?: boolean
           enable_toast_notifications?: boolean
+          enable_vevo?: boolean
+          enable_video_distribution?: boolean
           id?: string
           image_quality?: number
           maintenance_message?: string
@@ -1735,8 +1741,11 @@ export type Database = {
           enable_page_transitions?: boolean
           enable_prefetch?: boolean
           enable_realtime?: boolean
+          enable_reports?: boolean
           enable_text_selection?: boolean
           enable_toast_notifications?: boolean
+          enable_vevo?: boolean
+          enable_video_distribution?: boolean
           id?: string
           image_quality?: number
           maintenance_message?: string
