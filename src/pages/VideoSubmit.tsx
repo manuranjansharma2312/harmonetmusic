@@ -56,14 +56,34 @@ export default function VideoSubmit() {
   // Fetch user's approved Vevo channels when submissionType is upload_video
   useEffect(() => {
     if (submissionType === 'upload_video' && user) {
-      supabase
-        .from('video_submissions')
-        .select('id, created_at, video_forms(name)')
-        .eq('user_id', user.id)
-        .eq('submission_type', 'vevo_channel')
-        .eq('status', 'approved')
-        .order('created_at', { ascending: false })
-        .then(({ data }) => setVevoChannels(data || []));
+      (async () => {
+        const { data } = await supabase
+          .from('video_submissions')
+          .select('id, created_at, video_forms(name)')
+          .eq('user_id', user.id)
+          .eq('submission_type', 'vevo_channel')
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false });
+        if (data && data.length > 0) {
+          // Try to get a display name from submission values (first text field)
+          const ids = data.map((d: any) => d.id);
+          const { data: vals } = await supabase
+            .from('video_submission_values')
+            .select('submission_id, text_value')
+            .in('submission_id', ids)
+            .not('text_value', 'is', null)
+            .order('submission_id');
+          const nameMap: Record<string, string> = {};
+          (vals || []).forEach((v: any) => {
+            if (!nameMap[v.submission_id] && v.text_value?.trim()) {
+              nameMap[v.submission_id] = v.text_value;
+            }
+          });
+          setVevoChannels(data.map((d: any) => ({ ...d, displayName: nameMap[d.id] || (d as any).video_forms?.name || `Channel #${d.id.slice(0, 8)}` })));
+        } else {
+          setVevoChannels([]);
+        }
+      })();
     }
   }, [submissionType, user]);
 
