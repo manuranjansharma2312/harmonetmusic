@@ -624,7 +624,8 @@ export default function AdminVevoReports() {
                     <TableHead className="w-12">Enabled</TableHead>
                     <TableHead>Column</TableHead>
                     <TableHead>CSV Header Name</TableHead>
-                    <TableHead className="w-20">Required</TableHead>
+                    <TableHead className="w-20">Type</TableHead>
+                    <TableHead className="w-16"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -640,7 +641,7 @@ export default function AdminVevoReports() {
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           <GripVertical className="h-4 w-4 text-muted-foreground/40" />
-                          {ALL_COLUMNS.find(a => a.key === col.column_key)?.label || col.column_key}
+                          {col.is_custom ? col.csv_header : (ALL_COLUMNS.find(a => a.key === col.column_key)?.label || col.column_key)}
                           {col.column_key === 'reporting_month' && ' (Reporting Month)'}
                         </div>
                       </TableCell>
@@ -652,8 +653,17 @@ export default function AdminVevoReports() {
                         />
                       </TableCell>
                       <TableCell>
-                        {col.is_required && (
+                        {col.is_required ? (
                           <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">Required</span>
+                        ) : col.is_custom ? (
+                          <span className="text-xs font-medium text-accent-foreground bg-accent px-2 py-0.5 rounded-full">Custom</span>
+                        ) : null}
+                      </TableCell>
+                      <TableCell>
+                        {col.is_custom && (
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeletingColumnId(col.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         )}
                       </TableCell>
                     </TableRow>
@@ -661,6 +671,29 @@ export default function AdminVevoReports() {
                 </TableBody>
               </Table>
             </div>
+
+            {/* Add Custom Column */}
+            <div className="flex items-center gap-3 pt-2">
+              <Input
+                placeholder="New column name..."
+                value={newColumnName}
+                onChange={(e) => setNewColumnName(e.target.value)}
+                className="h-9 max-w-[250px]"
+                onKeyDown={(e) => e.key === 'Enter' && handleAddCustomColumn()}
+              />
+              <Button size="sm" variant="outline" onClick={handleAddCustomColumn}>
+                <Plus className="h-4 w-4 mr-1" /> Add Column
+              </Button>
+            </div>
+
+            {deletingColumnId && (
+              <ConfirmDialog
+                title="Delete Custom Column?"
+                message="This column will be removed from the format. Existing data in this column will remain stored but won't be displayed."
+                onConfirm={handleDeleteCustomColumn}
+                onCancel={() => setDeletingColumnId(null)}
+              />
+            )}
           </GlassCard>
         )}
 
