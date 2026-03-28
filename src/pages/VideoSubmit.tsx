@@ -206,6 +206,30 @@ export default function VideoSubmit() {
     );
   }
 
+  if (submitted) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card className="max-w-md w-full text-center">
+            <CardContent className="py-12 space-y-4">
+              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <CheckCircle className="h-8 w-8 text-primary" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">Submitted Successfully!</h2>
+              <p className="text-sm text-muted-foreground">
+                Your {submissionType === 'vevo_channel' ? 'Vevo Channel request' : 'video'} has been submitted and is now under review.
+              </p>
+              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Redirecting...
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="p-4 md:p-6 space-y-6 max-w-3xl mx-auto">
