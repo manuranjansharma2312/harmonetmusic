@@ -347,7 +347,7 @@ export default function VevoReports() {
                         <TableRow key={entry.id}>
                           {COLUMNS.map((col) => (
                             <TableCell key={col.key} className="whitespace-nowrap">
-                              {col.key === 'net_generated_revenue' ? applyRevenueCut(entry).toFixed(4) : String(entry[col.key as keyof ReportEntry] ?? '-')}
+                              {col.key === 'net_generated_revenue' ? applyRevenueCut(entry).toFixed(4) : col.key.startsWith('custom_') ? String(((entry as any).extra_data as Record<string, string>)?.[col.key] ?? '-') : String(entry[col.key as keyof ReportEntry] ?? '-')}
                             </TableCell>
                           ))}
                         </TableRow>
