@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { countries } from '@/data/countries';
 import { DashboardLayout } from '@/components/DashboardLayout';
+import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -44,6 +45,8 @@ export default function VideoSubmit() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitProgress, setSubmitProgress] = useState(0);
+  const [submitStep, setSubmitStep] = useState('');
   const [cropField, setCropField] = useState<{ fieldId: string; src: string; aspect?: number; outputSize?: { width: number; height: number } } | null>(null);
 
   useEffect(() => { loadForm(); }, [submissionType]);
@@ -144,24 +147,37 @@ export default function VideoSubmit() {
     }
 
     setSubmitting(true);
+    setSubmitProgress(0);
+    setSubmitStep('Preparing submission...');
     try {
-      // Upload files first
+      const fileFields = Object.entries(fileValues).filter(([, f]) => f);
+      const totalSteps = fileFields.length + 3; // files + create submission + insert values + done
+      let completed = 0;
+      const advance = (step: string) => { completed++; setSubmitProgress(Math.round((completed / totalSteps) * 100)); setSubmitStep(step); };
+
+      // Upload files
       const uploadedUrls: Record<string, string> = {};
-      for (const [fieldId, file] of Object.entries(fileValues)) {
+      for (const [fieldId, file] of fileFields) {
         if (file) {
+          const fieldLabel = fields.find(f => f.id === fieldId)?.label || 'file';
+          setSubmitStep(`Uploading ${fieldLabel}...`);
           uploadedUrls[fieldId] = await uploadFile(file, fieldId);
+          advance(`Uploaded ${fieldLabel}`);
         }
       }
 
       // Create submission
+      setSubmitStep('Creating submission...');
       const { data: sub, error: subError } = await supabase.from('video_submissions').insert({
         form_id: form.id,
         user_id: user.id,
         submission_type: submissionType,
       }).select('id').single();
       if (subError) throw subError;
+      advance('Submission created');
 
       // Insert values
+      setSubmitStep('Saving form data...');
       const valueInserts = fields.map(field => {
         const isFile = ['file_upload', 'image_upload', 'video_upload', 'document_upload', 'drag_drop_upload'].includes(field.field_type);
         const isMultiSelect = field.field_type === 'multiselect';
@@ -175,7 +191,10 @@ export default function VideoSubmit() {
 
       const { error: valError } = await supabase.from('video_submission_values').insert(valueInserts);
       if (valError) throw valError;
+      advance('Data saved');
 
+      setSubmitProgress(100);
+      setSubmitStep('Done!');
       setSubmitted(true);
       toast.success('Submission sent successfully!');
       setTimeout(() => {
@@ -183,8 +202,9 @@ export default function VideoSubmit() {
       }, 3000);
     } catch (err: any) {
       toast.error(err.message || 'Failed to submit');
-    } finally {
       setSubmitting(false);
+      setSubmitProgress(0);
+      setSubmitStep('');
     }
   };
 
@@ -206,25 +226,38 @@ export default function VideoSubmit() {
     );
   }
 
-  if (submitted) {
+  if (submitting || submitted) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Card className="max-w-md w-full text-center">
-            <CardContent className="py-12 space-y-4">
-              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <CheckCircle className="h-8 w-8 text-primary" />
+        <div className="mx-auto w-full max-w-md flex flex-col items-center justify-center min-h-[50vh]">
+          <GlassCard glow className="w-full text-center animate-fade-in">
+            <div className="space-y-6 py-4">
+              {submitted ? (
+                <CheckCircle className="h-12 w-12 text-primary mx-auto" />
+              ) : (
+                <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+              )}
+              <div>
+                <h2 className="text-xl font-display font-bold text-foreground mb-1">
+                  {submitted ? 'Submitted Successfully!' : 'Submitting...'}
+                </h2>
+                <p className="text-sm text-muted-foreground">{submitStep}</p>
               </div>
-              <h2 className="text-xl font-bold text-foreground">Submitted Successfully!</h2>
-              <p className="text-sm text-muted-foreground">
-                Your {submissionType === 'vevo_channel' ? 'Vevo Channel request' : 'video'} has been submitted and is now under review.
-              </p>
-              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Redirecting...
+              <div className="w-full bg-muted/50 rounded-full h-3 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${submitProgress}%` }}
+                />
               </div>
-            </CardContent>
-          </Card>
+              <p className="text-lg font-bold text-primary">{submitProgress}%</p>
+              {submitted && (
+                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Redirecting...
+                </div>
+              )}
+            </div>
+          </GlassCard>
         </div>
       </DashboardLayout>
     );
