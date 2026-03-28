@@ -200,6 +200,7 @@ export default function Analytics() {
   const { impersonatedUserId, isImpersonating } = useImpersonate();
   const [ottEntries, setOttEntries] = useState<ReportEntry[]>([]);
   const [ytEntries, setYtEntries] = useState<ReportEntry[]>([]);
+  const [vevoEntries, setVevoEntries] = useState<ReportEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<TimePeriod>('all');
   const [hiddenCut, setHiddenCut] = useState(0);
