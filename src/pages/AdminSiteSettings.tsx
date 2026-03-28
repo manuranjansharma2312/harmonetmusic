@@ -44,7 +44,7 @@ export default function AdminSiteSettings() {
         .eq('id', form.id);
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ['site-settings'] });
-      toast.success('Site settings saved! Changes take effect on next page load.');
+      toast.success('System settings saved! Changes take effect on next page load.');
     } catch (err: any) {
       toast.error(err.message || 'Failed to save settings');
     } finally {

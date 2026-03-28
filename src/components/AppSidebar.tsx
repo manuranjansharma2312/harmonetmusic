@@ -69,7 +69,7 @@ const adminLinksTop = [
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
   { to: '/admin/email-settings', label: 'Email Settings', icon: Mail },
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
-  { to: '/admin/site-settings', label: 'Site Settings', icon: Settings },
+  { to: '/admin/site-settings', label: 'System Settings', icon: Settings },
 ];
 
 export function AppSidebar() {
