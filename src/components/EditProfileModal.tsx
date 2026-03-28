@@ -140,7 +140,7 @@ export function EditProfileModal({
               <label className="block text-xs text-muted-foreground mb-1">Code</label>
               <select className={inputClass} value={form.whatsapp_country_code} onChange={(e) => update('whatsapp_country_code', e.target.value)}>
                 {countries.map((c) => (
-                  <option key={c.code} value={c.dialCode}>{c.flag} {c.dialCode}</option>
+                  <option key={c.code} value={c.dialCode}>{c.flag} {c.name} ({c.dialCode})</option>
                 ))}
               </select>
             </div>
