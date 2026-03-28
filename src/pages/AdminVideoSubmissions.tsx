@@ -39,6 +39,7 @@ export default function AdminVideoSubmissions() {
   const [replacePreview, setReplacePreview] = useState<{ fieldId: string; file: File; previewUrl: string; valueId: string } | null>(null);
   const [uploading, setUploading] = useState(false);
 
+  const fetchSubmissions = async () => {
     setLoading(true);
     const { data } = await supabase
       .from('video_submissions')
