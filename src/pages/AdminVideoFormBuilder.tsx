@@ -273,13 +273,31 @@ export default function AdminVideoFormBuilder() {
                 )}
 
                 {field.field_type === 'image_upload' && (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                       <Label className="text-xs">Aspect Ratio (e.g. 1:1, 16:9)</Label>
                       <Input
                         value={field.settings.aspect_ratio || ''}
                         onChange={e => updateField(index, { settings: { ...field.settings, aspect_ratio: e.target.value } })}
                         placeholder="1:1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Output Width (px)</Label>
+                      <Input
+                        type="number" min={1}
+                        value={field.settings.output_width || ''}
+                        onChange={e => updateField(index, { settings: { ...field.settings, output_width: parseInt(e.target.value) || '' } })}
+                        placeholder="e.g. 1080"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Output Height (px)</Label>
+                      <Input
+                        type="number" min={1}
+                        value={field.settings.output_height || ''}
+                        onChange={e => updateField(index, { settings: { ...field.settings, output_height: parseInt(e.target.value) || '' } })}
+                        placeholder="e.g. 1080"
                       />
                     </div>
                     <div>
