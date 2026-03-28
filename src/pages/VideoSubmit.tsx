@@ -53,9 +53,10 @@ export default function VideoSubmit() {
 
   useEffect(() => { loadForm(); }, [submissionType]);
 
-  // Fetch user's approved Vevo channels when submissionType is upload_video
+  // Fetch user's approved Vevo channels when form has a vevo_channel field
+  const hasVevoField = fields.some(f => f.field_type === 'vevo_channel');
   useEffect(() => {
-    if (submissionType === 'upload_video' && user) {
+    if (hasVevoField && user) {
       (async () => {
         const { data } = await supabase
           .from('video_submissions')
@@ -65,7 +66,6 @@ export default function VideoSubmit() {
           .eq('status', 'approved')
           .order('created_at', { ascending: false });
         if (data && data.length > 0) {
-          // Try to get a display name from submission values (first text field)
           const ids = data.map((d: any) => d.id);
           const { data: vals } = await supabase
             .from('video_submission_values')
@@ -85,7 +85,7 @@ export default function VideoSubmit() {
         }
       })();
     }
-  }, [submissionType, user]);
+  }, [hasVevoField, user]);
 
   const loadForm = async () => {
     setLoading(true);
