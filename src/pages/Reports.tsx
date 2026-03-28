@@ -14,6 +14,16 @@ import { Input } from '@/components/ui/input';
 import { ArrowLeft, Eye, BarChart3, Filter, X, Download, Search } from 'lucide-react';
 import { format } from 'date-fns';
 
+interface FormatColumn {
+  id: string;
+  column_key: string;
+  csv_header: string;
+  is_enabled: boolean;
+  is_required: boolean;
+  sort_order: number;
+  is_custom: boolean;
+}
+
 interface ReportEntry {
   id: string;
   reporting_month: string;
@@ -33,24 +43,15 @@ interface ReportEntry {
   net_generated_revenue: number;
   imported_at: string;
   cut_percent_snapshot?: number | null;
+  extra_data?: Record<string, string>;
 }
 
-const COLUMNS = [
-  { key: 'store', label: 'Store' },
-  { key: 'sales_type', label: 'Sales Type' },
-  { key: 'country', label: 'Country' },
-  { key: 'label', label: 'Label' },
-  { key: 'c_line', label: 'C Line' },
-  { key: 'p_line', label: 'P Line' },
-  { key: 'track', label: 'Track' },
-  { key: 'artist', label: 'Artist' },
-  { key: 'isrc', label: 'ISRC' },
-  { key: 'upc', label: 'UPC' },
-  { key: 'currency', label: 'Currency' },
-  { key: 'streams', label: 'Streams' },
-  { key: 'downloads', label: 'Downloads' },
-  { key: 'net_generated_revenue', label: 'Net Revenue' },
-];
+const ALL_COLUMN_LABELS: Record<string, string> = {
+  store: 'Store', sales_type: 'Sales Type', country: 'Country', label: 'Label',
+  c_line: 'C Line', p_line: 'P Line', track: 'Track', artist: 'Artist',
+  isrc: 'ISRC', upc: 'UPC', currency: 'Currency', streams: 'Streams',
+  downloads: 'Downloads', net_generated_revenue: 'Net Revenue',
+};
 
 const FILTERABLE = [
   { key: 'label', label: 'Label' },
@@ -85,9 +86,23 @@ export default function Reports() {
   const [hiddenCut, setHiddenCut] = useState(0);
   const [subLabelCut, setSubLabelCut] = useState(0);
   const [isSubLabelUser, setIsSubLabelUser] = useState(false);
+  const [formatColumns, setFormatColumns] = useState<FormatColumn[]>([]);
 
   const { impersonatedUserId, isImpersonating } = useImpersonate();
   const activeUserId = (isImpersonating && impersonatedUserId) ? impersonatedUserId : user?.id;
+
+  const COLUMNS = useMemo(() =>
+    formatColumns
+      .filter(c => c.is_enabled && c.column_key !== 'reporting_month')
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map(c => ({ key: c.column_key, label: ALL_COLUMN_LABELS[c.column_key] || c.csv_header })),
+    [formatColumns]
+  );
+
+  const fetchFormat = async () => {
+    const { data } = await supabase.from('ott_report_format').select('*').order('sort_order', { ascending: true });
+    if (data) setFormatColumns(data as FormatColumn[]);
+  };
 
   const fetchReports = async () => {
     if (!user) return;
@@ -168,6 +183,7 @@ export default function Reports() {
   useEffect(() => {
     if (!user) return;
     fetchReports();
+    fetchFormat();
 
     const channel = supabase
       .channel('ott-reports-realtime')
@@ -239,7 +255,11 @@ export default function Reports() {
     const headers = ['Reporting Month', ...COLUMNS.map((c) => c.label)];
     const rows = selectedEntries.map((e) => [
       e.reporting_month,
-      ...COLUMNS.map((c) => c.key === 'net_generated_revenue' ? String(applyRevenueCut(e)) : String(e[c.key as keyof ReportEntry] ?? '')),
+      ...COLUMNS.map((c) => c.key === 'net_generated_revenue'
+        ? String(applyRevenueCut(e))
+        : c.key.startsWith('custom_')
+          ? String((e.extra_data as Record<string, string>)?.[c.key] ?? '')
+          : String(e[c.key as keyof ReportEntry] ?? '')),
     ]);
     const csv = [headers, ...rows].map((r) => r.map((v) => `"${v}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -389,7 +409,9 @@ export default function Reports() {
                             <TableCell key={col.key} className="whitespace-nowrap">
                               {col.key === 'net_generated_revenue'
                                 ? applyRevenueCut(entry).toFixed(4)
-                                : String(entry[col.key as keyof ReportEntry] ?? '-')}
+                                : col.key.startsWith('custom_')
+                                  ? String((entry.extra_data as Record<string, string>)?.[col.key] ?? '-')
+                                  : String(entry[col.key as keyof ReportEntry] ?? '-')}
                             </TableCell>
                           ))}
                         </TableRow>
