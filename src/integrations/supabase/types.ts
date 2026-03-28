@@ -2187,6 +2187,36 @@ export type Database = {
         }
         Relationships: []
       }
+      vevo_report_format: {
+        Row: {
+          column_key: string
+          csv_header: string
+          id: string
+          is_enabled: boolean
+          is_required: boolean
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          column_key: string
+          csv_header: string
+          id?: string
+          is_enabled?: boolean
+          is_required?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          column_key?: string
+          csv_header?: string
+          id?: string
+          is_enabled?: boolean
+          is_required?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       video_form_fields: {
         Row: {
           created_at: string

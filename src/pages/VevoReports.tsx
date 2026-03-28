@@ -15,6 +15,38 @@ import { Input } from '@/components/ui/input';
 import { ArrowLeft, Eye, BarChart3, Filter, X, Download, Search } from 'lucide-react';
 import { format } from 'date-fns';
 
+interface FormatColumn {
+  id: string;
+  column_key: string;
+  csv_header: string;
+  is_enabled: boolean;
+  is_required: boolean;
+  sort_order: number;
+}
+
+const ALL_COLUMN_LABELS: Record<string, string> = {
+  store: 'Store', sales_type: 'Sales Type', country: 'Country', label: 'Label',
+  c_line: 'C Line', p_line: 'P Line', track: 'Track', artist: 'Artist',
+  isrc: 'ISRC', upc: 'UPC', currency: 'Currency', streams: 'Streams',
+  downloads: 'Downloads', net_generated_revenue: 'Net Revenue',
+};
+
+const FILTERABLE = [
+  { key: 'label', label: 'Label' },
+  { key: 'track', label: 'Track' },
+  { key: 'artist', label: 'Artist' },
+  { key: 'store', label: 'Store' },
+  { key: 'country', label: 'Country' },
+];
+
+function parseMonthKey(m: string): number {
+  const months: Record<string, number> = {
+    january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+    july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
+  };
+  const parts = m.toLowerCase().split(' ');
+  return (parseInt(parts[1]) || 0) * 12 + (months[parts[0]] ?? 0);
+}
 interface ReportEntry {
   id: string;
   reporting_month: string;
@@ -36,40 +68,6 @@ interface ReportEntry {
   cut_percent_snapshot?: number | null;
 }
 
-const COLUMNS = [
-  { key: 'store', label: 'Store' },
-  { key: 'sales_type', label: 'Sales Type' },
-  { key: 'country', label: 'Country' },
-  { key: 'label', label: 'Label' },
-  { key: 'c_line', label: 'C Line' },
-  { key: 'p_line', label: 'P Line' },
-  { key: 'track', label: 'Track' },
-  { key: 'artist', label: 'Artist' },
-  { key: 'isrc', label: 'ISRC' },
-  { key: 'upc', label: 'UPC' },
-  { key: 'currency', label: 'Currency' },
-  { key: 'streams', label: 'Streams' },
-  { key: 'downloads', label: 'Downloads' },
-  { key: 'net_generated_revenue', label: 'Net Revenue' },
-];
-
-const FILTERABLE = [
-  { key: 'label', label: 'Label' },
-  { key: 'track', label: 'Track' },
-  { key: 'artist', label: 'Artist' },
-  { key: 'store', label: 'Store' },
-  { key: 'country', label: 'Country' },
-];
-
-function parseMonthKey(m: string): number {
-  const months: Record<string, number> = {
-    january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
-    july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
-  };
-  const parts = m.toLowerCase().split(' ');
-  return (parseInt(parts[1]) || 0) * 12 + (months[parts[0]] ?? 0);
-}
-
 export default function VevoReports() {
   const { user, role } = useAuth();
   const [entries, setEntries] = useState<ReportEntry[]>([]);
@@ -84,9 +82,27 @@ export default function VevoReports() {
   const [hiddenCut, setHiddenCut] = useState(0);
   const [subLabelCut, setSubLabelCut] = useState(0);
   const [isSubLabelUser, setIsSubLabelUser] = useState(false);
+  const [formatColumns, setFormatColumns] = useState<FormatColumn[]>([]);
 
   const { impersonatedUserId, isImpersonating } = useImpersonate();
   const activeUserId = (isImpersonating && impersonatedUserId) ? impersonatedUserId : user?.id;
+
+  // Derive visible columns from format config
+  const COLUMNS = useMemo(() =>
+    formatColumns
+      .filter(c => c.is_enabled && c.column_key !== 'reporting_month')
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map(c => ({ key: c.column_key, label: ALL_COLUMN_LABELS[c.column_key] || c.csv_header })),
+    [formatColumns]
+  );
+
+  const fetchFormat = async () => {
+    const { data } = await supabase
+      .from('vevo_report_format')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    if (data) setFormatColumns(data as FormatColumn[]);
+  };
 
   const fetchReports = async () => {
     if (!user) return;
@@ -144,6 +160,7 @@ export default function VevoReports() {
   useEffect(() => {
     if (!user) return;
     fetchReports();
+    fetchFormat();
 
     const channel = supabase
       .channel('vevo-reports-realtime')
