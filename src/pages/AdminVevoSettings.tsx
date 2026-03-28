@@ -5,44 +5,42 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
-import { Loader2, Settings, Video, Tv } from 'lucide-react';
-import { useSiteSettings, type SiteSettings } from '@/hooks/useSiteSettings';
+import { Loader2, Settings, Tv } from 'lucide-react';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function AdminVevoSettings() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { settings, isLoading } = useSiteSettings();
-  const [form, setForm] = useState<Pick<SiteSettings, 'id' | 'enable_vevo' | 'enable_video_distribution'> | null>(null);
+  const [enabled, setEnabled] = useState(true);
+  const [settingsId, setSettingsId] = useState('');
   const [saving, setSaving] = useState(false);
   const initialized = useRef(false);
 
   useEffect(() => {
     if (settings && !initialized.current) {
-      setForm({
-        id: settings.id,
-        enable_vevo: settings.enable_vevo,
-        enable_video_distribution: settings.enable_video_distribution,
-      });
+      setEnabled(settings.enable_vevo);
+      setSettingsId(settings.id);
       initialized.current = true;
     }
   }, [settings]);
 
   const handleSave = async () => {
-    if (!form || !user) return;
+    if (!user || !settingsId) return;
     setSaving(true);
     try {
-      const { id, ...fields } = form;
       const { error } = await supabase
         .from('site_settings')
         .update({
-          ...fields,
+          enable_vevo: enabled,
+          enable_video_distribution: enabled,
           updated_by: user.id,
           updated_at: new Date().toISOString(),
         } as any)
-        .eq('id', form.id);
+        .eq('id', settingsId);
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ['site-settings'] });
-      toast.success('Vevo settings saved!');
+      toast.success(enabled ? 'Vevo services enabled!' : 'Vevo services disabled!');
     } catch (err: any) {
       toast.error(err.message || 'Failed to save');
     } finally {
@@ -50,7 +48,7 @@ export default function AdminVevoSettings() {
     }
   };
 
-  if (isLoading || !form) {
+  if (isLoading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center py-20">
@@ -85,50 +83,27 @@ export default function AdminVevoSettings() {
 
         <GlassCard>
           <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
-            <Video className="h-5 w-5 text-primary" /> Video Distribution
+            <Tv className="h-5 w-5 text-primary" /> Vevo Services
           </h2>
-          <ToggleRow
-            label="Enable Video Distribution"
-            description="When disabled, the entire Video Distribution section (Upload Video, Vevo Channels, My Videos, Guidelines) is hidden from sidebar for all users and admin."
-            checked={form.enable_video_distribution}
-            onChange={(v) => setForm((p) => p ? { ...p, enable_video_distribution: v } : p)}
-          />
-        </GlassCard>
-
-        <GlassCard>
-          <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
-            <Tv className="h-5 w-5 text-primary" /> Vevo Reports
-          </h2>
-          <ToggleRow
-            label="Enable Vevo Reports"
-            description="When disabled, the Vevo Reports tab is hidden from Reports & Analytics for both users and admin. Other reports (OTT, YouTube) remain unaffected."
-            checked={form.enable_vevo}
-            onChange={(v) => setForm((p) => p ? { ...p, enable_vevo: v } : p)}
-          />
+          <div className="flex items-start justify-between gap-4 py-2">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-foreground">Enable Vevo Services</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                When disabled, Video Distribution and Vevo Reports are hidden from the sidebar for all users and admin.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={enabled}
+              onClick={() => setEnabled(!enabled)}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ${enabled ? 'bg-primary' : 'bg-muted'}`}
+            >
+              <span className={`inline-block h-5 w-5 rounded-full bg-background shadow-sm transform transition-transform duration-200 mt-0.5 ${enabled ? 'translate-x-5 ml-0.5' : 'translate-x-0.5'}`} />
+            </button>
+          </div>
         </GlassCard>
       </div>
     </DashboardLayout>
-  );
-}
-
-function ToggleRow({ label, description, checked, onChange }: {
-  label: string; description: string; checked: boolean; onChange: (v: boolean) => void;
-}) {
-  return (
-    <div className="flex items-start justify-between gap-4 py-2">
-      <div className="min-w-0">
-        <p className="text-sm font-medium text-foreground">{label}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
-      </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ${checked ? 'bg-primary' : 'bg-muted'}`}
-      >
-        <span className={`inline-block h-5 w-5 rounded-full bg-background shadow-sm transform transition-transform duration-200 mt-0.5 ${checked ? 'translate-x-5 ml-0.5' : 'translate-x-0.5'}`} />
-      </button>
-    </div>
   );
 }
