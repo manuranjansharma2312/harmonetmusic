@@ -31,10 +31,10 @@ const contentToolLinks = [
   { to: '/tools/custom-support', label: 'Custom Support', icon: MessageSquare },
 ];
 
-const reportLinks = [
+const reportLinksBase = [
   { to: '/reports/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/reports/youtube', label: 'YouTube Reports', icon: Youtube },
-  { to: '/reports/vevo', label: 'Vevo Reports', icon: Tv },
+  { to: '/reports/vevo', label: 'Vevo Reports', icon: Tv, vevoOnly: true },
   { to: '/reports/ott', label: 'OTT Reports', icon: MonitorPlay },
 ];
 
