@@ -7,7 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Save, Loader2, Globe, Image, Ruler, Upload } from 'lucide-react';
+import { Save, Loader2, Globe, Image, Ruler, Upload, RotateCcw } from 'lucide-react';
+
+const DEFAULT_SIZES = {
+  login_logo_height: 48,
+  sidebar_logo_height: 40,
+  sidebar_collapsed_logo_height: 28,
+  mobile_header_logo_height: 32,
+};
 
 export default function AdminBrandingSettings() {
   const [loading, setLoading] = useState(true);
@@ -20,10 +27,10 @@ export default function AdminBrandingSettings() {
     tagline: 'Harmony On Networks',
     favicon_url: '',
     logo_url: '',
-    login_logo_height: 64,
-    sidebar_logo_height: 56,
-    sidebar_collapsed_logo_height: 28,
-    mobile_header_logo_height: 36,
+    login_logo_height: DEFAULT_SIZES.login_logo_height,
+    sidebar_logo_height: DEFAULT_SIZES.sidebar_logo_height,
+    sidebar_collapsed_logo_height: DEFAULT_SIZES.sidebar_collapsed_logo_height,
+    mobile_header_logo_height: DEFAULT_SIZES.mobile_header_logo_height,
   });
 
   useEffect(() => {
@@ -248,9 +255,19 @@ export default function AdminBrandingSettings() {
 
         {/* Logo Size Configuration */}
         <GlassCard className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Ruler className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold">Logo Size (Pixels)</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Ruler className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold">Logo Size (Pixels)</h2>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setForm(f => ({ ...f, ...DEFAULT_SIZES }))}
+            >
+              <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+              Reset to Defaults
+            </Button>
           </div>
           <p className="text-xs text-muted-foreground mb-4">
             Control the logo height in different areas of the application. Width adjusts automatically to maintain aspect ratio.

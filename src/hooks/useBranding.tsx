@@ -18,10 +18,10 @@ const DEFAULTS: BrandingSettings = {
   tagline: 'Harmony On Networks',
   favicon_url: null,
   logo_url: null,
-  login_logo_height: 64,
-  sidebar_logo_height: 56,
+  login_logo_height: 48,
+  sidebar_logo_height: 40,
   sidebar_collapsed_logo_height: 28,
-  mobile_header_logo_height: 36,
+  mobile_header_logo_height: 32,
 };
 
 export function useBranding() {
