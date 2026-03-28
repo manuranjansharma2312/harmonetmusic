@@ -6,9 +6,9 @@ import {
   BarChart3, MonitorPlay, Wallet, FileText, Receipt,
   Image as ImageIcon, Bell, BookOpen, FileSignature,
   Megaphone, Landmark, CreditCard, UsersRound, Sparkles, Link2, ArrowRightLeft, Mail,
-  Settings,
+  Settings, Globe,
 } from 'lucide-react';
-import logoWhite from '@/assets/logo-white.png';
+import { useBranding } from '@/hooks/useBranding';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
