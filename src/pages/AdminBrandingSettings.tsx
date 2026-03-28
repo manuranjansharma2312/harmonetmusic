@@ -179,7 +179,20 @@ export default function AdminBrandingSettings() {
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={e => e.target.files?.[0] && handleFileSelect('logo_url', e.target.files[0])}
+                    onChange={e => {
+                      if (!e.target.files?.[0]) return;
+                      const file = e.target.files[0];
+                      setUploading('logo_url');
+                      const ext = file.name.split('.').pop();
+                      const path = `branding/logo_url-${Date.now()}.${ext}`;
+                      supabase.storage.from('posters').upload(path, file, { upsert: true }).then(({ error }) => {
+                        if (error) { toast.error(error.message); setUploading(null); return; }
+                        const { data: urlData } = supabase.storage.from('posters').getPublicUrl(path);
+                        setForm(f => ({ ...f, logo_url: urlData.publicUrl }));
+                        toast.success('Logo uploaded');
+                        setUploading(null);
+                      });
+                    }}
                   />
                 </label>
               </div>
