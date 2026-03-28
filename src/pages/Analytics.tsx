@@ -27,7 +27,7 @@ interface ReportEntry {
   track: string | null; artist: string | null; isrc: string | null;
   upc: string | null; currency: string | null; streams: number;
   downloads: number; net_generated_revenue: number; imported_at: string;
-  source: 'ott' | 'youtube';
+  source: 'ott' | 'youtube' | 'vevo';
   cut_percent_snapshot?: number | null;
 }
 
@@ -200,6 +200,7 @@ export default function Analytics() {
   const { impersonatedUserId, isImpersonating } = useImpersonate();
   const [ottEntries, setOttEntries] = useState<ReportEntry[]>([]);
   const [ytEntries, setYtEntries] = useState<ReportEntry[]>([]);
+  const [vevoEntries, setVevoEntries] = useState<ReportEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<TimePeriod>('all');
   const [hiddenCut, setHiddenCut] = useState(0);
@@ -213,7 +214,7 @@ export default function Analytics() {
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
-    const mapEntries = (arr: any[], source: 'ott' | 'youtube') =>
+    const mapEntries = (arr: any[], source: 'ott' | 'youtube' | 'vevo') =>
       (arr || []).map((e: any) => ({ ...e, source, streams: e.streams || 0, downloads: e.downloads || 0, net_generated_revenue: e.net_generated_revenue || 0 }));
 
     const [{ data: profileData }, { data: subLabelData }] = await Promise.all([
@@ -239,20 +240,24 @@ export default function Analytics() {
         supabase.from('songs').select('isrc').eq('user_id', impersonatedUserId),
       ]);
       const ownedIsrcs = [...new Set([...(trackRows ?? []), ...(songRows ?? [])].map((row) => normalizeIsrc(row.isrc)).filter((v): v is string => Boolean(v)))];
-      if (ownedIsrcs.length === 0) { setOttEntries([]); setYtEntries([]); setLoading(false); return; }
-      const [{ data: ott }, { data: yt }] = await Promise.all([
+      if (ownedIsrcs.length === 0) { setOttEntries([]); setYtEntries([]); setVevoEntries([]); setLoading(false); return; }
+      const [{ data: ott }, { data: yt }, { data: vevo }] = await Promise.all([
         supabase.from('report_entries').select('*').in('isrc', ownedIsrcs),
         supabase.from('youtube_report_entries').select('*').in('isrc', ownedIsrcs),
+        supabase.from('vevo_report_entries').select('*').in('isrc', ownedIsrcs),
       ]);
       setOttEntries(mapEntries(ott || [], 'ott'));
       setYtEntries(mapEntries(yt || [], 'youtube'));
+      setVevoEntries(mapEntries(vevo || [], 'vevo'));
     } else {
-      const [{ data: ott }, { data: yt }] = await Promise.all([
+      const [{ data: ott }, { data: yt }, { data: vevo }] = await Promise.all([
         supabase.from('report_entries').select('*'),
         supabase.from('youtube_report_entries').select('*'),
+        supabase.from('vevo_report_entries').select('*'),
       ]);
       setOttEntries(mapEntries(ott || [], 'ott'));
       setYtEntries(mapEntries(yt || [], 'youtube'));
+      setVevoEntries(mapEntries(vevo || [], 'vevo'));
     }
     setLoading(false);
   };
@@ -265,12 +270,13 @@ export default function Analytics() {
       .channel('analytics-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'report_entries' }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'youtube_report_entries' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'vevo_report_entries' }, () => fetchData())
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, [user, role, isImpersonating, impersonatedUserId]);
 
-  const allEntries = useMemo(() => [...ottEntries, ...ytEntries], [ottEntries, ytEntries]);
+  const allEntries = useMemo(() => [...ottEntries, ...ytEntries, ...vevoEntries], [ottEntries, ytEntries, vevoEntries]);
   const filtered = useMemo(() => filterByPeriod(allEntries, period), [allEntries, period]);
   const adjustedFiltered = useMemo(
     () => filtered.map((entry) => ({
