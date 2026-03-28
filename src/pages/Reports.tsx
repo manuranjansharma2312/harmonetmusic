@@ -183,6 +183,7 @@ export default function Reports() {
   useEffect(() => {
     if (!user) return;
     fetchReports();
+    fetchFormat();
 
     const channel = supabase
       .channel('ott-reports-realtime')
