@@ -49,6 +49,7 @@ export default function Auth() {
   const [idBack, setIdBack] = useState<File | null>(null);
 
   const { signIn, signUp } = useAuth();
+  const { logoSrc, branding } = useBranding();
 
   if (loading) {
     return (
