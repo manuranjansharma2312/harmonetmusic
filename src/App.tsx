@@ -83,6 +83,8 @@ const MyVideos = lazy(() => import("./pages/MyVideos"));
 const VevoChannels = lazy(() => import("./pages/VevoChannels"));
 const AdminVideoGuidelines = lazy(() => import("./pages/AdminVideoGuidelines"));
 const VideoGuidelines = lazy(() => import("./pages/VideoGuidelines"));
+const AdminVevoReports = lazy(() => import("./pages/AdminVevoReports"));
+const VevoReports = lazy(() => import("./pages/VevoReports"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
