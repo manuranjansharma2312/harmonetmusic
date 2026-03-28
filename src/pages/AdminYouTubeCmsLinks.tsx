@@ -51,7 +51,8 @@ interface Profile {
 interface SubLabel {
   sub_user_id: string;
   parent_user_id: string;
-  label_name: string;
+  sub_label_name: string | null;
+  parent_label_name: string | null;
 }
 
 const STATUSES = ['pending_review', 'reviewing', 'linked', 'rejected'] as const;
