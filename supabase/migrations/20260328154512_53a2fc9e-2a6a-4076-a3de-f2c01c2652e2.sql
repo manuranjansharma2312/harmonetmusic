@@ -1,0 +1,1 @@
+ALTER TABLE public.video_submissions ADD COLUMN vevo_channel_id uuid REFERENCES public.video_submissions(id) ON DELETE SET NULL DEFAULT NULL;
