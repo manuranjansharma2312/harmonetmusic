@@ -199,6 +199,8 @@ function App() {
                       <Route path="/admin/video-forms" element={<ProtectedRoute requiredRole="admin"><AdminVideoForms /></ProtectedRoute>} />
                       <Route path="/admin/video-forms/builder" element={<ProtectedRoute requiredRole="admin"><AdminVideoFormBuilder /></ProtectedRoute>} />
                       <Route path="/admin/video-submissions" element={<ProtectedRoute requiredRole="admin"><AdminVideoSubmissions /></ProtectedRoute>} />
+                      <Route path="/admin/video-guidelines" element={<ProtectedRoute requiredRole="admin"><AdminVideoGuidelines /></ProtectedRoute>} />
+                      <Route path="/video-guidelines" element={<ProtectedRoute><VideoGuidelines /></ProtectedRoute>} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>

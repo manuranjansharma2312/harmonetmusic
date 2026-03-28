@@ -5,7 +5,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { Button } from '@/components/ui/button';
 import { FileText, Save } from 'lucide-react';
 import { toast } from 'sonner';
-import RichTextEditor from '@/components/RichTextEditor';
+import { RichTextEditor } from '@/components/RichTextEditor';
 
 export default function AdminVideoGuidelines() {
   const [content, setContent] = useState('');
