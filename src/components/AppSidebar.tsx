@@ -212,13 +212,13 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border/50">
-      <SidebarHeader className="p-4 border-b border-border/50">
-        <div className="flex items-center justify-center">
+      <SidebarHeader className="p-2 border-b border-border/50">
+        <div className="flex items-center justify-center overflow-hidden">
           <img
             src={logoSrc}
             alt={branding.site_name}
             style={{ height: collapsed ? `${branding.sidebar_collapsed_logo_height}px` : `${branding.sidebar_logo_height}px` }}
-            className="w-auto"
+            className="w-auto max-w-full object-contain transition-all duration-200"
           />
         </div>
       </SidebarHeader>
