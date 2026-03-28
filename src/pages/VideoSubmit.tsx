@@ -20,6 +20,7 @@ interface FieldDef {
   id: string;
   field_type: string;
   label: string;
+  description: string;
   placeholder: string;
   is_required: boolean;
   sort_order: number;
@@ -216,6 +217,9 @@ export default function VideoSubmit() {
                   {field.label}
                   {field.is_required && <span className="text-destructive ml-1">*</span>}
                 </Label>
+                {field.description && (
+                  <p className="text-xs text-muted-foreground">{field.description}</p>
+                )}
 
                 {field.field_type === 'text' && (
                   <Input

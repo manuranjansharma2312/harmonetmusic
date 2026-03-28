@@ -2118,6 +2118,7 @@ export type Database = {
       video_form_fields: {
         Row: {
           created_at: string
+          description: string
           field_type: string
           form_id: string
           id: string
@@ -2130,6 +2131,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          description?: string
           field_type?: string
           form_id: string
           id?: string
@@ -2142,6 +2144,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          description?: string
           field_type?: string
           form_id?: string
           id?: string

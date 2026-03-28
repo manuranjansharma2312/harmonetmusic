@@ -37,6 +37,7 @@ interface FormField {
   id?: string;
   field_type: string;
   label: string;
+  description: string;
   placeholder: string;
   is_required: boolean;
   sort_order: number;
@@ -81,6 +82,7 @@ export default function AdminVideoFormBuilder() {
           id: f.id,
           field_type: f.field_type,
           label: f.label,
+          description: f.description || '',
           placeholder: f.placeholder || '',
           is_required: f.is_required,
           sort_order: f.sort_order,
@@ -96,6 +98,7 @@ export default function AdminVideoFormBuilder() {
     setFields(prev => [...prev, {
       field_type: 'text',
       label: '',
+      description: '',
       placeholder: '',
       is_required: false,
       sort_order: prev.length,
@@ -150,6 +153,7 @@ export default function AdminVideoFormBuilder() {
         form_id: formId!,
         field_type: f.field_type,
         label: f.label,
+        description: f.description,
         placeholder: f.placeholder,
         is_required: f.is_required,
         sort_order: i,
@@ -253,6 +257,10 @@ export default function AdminVideoFormBuilder() {
                     <Label className="text-xs">Placeholder</Label>
                     <Input value={field.placeholder} onChange={e => updateField(index, { placeholder: e.target.value })} placeholder="Placeholder text" />
                   </div>
+                </div>
+                <div>
+                  <Label className="text-xs">Description <span className="text-muted-foreground font-normal">(shown below the field)</span></Label>
+                  <Input value={field.description} onChange={e => updateField(index, { description: e.target.value })} placeholder="Help text or instructions for this field" />
                 </div>
 
                 <div className="flex items-center gap-2">

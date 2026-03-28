@@ -1,0 +1,1 @@
+ALTER TABLE public.video_form_fields ADD COLUMN description text DEFAULT '' NOT NULL;
