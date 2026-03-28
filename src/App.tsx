@@ -77,6 +77,7 @@ const DownloadSignedPdf = lazy(() => import("./pages/DownloadSignedPdf"));
 const AdminVideoForms = lazy(() => import("./pages/AdminVideoForms"));
 const AdminVideoFormBuilder = lazy(() => import("./pages/AdminVideoFormBuilder"));
 const AdminVideoSubmissions = lazy(() => import("./pages/AdminVideoSubmissions"));
+const AdminVevoChannels = lazy(() => import("./pages/AdminVevoChannels"));
 const VideoSubmit = lazy(() => import("./pages/VideoSubmit"));
 const MyVideos = lazy(() => import("./pages/MyVideos"));
 const VevoChannels = lazy(() => import("./pages/VevoChannels"));
