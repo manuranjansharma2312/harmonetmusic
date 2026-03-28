@@ -284,25 +284,110 @@ export default function AdminVideoSubmissions() {
                 {viewFields.map(field => {
                   const val = viewValues.find(v => v.field_id === field.id);
                   const isFile = ['file_upload', 'image_upload', 'video_upload', 'document_upload', 'drag_drop_upload'].includes(field.field_type);
+                  const isEditing = editingField === field.id;
                   return (
                     <div key={field.id} className="border-b pb-2">
                       <Label className="text-xs text-muted-foreground">{field.label}</Label>
                       {isFile && val?.file_url ? (
-                        field.field_type === 'image_upload' ? (
-                          <img src={val.file_url} alt={field.label} className="h-32 rounded mt-1 object-cover" />
-                        ) : (
-                          <a href={val.file_url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline block mt-1">View File</a>
-                        )
+                        <div className="mt-1 space-y-2">
+                          {field.field_type === 'image_upload' ? (
+                            <img src={val.file_url} alt={field.label} className="h-32 rounded object-cover" />
+                          ) : field.field_type === 'video_upload' ? (
+                            <video src={val.file_url} controls className="h-32 rounded" />
+                          ) : (
+                            <a href={val.file_url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline block">View File</a>
+                          )}
+                          <div>
+                            <label className="cursor-pointer">
+                              <input type="file" className="hidden" onChange={e => {
+                                const f = e.target.files?.[0];
+                                if (f && val) handleFileSelect(field.id, val.id, f);
+                              }} />
+                              <span className="inline-flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
+                                <Upload className="h-3 w-3" /> Replace File
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                      ) : isEditing && val ? (
+                        <div className="flex items-center gap-2 mt-1">
+                          <Input value={editValue} onChange={e => setEditValue(e.target.value)} className="h-8 text-sm" />
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleSaveTextField(val.id)}>
+                            <Check className="h-3.5 w-3.5 text-green-600" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditingField(null)}>
+                            <X className="h-3.5 w-3.5 text-destructive" />
+                          </Button>
+                        </div>
                       ) : (
-                        <p className="text-sm">{val?.text_value || '—'}</p>
+                        <div className="flex items-center gap-2 mt-1 group">
+                          <p className="text-sm flex-1">{val?.text_value || '—'}</p>
+                          {val && (
+                            <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => { setEditingField(field.id); setEditValue(val.text_value || ''); }}>
+                              <Pencil className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
                       )}
                     </div>
                   );
                 })}
               </div>
+
+              {/* Inline status change */}
+              <div className="pt-2 border-t flex items-center gap-3">
+                <Label className="text-xs text-muted-foreground">Change Status:</Label>
+                <Select value={viewSubmission.status} onValueChange={v => {
+                  if (v === 'rejected') { setRejectDialog(viewSubmission.id); return; }
+                  handleStatusChange(viewSubmission.id, v);
+                  setViewSubmission({ ...viewSubmission, status: v });
+                }}>
+                  <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {(viewSubmission.submission_type === 'upload_video' ? VIDEO_STATUSES : CHANNEL_STATUSES).map(s => (
+                      <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             );
           })()}
+        </DialogContent>
+      </Dialog>
+
+      {/* File Replace Preview Dialog */}
+      <Dialog open={!!replacePreview} onOpenChange={() => { if (replacePreview?.previewUrl) URL.revokeObjectURL(replacePreview.previewUrl); setReplacePreview(null); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Confirm File Replacement</DialogTitle></DialogHeader>
+          {replacePreview && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">Are you sure you want to replace this file?</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Current</Label>
+                  {(() => {
+                    const val = viewValues.find(v => v.id === replacePreview.valueId);
+                    const field = viewFields.find(f => f.id === replacePreview.fieldId);
+                    if (field?.field_type === 'image_upload' && val?.file_url) return <img src={val.file_url} className="h-28 rounded object-cover w-full" />;
+                    return <div className="h-28 rounded bg-muted flex items-center justify-center text-xs text-muted-foreground">Current file</div>;
+                  })()}
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1 block">New</Label>
+                  {replacePreview.file.type.startsWith('image/') ? (
+                    <img src={replacePreview.previewUrl} className="h-28 rounded object-cover w-full" />
+                  ) : (
+                    <div className="h-28 rounded bg-muted flex items-center justify-center text-xs text-muted-foreground">{replacePreview.file.name}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { if (replacePreview?.previewUrl) URL.revokeObjectURL(replacePreview.previewUrl); setReplacePreview(null); }}>Cancel</Button>
+            <Button onClick={handleConfirmReplace} disabled={uploading}>{uploading ? 'Uploading...' : 'Confirm Replace'}</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
