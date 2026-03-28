@@ -190,6 +190,13 @@ function App() {
                       <Route path="/sign/:token" element={<SignDocument />} />
                       <Route path="/download/:documentId" element={<DownloadSignedPdf />} />
                       <Route path="/r/:slug" element={<SmartLink />} />
+                      <Route path="/video/upload" element={<ProtectedRoute><VideoSubmit /></ProtectedRoute>} />
+                      <Route path="/video/vevo-channel" element={<ProtectedRoute><VideoSubmit /></ProtectedRoute>} />
+                      <Route path="/my-videos" element={<ProtectedRoute><MyVideos /></ProtectedRoute>} />
+                      <Route path="/vevo-channels" element={<ProtectedRoute><VevoChannels /></ProtectedRoute>} />
+                      <Route path="/admin/video-forms" element={<ProtectedRoute requiredRole="admin"><AdminVideoForms /></ProtectedRoute>} />
+                      <Route path="/admin/video-forms/builder" element={<ProtectedRoute requiredRole="admin"><AdminVideoFormBuilder /></ProtectedRoute>} />
+                      <Route path="/admin/video-submissions" element={<ProtectedRoute requiredRole="admin"><AdminVideoSubmissions /></ProtectedRoute>} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>
