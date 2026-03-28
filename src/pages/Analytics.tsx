@@ -240,13 +240,15 @@ export default function Analytics() {
         supabase.from('songs').select('isrc').eq('user_id', impersonatedUserId),
       ]);
       const ownedIsrcs = [...new Set([...(trackRows ?? []), ...(songRows ?? [])].map((row) => normalizeIsrc(row.isrc)).filter((v): v is string => Boolean(v)))];
-      if (ownedIsrcs.length === 0) { setOttEntries([]); setYtEntries([]); setLoading(false); return; }
-      const [{ data: ott }, { data: yt }] = await Promise.all([
+      if (ownedIsrcs.length === 0) { setOttEntries([]); setYtEntries([]); setVevoEntries([]); setLoading(false); return; }
+      const [{ data: ott }, { data: yt }, { data: vevo }] = await Promise.all([
         supabase.from('report_entries').select('*').in('isrc', ownedIsrcs),
         supabase.from('youtube_report_entries').select('*').in('isrc', ownedIsrcs),
+        supabase.from('vevo_report_entries').select('*').in('isrc', ownedIsrcs),
       ]);
       setOttEntries(mapEntries(ott || [], 'ott'));
       setYtEntries(mapEntries(yt || [], 'youtube'));
+      setVevoEntries(mapEntries(vevo || [], 'vevo'));
     } else {
       const [{ data: ott }, { data: yt }] = await Promise.all([
         supabase.from('report_entries').select('*'),
