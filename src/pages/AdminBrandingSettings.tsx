@@ -348,6 +348,18 @@ export default function AdminBrandingSettings() {
             Changes to logo and favicon will take effect after saving and refreshing the page. The favicon will update in the browser tab automatically.
           </p>
         </div>
+
+        {cropState && (
+          <BrandingCropModal
+            open
+            imageSrc={cropState.src}
+            title={cropState.field === 'favicon_url' ? 'Crop Favicon (Square)' : 'Crop Logo'}
+            aspect={cropState.field === 'favicon_url' ? 1 : undefined}
+            outputSize={cropState.field === 'favicon_url' ? { width: 64, height: 64 } : undefined}
+            onCropComplete={handleCroppedUpload}
+            onCancel={() => setCropState(null)}
+          />
+        )}
       </div>
     </DashboardLayout>
   );
