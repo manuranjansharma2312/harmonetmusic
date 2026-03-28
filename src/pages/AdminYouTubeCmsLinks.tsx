@@ -51,7 +51,8 @@ interface Profile {
 interface SubLabel {
   sub_user_id: string;
   parent_user_id: string;
-  label_name: string;
+  sub_label_name: string | null;
+  parent_label_name: string | null;
 }
 
 const STATUSES = ['pending_review', 'reviewing', 'linked', 'rejected'] as const;
@@ -111,7 +112,7 @@ export default function AdminYouTubeCmsLinks() {
       if (userIds.length) {
         const [{ data: profs }, { data: subs }] = await Promise.all([
           supabase.from('profiles').select('user_id, legal_name, email, display_id, user_type, artist_name, record_label_name').in('user_id', userIds),
-          supabase.from('sub_labels' as any).select('sub_user_id, parent_user_id, label_name').in('sub_user_id', userIds).eq('status', 'active'),
+          supabase.from('sub_labels' as any).select('sub_user_id, parent_user_id, sub_label_name, parent_label_name').in('sub_user_id', userIds).eq('status', 'active'),
         ]);
         if (profs) {
           const map: Record<string, Profile> = {};
@@ -174,14 +175,14 @@ export default function AdminYouTubeCmsLinks() {
 
   const getSubmittedBy = (userId: string) => {
     const prof = profiles[userId];
-    if (!prof) return { name: '—', sub: '' };
-    const name = prof.user_type === 'artist' ? (prof.artist_name || prof.legal_name) : (prof.record_label_name || prof.legal_name);
+    if (!prof) return { name: '—', sub: '', email: '', displayId: undefined as number | undefined };
     const subLabel = subLabels.find(s => s.sub_user_id === userId);
+    const name = subLabel?.sub_label_name || (prof.user_type === 'artist' ? (prof.artist_name || prof.legal_name) : (prof.record_label_name || prof.legal_name));
     let sub = '';
     if (subLabel) {
       const parent = profiles[subLabel.parent_user_id];
-      const parentName = parent ? (parent.record_label_name || parent.legal_name) : 'Parent';
-      sub = `Sub-Label ↳ Under: ${parentName}`;
+      const parentName = subLabel.parent_label_name || (parent ? (parent.record_label_name || parent.legal_name) : 'Parent Label');
+      sub = `${subLabel.sub_label_name || name} ↳ Under: ${parentName}`;
     }
     return { name, sub, email: prof.email, displayId: prof.display_id };
   };
@@ -409,15 +410,15 @@ export default function AdminYouTubeCmsLinks() {
                           <TableCell>{l.cms_linked_date ? format(new Date(l.cms_linked_date), 'dd MMM yyyy') : '—'}</TableCell>
                           <TableCell className="text-xs text-muted-foreground">{format(new Date(l.created_at), 'dd MMM yyyy')}</TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-1">
-                              <Button size="sm" variant="ghost" onClick={() => setViewItem(l)} className="h-7 w-7 p-0">
-                                <Eye className="h-3.5 w-3.5" />
+                            <div className="flex flex-wrap items-center gap-2 min-w-[220px]">
+                              <Button size="sm" variant="outline" onClick={() => setViewItem(l)} className="gap-1">
+                                <Eye className="h-3.5 w-3.5" /> View
                               </Button>
-                              <Button size="sm" variant="ghost" onClick={() => openEdit(l)} className="h-7 w-7 p-0">
-                                <Pencil className="h-3.5 w-3.5" />
+                              <Button size="sm" variant="outline" onClick={() => openEdit(l)} className="gap-1">
+                                <Pencil className="h-3.5 w-3.5" /> Edit
                               </Button>
-                              <Button size="sm" variant="ghost" onClick={() => setDeleteConfirm({ ids: [l.id] })} className="h-7 w-7 p-0 text-destructive hover:text-destructive">
-                                <Trash2 className="h-3.5 w-3.5" />
+                              <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ ids: [l.id] })} className="gap-1">
+                                <Trash2 className="h-3.5 w-3.5" /> Delete
                               </Button>
                             </div>
                           </TableCell>
@@ -465,10 +466,20 @@ export default function AdminYouTubeCmsLinks() {
                   <div><span className="text-muted-foreground">Submitted:</span></div>
                   <div>{format(new Date(viewItem.created_at), 'dd MMM yyyy')}</div>
                 </div>
-                {viewItem.yt_reports_screenshot_url && (
-                  <div className="mt-3">
-                    <Label className="text-muted-foreground mb-1 block">YT Reports Screenshot Preview</Label>
-                    <img src={viewItem.yt_reports_screenshot_url} alt="YT Reports" className="rounded-lg border max-h-60 object-contain w-full" />
+                {(viewItem.yt_reports_screenshot_url || viewItem.noc_file_url) && (
+                  <div className="mt-4 grid gap-3">
+                    {viewItem.yt_reports_screenshot_url && (
+                      <div>
+                        <Label className="text-muted-foreground mb-1 block">YT Reports Screenshot Preview</Label>
+                        <img src={viewItem.yt_reports_screenshot_url} alt="YT Reports" className="rounded-lg border max-h-60 object-contain w-full bg-muted/20" />
+                      </div>
+                    )}
+                    {viewItem.noc_file_url && (
+                      <div>
+                        <Label className="text-muted-foreground mb-1 block">NOC Preview</Label>
+                        <iframe src={viewItem.noc_file_url} title="NOC Preview" className="w-full h-72 rounded-lg border bg-background" />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
