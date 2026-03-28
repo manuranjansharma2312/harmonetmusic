@@ -73,7 +73,7 @@ export default function VevoChannels() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input className="pl-9" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} />
           </div>
-          <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setPage(1); }}>
+          <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setPage(0); }}>
             <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
