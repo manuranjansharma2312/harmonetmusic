@@ -86,6 +86,7 @@ export function AppSidebar() {
   const [userSubLabelsOpen, setUserSubLabelsOpen] = useState(false);
   const [impUserType, setImpUserType] = useState<string | null>(null);
   const [impIsSubLabel, setImpIsSubLabel] = useState(false);
+  const [userVideoOpen, setUserVideoOpen] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
 
   // Fetch impersonated user's profile when impersonating
