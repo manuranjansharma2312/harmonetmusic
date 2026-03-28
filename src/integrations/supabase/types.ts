@@ -344,6 +344,48 @@ export type Database = {
         }
         Relationships: []
       }
+      branding_settings: {
+        Row: {
+          favicon_url: string | null
+          id: string
+          login_logo_height: number
+          logo_url: string | null
+          mobile_header_logo_height: number
+          sidebar_collapsed_logo_height: number
+          sidebar_logo_height: number
+          site_name: string
+          tagline: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          favicon_url?: string | null
+          id?: string
+          login_logo_height?: number
+          logo_url?: string | null
+          mobile_header_logo_height?: number
+          sidebar_collapsed_logo_height?: number
+          sidebar_logo_height?: number
+          site_name?: string
+          tagline?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          favicon_url?: string | null
+          id?: string
+          login_logo_height?: number
+          logo_url?: string | null
+          mobile_header_logo_height?: number
+          sidebar_collapsed_logo_height?: number
+          sidebar_logo_height?: number
+          site_name?: string
+          tagline?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       company_details: {
         Row: {
           address: string
