@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
+import { BrandingCropModal } from '@/components/BrandingCropModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +13,7 @@ export default function AdminBrandingSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [cropState, setCropState] = useState<{ field: 'logo_url' | 'favicon_url'; src: string } | null>(null);
   const [form, setForm] = useState({
     id: '',
     site_name: 'Harmonet Music',
@@ -48,11 +50,19 @@ export default function AdminBrandingSettings() {
     })();
   }, []);
 
-  const handleUpload = async (field: 'logo_url' | 'favicon_url', file: File) => {
+  const handleFileSelect = (field: 'logo_url' | 'favicon_url', file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => setCropState({ field, src: reader.result as string });
+    reader.readAsDataURL(file);
+  };
+
+  const handleCroppedUpload = async (file: File) => {
+    if (!cropState) return;
+    const field = cropState.field;
+    setCropState(null);
     setUploading(field);
     try {
-      const ext = file.name.split('.').pop();
-      const path = `branding/${field}-${Date.now()}.${ext}`;
+      const path = `branding/${field}-${Date.now()}.png`;
       const { error } = await supabase.storage.from('posters').upload(path, file, { upsert: true });
       if (error) throw error;
       const { data: urlData } = supabase.storage.from('posters').getPublicUrl(path);
@@ -169,7 +179,7 @@ export default function AdminBrandingSettings() {
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={e => e.target.files?.[0] && handleUpload('logo_url', e.target.files[0])}
+                    onChange={e => e.target.files?.[0] && handleFileSelect('logo_url', e.target.files[0])}
                   />
                 </label>
               </div>
@@ -200,7 +210,7 @@ export default function AdminBrandingSettings() {
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={e => e.target.files?.[0] && handleUpload('favicon_url', e.target.files[0])}
+                    onChange={e => e.target.files?.[0] && handleFileSelect('favicon_url', e.target.files[0])}
                   />
                 </label>
               </div>
@@ -338,6 +348,18 @@ export default function AdminBrandingSettings() {
             Changes to logo and favicon will take effect after saving and refreshing the page. The favicon will update in the browser tab automatically.
           </p>
         </div>
+
+        {cropState && (
+          <BrandingCropModal
+            open
+            imageSrc={cropState.src}
+            title={cropState.field === 'favicon_url' ? 'Crop Favicon (Square)' : 'Crop Logo'}
+            aspect={cropState.field === 'favicon_url' ? 1 : undefined}
+            outputSize={cropState.field === 'favicon_url' ? { width: 64, height: 64 } : undefined}
+            onCropComplete={handleCroppedUpload}
+            onCancel={() => setCropState(null)}
+          />
+        )}
       </div>
     </DashboardLayout>
   );
