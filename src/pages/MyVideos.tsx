@@ -24,6 +24,7 @@ export default function MyVideos() {
   const [viewSubmission, setViewSubmission] = useState<any>(null);
   const [viewValues, setViewValues] = useState<any[]>([]);
   const [viewFields, setViewFields] = useState<any[]>([]);
+  const [vevoFieldNames, setVevoFieldNames] = useState<Record<string, string>>({});
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(25);
 
@@ -44,11 +45,34 @@ export default function MyVideos() {
 
   const handleView = async (sub: any) => {
     setViewSubmission(sub);
+    setVevoFieldNames({});
     const { data: values } = await supabase.from('video_submission_values').select('*').eq('submission_id', sub.id);
     setViewValues(values || []);
+    let formFields: any[] = [];
     if (sub.form_id) {
       const { data: fields } = await supabase.from('video_form_fields').select('*').eq('form_id', sub.form_id).order('sort_order');
-      setViewFields(fields || []);
+      formFields = fields || [];
+      setViewFields(formFields);
+    }
+    // Resolve vevo_channel field values
+    const vevoFields = formFields.filter((f: any) => f.field_type === 'vevo_channel');
+    if (vevoFields.length > 0 && values) {
+      const channelIds = vevoFields
+        .map((f: any) => values.find((v: any) => v.field_id === f.id)?.text_value)
+        .filter(Boolean);
+      if (channelIds.length > 0) {
+        const nameMap: Record<string, string> = {};
+        for (const cid of channelIds) {
+          const { data: chVals } = await supabase
+            .from('video_submission_values')
+            .select('text_value')
+            .eq('submission_id', cid)
+            .not('text_value', 'is', null)
+            .limit(1);
+          nameMap[cid] = chVals?.[0]?.text_value || `Channel #${cid.slice(0, 8)}`;
+        }
+        setVevoFieldNames(nameMap);
+      }
     }
   };
 
@@ -161,6 +185,10 @@ export default function MyVideos() {
                         <div className="flex items-center gap-1 mt-1">
                           <a href={val.text_value} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline truncate">{val.text_value}</a>
                           <CopyButton value={val.text_value} />
+                        </div>
+                      ) : field.field_type === 'vevo_channel' ? (
+                        <div className="flex items-center gap-1 mt-1">
+                          <p className="text-sm font-medium">{val?.text_value ? (vevoFieldNames[val.text_value] || val.text_value) : '—'}</p>
                         </div>
                       ) : (
                         <div className="flex items-center gap-1 mt-1">

@@ -49,13 +49,13 @@ export default function VideoSubmit() {
   const [submitStep, setSubmitStep] = useState('');
   const [cropField, setCropField] = useState<{ fieldId: string; src: string; aspect?: number; outputSize?: { width: number; height: number } } | null>(null);
   const [vevoChannels, setVevoChannels] = useState<any[]>([]);
-  const [selectedVevoChannel, setSelectedVevoChannel] = useState('');
 
   useEffect(() => { loadForm(); }, [submissionType]);
 
-  // Fetch user's approved Vevo channels when submissionType is upload_video
+  // Fetch user's approved Vevo channels when form has a vevo_channel field
+  const hasVevoField = fields.some(f => f.field_type === 'vevo_channel');
   useEffect(() => {
-    if (submissionType === 'upload_video' && user) {
+    if (hasVevoField && user) {
       (async () => {
         const { data } = await supabase
           .from('video_submissions')
@@ -65,7 +65,6 @@ export default function VideoSubmit() {
           .eq('status', 'approved')
           .order('created_at', { ascending: false });
         if (data && data.length > 0) {
-          // Try to get a display name from submission values (first text field)
           const ids = data.map((d: any) => d.id);
           const { data: vals } = await supabase
             .from('video_submission_values')
@@ -85,7 +84,7 @@ export default function VideoSubmit() {
         }
       })();
     }
-  }, [submissionType, user]);
+  }, [hasVevoField, user]);
 
   const loadForm = async () => {
     setLoading(true);
@@ -160,10 +159,12 @@ export default function VideoSubmit() {
   const handleSubmit = async () => {
     if (!form || !user) return;
 
-    // Validate Vevo channel selection for upload_video
-    if (submissionType === 'upload_video' && vevoChannels.length > 0 && !selectedVevoChannel) {
-      toast.error('Please select a Vevo Channel');
-      return;
+    // Validate vevo_channel fields
+    for (const field of fields) {
+      if (field.field_type === 'vevo_channel' && field.is_required && !values[field.id]?.trim()) {
+        toast.error(`${field.label} is required`);
+        return;
+      }
     }
     // Validate required fields
     for (const field of fields) {
@@ -214,8 +215,10 @@ export default function VideoSubmit() {
         user_id: user.id,
         submission_type: submissionType,
       };
-      if (submissionType === 'upload_video' && selectedVevoChannel) {
-        insertData.vevo_channel_id = selectedVevoChannel;
+      // Find vevo_channel field and set vevo_channel_id
+      const vevoField = fields.find(f => f.field_type === 'vevo_channel');
+      if (vevoField && values[vevoField.id]) {
+        insertData.vevo_channel_id = values[vevoField.id];
       }
       const { data: sub, error: subError } = await supabase.from('video_submissions').insert(insertData).select('id').single();
       if (subError) throw subError;
@@ -318,25 +321,6 @@ export default function VideoSubmit() {
 
         <Card>
           <CardContent className="pt-6 space-y-5">
-            {/* Vevo Channel selector for upload_video */}
-            {submissionType === 'upload_video' && vevoChannels.length > 0 && (
-              <div className="space-y-1.5">
-                <Label>
-                  Select Vevo Channel
-                  <span className="text-destructive ml-1">*</span>
-                </Label>
-                <p className="text-xs text-muted-foreground">Choose one of your approved Vevo channels</p>
-                <Select value={selectedVevoChannel} onValueChange={setSelectedVevoChannel}>
-                  <SelectTrigger><SelectValue placeholder="Select a Vevo Channel..." /></SelectTrigger>
-                  <SelectContent>
-                    {vevoChannels.map(ch => (
-                      <SelectItem key={ch.id} value={ch.id}>{ch.displayName}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
             {fields.map(field => (
               <div key={field.id} className="space-y-1.5">
                 <Label>
@@ -519,6 +503,21 @@ export default function VideoSubmit() {
                     />
                     {fileValues[field.id] && <p className="text-xs text-muted-foreground mt-1">{fileValues[field.id]!.name}</p>}
                   </div>
+                )}
+
+                {field.field_type === 'vevo_channel' && (
+                  <Select value={values[field.id] || ''} onValueChange={v => setValues(prev => ({ ...prev, [field.id]: v }))}>
+                    <SelectTrigger><SelectValue placeholder={field.placeholder || 'Select a Vevo Channel...'} /></SelectTrigger>
+                    <SelectContent>
+                      {vevoChannels.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-muted-foreground">No approved Vevo channels found</div>
+                      ) : (
+                        vevoChannels.map(ch => (
+                          <SelectItem key={ch.id} value={ch.id}>{ch.displayName}</SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
                 )}
               </div>
             ))}

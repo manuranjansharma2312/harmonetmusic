@@ -53,6 +53,7 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
   const [bulkRejectReason, setBulkRejectReason] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [vevoChannelName, setVevoChannelName] = useState<string | null>(null);
+  const [vevoFieldNames, setVevoFieldNames] = useState<Record<string, string>>({});
   const statuses = submissionType === 'upload_video' ? VIDEO_STATUSES : CHANNEL_STATUSES;
 
   const fetchSubmissions = async () => {
@@ -148,6 +149,7 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
     setViewSubmission(sub);
     setEditMode(isEdit);
     setVevoChannelName(null);
+    setVevoFieldNames({});
     const { data: values } = await supabase.from('video_submission_values').select('*').eq('submission_id', sub.id);
     setViewValues(values || []);
     if (isEdit) {
@@ -155,11 +157,13 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
       (values || []).forEach((v: any) => { ev[v.field_id] = v.text_value || ''; });
       setEditValues(ev);
     }
+    let formFields: any[] = [];
     if (sub.form_id) {
       const { data: fields } = await supabase.from('video_form_fields').select('*').eq('form_id', sub.form_id).order('sort_order');
-      setViewFields(fields || []);
+      formFields = fields || [];
+      setViewFields(formFields);
     }
-    // Resolve vevo channel name
+    // Resolve vevo channel name from vevo_channel_id
     if (sub.vevo_channel_id) {
       const { data: chVals } = await supabase
         .from('video_submission_values')
@@ -168,6 +172,26 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
         .not('text_value', 'is', null)
         .limit(1);
       setVevoChannelName(chVals?.[0]?.text_value || `Channel #${sub.vevo_channel_id.slice(0, 8)}`);
+    }
+    // Resolve vevo_channel field type values (text_value stores channel submission UUID)
+    const vevoFields = formFields.filter((f: any) => f.field_type === 'vevo_channel');
+    if (vevoFields.length > 0 && values) {
+      const channelIds = vevoFields
+        .map((f: any) => values.find((v: any) => v.field_id === f.id)?.text_value)
+        .filter(Boolean);
+      if (channelIds.length > 0) {
+        const nameMap: Record<string, string> = {};
+        for (const cid of channelIds) {
+          const { data: chVals } = await supabase
+            .from('video_submission_values')
+            .select('text_value')
+            .eq('submission_id', cid)
+            .not('text_value', 'is', null)
+            .limit(1);
+          nameMap[cid] = chVals?.[0]?.text_value || `Channel #${cid.slice(0, 8)}`;
+        }
+        setVevoFieldNames(nameMap);
+      }
     }
   };
 
@@ -315,6 +339,17 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
 
   const renderFieldValue = (field: any, val: any, isEditing: boolean) => {
     const isFile = isFileField(field.field_type);
+
+    // Vevo channel field — show resolved name
+    if (field.field_type === 'vevo_channel') {
+      const channelName = val?.text_value ? (vevoFieldNames[val.text_value] || val.text_value) : '—';
+      return (
+        <div className="flex items-center gap-2 mt-1">
+          <p className="text-sm font-medium">{channelName}</p>
+          {val?.text_value && <CopyButton value={channelName} />}
+        </div>
+      );
+    }
 
     if (isFile && val?.file_url) {
       return (
