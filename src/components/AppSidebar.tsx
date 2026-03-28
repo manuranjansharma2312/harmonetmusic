@@ -134,6 +134,12 @@ export function AppSidebar() {
     { to: '/video-guidelines', label: 'Guidelines', icon: FileText },
   ];
 
+  const adminVideoLinks = [
+    { to: '/admin/video-forms', label: 'Video Form Builder', icon: Video },
+    { to: '/admin/video-submissions', label: 'Video Submissions', icon: Video },
+    { to: '/admin/video-guidelines', label: 'Video Guidelines', icon: FileText },
+  ];
+
   // Sub Labels collapsible links (only for record_label users who are NOT sub-labels)
   const userSubLabelLinks = [
     { to: '/sub-labels', label: 'All Sub Labels', icon: UsersRound },
