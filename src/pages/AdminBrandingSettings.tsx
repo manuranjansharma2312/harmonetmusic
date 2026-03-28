@@ -210,7 +210,7 @@ export default function AdminBrandingSettings() {
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={e => e.target.files?.[0] && handleUpload('favicon_url', e.target.files[0])}
+                    onChange={e => e.target.files?.[0] && handleFileSelect('favicon_url', e.target.files[0])}
                   />
                 </label>
               </div>
