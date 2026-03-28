@@ -78,21 +78,27 @@ export default function AdminBrandingSettings() {
     setSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      const { error } = await supabase
-        .from('branding_settings')
-        .update({
-          site_name: form.site_name,
-          tagline: form.tagline,
-          favicon_url: form.favicon_url || null,
-          logo_url: form.logo_url || null,
-          login_logo_height: form.login_logo_height,
-          sidebar_logo_height: form.sidebar_logo_height,
-          sidebar_collapsed_logo_height: form.sidebar_collapsed_logo_height,
-          mobile_header_logo_height: form.mobile_header_logo_height,
-          updated_by: user?.id,
-          updated_at: new Date().toISOString(),
-        } as any)
-        .eq('id', form.id);
+      const payload = {
+        site_name: form.site_name,
+        tagline: form.tagline,
+        favicon_url: form.favicon_url || null,
+        logo_url: form.logo_url || null,
+        login_logo_height: form.login_logo_height,
+        sidebar_logo_height: form.sidebar_logo_height,
+        sidebar_collapsed_logo_height: form.sidebar_collapsed_logo_height,
+        mobile_header_logo_height: form.mobile_header_logo_height,
+        updated_by: user?.id,
+        updated_at: new Date().toISOString(),
+      } as any;
+
+      let error;
+      if (form.id) {
+        ({ error } = await supabase.from('branding_settings').update(payload).eq('id', form.id));
+      } else {
+        const { data, error: insertErr } = await supabase.from('branding_settings').insert(payload).select().single();
+        error = insertErr;
+        if (data) setForm(f => ({ ...f, id: data.id }));
+      }
       if (error) throw error;
       toast.success('Branding settings saved! Refresh the page to see changes.');
     } catch (err: any) {
