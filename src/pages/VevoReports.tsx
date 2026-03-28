@@ -47,6 +47,26 @@ function parseMonthKey(m: string): number {
   const parts = m.toLowerCase().split(' ');
   return (parseInt(parts[1]) || 0) * 12 + (months[parts[0]] ?? 0);
 }
+interface ReportEntry {
+  id: string;
+  reporting_month: string;
+  store: string | null;
+  sales_type: string | null;
+  country: string | null;
+  label: string | null;
+  c_line: string | null;
+  p_line: string | null;
+  track: string | null;
+  artist: string | null;
+  isrc: string | null;
+  upc: string | null;
+  currency: string | null;
+  streams: number;
+  downloads: number;
+  net_generated_revenue: number;
+  imported_at: string;
+  cut_percent_snapshot?: number | null;
+}
 
 export default function VevoReports() {
   const { user, role } = useAuth();
@@ -62,9 +82,27 @@ export default function VevoReports() {
   const [hiddenCut, setHiddenCut] = useState(0);
   const [subLabelCut, setSubLabelCut] = useState(0);
   const [isSubLabelUser, setIsSubLabelUser] = useState(false);
+  const [formatColumns, setFormatColumns] = useState<FormatColumn[]>([]);
 
   const { impersonatedUserId, isImpersonating } = useImpersonate();
   const activeUserId = (isImpersonating && impersonatedUserId) ? impersonatedUserId : user?.id;
+
+  // Derive visible columns from format config
+  const COLUMNS = useMemo(() =>
+    formatColumns
+      .filter(c => c.is_enabled && c.column_key !== 'reporting_month')
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map(c => ({ key: c.column_key, label: ALL_COLUMN_LABELS[c.column_key] || c.csv_header })),
+    [formatColumns]
+  );
+
+  const fetchFormat = async () => {
+    const { data } = await supabase
+      .from('vevo_report_format')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    if (data) setFormatColumns(data as FormatColumn[]);
+  };
 
   const fetchReports = async () => {
     if (!user) return;
