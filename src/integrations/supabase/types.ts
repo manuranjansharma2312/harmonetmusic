@@ -2115,6 +2115,166 @@ export type Database = {
         }
         Relationships: []
       }
+      video_form_fields: {
+        Row: {
+          created_at: string
+          field_type: string
+          form_id: string
+          id: string
+          is_required: boolean
+          label: string
+          options: Json | null
+          placeholder: string | null
+          settings: Json | null
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          field_type?: string
+          form_id: string
+          id?: string
+          is_required?: boolean
+          label: string
+          options?: Json | null
+          placeholder?: string | null
+          settings?: Json | null
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          field_type?: string
+          form_id?: string
+          id?: string
+          is_required?: boolean
+          label?: string
+          options?: Json | null
+          placeholder?: string | null
+          settings?: Json | null
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_form_fields_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "video_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_forms: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          form_type: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          form_type?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          form_type?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      video_submission_values: {
+        Row: {
+          created_at: string
+          field_id: string
+          file_url: string | null
+          id: string
+          submission_id: string
+          text_value: string | null
+        }
+        Insert: {
+          created_at?: string
+          field_id: string
+          file_url?: string | null
+          id?: string
+          submission_id: string
+          text_value?: string | null
+        }
+        Update: {
+          created_at?: string
+          field_id?: string
+          file_url?: string | null
+          id?: string
+          submission_id?: string
+          text_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_submission_values_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "video_form_fields"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_submission_values_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "video_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_submissions: {
+        Row: {
+          created_at: string
+          form_id: string
+          id: string
+          rejection_reason: string | null
+          status: string
+          submission_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          form_id: string
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          submission_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          form_id?: string
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          submission_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_submissions_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "video_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       withdrawal_requests: {
         Row: {
           amount: number
