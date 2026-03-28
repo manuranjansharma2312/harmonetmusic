@@ -112,7 +112,7 @@ export default function AdminYouTubeCmsLinks() {
       if (userIds.length) {
         const [{ data: profs }, { data: subs }] = await Promise.all([
           supabase.from('profiles').select('user_id, legal_name, email, display_id, user_type, artist_name, record_label_name').in('user_id', userIds),
-          supabase.from('sub_labels' as any).select('sub_user_id, parent_user_id, label_name').in('sub_user_id', userIds).eq('status', 'active'),
+          supabase.from('sub_labels' as any).select('sub_user_id, parent_user_id, sub_label_name, parent_label_name').in('sub_user_id', userIds).eq('status', 'active'),
         ]);
         if (profs) {
           const map: Record<string, Profile> = {};
