@@ -923,6 +923,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ott_report_format: {
+        Row: {
+          column_key: string
+          csv_header: string
+          id: string
+          is_custom: boolean
+          is_enabled: boolean
+          is_required: boolean
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          column_key: string
+          csv_header: string
+          id?: string
+          is_custom?: boolean
+          is_enabled?: boolean
+          is_required?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          column_key?: string
+          csv_header?: string
+          id?: string
+          is_custom?: boolean
+          is_enabled?: boolean
+          is_required?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string
@@ -1231,6 +1264,7 @@ export type Database = {
           currency: string | null
           cut_percent_snapshot: number | null
           downloads: number | null
+          extra_data: Json | null
           id: string
           imported_at: string | null
           isrc: string | null
@@ -1254,6 +1288,7 @@ export type Database = {
           currency?: string | null
           cut_percent_snapshot?: number | null
           downloads?: number | null
+          extra_data?: Json | null
           id?: string
           imported_at?: string | null
           isrc?: string | null
@@ -1277,6 +1312,7 @@ export type Database = {
           currency?: string | null
           cut_percent_snapshot?: number | null
           downloads?: number | null
+          extra_data?: Json | null
           id?: string
           imported_at?: string | null
           isrc?: string | null
@@ -2453,6 +2489,7 @@ export type Database = {
           currency: string | null
           cut_percent_snapshot: number | null
           downloads: number | null
+          extra_data: Json | null
           id: string
           imported_at: string | null
           isrc: string | null
@@ -2476,6 +2513,7 @@ export type Database = {
           currency?: string | null
           cut_percent_snapshot?: number | null
           downloads?: number | null
+          extra_data?: Json | null
           id?: string
           imported_at?: string | null
           isrc?: string | null
@@ -2499,6 +2537,7 @@ export type Database = {
           currency?: string | null
           cut_percent_snapshot?: number | null
           downloads?: number | null
+          extra_data?: Json | null
           id?: string
           imported_at?: string | null
           isrc?: string | null
@@ -2513,6 +2552,39 @@ export type Database = {
           track?: string | null
           upc?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      youtube_report_format: {
+        Row: {
+          column_key: string
+          csv_header: string
+          id: string
+          is_custom: boolean
+          is_enabled: boolean
+          is_required: boolean
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          column_key: string
+          csv_header: string
+          id?: string
+          is_custom?: boolean
+          is_enabled?: boolean
+          is_required?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          column_key?: string
+          csv_header?: string
+          id?: string
+          is_custom?: boolean
+          is_enabled?: boolean
+          is_required?: boolean
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }
