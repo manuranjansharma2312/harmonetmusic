@@ -15,6 +15,16 @@ import { Input } from '@/components/ui/input';
 import { ArrowLeft, Eye, BarChart3, Filter, X, Download, Search } from 'lucide-react';
 import { format } from 'date-fns';
 
+interface FormatColumn {
+  id: string;
+  column_key: string;
+  csv_header: string;
+  is_enabled: boolean;
+  is_required: boolean;
+  sort_order: number;
+  is_custom: boolean;
+}
+
 interface ReportEntry {
   id: string;
   reporting_month: string;
@@ -34,24 +44,15 @@ interface ReportEntry {
   net_generated_revenue: number;
   imported_at: string;
   cut_percent_snapshot?: number | null;
+  extra_data?: Record<string, string>;
 }
 
-const COLUMNS = [
-  { key: 'store', label: 'Store' },
-  { key: 'sales_type', label: 'Sales Type' },
-  { key: 'country', label: 'Country' },
-  { key: 'label', label: 'Label' },
-  { key: 'c_line', label: 'C Line' },
-  { key: 'p_line', label: 'P Line' },
-  { key: 'track', label: 'Track' },
-  { key: 'artist', label: 'Artist' },
-  { key: 'isrc', label: 'ISRC' },
-  { key: 'upc', label: 'UPC' },
-  { key: 'currency', label: 'Currency' },
-  { key: 'streams', label: 'Streams' },
-  { key: 'downloads', label: 'Downloads' },
-  { key: 'net_generated_revenue', label: 'Net Revenue' },
-];
+const ALL_COLUMN_LABELS: Record<string, string> = {
+  store: 'Store', sales_type: 'Sales Type', country: 'Country', label: 'Label',
+  c_line: 'C Line', p_line: 'P Line', track: 'Track', artist: 'Artist',
+  isrc: 'ISRC', upc: 'UPC', currency: 'Currency', streams: 'Streams',
+  downloads: 'Downloads', net_generated_revenue: 'Net Revenue',
+};
 
 const FILTERABLE = [
   { key: 'label', label: 'Label' },
