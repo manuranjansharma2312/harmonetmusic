@@ -165,7 +165,7 @@ export default function Auth() {
       <BackgroundBlobs />
       <div className="glass-card-glow relative z-10 mx-auto my-auto w-full max-w-lg animate-scale-in p-4 sm:p-8">
         <div className="flex flex-col items-center mb-6">
-          <img src={logoWhite} alt="Harmonet Music" className="h-12 sm:h-16 w-auto mb-4" />
+          <img src={logoSrc} alt={branding.site_name} style={{ height: `${branding.login_logo_height}px` }} className="w-auto mb-4" />
           <p className="text-muted-foreground text-sm">
             {isLogin ? 'Sign in to your account' : 'Create your artist account'}
           </p>
