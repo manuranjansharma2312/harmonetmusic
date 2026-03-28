@@ -370,7 +370,7 @@ export default function AdminYouTubeCmsLinks() {
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-1">
                               {l.channel_name}
-                              <CopyButton text={l.channel_name} />
+                              <CopyButton value={l.channel_name} />
                             </div>
                           </TableCell>
                           <TableCell>
@@ -378,7 +378,7 @@ export default function AdminYouTubeCmsLinks() {
                               <a href={l.channel_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
                                 <ExternalLink className="h-3 w-3" /> Link
                               </a>
-                              <CopyButton text={l.channel_url} />
+                              <CopyButton value={l.channel_url} />
                             </div>
                           </TableCell>
                           <TableCell>{l.is_monetized ? 'On' : 'Off'}</TableCell>
@@ -404,7 +404,7 @@ export default function AdminYouTubeCmsLinks() {
                             )}
                           </TableCell>
                           <TableCell>
-                            {l.cms_company ? <div className="flex items-center gap-1">{l.cms_company} <CopyButton text={l.cms_company} /></div> : '—'}
+                            {l.cms_company ? <div className="flex items-center gap-1">{l.cms_company} <CopyButton value={l.cms_company} /></div> : '—'}
                           </TableCell>
                           <TableCell>{l.cms_linked_date ? format(new Date(l.cms_linked_date), 'dd MMM yyyy') : '—'}</TableCell>
                           <TableCell className="text-xs text-muted-foreground">{format(new Date(l.created_at), 'dd MMM yyyy')}</TableCell>
@@ -445,12 +445,12 @@ export default function AdminYouTubeCmsLinks() {
                   <div><span className="text-muted-foreground">Submitted By:</span></div>
                   <div className="font-medium">{info.name} <span className="text-muted-foreground">#{info.displayId}</span></div>
                   <div><span className="text-muted-foreground">Email:</span></div>
-                  <div className="flex items-center gap-1">{info.email} <CopyButton text={info.email || ''} /></div>
+                  <div className="flex items-center gap-1">{info.email} <CopyButton value={info.email || ''} /></div>
                   {info.sub && <><div><span className="text-muted-foreground">Label:</span></div><div className="text-primary font-medium">{info.sub}</div></>}
                   <div><span className="text-muted-foreground">Channel Name:</span></div>
-                  <div className="flex items-center gap-1">{viewItem.channel_name} <CopyButton text={viewItem.channel_name} /></div>
+                  <div className="flex items-center gap-1">{viewItem.channel_name} <CopyButton value={viewItem.channel_name} /></div>
                   <div><span className="text-muted-foreground">Channel URL:</span></div>
-                  <div className="flex items-center gap-1"><a href={viewItem.channel_url} target="_blank" rel="noreferrer" className="text-primary hover:underline truncate max-w-[200px]">{viewItem.channel_url}</a> <CopyButton text={viewItem.channel_url} /></div>
+                  <div className="flex items-center gap-1"><a href={viewItem.channel_url} target="_blank" rel="noreferrer" className="text-primary hover:underline truncate max-w-[200px]">{viewItem.channel_url}</a> <CopyButton value={viewItem.channel_url} /></div>
                   <div><span className="text-muted-foreground">Monetized:</span></div>
                   <div>{viewItem.is_monetized ? 'On' : 'Off'}</div>
                   <div><span className="text-muted-foreground">NOC File:</span></div>
@@ -460,7 +460,7 @@ export default function AdminYouTubeCmsLinks() {
                   <div><span className="text-muted-foreground">Status:</span></div>
                   <div><StatusBadge status={STATUS_MAP[viewItem.status] || viewItem.status} /> <span className="ml-1">{STATUS_LABEL[viewItem.status]}</span></div>
                   {viewItem.rejection_reason && <><div><span className="text-muted-foreground">Rejection:</span></div><div className="text-destructive">{viewItem.rejection_reason}</div></>}
-                  {viewItem.cms_company && <><div><span className="text-muted-foreground">CMS Company:</span></div><div className="flex items-center gap-1">{viewItem.cms_company} <CopyButton text={viewItem.cms_company} /></div></>}
+                  {viewItem.cms_company && <><div><span className="text-muted-foreground">CMS Company:</span></div><div className="flex items-center gap-1">{viewItem.cms_company} <CopyButton value={viewItem.cms_company} /></div></>}
                   {viewItem.cms_linked_date && <><div><span className="text-muted-foreground">CMS Linked Date:</span></div><div>{format(new Date(viewItem.cms_linked_date), 'dd MMM yyyy')}</div></>}
                   <div><span className="text-muted-foreground">Submitted:</span></div>
                   <div>{format(new Date(viewItem.created_at), 'dd MMM yyyy')}</div>
