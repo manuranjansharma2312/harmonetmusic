@@ -18,6 +18,7 @@ import { TablePagination } from '@/components/TablePagination';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { TransferVideoModal } from '@/components/TransferVideoModal';
 
 const VIDEO_STATUSES = ['pending', 'processing', 'approved', 'rejected'];
 const CHANNEL_STATUSES = ['pending', 'approved', 'rejected', 'suspended'];
