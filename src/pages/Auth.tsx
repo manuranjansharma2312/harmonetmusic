@@ -4,7 +4,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { BackgroundBlobs } from '@/components/BackgroundBlobs';
 import { Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
-import logoWhite from '@/assets/logo-white.png';
+import { useBranding } from '@/hooks/useBranding';
 import { supabase } from '@/integrations/supabase/client';
 import { countries, getStatesForCountry } from '@/data/locations';
 
@@ -49,6 +49,7 @@ export default function Auth() {
   const [idBack, setIdBack] = useState<File | null>(null);
 
   const { signIn, signUp } = useAuth();
+  const { logoSrc, branding } = useBranding();
 
   if (loading) {
     return (
@@ -164,7 +165,7 @@ export default function Auth() {
       <BackgroundBlobs />
       <div className="glass-card-glow relative z-10 mx-auto my-auto w-full max-w-lg animate-scale-in p-4 sm:p-8">
         <div className="flex flex-col items-center mb-6">
-          <img src={logoWhite} alt="Harmonet Music" className="h-12 sm:h-16 w-auto mb-4" />
+          <img src={logoSrc} alt={branding.site_name} style={{ height: `${branding.login_logo_height}px` }} className="w-auto mb-4" />
           <p className="text-muted-foreground text-sm">
             {isLogin ? 'Sign in to your account' : 'Create your artist account'}
           </p>

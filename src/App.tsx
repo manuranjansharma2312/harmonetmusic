@@ -11,6 +11,7 @@ import { ImpersonateProvider } from "@/hooks/useImpersonate";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SiteSettingsRuntime } from "@/components/SiteSettingsRuntime";
+import { BrandingHead } from "@/components/BrandingHead";
 
 // Lazy load all pages for code splitting
 const Auth = lazy(() => import("./pages/Auth"));
@@ -66,6 +67,7 @@ const MySmartLinks = lazy(() => import("./pages/MySmartLinks"));
 const AdminSmartLinks = lazy(() => import("./pages/AdminSmartLinks"));
 const AdminEmailSettings = lazy(() => import("./pages/AdminEmailSettings"));
 const AdminSiteSettings = lazy(() => import("./pages/AdminSiteSettings"));
+const AdminBrandingSettings = lazy(() => import("./pages/AdminBrandingSettings"));
 const AdminSignatureDocuments = lazy(() => import("./pages/AdminSignatureDocuments"));
 const AdminSignatureDetail = lazy(() => import("./pages/AdminSignatureDetail"));
 const AdminSignatureFields = lazy(() => import("./pages/AdminSignatureFields"));
@@ -113,6 +115,7 @@ function App() {
               <AuthProvider>
                 <ImpersonateProvider>
                   <SiteSettingsRuntime />
+                  <BrandingHead />
                   <Suspense fallback={<PageLoader />}>
                     <Routes>
                       <Route path="/" element={<Navigate to="/auth" replace />} />
@@ -155,6 +158,7 @@ function App() {
                       <Route path="/admin/email-settings" element={<ProtectedRoute requiredRole="admin"><AdminEmailSettings /></ProtectedRoute>} />
                       <Route path="/admin/ai-image-system" element={<ProtectedRoute requiredRole="admin"><AdminAIImageSystem /></ProtectedRoute>} />
                       <Route path="/admin/site-settings" element={<ProtectedRoute requiredRole="admin"><AdminSiteSettings /></ProtectedRoute>} />
+                      <Route path="/admin/branding-settings" element={<ProtectedRoute requiredRole="admin"><AdminBrandingSettings /></ProtectedRoute>} />
                       <Route path="/ai-images" element={<ProtectedRoute><AIImageGeneration /></ProtectedRoute>} />
                       <Route path="/promotion-tools" element={<ProtectedRoute><PromotionTools /></ProtectedRoute>} />
                       <Route path="/terms" element={<ProtectedRoute><TermsConditions /></ProtectedRoute>} />

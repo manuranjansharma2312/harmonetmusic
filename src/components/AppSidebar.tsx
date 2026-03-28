@@ -6,9 +6,9 @@ import {
   BarChart3, MonitorPlay, Wallet, FileText, Receipt,
   Image as ImageIcon, Bell, BookOpen, FileSignature,
   Megaphone, Landmark, CreditCard, UsersRound, Sparkles, Link2, ArrowRightLeft, Mail,
-  Settings,
+  Settings, Globe,
 } from 'lucide-react';
-import logoWhite from '@/assets/logo-white.png';
+import { useBranding } from '@/hooks/useBranding';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
@@ -69,6 +69,7 @@ const adminLinksTop = [
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
   { to: '/admin/email-settings', label: 'Email Settings', icon: Mail },
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
+  { to: '/admin/branding-settings', label: 'Site Settings', icon: Globe },
   { to: '/admin/site-settings', label: 'System Settings', icon: Settings },
 ];
 
@@ -77,6 +78,7 @@ export function AppSidebar() {
   const { isImpersonating, impersonatedUserId } = useImpersonate();
   const { state, setOpenMobile, isMobile } = useSidebar();
   const collapsed = state === 'collapsed';
+  const { logoSrc, branding } = useBranding();
   const showUserView = isImpersonating || role !== 'admin';
   const [toolsOpen, setToolsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
@@ -212,7 +214,12 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-border/50">
       <SidebarHeader className="p-4 border-b border-border/50">
         <div className="flex items-center justify-center">
-          <img src={logoWhite} alt="Harmonet Music" className={collapsed ? 'h-7 w-auto' : 'h-14 w-auto'} />
+          <img
+            src={logoSrc}
+            alt={branding.site_name}
+            style={{ height: collapsed ? `${branding.sidebar_collapsed_logo_height}px` : `${branding.sidebar_logo_height}px` }}
+            className="w-auto"
+          />
         </div>
       </SidebarHeader>
 

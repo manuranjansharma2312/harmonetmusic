@@ -4,10 +4,11 @@ import { Loader2, ShieldAlert, Clock, XCircle, Ban } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { BackgroundBlobs } from '@/components/BackgroundBlobs';
-import logoWhite from '@/assets/logo-white.png';
+import { useBranding } from '@/hooks/useBranding';
 
 function AccountBlockedScreen({ status }: { status: string }) {
   const { signOut } = useAuth();
+  const { logoSrc, branding } = useBranding();
 
   const config: Record<string, { icon: typeof Clock; title: string; message: string; color: string }> = {
     pending: {
@@ -36,7 +37,7 @@ function AccountBlockedScreen({ status }: { status: string }) {
     <div className="relative flex min-h-[100dvh] w-full items-center justify-center p-6">
       <BackgroundBlobs />
       <div className="glass-card-glow relative z-10 mx-auto w-full max-w-md animate-scale-in space-y-6 p-6 text-center sm:p-8">
-        <img src={logoWhite} alt="Harmonet Music" className="mx-auto h-14 w-auto sm:h-16" />
+        <img src={logoSrc} alt={branding.site_name} className="mx-auto h-14 w-auto sm:h-16" />
         <div className={`mx-auto inline-flex h-20 w-20 items-center justify-center rounded-full bg-muted/50 ${color}`}>
           <Icon className="h-10 w-10" />
         </div>
