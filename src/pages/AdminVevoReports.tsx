@@ -130,6 +130,8 @@ export default function AdminVevoReports() {
   const [editingFormat, setEditingFormat] = useState<FormatColumn[]>([]);
   const [showFormatConfig, setShowFormatConfig] = useState(false);
   const [savingFormat, setSavingFormat] = useState(false);
+  const [newColumnName, setNewColumnName] = useState('');
+  const [deletingColumnId, setDeletingColumnId] = useState<string | null>(null);
 
   const applyUserCut = (entry: ReportEntry) => {
     const cut = entry.cut_percent_snapshot != null ? entry.cut_percent_snapshot : (userCutMap[entry.user_id] || 0);
