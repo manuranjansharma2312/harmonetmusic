@@ -262,12 +262,11 @@ export default function AdminVideoFormBuilder() {
 
                 {needsOptions(field.field_type) && (
                   <div>
-                    <Label className="text-xs">Options (one per line)</Label>
-                    <Textarea
-                      value={field.options.join('\n')}
-                      onChange={e => updateField(index, { options: e.target.value.split('\n') })}
-                      placeholder="Option 1&#10;Option 2&#10;Option 3"
-                      rows={4}
+                    <Label className="text-xs">Options (separated by comma)</Label>
+                    <Input
+                      value={field.options.join(', ')}
+                      onChange={e => updateField(index, { options: e.target.value.split(',').map(o => o.trim()).filter(Boolean) })}
+                      placeholder="Option 1, Option 2, Option 3"
                     />
                   </div>
                 )}

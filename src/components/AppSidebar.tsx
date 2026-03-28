@@ -71,6 +71,7 @@ const adminLinksTop = [
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
   { to: '/admin/video-forms', label: 'Video Form Builder', icon: Video },
   { to: '/admin/video-submissions', label: 'Video Submissions', icon: Video },
+  { to: '/admin/video-guidelines', label: 'Video Guidelines', icon: FileText },
   { to: '/admin/branding-settings', label: 'Site Settings', icon: Globe },
   { to: '/admin/site-settings', label: 'System Settings', icon: Settings },
 ];
@@ -132,6 +133,7 @@ export function AppSidebar() {
     { to: '/video/vevo-channel?type=vevo_channel', label: 'Create Vevo Channel', icon: Tv },
     { to: '/my-videos', label: 'My Videos', icon: Video },
     { to: '/vevo-channels', label: 'Vevo Channels', icon: Tv },
+    { to: '/video-guidelines', label: 'Guidelines', icon: FileText },
   ];
 
   // Sub Labels collapsible links (only for record_label users who are NOT sub-labels)

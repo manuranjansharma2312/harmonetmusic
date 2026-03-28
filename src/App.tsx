@@ -80,6 +80,8 @@ const AdminVideoSubmissions = lazy(() => import("./pages/AdminVideoSubmissions")
 const VideoSubmit = lazy(() => import("./pages/VideoSubmit"));
 const MyVideos = lazy(() => import("./pages/MyVideos"));
 const VevoChannels = lazy(() => import("./pages/VevoChannels"));
+const AdminVideoGuidelines = lazy(() => import("./pages/AdminVideoGuidelines"));
+const VideoGuidelines = lazy(() => import("./pages/VideoGuidelines"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -197,6 +199,8 @@ function App() {
                       <Route path="/admin/video-forms" element={<ProtectedRoute requiredRole="admin"><AdminVideoForms /></ProtectedRoute>} />
                       <Route path="/admin/video-forms/builder" element={<ProtectedRoute requiredRole="admin"><AdminVideoFormBuilder /></ProtectedRoute>} />
                       <Route path="/admin/video-submissions" element={<ProtectedRoute requiredRole="admin"><AdminVideoSubmissions /></ProtectedRoute>} />
+                      <Route path="/admin/video-guidelines" element={<ProtectedRoute requiredRole="admin"><AdminVideoGuidelines /></ProtectedRoute>} />
+                      <Route path="/video-guidelines" element={<ProtectedRoute><VideoGuidelines /></ProtectedRoute>} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>

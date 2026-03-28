@@ -2192,6 +2192,27 @@ export type Database = {
         }
         Relationships: []
       }
+      video_guidelines: {
+        Row: {
+          content: string
+          id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          content?: string
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          content?: string
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       video_submission_values: {
         Row: {
           created_at: string
