@@ -12,6 +12,7 @@ import { useBranding } from '@/hooks/useBranding';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { NavLink } from '@/components/NavLink';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
