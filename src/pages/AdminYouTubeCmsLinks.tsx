@@ -398,10 +398,17 @@ export default function AdminYouTubeCmsLinks() {
                             ) : '—'}
                           </TableCell>
                           <TableCell>
-                            <div className="space-y-2 min-w-[160px]">
-                              <Select
+                            <div className="space-y-2 min-w-[180px]">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <StatusBadge status={STATUS_MAP[l.status] || l.status} />
+                                <span className="text-xs">{STATUS_LABEL[l.status]}</span>
+                              </div>
+                              <select
+                                aria-label={`Change status for ${l.channel_name}`}
                                 value={l.status}
-                                onValueChange={async (newStatus) => {
+                                onChange={async (e) => {
+                                  const newStatus = e.target.value;
+                                  if (newStatus === l.status) return;
                                   if (newStatus === 'linked') {
                                     openEdit(l);
                                     setEditStatus('linked');
@@ -425,16 +432,12 @@ export default function AdminYouTubeCmsLinks() {
                                     fetchAll();
                                   }
                                 }}
+                                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                               >
-                                <SelectTrigger className="w-[150px] h-8 text-xs">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {STATUSES.map((s) => (
-                                    <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                                {STATUSES.map((s) => (
+                                  <option key={s} value={s}>{STATUS_LABEL[s]}</option>
+                                ))}
+                              </select>
                               {l.status === 'rejected' && l.rejection_reason && (
                                 <p className="text-xs text-destructive">{l.rejection_reason}</p>
                               )}
