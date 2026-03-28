@@ -309,6 +309,25 @@ export default function VideoSubmit() {
 
         <Card>
           <CardContent className="pt-6 space-y-5">
+            {/* Vevo Channel selector for upload_video */}
+            {submissionType === 'upload_video' && vevoChannels.length > 0 && (
+              <div className="space-y-1.5">
+                <Label>
+                  Select Vevo Channel
+                  <span className="text-destructive ml-1">*</span>
+                </Label>
+                <p className="text-xs text-muted-foreground">Choose one of your approved Vevo channels</p>
+                <Select value={selectedVevoChannel} onValueChange={setSelectedVevoChannel}>
+                  <SelectTrigger><SelectValue placeholder="Select a Vevo Channel..." /></SelectTrigger>
+                  <SelectContent>
+                    {vevoChannels.map(ch => (
+                      <SelectItem key={ch.id} value={ch.id}>{ch.displayName}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             {fields.map(field => (
               <div key={field.id} className="space-y-1.5">
                 <Label>
