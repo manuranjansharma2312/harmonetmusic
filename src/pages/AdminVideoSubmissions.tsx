@@ -100,8 +100,7 @@ export default function AdminVideoSubmissions() {
     return true;
   });
 
-  const totalPages = Math.ceil(filtered.length / pageSize);
-  const paginated = pageSize === -1 ? filtered : filtered.slice((page - 1) * pageSize, page * pageSize);
+  const paginated = pageSize === 'all' ? filtered : filtered.slice(page * effectivePageSize, (page + 1) * effectivePageSize);
 
   return (
     <DashboardLayout>
