@@ -410,15 +410,15 @@ export default function AdminYouTubeCmsLinks() {
                           <TableCell>{l.cms_linked_date ? format(new Date(l.cms_linked_date), 'dd MMM yyyy') : '—'}</TableCell>
                           <TableCell className="text-xs text-muted-foreground">{format(new Date(l.created_at), 'dd MMM yyyy')}</TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-1">
-                              <Button size="sm" variant="ghost" onClick={() => setViewItem(l)} className="h-7 w-7 p-0">
-                                <Eye className="h-3.5 w-3.5" />
+                            <div className="flex flex-wrap items-center gap-2 min-w-[220px]">
+                              <Button size="sm" variant="outline" onClick={() => setViewItem(l)} className="gap-1">
+                                <Eye className="h-3.5 w-3.5" /> View
                               </Button>
-                              <Button size="sm" variant="ghost" onClick={() => openEdit(l)} className="h-7 w-7 p-0">
-                                <Pencil className="h-3.5 w-3.5" />
+                              <Button size="sm" variant="outline" onClick={() => openEdit(l)} className="gap-1">
+                                <Pencil className="h-3.5 w-3.5" /> Edit
                               </Button>
-                              <Button size="sm" variant="ghost" onClick={() => setDeleteConfirm({ ids: [l.id] })} className="h-7 w-7 p-0 text-destructive hover:text-destructive">
-                                <Trash2 className="h-3.5 w-3.5" />
+                              <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ ids: [l.id] })} className="gap-1">
+                                <Trash2 className="h-3.5 w-3.5" /> Delete
                               </Button>
                             </div>
                           </TableCell>
