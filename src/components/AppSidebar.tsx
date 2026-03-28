@@ -69,6 +69,7 @@ const adminLinksTop = [
   { to: '/admin/payment-settings', label: 'Payment Settings', icon: CreditCard },
   { to: '/admin/ai-image-system', label: 'AI Poster Generate', icon: Sparkles },
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
+  { to: '/admin/youtube-cms-links', label: 'YouTube CMS Links', icon: Youtube },
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
   { to: '/admin/email-settings', label: 'Email Settings', icon: Mail },
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
@@ -126,6 +127,7 @@ export function AppSidebar() {
     { to: '/submit', label: 'New Release', icon: Upload },
     { to: '/my-releases', label: 'My Releases', icon: ListMusic },
     { to: '/smart-links', label: 'Smart Links', icon: Link2 },
+    { to: '/youtube-cms-link', label: 'YouTube CMS Link', icon: Youtube },
     { to: '/my-labels', label: 'My Labels', icon: Tag },
   ];
 
