@@ -61,8 +61,7 @@ export default function VevoChannels() {
     return true;
   });
 
-  const totalPages = Math.ceil(filtered.length / pageSize);
-  const paginated = pageSize === -1 ? filtered : filtered.slice((page - 1) * pageSize, page * pageSize);
+  const paginated = paginateItems(filtered, page, pageSize);
 
   return (
     <DashboardLayout>
