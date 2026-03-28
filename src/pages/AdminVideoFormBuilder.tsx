@@ -98,6 +98,7 @@ export default function AdminVideoFormBuilder() {
     setFields(prev => [...prev, {
       field_type: 'text',
       label: '',
+      description: '',
       placeholder: '',
       is_required: false,
       sort_order: prev.length,
