@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { TablePagination } from '@/components/TablePagination';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 
 export default function MyVideos() {
   const { user } = useAuth();
