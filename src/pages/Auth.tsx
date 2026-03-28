@@ -302,7 +302,7 @@ export default function Auth() {
                   >
                     {countries.map((item) => (
                       <option key={item.code} value={item.dialCode}>
-                        {item.flag} {item.dialCode}
+                        {item.flag} {item.name} ({item.dialCode})
                       </option>
                     ))}
                   </select>
