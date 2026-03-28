@@ -184,6 +184,7 @@ function App() {
                       <Route path="/tools/playlist-pitching" element={<ProtectedRoute><PlaylistPitching /></ProtectedRoute>} />
                       <Route path="/reports/ott" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
                       <Route path="/reports/youtube" element={<ProtectedRoute><YouTubeReports /></ProtectedRoute>} />
+                      <Route path="/reports/vevo" element={<ProtectedRoute><VevoReports /></ProtectedRoute>} />
                       <Route path="/reports/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
                       <Route path="/admin/reports/analytics" element={<ProtectedRoute requiredRole="admin"><Analytics /></ProtectedRoute>} />
                       <Route path="/reports" element={<Navigate to="/reports/ott" replace />} />

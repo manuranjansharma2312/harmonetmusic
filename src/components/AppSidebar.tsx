@@ -40,6 +40,7 @@ const reportLinks = [
 const adminReportLinks = [
   { to: '/admin/reports/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/admin/reports/youtube', label: 'YouTube Reports', icon: Youtube },
+  { to: '/admin/reports/vevo', label: 'Vevo Reports', icon: Tv },
   { to: '/admin/reports/ott', label: 'OTT Reports', icon: MonitorPlay },
 ];
 
