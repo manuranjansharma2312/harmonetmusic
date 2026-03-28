@@ -276,7 +276,7 @@ export default function Analytics() {
     return () => { supabase.removeChannel(channel); };
   }, [user, role, isImpersonating, impersonatedUserId]);
 
-  const allEntries = useMemo(() => [...ottEntries, ...ytEntries], [ottEntries, ytEntries]);
+  const allEntries = useMemo(() => [...ottEntries, ...ytEntries, ...vevoEntries], [ottEntries, ytEntries, vevoEntries]);
   const filtered = useMemo(() => filterByPeriod(allEntries, period), [allEntries, period]);
   const adjustedFiltered = useMemo(
     () => filtered.map((entry) => ({
