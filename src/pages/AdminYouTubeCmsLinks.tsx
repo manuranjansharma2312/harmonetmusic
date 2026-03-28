@@ -120,8 +120,8 @@ export default function AdminYouTubeCmsLinks() {
     return true;
   });
 
-  const totalPages = Math.ceil(filtered.length / perPage);
-  const paged = filtered.slice((page - 1) * perPage, page * perPage);
+  const effectivePerPage = perPage === 'all' ? filtered.length : perPage;
+  const paged = perPage === 'all' ? filtered : filtered.slice((page - 1) * effectivePerPage, page * effectivePerPage);
 
   const openEdit = (item: CmsLink) => {
     setEditItem(item);
