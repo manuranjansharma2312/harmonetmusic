@@ -18,7 +18,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
 import { TablePagination } from '@/components/TablePagination';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { Loader2, Youtube, ExternalLink, FileText, CalendarIcon, Pencil, Trash2, Download, Eye, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Youtube, ExternalLink, FileText, CalendarIcon, Pencil, Trash2, Download, Eye, Image as ImageIcon, FileX, ImageOff } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -288,7 +288,30 @@ export default function AdminYouTubeCmsLinks() {
     URL.revokeObjectURL(url);
   };
 
-  return (
+  const handleDeleteFile = async (itemId: string, field: 'noc_file_url' | 'yt_reports_screenshot_url', fileUrl: string) => {
+    try {
+      // Extract path from URL for storage deletion
+      const bucketName = 'cms-noc-files';
+      const urlParts = fileUrl.split(`/storage/v1/object/public/${bucketName}/`);
+      if (urlParts.length > 1) {
+        await supabase.storage.from(bucketName).remove([urlParts[1]]);
+      }
+      // Clear the URL in DB
+      const { error } = await supabase
+        .from('youtube_cms_links' as any)
+        .update({ [field]: null, updated_at: new Date().toISOString() } as any)
+        .eq('id', itemId);
+      if (error) throw error;
+      toast.success('File deleted successfully');
+      // Update local state
+      setLinks(prev => prev.map(l => l.id === itemId ? { ...l, [field]: null } : l));
+      if (viewItem?.id === itemId) setViewItem(prev => prev ? { ...prev, [field]: null } : null);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete file');
+    }
+  };
+
+
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-3">
@@ -385,17 +408,45 @@ export default function AdminYouTubeCmsLinks() {
                           <TableCell>{l.is_monetized ? 'On' : 'Off'}</TableCell>
                           <TableCell>
                             {l.noc_file_url ? (
-                              <a href={l.noc_file_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
-                                <FileText className="h-3 w-3" /> View
-                              </a>
-                            ) : '—'}
+                              <div className="flex items-center gap-1">
+                                <a href={l.noc_file_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                                  <FileText className="h-3 w-3" /> View
+                                </a>
+                                <button
+                                  onClick={() => handleDeleteFile(l.id, 'noc_file_url', l.noc_file_url!)}
+                                  className="p-1 rounded hover:bg-destructive/10 text-destructive/60 hover:text-destructive transition-colors"
+                                  title="Delete NOC file"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <FileX className="h-4 w-4" />
+                                <span className="text-xs">No file</span>
+                              </div>
+                            )}
                           </TableCell>
                           <TableCell>
                             {l.yt_reports_screenshot_url ? (
-                              <a href={l.yt_reports_screenshot_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
-                                <ImageIcon className="h-3 w-3" /> View
-                              </a>
-                            ) : '—'}
+                              <div className="flex items-center gap-1">
+                                <a href={l.yt_reports_screenshot_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                                  <ImageIcon className="h-3 w-3" /> View
+                                </a>
+                                <button
+                                  onClick={() => handleDeleteFile(l.id, 'yt_reports_screenshot_url', l.yt_reports_screenshot_url!)}
+                                  className="p-1 rounded hover:bg-destructive/10 text-destructive/60 hover:text-destructive transition-colors"
+                                  title="Delete screenshot"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <ImageOff className="h-4 w-4" />
+                                <span className="text-xs">No image</span>
+                              </div>
+                            )}
                           </TableCell>
                           <TableCell>
                             <div className="space-y-2 min-w-[180px]">
@@ -494,9 +545,23 @@ export default function AdminYouTubeCmsLinks() {
                   <div><span className="text-muted-foreground">Monetized:</span></div>
                   <div>{viewItem.is_monetized ? 'On' : 'Off'}</div>
                   <div><span className="text-muted-foreground">NOC File:</span></div>
-                  <div>{viewItem.noc_file_url ? <a href={viewItem.noc_file_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1"><FileText className="h-3 w-3" /> View File</a> : '—'}</div>
+                  <div>{viewItem.noc_file_url ? (
+                    <div className="flex items-center gap-1">
+                      <a href={viewItem.noc_file_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1"><FileText className="h-3 w-3" /> View File</a>
+                      <button onClick={() => handleDeleteFile(viewItem.id, 'noc_file_url', viewItem.noc_file_url!)} className="p-1 rounded hover:bg-destructive/10 text-destructive/60 hover:text-destructive transition-colors" title="Delete NOC file"><Trash2 className="h-3 w-3" /></button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1 text-muted-foreground"><FileX className="h-4 w-4" /><span className="text-xs">No file</span></div>
+                  )}</div>
                   <div><span className="text-muted-foreground">YT Reports:</span></div>
-                  <div>{viewItem.yt_reports_screenshot_url ? <a href={viewItem.yt_reports_screenshot_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1"><ImageIcon className="h-3 w-3" /> View Image</a> : '—'}</div>
+                  <div>{viewItem.yt_reports_screenshot_url ? (
+                    <div className="flex items-center gap-1">
+                      <a href={viewItem.yt_reports_screenshot_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1"><ImageIcon className="h-3 w-3" /> View Image</a>
+                      <button onClick={() => handleDeleteFile(viewItem.id, 'yt_reports_screenshot_url', viewItem.yt_reports_screenshot_url!)} className="p-1 rounded hover:bg-destructive/10 text-destructive/60 hover:text-destructive transition-colors" title="Delete screenshot"><Trash2 className="h-3 w-3" /></button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1 text-muted-foreground"><ImageOff className="h-4 w-4" /><span className="text-xs">No image</span></div>
+                  )}</div>
                   <div><span className="text-muted-foreground">Status:</span></div>
                   <div><StatusBadge status={STATUS_MAP[viewItem.status] || viewItem.status} /> <span className="ml-1">{STATUS_LABEL[viewItem.status]}</span></div>
                   {viewItem.rejection_reason && <><div><span className="text-muted-foreground">Rejection:</span></div><div className="text-destructive">{viewItem.rejection_reason}</div></>}
@@ -505,22 +570,30 @@ export default function AdminYouTubeCmsLinks() {
                   <div><span className="text-muted-foreground">Submitted:</span></div>
                   <div>{format(new Date(viewItem.created_at), 'dd MMM yyyy')}</div>
                 </div>
-                {(viewItem.yt_reports_screenshot_url || viewItem.noc_file_url) && (
-                  <div className="mt-4 grid gap-3">
-                    {viewItem.yt_reports_screenshot_url && (
-                      <div>
-                        <Label className="text-muted-foreground mb-1 block">YT Reports Screenshot Preview</Label>
-                        <img src={viewItem.yt_reports_screenshot_url} alt="YT Reports" className="rounded-lg border max-h-60 object-contain w-full bg-muted/20" />
-                      </div>
-                    )}
-                    {viewItem.noc_file_url && (
-                      <div>
-                        <Label className="text-muted-foreground mb-1 block">NOC Preview</Label>
-                        <iframe src={viewItem.noc_file_url} title="NOC Preview" className="w-full h-72 rounded-lg border bg-background" />
-                      </div>
-                    )}
-                  </div>
-                )}
+                <div className="mt-4 grid gap-3">
+                  {viewItem.yt_reports_screenshot_url ? (
+                    <div>
+                      <Label className="text-muted-foreground mb-1 block">YT Reports Screenshot Preview</Label>
+                      <img src={viewItem.yt_reports_screenshot_url} alt="YT Reports" className="rounded-lg border max-h-60 object-contain w-full bg-muted/20" />
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-6 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/10">
+                      <ImageOff className="h-10 w-10 text-muted-foreground/40 mb-2" />
+                      <span className="text-xs text-muted-foreground">No YT Reports screenshot</span>
+                    </div>
+                  )}
+                  {viewItem.noc_file_url ? (
+                    <div>
+                      <Label className="text-muted-foreground mb-1 block">NOC Preview</Label>
+                      <iframe src={viewItem.noc_file_url} title="NOC Preview" className="w-full h-72 rounded-lg border bg-background" />
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-6 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/10">
+                      <FileX className="h-10 w-10 text-muted-foreground/40 mb-2" />
+                      <span className="text-xs text-muted-foreground">No NOC document</span>
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })()}
