@@ -466,10 +466,20 @@ export default function AdminYouTubeCmsLinks() {
                   <div><span className="text-muted-foreground">Submitted:</span></div>
                   <div>{format(new Date(viewItem.created_at), 'dd MMM yyyy')}</div>
                 </div>
-                {viewItem.yt_reports_screenshot_url && (
-                  <div className="mt-3">
-                    <Label className="text-muted-foreground mb-1 block">YT Reports Screenshot Preview</Label>
-                    <img src={viewItem.yt_reports_screenshot_url} alt="YT Reports" className="rounded-lg border max-h-60 object-contain w-full" />
+                {(viewItem.yt_reports_screenshot_url || viewItem.noc_file_url) && (
+                  <div className="mt-4 grid gap-3">
+                    {viewItem.yt_reports_screenshot_url && (
+                      <div>
+                        <Label className="text-muted-foreground mb-1 block">YT Reports Screenshot Preview</Label>
+                        <img src={viewItem.yt_reports_screenshot_url} alt="YT Reports" className="rounded-lg border max-h-60 object-contain w-full bg-muted/20" />
+                      </div>
+                    )}
+                    {viewItem.noc_file_url && (
+                      <div>
+                        <Label className="text-muted-foreground mb-1 block">NOC Preview</Label>
+                        <iframe src={viewItem.noc_file_url} title="NOC Preview" className="w-full h-72 rounded-lg border bg-background" />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
