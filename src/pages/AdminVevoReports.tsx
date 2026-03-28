@@ -21,6 +21,7 @@ interface FormatColumn {
   is_enabled: boolean;
   is_required: boolean;
   sort_order: number;
+  is_custom: boolean;
 }
 
 const ALL_COLUMNS = [
