@@ -4,7 +4,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { BackgroundBlobs } from '@/components/BackgroundBlobs';
 import { Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
-import logoWhite from '@/assets/logo-white.png';
+import { useBranding } from '@/hooks/useBranding';
 import { supabase } from '@/integrations/supabase/client';
 import { countries, getStatesForCountry } from '@/data/locations';
 
