@@ -5,14 +5,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
-import { Loader2, Settings, Video, BarChart3, Tv } from 'lucide-react';
+import { Loader2, Settings, Video, Tv } from 'lucide-react';
 import { useSiteSettings, type SiteSettings } from '@/hooks/useSiteSettings';
 
 export default function AdminVevoSettings() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { settings, isLoading } = useSiteSettings();
-  const [form, setForm] = useState<Pick<SiteSettings, 'id' | 'enable_vevo' | 'enable_video_distribution' | 'enable_reports'> | null>(null);
+  const [form, setForm] = useState<Pick<SiteSettings, 'id' | 'enable_vevo' | 'enable_video_distribution'> | null>(null);
   const [saving, setSaving] = useState(false);
   const initialized = useRef(false);
 
@@ -22,7 +22,6 @@ export default function AdminVevoSettings() {
         id: settings.id,
         enable_vevo: settings.enable_vevo,
         enable_video_distribution: settings.enable_video_distribution,
-        enable_reports: settings.enable_reports,
       });
       initialized.current = true;
     }
@@ -71,7 +70,7 @@ export default function AdminVevoSettings() {
               Vevo Settings
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Enable or disable Vevo services across the platform.
+              Control Vevo services visibility across the platform.
             </p>
           </div>
           <button
@@ -88,12 +87,9 @@ export default function AdminVevoSettings() {
           <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
             <Video className="h-5 w-5 text-primary" /> Video Distribution
           </h2>
-          <p className="text-xs text-muted-foreground mb-4">
-            Controls the entire Video Distribution module — Upload Video, Vevo Channels, My Videos, and Video Guidelines for both users and admin.
-          </p>
           <ToggleRow
             label="Enable Video Distribution"
-            description="When disabled, the Video Distribution section is hidden from sidebar and inaccessible to all users."
+            description="When disabled, the entire Video Distribution section (Upload Video, Vevo Channels, My Videos, Guidelines) is hidden from sidebar for all users and admin."
             checked={form.enable_video_distribution}
             onChange={(v) => setForm((p) => p ? { ...p, enable_video_distribution: v } : p)}
           />
@@ -103,29 +99,11 @@ export default function AdminVevoSettings() {
           <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
             <Tv className="h-5 w-5 text-primary" /> Vevo Reports
           </h2>
-          <p className="text-xs text-muted-foreground mb-4">
-            Controls the Vevo Reports option under Reports & Analytics.
-          </p>
           <ToggleRow
             label="Enable Vevo Reports"
-            description="When disabled, the Vevo Reports tab is hidden from Reports & Analytics for both users and admin."
+            description="When disabled, the Vevo Reports tab is hidden from Reports & Analytics for both users and admin. Other reports (OTT, YouTube) remain unaffected."
             checked={form.enable_vevo}
             onChange={(v) => setForm((p) => p ? { ...p, enable_vevo: v } : p)}
-          />
-        </GlassCard>
-
-        <GlassCard>
-          <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
-            <BarChart3 className="h-5 w-5 text-primary" /> Reports & Analytics
-          </h2>
-          <p className="text-xs text-muted-foreground mb-4">
-            Controls the entire Reports & Analytics section for users (OTT, YouTube, Vevo reports). Admin reports remain always visible.
-          </p>
-          <ToggleRow
-            label="Enable Reports for Users"
-            description="When disabled, the Reports & Analytics section is hidden from the user sidebar. Admin reports are unaffected."
-            checked={form.enable_reports}
-            onChange={(v) => setForm((p) => p ? { ...p, enable_reports: v } : p)}
           />
         </GlassCard>
       </div>
