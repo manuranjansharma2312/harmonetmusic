@@ -115,6 +115,7 @@ function App() {
               <AuthProvider>
                 <ImpersonateProvider>
                   <SiteSettingsRuntime />
+                  <BrandingHead />
                   <Suspense fallback={<PageLoader />}>
                     <Routes>
                       <Route path="/" element={<Navigate to="/auth" replace />} />
