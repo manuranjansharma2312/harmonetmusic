@@ -107,7 +107,45 @@ export default function AdminVideoSubmissions() {
     }
   };
 
-  const statuses = tab === 'upload_video' ? VIDEO_STATUSES : CHANNEL_STATUSES;
+  const handleSaveTextField = async (valueId: string) => {
+    const { error } = await supabase.from('video_submission_values').update({ text_value: editValue }).eq('id', valueId);
+    if (error) toast.error(error.message);
+    else {
+      toast.success('Field updated');
+      setViewValues(prev => prev.map(v => v.id === valueId ? { ...v, text_value: editValue } : v));
+    }
+    setEditingField(null);
+  };
+
+  const handleFileSelect = (fieldId: string, valueId: string, file: File) => {
+    const previewUrl = URL.createObjectURL(file);
+    setReplacePreview({ fieldId, file, previewUrl, valueId });
+  };
+
+  const handleConfirmReplace = async () => {
+    if (!replacePreview || !viewSubmission) return;
+    setUploading(true);
+    try {
+      const ext = replacePreview.file.name.split('.').pop();
+      const path = `${viewSubmission.user_id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from('video-uploads').upload(path, replacePreview.file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from('video-uploads').getPublicUrl(path);
+      const newUrl = pub.publicUrl;
+      const { error } = await supabase.from('video_submission_values').update({ file_url: newUrl }).eq('id', replacePreview.valueId);
+      if (error) throw error;
+      toast.success('File replaced successfully');
+      setViewValues(prev => prev.map(v => v.id === replacePreview.valueId ? { ...v, file_url: newUrl } : v));
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to replace file');
+    } finally {
+      setUploading(false);
+      if (replacePreview.previewUrl) URL.revokeObjectURL(replacePreview.previewUrl);
+      setReplacePreview(null);
+    }
+  };
+
+
   const effectivePageSize = pageSize === 'all' ? 9999 : pageSize;
   const filtered = submissions.filter(s => {
     if (s.submission_type !== tab) return false;
