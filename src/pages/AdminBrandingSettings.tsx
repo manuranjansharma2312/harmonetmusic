@@ -255,9 +255,19 @@ export default function AdminBrandingSettings() {
 
         {/* Logo Size Configuration */}
         <GlassCard className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Ruler className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold">Logo Size (Pixels)</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Ruler className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold">Logo Size (Pixels)</h2>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setForm(f => ({ ...f, ...DEFAULT_SIZES }))}
+            >
+              <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+              Reset to Defaults
+            </Button>
           </div>
           <p className="text-xs text-muted-foreground mb-4">
             Control the logo height in different areas of the application. Width adjusts automatically to maintain aspect ratio.
