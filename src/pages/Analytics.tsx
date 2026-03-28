@@ -250,12 +250,14 @@ export default function Analytics() {
       setYtEntries(mapEntries(yt || [], 'youtube'));
       setVevoEntries(mapEntries(vevo || [], 'vevo'));
     } else {
-      const [{ data: ott }, { data: yt }] = await Promise.all([
+      const [{ data: ott }, { data: yt }, { data: vevo }] = await Promise.all([
         supabase.from('report_entries').select('*'),
         supabase.from('youtube_report_entries').select('*'),
+        supabase.from('vevo_report_entries').select('*'),
       ]);
       setOttEntries(mapEntries(ott || [], 'ott'));
       setYtEntries(mapEntries(yt || [], 'youtube'));
+      setVevoEntries(mapEntries(vevo || [], 'vevo'));
     }
     setLoading(false);
   };
