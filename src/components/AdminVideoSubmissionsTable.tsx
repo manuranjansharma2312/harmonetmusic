@@ -503,12 +503,15 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
                         <TableCell><StatusBadge status={sub.status} /></TableCell>
                         <TableCell>{format(new Date(sub.created_at), 'dd MMM yyyy')}</TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
+                          <div className="flex justify-end gap-1 flex-wrap">
                             <Button size="sm" variant="outline" onClick={() => openSubmission(sub, false)}>
                               <Eye className="h-3.5 w-3.5 mr-1" /> View
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => openSubmission(sub, true)}>
                               <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => setTransferSubmission(sub)}>
+                              <ArrowRightLeft className="h-3.5 w-3.5 mr-1" /> Transfer
                             </Button>
                             <Select value={sub.status} onValueChange={v => handleStatusChange(sub.id, v)}>
                               <SelectTrigger className="h-8 w-[120px] text-xs"><SelectValue /></SelectTrigger>
