@@ -505,6 +505,21 @@ export default function VideoSubmit() {
                     {fileValues[field.id] && <p className="text-xs text-muted-foreground mt-1">{fileValues[field.id]!.name}</p>}
                   </div>
                 )}
+
+                {field.field_type === 'vevo_channel' && (
+                  <Select value={values[field.id] || ''} onValueChange={v => setValues(prev => ({ ...prev, [field.id]: v }))}>
+                    <SelectTrigger><SelectValue placeholder={field.placeholder || 'Select a Vevo Channel...'} /></SelectTrigger>
+                    <SelectContent>
+                      {vevoChannels.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-muted-foreground">No approved Vevo channels found</div>
+                      ) : (
+                        vevoChannels.map(ch => (
+                          <SelectItem key={ch.id} value={ch.id}>{ch.displayName}</SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             ))}
 
