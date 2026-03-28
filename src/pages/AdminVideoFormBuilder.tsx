@@ -37,6 +37,7 @@ interface FormField {
   id?: string;
   field_type: string;
   label: string;
+  description: string;
   placeholder: string;
   is_required: boolean;
   sort_order: number;
