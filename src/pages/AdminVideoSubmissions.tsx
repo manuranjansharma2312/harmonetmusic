@@ -87,6 +87,7 @@ export default function AdminVideoSubmissions() {
   };
 
   const statuses = tab === 'upload_video' ? VIDEO_STATUSES : CHANNEL_STATUSES;
+  const effectivePageSize = pageSize === 'all' ? 9999 : pageSize;
   const filtered = submissions.filter(s => {
     if (s.submission_type !== tab) return false;
     if (statusFilter !== 'all' && s.status !== statusFilter) return false;
