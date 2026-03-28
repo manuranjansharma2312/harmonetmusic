@@ -82,6 +82,7 @@ export function AppSidebar() {
   const { state, setOpenMobile, isMobile } = useSidebar();
   const collapsed = state === 'collapsed';
   const { logoSrc, branding } = useBranding();
+  const { settings } = useSiteSettings();
   const showUserView = isImpersonating || role !== 'admin';
   const [toolsOpen, setToolsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
