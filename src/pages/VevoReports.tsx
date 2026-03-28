@@ -160,6 +160,7 @@ export default function VevoReports() {
   useEffect(() => {
     if (!user) return;
     fetchReports();
+    fetchFormat();
 
     const channel = supabase
       .channel('vevo-reports-realtime')
