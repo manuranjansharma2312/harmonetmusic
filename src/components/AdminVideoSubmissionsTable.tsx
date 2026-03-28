@@ -147,6 +147,7 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
   const openSubmission = async (sub: any, isEdit: boolean) => {
     setViewSubmission(sub);
     setEditMode(isEdit);
+    setVevoChannelName(null);
     const { data: values } = await supabase.from('video_submission_values').select('*').eq('submission_id', sub.id);
     setViewValues(values || []);
     if (isEdit) {
@@ -157,6 +158,16 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
     if (sub.form_id) {
       const { data: fields } = await supabase.from('video_form_fields').select('*').eq('form_id', sub.form_id).order('sort_order');
       setViewFields(fields || []);
+    }
+    // Resolve vevo channel name
+    if (sub.vevo_channel_id) {
+      const { data: chVals } = await supabase
+        .from('video_submission_values')
+        .select('text_value')
+        .eq('submission_id', sub.vevo_channel_id)
+        .not('text_value', 'is', null)
+        .limit(1);
+      setVevoChannelName(chVals?.[0]?.text_value || `Channel #${sub.vevo_channel_id.slice(0, 8)}`);
     }
   };
 
