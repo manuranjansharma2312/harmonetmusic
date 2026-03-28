@@ -44,7 +44,7 @@ export default function AdminSiteSettings() {
         .eq('id', form.id);
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ['site-settings'] });
-      toast.success('Site settings saved! Changes take effect on next page load.');
+      toast.success('System settings saved! Changes take effect on next page load.');
     } catch (err: any) {
       toast.error(err.message || 'Failed to save settings');
     } finally {
@@ -128,7 +128,7 @@ export default function AdminSiteSettings() {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Settings className="h-6 w-6 text-primary" />
-              Site Settings
+              System Settings
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               Optimize performance, fix lag & loading issues. Works on all hosting servers.
