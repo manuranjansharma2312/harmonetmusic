@@ -220,7 +220,9 @@ export default function VevoReports() {
       e.reporting_month,
       ...COLUMNS.map((c) => c.key === 'net_generated_revenue'
         ? String(applyRevenueCut(e))
-        : String(e[c.key as keyof ReportEntry] ?? '')),
+        : c.key.startsWith('custom_')
+          ? String(((e as any).extra_data as Record<string, string>)?.[c.key] ?? '')
+          : String(e[c.key as keyof ReportEntry] ?? '')),
     ]);
     const csv = [headers, ...rows].map((r) => r.map((v) => `"${v}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
