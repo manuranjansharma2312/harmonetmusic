@@ -62,7 +62,7 @@ export default function AdminYouTubeCmsLinks() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-  const perPage = 20;
+  const [perPage, setPerPage] = useState<number | 'all'>(20);
 
   // Edit modal
   const [editItem, setEditItem] = useState<CmsLink | null>(null);
