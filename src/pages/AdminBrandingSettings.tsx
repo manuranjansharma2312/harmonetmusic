@@ -27,10 +27,10 @@ export default function AdminBrandingSettings() {
     tagline: 'Harmony On Networks',
     favicon_url: '',
     logo_url: '',
-    login_logo_height: 64,
-    sidebar_logo_height: 56,
-    sidebar_collapsed_logo_height: 28,
-    mobile_header_logo_height: 36,
+    login_logo_height: DEFAULT_SIZES.login_logo_height,
+    sidebar_logo_height: DEFAULT_SIZES.sidebar_logo_height,
+    sidebar_collapsed_logo_height: DEFAULT_SIZES.sidebar_collapsed_logo_height,
+    mobile_header_logo_height: DEFAULT_SIZES.mobile_header_logo_height,
   });
 
   useEffect(() => {
