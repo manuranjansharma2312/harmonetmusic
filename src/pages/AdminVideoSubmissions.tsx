@@ -9,13 +9,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { StatusBadge } from '@/components/StatusBadge';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Video, Tv, Eye, Search, Upload, Pencil, Check, X, Download } from 'lucide-react';
+import { Video, Tv, Eye, Search, Upload, Pencil, Check, X, Download, Trash2, CheckSquare } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { TablePagination } from '@/components/TablePagination';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 const VIDEO_STATUSES = ['pending', 'processing', 'approved', 'rejected'];
 const CHANNEL_STATUSES = ['pending', 'approved', 'rejected', 'suspended'];
@@ -42,6 +45,12 @@ export default function AdminVideoSubmissions() {
   const [editMode, setEditMode] = useState(false);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
   const [editSaving, setEditSaving] = useState(false);
+
+  // Bulk selection state
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkRejectDialog, setBulkRejectDialog] = useState(false);
+  const [bulkRejectReason, setBulkRejectReason] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
 
   const fetchSubmissions = async () => {
     setLoading(true);
@@ -78,6 +87,9 @@ export default function AdminVideoSubmissions() {
 
   useEffect(() => { fetchSubmissions(); }, []);
 
+  // Clear selection when tab changes
+  useEffect(() => { setSelected(new Set()); }, [tab]);
+
   const handleStatusChange = async (id: string, status: string) => {
     if (status === 'rejected') {
       setRejectDialog(id);
@@ -97,6 +109,41 @@ export default function AdminVideoSubmissions() {
     else { toast.success('Submission rejected'); fetchSubmissions(); }
     setRejectDialog(null);
     setRejectionReason('');
+  };
+
+  // Bulk status change
+  const handleBulkStatusChange = async (status: string) => {
+    if (selected.size === 0) return;
+    if (status === 'rejected') {
+      setBulkRejectDialog(true);
+      return;
+    }
+    const ids = [...selected];
+    const { error } = await supabase.from('video_submissions').update({ status, rejection_reason: null }).in('id', ids);
+    if (error) toast.error(error.message);
+    else { toast.success(`${ids.length} submission(s) updated to ${status}`); setSelected(new Set()); fetchSubmissions(); }
+  };
+
+  const handleBulkReject = async () => {
+    const ids = [...selected];
+    const { error } = await supabase.from('video_submissions').update({
+      status: 'rejected', rejection_reason: bulkRejectReason,
+    }).in('id', ids);
+    if (error) toast.error(error.message);
+    else { toast.success(`${ids.length} submission(s) rejected`); setSelected(new Set()); fetchSubmissions(); }
+    setBulkRejectDialog(false);
+    setBulkRejectReason('');
+  };
+
+  // Bulk delete
+  const handleBulkDelete = async () => {
+    const ids = [...selected];
+    // Delete values first, then submissions
+    await supabase.from('video_submission_values').delete().in('submission_id', ids);
+    const { error } = await supabase.from('video_submissions').delete().in('id', ids);
+    if (error) toast.error(error.message);
+    else { toast.success(`${ids.length} submission(s) deleted`); setSelected(new Set()); fetchSubmissions(); }
+    setDeleteConfirm(false);
   };
 
   const openSubmission = async (sub: any, isEdit: boolean) => {
@@ -162,12 +209,11 @@ export default function AdminVideoSubmissions() {
     }
   };
 
-  // Export CSV
-  const handleExport = async () => {
-    const toExport = filtered;
+  // Export CSV — uses selected if any, otherwise all filtered
+  const handleExport = async (onlySelected = false) => {
+    const toExport = onlySelected && selected.size > 0 ? filtered.filter(s => selected.has(s.id)) : filtered;
     if (toExport.length === 0) { toast.error('No data to export'); return; }
 
-    // Fetch all fields and values for the filtered submissions
     const formIds = [...new Set(toExport.map(s => s.form_id).filter(Boolean))];
     const allFields: any[] = [];
     for (const fid of formIds) {
@@ -177,14 +223,12 @@ export default function AdminVideoSubmissions() {
 
     const subIds = toExport.map(s => s.id);
     const allValues: any[] = [];
-    // Fetch in chunks
     for (let i = 0; i < subIds.length; i += 50) {
       const chunk = subIds.slice(i, i + 50);
       const { data } = await supabase.from('video_submission_values').select('*').in('submission_id', chunk);
       if (data) allValues.push(...data);
     }
 
-    // Build unique field labels
     const fieldMap = new Map<string, string>();
     allFields.forEach(f => { if (!fieldMap.has(f.id)) fieldMap.set(f.id, f.label); });
     const fieldLabels = [...fieldMap.entries()];
@@ -221,7 +265,7 @@ export default function AdminVideoSubmissions() {
     link.download = `video-submissions-${tab}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-    toast.success('Export downloaded');
+    toast.success(`Exported ${toExport.length} submission(s)`);
   };
 
   const statuses = tab === 'upload_video' ? VIDEO_STATUSES : CHANNEL_STATUSES;
@@ -239,6 +283,27 @@ export default function AdminVideoSubmissions() {
   });
 
   const paginated = pageSize === 'all' ? filtered : filtered.slice(page * effectivePageSize, (page + 1) * effectivePageSize);
+
+  const allPageSelected = paginated.length > 0 && paginated.every(s => selected.has(s.id));
+  const someSelected = selected.size > 0;
+
+  const toggleSelectAll = () => {
+    if (allPageSelected) {
+      const next = new Set(selected);
+      paginated.forEach(s => next.delete(s.id));
+      setSelected(next);
+    } else {
+      const next = new Set(selected);
+      paginated.forEach(s => next.add(s.id));
+      setSelected(next);
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    const next = new Set(selected);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    setSelected(next);
+  };
 
   const isFileField = (type: string) => ['file_upload', 'image_upload', 'video_upload', 'document_upload', 'drag_drop_upload'].includes(type);
 
@@ -317,8 +382,35 @@ export default function AdminVideoSubmissions() {
                   {statuses.map(s => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
                 </SelectContent>
               </Select>
-              <Button variant="outline" onClick={handleExport} disabled={filtered.length === 0}>
-                <Download className="h-4 w-4 mr-1" /> Export CSV
+
+              {/* Bulk Actions Dropdown */}
+              {someSelected && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline">
+                      <CheckSquare className="h-4 w-4 mr-1" /> {selected.size} Selected
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {statuses.map(s => (
+                      <DropdownMenuItem key={s} onClick={() => handleBulkStatusChange(s)}>
+                        Set {s.charAt(0).toUpperCase() + s.slice(1)}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleExport(true)}>
+                      <Download className="h-4 w-4 mr-2" /> Export Selected
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteConfirm(true)}>
+                      <Trash2 className="h-4 w-4 mr-2" /> Delete Selected
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+
+              <Button variant="outline" onClick={() => handleExport(false)} disabled={filtered.length === 0}>
+                <Download className="h-4 w-4 mr-1" /> Export All
               </Button>
             </div>
 
@@ -332,6 +424,9 @@ export default function AdminVideoSubmissions() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-10">
+                          <Checkbox checked={allPageSelected} onCheckedChange={toggleSelectAll} />
+                        </TableHead>
                         <TableHead>User</TableHead>
                         <TableHead>Form</TableHead>
                         <TableHead>Status</TableHead>
@@ -343,7 +438,10 @@ export default function AdminVideoSubmissions() {
                       {paginated.map(sub => {
                         const profile = profiles[sub.user_id];
                         return (
-                          <TableRow key={sub.id}>
+                          <TableRow key={sub.id} data-state={selected.has(sub.id) ? 'selected' : undefined}>
+                            <TableCell>
+                              <Checkbox checked={selected.has(sub.id)} onCheckedChange={() => toggleSelect(sub.id)} />
+                            </TableCell>
                             <TableCell>
                               <div className="text-sm font-medium">
                                 {profile?.user_type === 'record_label' ? profile?.record_label_name : profile?.artist_name || profile?.legal_name || 'Unknown'}
@@ -508,7 +606,7 @@ export default function AdminVideoSubmissions() {
         </DialogContent>
       </Dialog>
 
-      {/* Reject Dialog */}
+      {/* Single Reject Dialog */}
       <Dialog open={!!rejectDialog} onOpenChange={() => setRejectDialog(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>Rejection Reason</DialogTitle></DialogHeader>
@@ -519,6 +617,29 @@ export default function AdminVideoSubmissions() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Reject Dialog */}
+      <Dialog open={bulkRejectDialog} onOpenChange={() => setBulkRejectDialog(false)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Bulk Rejection Reason</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">This will reject {selected.size} selected submission(s).</p>
+          <Textarea value={bulkRejectReason} onChange={e => setBulkRejectReason(e.target.value)} placeholder="Enter reason for rejection..." rows={4} />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkRejectDialog(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleBulkReject} disabled={!bulkRejectReason.trim()}>Reject {selected.size} Submission(s)</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      {deleteConfirm && (
+        <ConfirmDialog
+          title="Delete Submissions"
+          message={`Are you sure you want to delete ${selected.size} selected submission(s)? This action cannot be undone.`}
+          onConfirm={handleBulkDelete}
+          onCancel={() => setDeleteConfirm(false)}
+        />
+      )}
     </DashboardLayout>
   );
 }
