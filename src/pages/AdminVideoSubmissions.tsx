@@ -214,8 +214,19 @@ export default function AdminVideoSubmissions() {
           <DialogHeader>
             <DialogTitle>Submission Details</DialogTitle>
           </DialogHeader>
-          {viewSubmission && (
+          {viewSubmission && (() => {
+            const vProfile = profiles[viewSubmission.user_id];
+            const vParent = subLabelMap[viewSubmission.user_id];
+            const userName = vProfile?.user_type === 'record_label' ? vProfile?.record_label_name : vProfile?.artist_name || vProfile?.legal_name || 'Unknown';
+            return (
             <div className="space-y-4">
+              <div className="bg-muted/40 p-3 rounded-lg space-y-1">
+                <div className="text-sm font-medium">{userName} <span className="text-muted-foreground">#{vProfile?.display_id}</span></div>
+                <div className="text-xs text-muted-foreground">{vProfile?.email}</div>
+                {vParent && (
+                  <div className="text-xs text-muted-foreground">↳ Under: <span className="font-medium">{vParent?.record_label_name || vParent?.legal_name}</span> #{vParent?.display_id}</div>
+                )}
+              </div>
               <div className="flex gap-4 flex-wrap">
                 <div><span className="text-xs text-muted-foreground">Status:</span> <StatusBadge status={viewSubmission.status} /></div>
                 <div><span className="text-xs text-muted-foreground">Date:</span> <span className="text-sm">{format(new Date(viewSubmission.created_at), 'dd MMM yyyy HH:mm')}</span></div>
