@@ -126,6 +126,7 @@ export function AppSidebar() {
     { to: '/submit', label: 'New Release', icon: Upload },
     { to: '/my-releases', label: 'My Releases', icon: ListMusic },
     { to: '/smart-links', label: 'Smart Links', icon: Link2 },
+    { to: '/youtube-cms-link', label: 'YouTube CMS Link', icon: Youtube },
     { to: '/my-labels', label: 'My Labels', icon: Tag },
   ];
 
