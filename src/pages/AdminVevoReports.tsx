@@ -564,15 +564,14 @@ export default function AdminVevoReports() {
           )}
         </GlassCard>
 
-        <ConfirmDialog
-          open={!!deleteMonth}
-          onOpenChange={() => setDeleteMonth(null)}
-          title={`Delete ${deleteMonth}?`}
-          description="All report entries for this month will be permanently deleted."
-          confirmLabel="Delete"
-          variant="destructive"
-          onConfirm={handleDeleteMonth}
-        />
+        {deleteMonth && (
+          <ConfirmDialog
+            title={`Delete ${deleteMonth}?`}
+            message="All report entries for this month will be permanently deleted."
+            onConfirm={() => { handleDeleteMonth(); }}
+            onCancel={() => setDeleteMonth(null)}
+          />
+        )}
       </div>
     </DashboardLayout>
   );
