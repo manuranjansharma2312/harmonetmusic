@@ -102,7 +102,7 @@ export default function VevoChannels() {
                 <TableBody>
                   {paginated.map((sub, i) => (
                     <TableRow key={sub.id}>
-                      <TableCell className="font-mono text-xs">{(page - 1) * pageSize + i + 1}</TableCell>
+                      <TableCell className="font-mono text-xs">{(pageSize === 'all' ? 0 : page * (pageSize as number)) + i + 1}</TableCell>
                       <TableCell>{(sub as any).video_forms?.name || '—'}</TableCell>
                       <TableCell><StatusBadge status={sub.status} /></TableCell>
                       <TableCell>{format(new Date(sub.created_at), 'dd MMM yyyy')}</TableCell>
