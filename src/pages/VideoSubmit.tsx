@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { countries } from '@/data/countries';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -249,16 +250,19 @@ export default function VideoSubmit() {
 
                 {field.field_type === 'phone' && (
                   <div className="flex gap-2">
-                    <Input
-                      className="w-24"
-                      placeholder="+91"
+                    <select
+                      className="w-[140px] px-2 py-2 rounded-md border border-input bg-background text-sm"
                       value={values[`${field.id}_code`] || '+91'}
                       onChange={e => setValues(prev => ({ ...prev, [`${field.id}_code`]: e.target.value }))}
-                    />
+                    >
+                      {countries.map(c => (
+                        <option key={c.code} value={c.dialCode}>{c.flag} {c.name} ({c.dialCode})</option>
+                      ))}
+                    </select>
                     <Input
                       className="flex-1"
                       placeholder={field.placeholder || 'Phone number'}
-                      value={values[field.id] || ''}
+                      value={values[field.id]?.replace(/^\+\d+\s*/, '') || ''}
                       onChange={e => setValues(prev => ({ ...prev, [field.id]: `${values[`${field.id}_code`] || '+91'} ${e.target.value}` }))}
                     />
                   </div>
