@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StatusBadge } from '@/components/StatusBadge';
 import { toast } from 'sonner';
-import { Eye, Search, Upload, Pencil, Check, X, Download, Trash2, CheckSquare, Image as ImageIcon, Film as VideoIcon, FileText as FileIcon } from 'lucide-react';
+import { Eye, Search, Upload, Pencil, Check, X, Download, Trash2, CheckSquare, Image as ImageIcon, Film as VideoIcon, FileText as FileIcon, ArrowRightLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -18,6 +18,7 @@ import { TablePagination } from '@/components/TablePagination';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { TransferVideoModal } from '@/components/TransferVideoModal';
 
 const VIDEO_STATUSES = ['pending', 'processing', 'approved', 'rejected'];
 const CHANNEL_STATUSES = ['pending', 'approved', 'rejected', 'suspended'];
@@ -54,6 +55,7 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [vevoChannelName, setVevoChannelName] = useState<string | null>(null);
   const [vevoFieldNames, setVevoFieldNames] = useState<Record<string, string>>({});
+  const [transferSubmission, setTransferSubmission] = useState<any>(null);
   const statuses = submissionType === 'upload_video' ? VIDEO_STATUSES : CHANNEL_STATUSES;
 
   const fetchSubmissions = async () => {
@@ -501,12 +503,15 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
                         <TableCell><StatusBadge status={sub.status} /></TableCell>
                         <TableCell>{format(new Date(sub.created_at), 'dd MMM yyyy')}</TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
+                          <div className="flex justify-end gap-1 flex-wrap">
                             <Button size="sm" variant="outline" onClick={() => openSubmission(sub, false)}>
                               <Eye className="h-3.5 w-3.5 mr-1" /> View
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => openSubmission(sub, true)}>
                               <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => setTransferSubmission(sub)}>
+                              <ArrowRightLeft className="h-3.5 w-3.5 mr-1" /> Transfer
                             </Button>
                             <Select value={sub.status} onValueChange={v => handleStatusChange(sub.id, v)}>
                               <SelectTrigger className="h-8 w-[120px] text-xs"><SelectValue /></SelectTrigger>
@@ -683,6 +688,18 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
           onCancel={() => setDeleteConfirm(false)}
         />
       )}
+
+      <TransferVideoModal
+        open={!!transferSubmission}
+        onClose={() => setTransferSubmission(null)}
+        submission={transferSubmission ? {
+          id: transferSubmission.id,
+          user_id: transferSubmission.user_id,
+          submission_type: submissionType,
+          form_name: transferSubmission.video_forms?.name,
+        } : null}
+        onTransferred={() => { setTransferSubmission(null); fetchSubmissions(); }}
+      />
     </DashboardLayout>
   );
 }
