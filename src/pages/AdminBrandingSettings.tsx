@@ -49,11 +49,19 @@ export default function AdminBrandingSettings() {
     })();
   }, []);
 
-  const handleUpload = async (field: 'logo_url' | 'favicon_url', file: File) => {
+  const handleFileSelect = (field: 'logo_url' | 'favicon_url', file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => setCropState({ field, src: reader.result as string });
+    reader.readAsDataURL(file);
+  };
+
+  const handleCroppedUpload = async (file: File) => {
+    if (!cropState) return;
+    const field = cropState.field;
+    setCropState(null);
     setUploading(field);
     try {
-      const ext = file.name.split('.').pop();
-      const path = `branding/${field}-${Date.now()}.${ext}`;
+      const path = `branding/${field}-${Date.now()}.png`;
       const { error } = await supabase.storage.from('posters').upload(path, file, { upsert: true });
       if (error) throw error;
       const { data: urlData } = supabase.storage.from('posters').getPublicUrl(path);
