@@ -8,6 +8,7 @@ import { useBranding } from '@/hooks/useBranding';
 
 function AccountBlockedScreen({ status }: { status: string }) {
   const { signOut } = useAuth();
+  const { logoSrc, branding } = useBranding();
 
   const config: Record<string, { icon: typeof Clock; title: string; message: string; color: string }> = {
     pending: {
