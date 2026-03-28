@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
+import { CopyButton } from '@/components/CopyButton';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -322,6 +323,7 @@ export default function AdminVideoSubmissions() {
                       ) : (
                         <div className="flex items-center gap-2 mt-1 group">
                           <p className="text-sm flex-1">{val?.text_value || '—'}</p>
+                          {val?.text_value && <CopyButton value={val.text_value} />}
                           {val && (
                             <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => { setEditingField(field.id); setEditValue(val.text_value || ''); }}>
                               <Pencil className="h-3 w-3" />
