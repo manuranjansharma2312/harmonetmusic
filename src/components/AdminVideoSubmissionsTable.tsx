@@ -340,6 +340,17 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
   const renderFieldValue = (field: any, val: any, isEditing: boolean) => {
     const isFile = isFileField(field.field_type);
 
+    // Vevo channel field — show resolved name
+    if (field.field_type === 'vevo_channel') {
+      const channelName = val?.text_value ? (vevoFieldNames[val.text_value] || val.text_value) : '—';
+      return (
+        <div className="flex items-center gap-2 mt-1">
+          <p className="text-sm font-medium">{channelName}</p>
+          {val?.text_value && <CopyButton value={channelName} />}
+        </div>
+      );
+    }
+
     if (isFile && val?.file_url) {
       return (
         <div className="mt-1 space-y-2">
