@@ -38,10 +38,10 @@ const reportLinksBase = [
   { to: '/reports/ott', label: 'OTT Reports', icon: MonitorPlay },
 ];
 
-const adminReportLinks = [
+const adminReportLinksBase = [
   { to: '/admin/reports/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/admin/reports/youtube', label: 'YouTube Reports', icon: Youtube },
-  { to: '/admin/reports/vevo', label: 'Vevo Reports', icon: Tv },
+  { to: '/admin/reports/vevo', label: 'Vevo Reports', icon: Tv, vevoOnly: true },
   { to: '/admin/reports/ott', label: 'OTT Reports', icon: MonitorPlay },
 ];
 
