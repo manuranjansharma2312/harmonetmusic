@@ -26,6 +26,7 @@ export default function AdminVideoSubmissions() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [profiles, setProfiles] = useState<Record<string, any>>({});
+  const [subLabelMap, setSubLabelMap] = useState<Record<string, any>>({});
   const [viewSubmission, setViewSubmission] = useState<any>(null);
   const [viewValues, setViewValues] = useState<any[]>([]);
   const [viewFields, setViewFields] = useState<any[]>([]);
@@ -45,10 +46,26 @@ export default function AdminVideoSubmissions() {
     // Fetch profiles
     const userIds = [...new Set((data || []).map((s: any) => s.user_id))];
     if (userIds.length > 0) {
-      const { data: profs } = await supabase.from('profiles').select('user_id, display_id, legal_name, email').in('user_id', userIds);
+      const [{ data: profs }, { data: subLabels }] = await Promise.all([
+        supabase.from('profiles').select('user_id, display_id, legal_name, email, user_type, record_label_name, artist_name').in('user_id', userIds),
+        supabase.from('sub_labels').select('sub_user_id, parent_user_id, status').in('sub_user_id', userIds).eq('status', 'active'),
+      ]);
       const map: Record<string, any> = {};
       (profs || []).forEach((p: any) => { map[p.user_id] = p; });
       setProfiles(map);
+
+      // Fetch parent profiles for sub-labels
+      const parentIds = [...new Set((subLabels || []).map((s: any) => s.parent_user_id))];
+      const slMap: Record<string, any> = {};
+      if (parentIds.length > 0) {
+        const { data: parentProfs } = await supabase.from('profiles').select('user_id, display_id, legal_name, record_label_name, artist_name').in('user_id', parentIds);
+        const parentMap: Record<string, any> = {};
+        (parentProfs || []).forEach((p: any) => { parentMap[p.user_id] = p; });
+        (subLabels || []).forEach((sl: any) => {
+          slMap[sl.sub_user_id] = parentMap[sl.parent_user_id];
+        });
+      }
+      setSubLabelMap(slMap);
     }
     setLoading(false);
   };
