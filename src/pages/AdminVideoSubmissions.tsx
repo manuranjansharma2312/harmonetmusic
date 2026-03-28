@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { StatusBadge } from '@/components/StatusBadge';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Video, Tv, Eye, Search, Upload, Pencil, Check, X } from 'lucide-react';
+import { Video, Tv, Eye, Search, Upload, Pencil, Check, X, Download } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -35,10 +35,13 @@ export default function AdminVideoSubmissions() {
   const [rejectionReason, setRejectionReason] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(25);
-  const [editingField, setEditingField] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState('');
   const [replacePreview, setReplacePreview] = useState<{ fieldId: string; file: File; previewUrl: string; valueId: string } | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  // Edit mode state
+  const [editMode, setEditMode] = useState(false);
+  const [editValues, setEditValues] = useState<Record<string, string>>({});
+  const [editSaving, setEditSaving] = useState(false);
 
   const fetchSubmissions = async () => {
     setLoading(true);
@@ -48,7 +51,6 @@ export default function AdminVideoSubmissions() {
       .order('created_at', { ascending: false });
     setSubmissions(data || []);
 
-    // Fetch profiles
     const userIds = [...new Set((data || []).map((s: any) => s.user_id))];
     if (userIds.length > 0) {
       const [{ data: profs }, { data: subLabels }] = await Promise.all([
@@ -59,7 +61,6 @@ export default function AdminVideoSubmissions() {
       (profs || []).forEach((p: any) => { map[p.user_id] = p; });
       setProfiles(map);
 
-      // Fetch parent profiles for sub-labels
       const parentIds = [...new Set((subLabels || []).map((s: any) => s.parent_user_id))];
       const slMap: Record<string, any> = {};
       if (parentIds.length > 0) {
@@ -98,24 +99,39 @@ export default function AdminVideoSubmissions() {
     setRejectionReason('');
   };
 
-  const handleView = async (sub: any) => {
+  const openSubmission = async (sub: any, isEdit: boolean) => {
     setViewSubmission(sub);
+    setEditMode(isEdit);
     const { data: values } = await supabase.from('video_submission_values').select('*').eq('submission_id', sub.id);
     setViewValues(values || []);
+    if (isEdit) {
+      const ev: Record<string, string> = {};
+      (values || []).forEach((v: any) => { ev[v.field_id] = v.text_value || ''; });
+      setEditValues(ev);
+    }
     if (sub.form_id) {
       const { data: fields } = await supabase.from('video_form_fields').select('*').eq('form_id', sub.form_id).order('sort_order');
       setViewFields(fields || []);
     }
   };
 
-  const handleSaveTextField = async (valueId: string) => {
-    const { error } = await supabase.from('video_submission_values').update({ text_value: editValue }).eq('id', valueId);
-    if (error) toast.error(error.message);
-    else {
-      toast.success('Field updated');
-      setViewValues(prev => prev.map(v => v.id === valueId ? { ...v, text_value: editValue } : v));
+  const handleSaveAllEdits = async () => {
+    setEditSaving(true);
+    try {
+      const updates = Object.entries(editValues).map(([fieldId, textValue]) => {
+        const val = viewValues.find(v => v.field_id === fieldId);
+        if (!val) return null;
+        return supabase.from('video_submission_values').update({ text_value: textValue }).eq('id', val.id);
+      }).filter(Boolean);
+      await Promise.all(updates);
+      toast.success('All fields saved successfully');
+      setViewValues(prev => prev.map(v => editValues[v.field_id] !== undefined ? { ...v, text_value: editValues[v.field_id] } : v));
+      setEditMode(false);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to save');
+    } finally {
+      setEditSaving(false);
     }
-    setEditingField(null);
   };
 
   const handleFileSelect = (fieldId: string, valueId: string, file: File) => {
@@ -146,6 +162,67 @@ export default function AdminVideoSubmissions() {
     }
   };
 
+  // Export CSV
+  const handleExport = async () => {
+    const toExport = filtered;
+    if (toExport.length === 0) { toast.error('No data to export'); return; }
+
+    // Fetch all fields and values for the filtered submissions
+    const formIds = [...new Set(toExport.map(s => s.form_id).filter(Boolean))];
+    const allFields: any[] = [];
+    for (const fid of formIds) {
+      const { data } = await supabase.from('video_form_fields').select('*').eq('form_id', fid).order('sort_order');
+      if (data) allFields.push(...data);
+    }
+
+    const subIds = toExport.map(s => s.id);
+    const allValues: any[] = [];
+    // Fetch in chunks
+    for (let i = 0; i < subIds.length; i += 50) {
+      const chunk = subIds.slice(i, i + 50);
+      const { data } = await supabase.from('video_submission_values').select('*').in('submission_id', chunk);
+      if (data) allValues.push(...data);
+    }
+
+    // Build unique field labels
+    const fieldMap = new Map<string, string>();
+    allFields.forEach(f => { if (!fieldMap.has(f.id)) fieldMap.set(f.id, f.label); });
+    const fieldLabels = [...fieldMap.entries()];
+
+    const headers = ['User', 'User ID', 'Email', 'Form', 'Status', 'Rejection Reason', 'Date', ...fieldLabels.map(([, l]) => l)];
+    const rows = toExport.map(sub => {
+      const profile = profiles[sub.user_id];
+      const userName = profile?.user_type === 'record_label' ? profile?.record_label_name : profile?.artist_name || profile?.legal_name || 'Unknown';
+      const subValues = allValues.filter(v => v.submission_id === sub.id);
+      const fieldCols = fieldLabels.map(([fid]) => {
+        const v = subValues.find(sv => sv.field_id === fid);
+        return v?.text_value || v?.file_url || '';
+      });
+      return [
+        userName,
+        profile?.display_id || '',
+        profile?.email || '',
+        (sub as any).video_forms?.name || '',
+        sub.status,
+        sub.rejection_reason || '',
+        format(new Date(sub.created_at), 'dd MMM yyyy'),
+        ...fieldCols,
+      ];
+    });
+
+    const csvContent = [headers, ...rows].map(row =>
+      row.map((cell: string) => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+    ).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `video-submissions-${tab}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success('Export downloaded');
+  };
 
   const statuses = tab === 'upload_video' ? VIDEO_STATUSES : CHANNEL_STATUSES;
   const effectivePageSize = pageSize === 'all' ? 9999 : pageSize;
@@ -163,12 +240,65 @@ export default function AdminVideoSubmissions() {
 
   const paginated = pageSize === 'all' ? filtered : filtered.slice(page * effectivePageSize, (page + 1) * effectivePageSize);
 
+  const isFileField = (type: string) => ['file_upload', 'image_upload', 'video_upload', 'document_upload', 'drag_drop_upload'].includes(type);
+
+  const renderFieldValue = (field: any, val: any, isEditing: boolean) => {
+    const isFile = isFileField(field.field_type);
+
+    if (isFile && val?.file_url) {
+      return (
+        <div className="mt-1 space-y-2">
+          {field.field_type === 'image_upload' ? (
+            <img src={val.file_url} alt={field.label} className="h-32 rounded object-cover" />
+          ) : field.field_type === 'video_upload' ? (
+            <video src={val.file_url} controls className="h-32 rounded" />
+          ) : (
+            <a href={val.file_url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline block">View File</a>
+          )}
+          {(editMode || isEditing) && (
+            <label className="cursor-pointer">
+              <input type="file" className="hidden" onChange={e => {
+                const f = e.target.files?.[0];
+                if (f && val) handleFileSelect(field.id, val.id, f);
+              }} />
+              <span className="inline-flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
+                <Upload className="h-3 w-3" /> Replace File
+              </span>
+            </label>
+          )}
+        </div>
+      );
+    }
+
+    if (isFile && !val?.file_url) {
+      return <p className="text-sm text-muted-foreground mt-1">No file uploaded</p>;
+    }
+
+    if (isEditing) {
+      return (
+        <Textarea
+          value={editValues[field.id] ?? val?.text_value ?? ''}
+          onChange={e => setEditValues(prev => ({ ...prev, [field.id]: e.target.value }))}
+          className="mt-1 text-sm min-h-[36px]"
+          rows={field.field_type === 'textarea' ? 3 : 1}
+        />
+      );
+    }
+
+    return (
+      <div className="flex items-center gap-2 mt-1 group">
+        <p className="text-sm flex-1">{val?.text_value || '—'}</p>
+        {val?.text_value && <CopyButton value={val.text_value} />}
+      </div>
+    );
+  };
+
   return (
     <DashboardLayout>
       <div className="p-4 md:p-6 space-y-6">
         <h1 className="text-2xl font-bold">Video Submissions</h1>
 
-        <Tabs value={tab} onValueChange={v => { setTab(v); setPage(1); setStatusFilter('all'); }}>
+        <Tabs value={tab} onValueChange={v => { setTab(v); setPage(0); setStatusFilter('all'); }}>
           <TabsList>
             <TabsTrigger value="upload_video" className="gap-2"><Video className="h-4 w-4" /> Videos</TabsTrigger>
             <TabsTrigger value="vevo_channel" className="gap-2"><Tv className="h-4 w-4" /> Vevo Channels</TabsTrigger>
@@ -187,6 +317,9 @@ export default function AdminVideoSubmissions() {
                   {statuses.map(s => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
                 </SelectContent>
               </Select>
+              <Button variant="outline" onClick={handleExport} disabled={filtered.length === 0}>
+                <Download className="h-4 w-4 mr-1" /> Export CSV
+              </Button>
             </div>
 
             <Card>
@@ -228,8 +361,11 @@ export default function AdminVideoSubmissions() {
                             <TableCell>{format(new Date(sub.created_at), 'dd MMM yyyy')}</TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-1">
-                                <Button size="sm" variant="outline" onClick={() => handleView(sub)}>
+                                <Button size="sm" variant="outline" onClick={() => openSubmission(sub, false)}>
                                   <Eye className="h-3.5 w-3.5 mr-1" /> View
+                                </Button>
+                                <Button size="sm" variant="outline" onClick={() => openSubmission(sub, true)}>
+                                  <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
                                 </Button>
                                 <Select value={sub.status} onValueChange={v => handleStatusChange(sub.id, v)}>
                                   <SelectTrigger className="h-8 w-[120px] text-xs"><SelectValue /></SelectTrigger>
@@ -252,11 +388,23 @@ export default function AdminVideoSubmissions() {
         </Tabs>
       </div>
 
-      {/* View Submission Dialog */}
-      <Dialog open={!!viewSubmission} onOpenChange={() => setViewSubmission(null)}>
+      {/* View / Edit Submission Dialog */}
+      <Dialog open={!!viewSubmission} onOpenChange={() => { setViewSubmission(null); setEditMode(false); }}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Submission Details</DialogTitle>
+            <DialogTitle className="flex items-center justify-between">
+              <span>{editMode ? 'Edit Submission' : 'Submission Details'}</span>
+              {!editMode && viewSubmission && (
+                <Button size="sm" variant="outline" onClick={() => {
+                  const ev: Record<string, string> = {};
+                  viewValues.forEach((v: any) => { ev[v.field_id] = v.text_value || ''; });
+                  setEditValues(ev);
+                  setEditMode(true);
+                }}>
+                  <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                </Button>
+              )}
+            </DialogTitle>
           </DialogHeader>
           {viewSubmission && (() => {
             const vProfile = profiles[viewSubmission.user_id];
@@ -284,59 +432,17 @@ export default function AdminVideoSubmissions() {
               <div className="space-y-3">
                 {viewFields.map(field => {
                   const val = viewValues.find(v => v.field_id === field.id);
-                  const isFile = ['file_upload', 'image_upload', 'video_upload', 'document_upload', 'drag_drop_upload'].includes(field.field_type);
-                  const isEditing = editingField === field.id;
                   return (
                     <div key={field.id} className="border-b pb-2">
                       <Label className="text-xs text-muted-foreground">{field.label}</Label>
-                      {isFile && val?.file_url ? (
-                        <div className="mt-1 space-y-2">
-                          {field.field_type === 'image_upload' ? (
-                            <img src={val.file_url} alt={field.label} className="h-32 rounded object-cover" />
-                          ) : field.field_type === 'video_upload' ? (
-                            <video src={val.file_url} controls className="h-32 rounded" />
-                          ) : (
-                            <a href={val.file_url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline block">View File</a>
-                          )}
-                          <div>
-                            <label className="cursor-pointer">
-                              <input type="file" className="hidden" onChange={e => {
-                                const f = e.target.files?.[0];
-                                if (f && val) handleFileSelect(field.id, val.id, f);
-                              }} />
-                              <span className="inline-flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
-                                <Upload className="h-3 w-3" /> Replace File
-                              </span>
-                            </label>
-                          </div>
-                        </div>
-                      ) : isEditing && val ? (
-                        <div className="flex items-center gap-2 mt-1">
-                          <Input value={editValue} onChange={e => setEditValue(e.target.value)} className="h-8 text-sm" />
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleSaveTextField(val.id)}>
-                            <Check className="h-3.5 w-3.5 text-green-600" />
-                          </Button>
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditingField(null)}>
-                            <X className="h-3.5 w-3.5 text-destructive" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 mt-1 group">
-                          <p className="text-sm flex-1">{val?.text_value || '—'}</p>
-                          {val?.text_value && <CopyButton value={val.text_value} />}
-                          {val && (
-                            <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => { setEditingField(field.id); setEditValue(val.text_value || ''); }}>
-                              <Pencil className="h-3 w-3" />
-                            </Button>
-                          )}
-                        </div>
-                      )}
+                      {field.description && <p className="text-xs text-muted-foreground/70">{field.description}</p>}
+                      {renderFieldValue(field, val, editMode)}
                     </div>
                   );
                 })}
               </div>
 
-              {/* Inline status change */}
+              {/* Status change */}
               <div className="pt-2 border-t flex items-center gap-3">
                 <Label className="text-xs text-muted-foreground">Change Status:</Label>
                 <Select value={viewSubmission.status} onValueChange={v => {
@@ -352,6 +458,15 @@ export default function AdminVideoSubmissions() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {editMode && (
+                <div className="flex justify-end gap-2 pt-2 border-t">
+                  <Button variant="outline" onClick={() => setEditMode(false)}>Cancel</Button>
+                  <Button onClick={handleSaveAllEdits} disabled={editSaving}>
+                    <Check className="h-4 w-4 mr-1" /> {editSaving ? 'Saving...' : 'Save All Changes'}
+                  </Button>
+                </div>
+              )}
             </div>
             );
           })()}
