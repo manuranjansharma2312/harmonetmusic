@@ -258,7 +258,8 @@ export default function AdminVideoSubmissions() {
                 })}
               </div>
             </div>
-          )}
+            );
+          })()}
         </DialogContent>
       </Dialog>
 
