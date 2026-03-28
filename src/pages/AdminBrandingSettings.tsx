@@ -7,7 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Save, Loader2, Globe, Image, Ruler, Upload } from 'lucide-react';
+import { Save, Loader2, Globe, Image, Ruler, Upload, RotateCcw } from 'lucide-react';
+
+const DEFAULT_SIZES = {
+  login_logo_height: 48,
+  sidebar_logo_height: 40,
+  sidebar_collapsed_logo_height: 28,
+  mobile_header_logo_height: 32,
+};
 
 export default function AdminBrandingSettings() {
   const [loading, setLoading] = useState(true);
