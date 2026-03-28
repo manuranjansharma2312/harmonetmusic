@@ -688,6 +688,18 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
           onCancel={() => setDeleteConfirm(false)}
         />
       )}
+
+      <TransferVideoModal
+        open={!!transferSubmission}
+        onClose={() => setTransferSubmission(null)}
+        submission={transferSubmission ? {
+          id: transferSubmission.id,
+          user_id: transferSubmission.user_id,
+          submission_type: submissionType,
+          form_name: transferSubmission.video_forms?.name,
+        } : null}
+        onTransferred={() => { setTransferSubmission(null); fetchSubmissions(); }}
+      />
     </DashboardLayout>
   );
 }
