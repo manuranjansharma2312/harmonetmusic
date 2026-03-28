@@ -391,6 +391,7 @@ export default function VideoSubmit() {
           open={true}
           imageSrc={cropField.src}
           aspect={cropField.aspect}
+          outputSize={cropField.outputSize}
           title="Crop Image"
           onCropComplete={handleCropComplete}
           onCancel={() => { URL.revokeObjectURL(cropField.src); setCropField(null); }}
