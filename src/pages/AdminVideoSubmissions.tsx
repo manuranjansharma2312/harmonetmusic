@@ -31,8 +31,8 @@ export default function AdminVideoSubmissions() {
   const [viewFields, setViewFields] = useState<any[]>([]);
   const [rejectDialog, setRejectDialog] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(25);
 
   const fetchSubmissions = async () => {
     setLoading(true);
