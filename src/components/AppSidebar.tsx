@@ -214,7 +214,12 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-border/50">
       <SidebarHeader className="p-4 border-b border-border/50">
         <div className="flex items-center justify-center">
-          <img src={logoWhite} alt="Harmonet Music" className={collapsed ? 'h-7 w-auto' : 'h-14 w-auto'} />
+          <img
+            src={logoSrc}
+            alt={branding.site_name}
+            style={{ height: collapsed ? `${branding.sidebar_collapsed_logo_height}px` : `${branding.sidebar_logo_height}px` }}
+            className="w-auto"
+          />
         </div>
       </SidebarHeader>
 
