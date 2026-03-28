@@ -52,7 +52,7 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
   const [bulkRejectDialog, setBulkRejectDialog] = useState(false);
   const [bulkRejectReason, setBulkRejectReason] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(false);
-
+  const [vevoChannelName, setVevoChannelName] = useState<string | null>(null);
   const statuses = submissionType === 'upload_video' ? VIDEO_STATUSES : CHANNEL_STATUSES;
 
   const fetchSubmissions = async () => {
@@ -147,6 +147,7 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
   const openSubmission = async (sub: any, isEdit: boolean) => {
     setViewSubmission(sub);
     setEditMode(isEdit);
+    setVevoChannelName(null);
     const { data: values } = await supabase.from('video_submission_values').select('*').eq('submission_id', sub.id);
     setViewValues(values || []);
     if (isEdit) {
@@ -157,6 +158,16 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
     if (sub.form_id) {
       const { data: fields } = await supabase.from('video_form_fields').select('*').eq('form_id', sub.form_id).order('sort_order');
       setViewFields(fields || []);
+    }
+    // Resolve vevo channel name
+    if (sub.vevo_channel_id) {
+      const { data: chVals } = await supabase
+        .from('video_submission_values')
+        .select('text_value')
+        .eq('submission_id', sub.vevo_channel_id)
+        .not('text_value', 'is', null)
+        .limit(1);
+      setVevoChannelName(chVals?.[0]?.text_value || `Channel #${sub.vevo_channel_id.slice(0, 8)}`);
     }
   };
 
@@ -515,6 +526,9 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
               <div className="flex gap-4 flex-wrap">
                 <div><span className="text-xs text-muted-foreground">Status:</span> <StatusBadge status={viewSubmission.status} /></div>
                 <div><span className="text-xs text-muted-foreground">Date:</span> <span className="text-sm">{format(new Date(viewSubmission.created_at), 'dd MMM yyyy HH:mm')}</span></div>
+                {vevoChannelName && (
+                  <div><span className="text-xs text-muted-foreground">Vevo Channel:</span> <span className="text-sm font-medium">{vevoChannelName}</span></div>
+                )}
               </div>
               {viewSubmission.rejection_reason && (
                 <div className="bg-destructive/10 p-3 rounded-lg">

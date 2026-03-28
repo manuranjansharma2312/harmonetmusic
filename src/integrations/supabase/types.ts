@@ -2268,6 +2268,7 @@ export type Database = {
           submission_type: string
           updated_at: string
           user_id: string
+          vevo_channel_id: string | null
         }
         Insert: {
           created_at?: string
@@ -2278,6 +2279,7 @@ export type Database = {
           submission_type?: string
           updated_at?: string
           user_id: string
+          vevo_channel_id?: string | null
         }
         Update: {
           created_at?: string
@@ -2288,6 +2290,7 @@ export type Database = {
           submission_type?: string
           updated_at?: string
           user_id?: string
+          vevo_channel_id?: string | null
         }
         Relationships: [
           {
@@ -2295,6 +2298,13 @@ export type Database = {
             columns: ["form_id"]
             isOneToOne: false
             referencedRelation: "video_forms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_submissions_vevo_channel_id_fkey"
+            columns: ["vevo_channel_id"]
+            isOneToOne: false
+            referencedRelation: "video_submissions"
             referencedColumns: ["id"]
           },
         ]
