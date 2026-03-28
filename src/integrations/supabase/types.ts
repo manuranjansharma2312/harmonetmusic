@@ -2115,6 +2115,78 @@ export type Database = {
         }
         Relationships: []
       }
+      vevo_report_entries: {
+        Row: {
+          artist: string | null
+          c_line: string | null
+          country: string | null
+          created_at: string | null
+          currency: string | null
+          cut_percent_snapshot: number | null
+          downloads: number | null
+          id: string
+          imported_at: string | null
+          isrc: string | null
+          label: string | null
+          net_generated_revenue: number | null
+          p_line: string | null
+          reporting_month: string
+          revenue_frozen: boolean
+          sales_type: string | null
+          store: string | null
+          streams: number | null
+          track: string | null
+          upc: string | null
+          user_id: string
+        }
+        Insert: {
+          artist?: string | null
+          c_line?: string | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          cut_percent_snapshot?: number | null
+          downloads?: number | null
+          id?: string
+          imported_at?: string | null
+          isrc?: string | null
+          label?: string | null
+          net_generated_revenue?: number | null
+          p_line?: string | null
+          reporting_month: string
+          revenue_frozen?: boolean
+          sales_type?: string | null
+          store?: string | null
+          streams?: number | null
+          track?: string | null
+          upc?: string | null
+          user_id: string
+        }
+        Update: {
+          artist?: string | null
+          c_line?: string | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          cut_percent_snapshot?: number | null
+          downloads?: number | null
+          id?: string
+          imported_at?: string | null
+          isrc?: string | null
+          label?: string | null
+          net_generated_revenue?: number | null
+          p_line?: string | null
+          reporting_month?: string
+          revenue_frozen?: boolean
+          sales_type?: string | null
+          store?: string | null
+          streams?: number | null
+          track?: string | null
+          upc?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       video_form_fields: {
         Row: {
           created_at: string

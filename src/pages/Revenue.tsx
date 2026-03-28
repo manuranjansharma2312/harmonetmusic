@@ -59,6 +59,7 @@ export default function Revenue() {
       .channel('revenue-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'report_entries' }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'youtube_report_entries' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'vevo_report_entries' }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawal_requests' }, () => fetchData())
       .subscribe();
 
@@ -161,21 +162,27 @@ export default function Revenue() {
         )];
 
         if (ownedIsrcs.length > 0) {
-          const [{ data: ottData }, { data: ytData }] = await Promise.all([
+          const [{ data: ottData }, { data: ytData }, { data: vevoData }] = await Promise.all([
             supabase.from('report_entries').select('net_generated_revenue, cut_percent_snapshot').in('isrc', ownedIsrcs).eq('revenue_frozen', false),
             supabase.from('youtube_report_entries').select('net_generated_revenue, cut_percent_snapshot').in('isrc', ownedIsrcs).eq('revenue_frozen', false),
+            supabase.from('vevo_report_entries').select('net_generated_revenue, cut_percent_snapshot').in('isrc', ownedIsrcs).eq('revenue_frozen', false),
           ]);
           ottTotal = (ottData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
           ytTotal = (ytData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
+          const vevoTotal = (vevoData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
+          ottTotal += vevoTotal;
         }
       } else {
         // Regular user or admin not impersonating - rely on RLS
-        const [{ data: ottData }, { data: ytData }] = await Promise.all([
+        const [{ data: ottData }, { data: ytData }, { data: vevoData }] = await Promise.all([
           supabase.from('report_entries').select('net_generated_revenue, cut_percent_snapshot').eq('revenue_frozen', false),
           supabase.from('youtube_report_entries').select('net_generated_revenue, cut_percent_snapshot').eq('revenue_frozen', false),
+          supabase.from('vevo_report_entries').select('net_generated_revenue, cut_percent_snapshot').eq('revenue_frozen', false),
         ]);
         ottTotal = (ottData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
         ytTotal = (ytData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
+        const vevoTotal = (vevoData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
+        ottTotal += vevoTotal;
       }
 
       setTotalRevenue(ottTotal + ytTotal);

@@ -83,6 +83,8 @@ const MyVideos = lazy(() => import("./pages/MyVideos"));
 const VevoChannels = lazy(() => import("./pages/VevoChannels"));
 const AdminVideoGuidelines = lazy(() => import("./pages/AdminVideoGuidelines"));
 const VideoGuidelines = lazy(() => import("./pages/VideoGuidelines"));
+const AdminVevoReports = lazy(() => import("./pages/AdminVevoReports"));
+const VevoReports = lazy(() => import("./pages/VevoReports"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -149,6 +151,7 @@ function App() {
                       <Route path="/admin/content-requests" element={<ProtectedRoute requiredRole="admin"><AdminContentRequests /></ProtectedRoute>} />
                       <Route path="/admin/reports/ott" element={<ProtectedRoute requiredRole="admin"><AdminReports /></ProtectedRoute>} />
                       <Route path="/admin/reports/youtube" element={<ProtectedRoute requiredRole="admin"><AdminYouTubeReports /></ProtectedRoute>} />
+                      <Route path="/admin/reports/vevo" element={<ProtectedRoute requiredRole="admin"><AdminVevoReports /></ProtectedRoute>} />
                       <Route path="/admin/reports" element={<Navigate to="/admin/reports/ott" replace />} />
                       <Route path="/revenue" element={<ProtectedRoute><Revenue /></ProtectedRoute>} />
                       <Route path="/admin/revenue" element={<ProtectedRoute requiredRole="admin"><AdminRevenue /></ProtectedRoute>} />
@@ -181,6 +184,7 @@ function App() {
                       <Route path="/tools/playlist-pitching" element={<ProtectedRoute><PlaylistPitching /></ProtectedRoute>} />
                       <Route path="/reports/ott" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
                       <Route path="/reports/youtube" element={<ProtectedRoute><YouTubeReports /></ProtectedRoute>} />
+                      <Route path="/reports/vevo" element={<ProtectedRoute><VevoReports /></ProtectedRoute>} />
                       <Route path="/reports/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
                       <Route path="/admin/reports/analytics" element={<ProtectedRoute requiredRole="admin"><Analytics /></ProtectedRoute>} />
                       <Route path="/reports" element={<Navigate to="/reports/ott" replace />} />
