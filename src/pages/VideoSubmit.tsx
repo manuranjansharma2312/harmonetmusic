@@ -160,6 +160,11 @@ export default function VideoSubmit() {
   const handleSubmit = async () => {
     if (!form || !user) return;
 
+    // Validate Vevo channel selection for upload_video
+    if (submissionType === 'upload_video' && vevoChannels.length > 0 && !selectedVevoChannel) {
+      toast.error('Please select a Vevo Channel');
+      return;
+    }
     // Validate required fields
     for (const field of fields) {
       if (!field.is_required) continue;
