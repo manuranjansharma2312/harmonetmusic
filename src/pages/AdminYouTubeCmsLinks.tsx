@@ -408,17 +408,45 @@ export default function AdminYouTubeCmsLinks() {
                           <TableCell>{l.is_monetized ? 'On' : 'Off'}</TableCell>
                           <TableCell>
                             {l.noc_file_url ? (
-                              <a href={l.noc_file_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
-                                <FileText className="h-3 w-3" /> View
-                              </a>
-                            ) : '—'}
+                              <div className="flex items-center gap-1">
+                                <a href={l.noc_file_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                                  <FileText className="h-3 w-3" /> View
+                                </a>
+                                <button
+                                  onClick={() => handleDeleteFile(l.id, 'noc_file_url', l.noc_file_url!)}
+                                  className="p-1 rounded hover:bg-destructive/10 text-destructive/60 hover:text-destructive transition-colors"
+                                  title="Delete NOC file"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <FileX className="h-4 w-4" />
+                                <span className="text-xs">No file</span>
+                              </div>
+                            )}
                           </TableCell>
                           <TableCell>
                             {l.yt_reports_screenshot_url ? (
-                              <a href={l.yt_reports_screenshot_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
-                                <ImageIcon className="h-3 w-3" /> View
-                              </a>
-                            ) : '—'}
+                              <div className="flex items-center gap-1">
+                                <a href={l.yt_reports_screenshot_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                                  <ImageIcon className="h-3 w-3" /> View
+                                </a>
+                                <button
+                                  onClick={() => handleDeleteFile(l.id, 'yt_reports_screenshot_url', l.yt_reports_screenshot_url!)}
+                                  className="p-1 rounded hover:bg-destructive/10 text-destructive/60 hover:text-destructive transition-colors"
+                                  title="Delete screenshot"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <ImageOff className="h-4 w-4" />
+                                <span className="text-xs">No image</span>
+                              </div>
+                            )}
                           </TableCell>
                           <TableCell>
                             <div className="space-y-2 min-w-[180px]">
