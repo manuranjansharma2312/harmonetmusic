@@ -119,7 +119,6 @@ export default function MyVideos() {
           </CardContent>
         </Card>
         <TablePagination totalItems={filtered.length} currentPage={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={v => { setPageSize(v); setPage(0); }} />
-        )}
       </div>
 
       <Dialog open={!!viewSubmission} onOpenChange={() => setViewSubmission(null)}>
