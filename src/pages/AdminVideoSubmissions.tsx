@@ -168,8 +168,16 @@ export default function AdminVideoSubmissions() {
                         return (
                           <TableRow key={sub.id}>
                             <TableCell>
-                              <div className="text-sm font-medium">{profile?.legal_name || 'Unknown'}</div>
+                              <div className="text-sm font-medium">
+                                {profile?.user_type === 'record_label' ? profile?.record_label_name : profile?.artist_name || profile?.legal_name || 'Unknown'}
+                              </div>
                               <div className="text-xs text-muted-foreground">#{profile?.display_id}</div>
+                              {subLabelMap[sub.user_id] && (
+                                <div className="text-xs text-muted-foreground mt-0.5">
+                                  ↳ Under: <span className="font-medium">{subLabelMap[sub.user_id]?.record_label_name || subLabelMap[sub.user_id]?.legal_name}</span>
+                                  <span className="ml-1">#{subLabelMap[sub.user_id]?.display_id}</span>
+                                </div>
+                              )}
                             </TableCell>
                             <TableCell>{(sub as any).video_forms?.name || '—'}</TableCell>
                             <TableCell><StatusBadge status={sub.status} /></TableCell>
