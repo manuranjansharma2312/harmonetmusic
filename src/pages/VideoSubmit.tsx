@@ -41,7 +41,7 @@ export default function VideoSubmit() {
   const [multiSelectValues, setMultiSelectValues] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [cropField, setCropField] = useState<{ fieldId: string; src: string; aspect?: number } | null>(null);
+  const [cropField, setCropField] = useState<{ fieldId: string; src: string; aspect?: number; outputSize?: { width: number; height: number } } | null>(null);
 
   useEffect(() => { loadForm(); }, [submissionType]);
 
@@ -77,13 +77,23 @@ export default function VideoSubmit() {
   const handleFileSelect = (fieldId: string, file: File | null, field: FieldDef) => {
     if (!file) return;
 
-    // Check if image_upload with aspect ratio -> show crop
-    if (field.field_type === 'image_upload' && field.settings.aspect_ratio) {
-      const parts = field.settings.aspect_ratio.split(':').map(Number);
-      const aspect = parts.length === 2 && parts[1] ? parts[0] / parts[1] : undefined;
-      const src = URL.createObjectURL(file);
-      setCropField({ fieldId, src, aspect });
-      return;
+    // Check if image_upload with aspect ratio or output size -> show crop
+    if (field.field_type === 'image_upload') {
+      const hasAspect = !!field.settings.aspect_ratio;
+      const hasOutput = field.settings.output_width && field.settings.output_height;
+      if (hasAspect || hasOutput) {
+        let aspect: number | undefined;
+        if (hasAspect) {
+          const parts = field.settings.aspect_ratio.split(':').map(Number);
+          aspect = parts.length === 2 && parts[1] ? parts[0] / parts[1] : undefined;
+        } else if (hasOutput) {
+          aspect = field.settings.output_width / field.settings.output_height;
+        }
+        const outputSize = hasOutput ? { width: field.settings.output_width, height: field.settings.output_height } : undefined;
+        const src = URL.createObjectURL(file);
+        setCropField({ fieldId, src, aspect, outputSize });
+        return;
+      }
     }
 
     setFileValues(prev => ({ ...prev, [fieldId]: file }));
@@ -342,15 +352,29 @@ export default function VideoSubmit() {
                       accept="image/*"
                       onChange={e => handleFileSelect(field.id, e.target.files?.[0] || null, field)}
                     />
-                    {field.settings.aspect_ratio && (
-                      <p className="text-xs text-muted-foreground mt-1">Required ratio: {field.settings.aspect_ratio}</p>
-                    )}
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {field.settings.aspect_ratio && (
+                        <p className="text-xs text-muted-foreground">Ratio: {field.settings.aspect_ratio}</p>
+                      )}
+                      {field.settings.output_width && field.settings.output_height && (
+                        <p className="text-xs text-muted-foreground">Size: {field.settings.output_width}×{field.settings.output_height}px</p>
+                      )}
+                    </div>
                     {fileValues[field.id] && (
                       <div className="mt-2">
                         <img src={URL.createObjectURL(fileValues[field.id]!)} alt="Preview" className="h-24 rounded object-cover" />
                       </div>
                     )}
                   </div>
+                )}
+
+                {field.field_type === 'link' && (
+                  <Input
+                    type="url"
+                    placeholder={field.placeholder || 'https://...'}
+                    value={values[field.id] || ''}
+                    onChange={e => setValues(prev => ({ ...prev, [field.id]: e.target.value }))}
+                  />
                 )}
 
                 {field.field_type === 'video_upload' && (
@@ -381,6 +405,7 @@ export default function VideoSubmit() {
           open={true}
           imageSrc={cropField.src}
           aspect={cropField.aspect}
+          outputSize={cropField.outputSize}
           title="Crop Image"
           onCropComplete={handleCropComplete}
           onCancel={() => { URL.revokeObjectURL(cropField.src); setCropField(null); }}

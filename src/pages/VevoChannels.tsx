@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { CopyButton } from '@/components/CopyButton';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -149,8 +150,16 @@ export default function VevoChannels() {
                         ) : (
                           <a href={val.file_url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline block mt-1">View File</a>
                         )
+                      ) : field.field_type === 'link' && val?.text_value ? (
+                        <div className="flex items-center gap-1 mt-1">
+                          <a href={val.text_value} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline truncate">{val.text_value}</a>
+                          <CopyButton value={val.text_value} />
+                        </div>
                       ) : (
-                        <p className="text-sm">{val?.text_value || '—'}</p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <p className="text-sm">{val?.text_value || '—'}</p>
+                          {val?.text_value && <CopyButton value={val.text_value} />}
+                        </div>
                       )}
                     </div>
                   );
