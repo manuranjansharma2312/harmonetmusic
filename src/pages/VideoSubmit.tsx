@@ -352,15 +352,29 @@ export default function VideoSubmit() {
                       accept="image/*"
                       onChange={e => handleFileSelect(field.id, e.target.files?.[0] || null, field)}
                     />
-                    {field.settings.aspect_ratio && (
-                      <p className="text-xs text-muted-foreground mt-1">Required ratio: {field.settings.aspect_ratio}</p>
-                    )}
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {field.settings.aspect_ratio && (
+                        <p className="text-xs text-muted-foreground">Ratio: {field.settings.aspect_ratio}</p>
+                      )}
+                      {field.settings.output_width && field.settings.output_height && (
+                        <p className="text-xs text-muted-foreground">Size: {field.settings.output_width}×{field.settings.output_height}px</p>
+                      )}
+                    </div>
                     {fileValues[field.id] && (
                       <div className="mt-2">
                         <img src={URL.createObjectURL(fileValues[field.id]!)} alt="Preview" className="h-24 rounded object-cover" />
                       </div>
                     )}
                   </div>
+                )}
+
+                {field.field_type === 'link' && (
+                  <Input
+                    type="url"
+                    placeholder={field.placeholder || 'https://...'}
+                    value={values[field.id] || ''}
+                    onChange={e => setValues(prev => ({ ...prev, [field.id]: e.target.value }))}
+                  />
                 )}
 
                 {field.field_type === 'video_upload' && (
