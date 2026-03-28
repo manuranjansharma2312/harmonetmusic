@@ -186,6 +186,10 @@ export default function MyVideos() {
                           <a href={val.text_value} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline truncate">{val.text_value}</a>
                           <CopyButton value={val.text_value} />
                         </div>
+                      ) : field.field_type === 'vevo_channel' ? (
+                        <div className="flex items-center gap-1 mt-1">
+                          <p className="text-sm font-medium">{val?.text_value ? (vevoFieldNames[val.text_value] || val.text_value) : '—'}</p>
+                        </div>
                       ) : (
                         <div className="flex items-center gap-1 mt-1">
                           <p className="text-sm">{val?.text_value || '—'}</p>
