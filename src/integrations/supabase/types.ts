@@ -2503,6 +2503,7 @@ export type Database = {
           status: string
           updated_at: string
           user_id: string
+          yt_reports_screenshot_url: string | null
         }
         Insert: {
           channel_name: string
@@ -2517,6 +2518,7 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id: string
+          yt_reports_screenshot_url?: string | null
         }
         Update: {
           channel_name?: string
@@ -2531,6 +2533,7 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string
+          yt_reports_screenshot_url?: string | null
         }
         Relationships: []
       }

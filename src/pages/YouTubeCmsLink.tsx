@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { StatusBadge } from '@/components/StatusBadge';
 import { GlassCard } from '@/components/GlassCard';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, Plus, Youtube, FileText, ExternalLink } from 'lucide-react';
+import { Loader2, Plus, Youtube, FileText, ExternalLink, Image as ImageIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { format } from 'date-fns';
 
@@ -20,6 +20,7 @@ interface CmsLink {
   channel_url: string;
   is_monetized: boolean;
   noc_file_url: string | null;
+  yt_reports_screenshot_url: string | null;
   status: string;
   rejection_reason: string | null;
   cms_linked_date: string | null;
@@ -37,6 +38,7 @@ export default function YouTubeCmsLink() {
   const [channelUrl, setChannelUrl] = useState('');
   const [isMonetized, setIsMonetized] = useState(false);
   const [nocFile, setNocFile] = useState<File | null>(null);
+  const [ytReportsFile, setYtReportsFile] = useState<File | null>(null);
 
   const fetchLinks = async () => {
     if (!user) return;
@@ -51,6 +53,15 @@ export default function YouTubeCmsLink() {
 
   useEffect(() => { fetchLinks(); }, [user]);
 
+  const uploadFile = async (file: File, folder: string) => {
+    const ext = file.name.split('.').pop();
+    const path = `${user!.id}/${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from(folder).upload(path, file);
+    if (error) throw error;
+    const { data: urlData } = supabase.storage.from(folder).getPublicUrl(path);
+    return urlData.publicUrl;
+  };
+
   const handleSubmit = async () => {
     if (!user || !channelName.trim() || !channelUrl.trim()) {
       toast.error('Please fill all required fields');
@@ -59,14 +70,10 @@ export default function YouTubeCmsLink() {
     setSubmitting(true);
     try {
       let nocUrl: string | null = null;
-      if (nocFile) {
-        const ext = nocFile.name.split('.').pop();
-        const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-        const { error: upErr } = await supabase.storage.from('cms-noc-files').upload(path, nocFile);
-        if (upErr) throw upErr;
-        const { data: urlData } = supabase.storage.from('cms-noc-files').getPublicUrl(path);
-        nocUrl = urlData.publicUrl;
-      }
+      let ytReportsUrl: string | null = null;
+
+      if (nocFile) nocUrl = await uploadFile(nocFile, 'cms-noc-files');
+      if (ytReportsFile) ytReportsUrl = await uploadFile(ytReportsFile, 'cms-noc-files');
 
       const { error } = await supabase.from('youtube_cms_links' as any).insert({
         user_id: user.id,
@@ -74,6 +81,7 @@ export default function YouTubeCmsLink() {
         channel_url: channelUrl.trim(),
         is_monetized: isMonetized,
         noc_file_url: nocUrl,
+        yt_reports_screenshot_url: ytReportsUrl,
       } as any);
 
       if (error) throw error;
@@ -83,6 +91,7 @@ export default function YouTubeCmsLink() {
       setChannelUrl('');
       setIsMonetized(false);
       setNocFile(null);
+      setYtReportsFile(null);
       fetchLinks();
     } catch (err: any) {
       toast.error(err.message || 'Submission failed');
@@ -132,6 +141,7 @@ export default function YouTubeCmsLink() {
                     <TableHead>Channel URL</TableHead>
                     <TableHead>Monetized</TableHead>
                     <TableHead>NOC</TableHead>
+                    <TableHead>YT Reports</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>CMS Company</TableHead>
                     <TableHead>CMS Linked Date</TableHead>
@@ -156,6 +166,13 @@ export default function YouTubeCmsLink() {
                         ) : '—'}
                       </TableCell>
                       <TableCell>
+                        {l.yt_reports_screenshot_url ? (
+                          <a href={l.yt_reports_screenshot_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                            <ImageIcon className="h-3 w-3" /> View
+                          </a>
+                        ) : '—'}
+                      </TableCell>
+                      <TableCell>
                         <StatusBadge status={statusMap[l.status] || l.status} />
                         <span className="ml-1 text-xs text-muted-foreground">{statusLabel[l.status] || l.status}</span>
                         {l.status === 'rejected' && l.rejection_reason && (
@@ -174,7 +191,6 @@ export default function YouTubeCmsLink() {
         </GlassCard>
       </div>
 
-      {/* New Request Dialog */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -197,6 +213,10 @@ export default function YouTubeCmsLink() {
             <div>
               <Label>Clarification / NOC (PDF)</Label>
               <Input type="file" accept=".pdf" onChange={(e) => setNocFile(e.target.files?.[0] || null)} />
+            </div>
+            <div>
+              <Label>Last 6 Month Reports of YouTube Reports (Image)</Label>
+              <Input type="file" accept="image/*" onChange={(e) => setYtReportsFile(e.target.files?.[0] || null)} />
             </div>
           </div>
           <DialogFooter>
