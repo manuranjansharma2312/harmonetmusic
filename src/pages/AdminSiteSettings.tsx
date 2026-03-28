@@ -8,7 +8,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   Loader2, Settings, Zap, Image, Monitor, Shield, Database, RefreshCw,
   Bell, Wifi, Clock, Upload, Terminal, AlertTriangle, Type, Gauge, RotateCcw,
-  ToggleLeft,
 } from 'lucide-react';
 import { useSiteSettings, SITE_SETTINGS_DEFAULTS, type SiteSettings } from '@/hooks/useSiteSettings';
 
