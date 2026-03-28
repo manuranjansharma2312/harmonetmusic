@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { StatusBadge } from '@/components/StatusBadge';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Video, Tv, Eye, Search, Upload, Pencil, Check, X, Download, Trash2, CheckSquare } from 'lucide-react';
+import { Video, Tv, Eye, Search, Upload, Pencil, Check, X, Download, Trash2, CheckSquare, Image as ImageIcon, Film as VideoIcon, FileText as FileIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -336,7 +336,17 @@ export default function AdminVideoSubmissions() {
     }
 
     if (isFile && !val?.file_url) {
-      return <p className="text-sm text-muted-foreground mt-1">No file uploaded</p>;
+      const placeholderIcon = field.field_type === 'image_upload'
+        ? <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+        : field.field_type === 'video_upload'
+        ? <VideoIcon className="h-8 w-8 text-muted-foreground/50" />
+        : <FileIcon className="h-8 w-8 text-muted-foreground/50" />;
+      return (
+        <div className="mt-1 h-32 rounded-lg border border-dashed border-border bg-muted/30 flex flex-col items-center justify-center gap-2">
+          {placeholderIcon}
+          <span className="text-xs text-muted-foreground">No file uploaded</span>
+        </div>
+      );
     }
 
     if (isEditing) {

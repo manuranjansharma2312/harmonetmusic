@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { StatusBadge } from '@/components/StatusBadge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Eye, Search, Loader2 } from 'lucide-react';
+import { Eye, Search, Loader2, Image as ImageIcon, Film as VideoIcon, FileText as FileIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -147,9 +147,16 @@ export default function MyVideos() {
                       {isFile && val?.file_url ? (
                         field.field_type === 'image_upload' ? (
                           <img src={val.file_url} alt={field.label} className="h-32 rounded mt-1 object-cover" />
+                        ) : field.field_type === 'video_upload' ? (
+                          <video src={val.file_url} controls className="h-32 rounded mt-1" />
                         ) : (
                           <a href={val.file_url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline block mt-1">View File</a>
                         )
+                      ) : isFile && !val?.file_url ? (
+                        <div className="mt-1 h-28 rounded-lg border border-dashed border-border bg-muted/30 flex flex-col items-center justify-center gap-2">
+                          {field.field_type === 'image_upload' ? <ImageIcon className="h-8 w-8 text-muted-foreground/50" /> : field.field_type === 'video_upload' ? <VideoIcon className="h-8 w-8 text-muted-foreground/50" /> : <FileIcon className="h-8 w-8 text-muted-foreground/50" />}
+                          <span className="text-xs text-muted-foreground">No file</span>
+                        </div>
                       ) : field.field_type === 'link' && val?.text_value ? (
                         <div className="flex items-center gap-1 mt-1">
                           <a href={val.text_value} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline truncate">{val.text_value}</a>
