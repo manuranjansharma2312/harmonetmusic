@@ -34,8 +34,11 @@ export default function AdminVideoSubmissions() {
   const [rejectionReason, setRejectionReason] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(25);
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const [replacePreview, setReplacePreview] = useState<{ fieldId: string; file: File; previewUrl: string; valueId: string } | null>(null);
+  const [uploading, setUploading] = useState(false);
 
-  const fetchSubmissions = async () => {
     setLoading(true);
     const { data } = await supabase
       .from('video_submissions')
