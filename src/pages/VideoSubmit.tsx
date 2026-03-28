@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
-import { Upload, Loader2 } from 'lucide-react';
+import { Upload, Loader2, CheckCircle } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { BrandingCropModal } from '@/components/BrandingCropModal';
 import { Badge } from '@/components/ui/badge';
