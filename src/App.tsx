@@ -85,6 +85,7 @@ const AdminVideoGuidelines = lazy(() => import("./pages/AdminVideoGuidelines"));
 const VideoGuidelines = lazy(() => import("./pages/VideoGuidelines"));
 const AdminVevoReports = lazy(() => import("./pages/AdminVevoReports"));
 const VevoReports = lazy(() => import("./pages/VevoReports"));
+const AdminVevoSettings = lazy(() => import("./pages/AdminVevoSettings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -170,6 +171,7 @@ function App() {
                       <Route path="/admin/email-settings" element={<ProtectedRoute requiredRole="admin"><AdminEmailSettings /></ProtectedRoute>} />
                       <Route path="/admin/ai-image-system" element={<ProtectedRoute requiredRole="admin"><AdminAIImageSystem /></ProtectedRoute>} />
                       <Route path="/admin/site-settings" element={<ProtectedRoute requiredRole="admin"><AdminSiteSettings /></ProtectedRoute>} />
+                      <Route path="/admin/vevo-settings" element={<ProtectedRoute requiredRole="admin"><AdminVevoSettings /></ProtectedRoute>} />
                       <Route path="/admin/branding-settings" element={<ProtectedRoute requiredRole="admin"><AdminBrandingSettings /></ProtectedRoute>} />
                       <Route path="/ai-images" element={<ProtectedRoute><AIImageGeneration /></ProtectedRoute>} />
                       <Route path="/promotion-tools" element={<ProtectedRoute><PromotionTools /></ProtectedRoute>} />

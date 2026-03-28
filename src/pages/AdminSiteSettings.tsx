@@ -8,7 +8,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   Loader2, Settings, Zap, Image, Monitor, Shield, Database, RefreshCw,
   Bell, Wifi, Clock, Upload, Terminal, AlertTriangle, Type, Gauge, RotateCcw,
-  ToggleLeft,
 } from 'lucide-react';
 import { useSiteSettings, SITE_SETTINGS_DEFAULTS, type SiteSettings } from '@/hooks/useSiteSettings';
 
@@ -192,34 +191,6 @@ export default function AdminSiteSettings() {
                 />
               </div>
             )}
-          </div>
-        </GlassCard>
-
-        {/* Feature Modules */}
-        <GlassCard>
-          <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
-            <ToggleLeft className="h-5 w-5 text-primary" /> Feature Modules
-          </h2>
-          <p className="text-xs text-muted-foreground mb-3">Enable or disable entire sections of the platform. Disabled sections are hidden from all users including sidebar navigation.</p>
-          <div className="space-y-4">
-            <ToggleRow
-              label="Video Distribution"
-              description="Upload Video, Vevo Channels, My Videos, Video Guidelines — entire video distribution module for users and admin."
-              checked={form.enable_video_distribution}
-              onChange={(v) => update('enable_video_distribution', v)}
-            />
-            <ToggleRow
-              label="Vevo Reports"
-              description="Vevo Reports section under Reports & Analytics for both admin and users."
-              checked={form.enable_vevo}
-              onChange={(v) => update('enable_vevo', v)}
-            />
-            <ToggleRow
-              label="Reports & Analytics"
-              description="Entire Reports & Analytics section including OTT, YouTube, and Vevo reports for users. Admin reports are always visible."
-              checked={form.enable_reports}
-              onChange={(v) => update('enable_reports', v)}
-            />
           </div>
         </GlassCard>
 
