@@ -545,9 +545,23 @@ export default function AdminYouTubeCmsLinks() {
                   <div><span className="text-muted-foreground">Monetized:</span></div>
                   <div>{viewItem.is_monetized ? 'On' : 'Off'}</div>
                   <div><span className="text-muted-foreground">NOC File:</span></div>
-                  <div>{viewItem.noc_file_url ? <a href={viewItem.noc_file_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1"><FileText className="h-3 w-3" /> View File</a> : '—'}</div>
+                  <div>{viewItem.noc_file_url ? (
+                    <div className="flex items-center gap-1">
+                      <a href={viewItem.noc_file_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1"><FileText className="h-3 w-3" /> View File</a>
+                      <button onClick={() => handleDeleteFile(viewItem.id, 'noc_file_url', viewItem.noc_file_url!)} className="p-1 rounded hover:bg-destructive/10 text-destructive/60 hover:text-destructive transition-colors" title="Delete NOC file"><Trash2 className="h-3 w-3" /></button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1 text-muted-foreground"><FileX className="h-4 w-4" /><span className="text-xs">No file</span></div>
+                  )}</div>
                   <div><span className="text-muted-foreground">YT Reports:</span></div>
-                  <div>{viewItem.yt_reports_screenshot_url ? <a href={viewItem.yt_reports_screenshot_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1"><ImageIcon className="h-3 w-3" /> View Image</a> : '—'}</div>
+                  <div>{viewItem.yt_reports_screenshot_url ? (
+                    <div className="flex items-center gap-1">
+                      <a href={viewItem.yt_reports_screenshot_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1"><ImageIcon className="h-3 w-3" /> View Image</a>
+                      <button onClick={() => handleDeleteFile(viewItem.id, 'yt_reports_screenshot_url', viewItem.yt_reports_screenshot_url!)} className="p-1 rounded hover:bg-destructive/10 text-destructive/60 hover:text-destructive transition-colors" title="Delete screenshot"><Trash2 className="h-3 w-3" /></button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1 text-muted-foreground"><ImageOff className="h-4 w-4" /><span className="text-xs">No image</span></div>
+                  )}</div>
                   <div><span className="text-muted-foreground">Status:</span></div>
                   <div><StatusBadge status={STATUS_MAP[viewItem.status] || viewItem.status} /> <span className="ml-1">{STATUS_LABEL[viewItem.status]}</span></div>
                   {viewItem.rejection_reason && <><div><span className="text-muted-foreground">Rejection:</span></div><div className="text-destructive">{viewItem.rejection_reason}</div></>}
