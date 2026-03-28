@@ -118,9 +118,7 @@ export default function VevoChannels() {
             )}
           </CardContent>
         </Card>
-        {pageSize !== -1 && filtered.length > 0 && (
-          <TablePagination page={page} totalPages={totalPages} pageSize={pageSize} setPage={setPage} setPageSize={(v) => { setPageSize(v); setPage(1); }} totalItems={filtered.length} />
-        )}
+        <TablePagination totalItems={filtered.length} currentPage={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={v => { setPageSize(v); setPage(0); }} />
       </div>
 
       <Dialog open={!!viewSubmission} onOpenChange={() => setViewSubmission(null)}>
