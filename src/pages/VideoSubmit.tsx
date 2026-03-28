@@ -146,24 +146,37 @@ export default function VideoSubmit() {
     }
 
     setSubmitting(true);
+    setSubmitProgress(0);
+    setSubmitStep('Preparing submission...');
     try {
-      // Upload files first
+      const fileFields = Object.entries(fileValues).filter(([, f]) => f);
+      const totalSteps = fileFields.length + 3; // files + create submission + insert values + done
+      let completed = 0;
+      const advance = (step: string) => { completed++; setSubmitProgress(Math.round((completed / totalSteps) * 100)); setSubmitStep(step); };
+
+      // Upload files
       const uploadedUrls: Record<string, string> = {};
-      for (const [fieldId, file] of Object.entries(fileValues)) {
+      for (const [fieldId, file] of fileFields) {
         if (file) {
+          const fieldLabel = fields.find(f => f.id === fieldId)?.label || 'file';
+          setSubmitStep(`Uploading ${fieldLabel}...`);
           uploadedUrls[fieldId] = await uploadFile(file, fieldId);
+          advance(`Uploaded ${fieldLabel}`);
         }
       }
 
       // Create submission
+      setSubmitStep('Creating submission...');
       const { data: sub, error: subError } = await supabase.from('video_submissions').insert({
         form_id: form.id,
         user_id: user.id,
         submission_type: submissionType,
       }).select('id').single();
       if (subError) throw subError;
+      advance('Submission created');
 
       // Insert values
+      setSubmitStep('Saving form data...');
       const valueInserts = fields.map(field => {
         const isFile = ['file_upload', 'image_upload', 'video_upload', 'document_upload', 'drag_drop_upload'].includes(field.field_type);
         const isMultiSelect = field.field_type === 'multiselect';
@@ -177,7 +190,10 @@ export default function VideoSubmit() {
 
       const { error: valError } = await supabase.from('video_submission_values').insert(valueInserts);
       if (valError) throw valError;
+      advance('Data saved');
 
+      setSubmitProgress(100);
+      setSubmitStep('Done!');
       setSubmitted(true);
       toast.success('Submission sent successfully!');
       setTimeout(() => {
@@ -185,8 +201,9 @@ export default function VideoSubmit() {
       }, 3000);
     } catch (err: any) {
       toast.error(err.message || 'Failed to submit');
-    } finally {
       setSubmitting(false);
+      setSubmitProgress(0);
+      setSubmitStep('');
     }
   };
 
