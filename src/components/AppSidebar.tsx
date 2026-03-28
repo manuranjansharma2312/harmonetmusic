@@ -33,6 +33,7 @@ const contentToolLinks = [
 const reportLinks = [
   { to: '/reports/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/reports/youtube', label: 'YouTube Reports', icon: Youtube },
+  { to: '/reports/vevo', label: 'Vevo Reports', icon: Tv },
   { to: '/reports/ott', label: 'OTT Reports', icon: MonitorPlay },
 ];
 
