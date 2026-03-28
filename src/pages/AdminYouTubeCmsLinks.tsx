@@ -411,31 +411,33 @@ export default function AdminYouTubeCmsLinks() {
                           <TableCell>{l.cms_linked_date ? format(new Date(l.cms_linked_date), 'dd MMM yyyy') : '—'}</TableCell>
                           <TableCell className="text-xs text-muted-foreground">{format(new Date(l.created_at), 'dd MMM yyyy')}</TableCell>
                           <TableCell>
-                            <div className="flex flex-wrap items-center gap-2 min-w-[300px]">
-                              <Select
-                                value={l.status}
-                                onValueChange={async (newStatus) => {
-                                  if (newStatus === 'rejected') {
-                                    setRejectItem(l);
-                                    return;
-                                  }
-                                  const update: any = {
-                                    status: newStatus,
-                                    updated_at: new Date().toISOString(),
-                                  };
-                                  if (newStatus !== 'rejected') update.rejection_reason = null;
-                                  const { error } = await supabase.from('youtube_cms_links' as any).update(update).eq('id', l.id);
-                                  if (error) toast.error(error.message);
-                                  else { toast.success(`Status changed to ${STATUS_LABEL[newStatus]}`); fetchAll(); }
-                                }}
-                              >
-                                <SelectTrigger className="w-[140px] h-8 text-xs">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {STATUSES.map(s => <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>)}
-                                </SelectContent>
-                              </Select>
+                            <Select
+                              value={l.status}
+                              onValueChange={async (newStatus) => {
+                                if (newStatus === 'rejected') {
+                                  setRejectItem(l);
+                                  return;
+                                }
+                                const update: any = {
+                                  status: newStatus,
+                                  updated_at: new Date().toISOString(),
+                                };
+                                if (newStatus !== 'rejected') update.rejection_reason = null;
+                                const { error } = await supabase.from('youtube_cms_links' as any).update(update).eq('id', l.id);
+                                if (error) toast.error(error.message);
+                                else { toast.success(`Status changed to ${STATUS_LABEL[newStatus]}`); fetchAll(); }
+                              }}
+                            >
+                              <SelectTrigger className="w-[150px] h-8 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {STATUSES.map(s => <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap items-center gap-2 min-w-[200px]">
                               <Button size="sm" variant="outline" onClick={() => setViewItem(l)} className="gap-1">
                                 <Eye className="h-3.5 w-3.5" /> View
                               </Button>
