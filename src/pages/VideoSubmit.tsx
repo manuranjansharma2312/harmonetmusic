@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
-import { Upload, Loader2 } from 'lucide-react';
+import { Upload, Loader2, CheckCircle } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { BrandingCropModal } from '@/components/BrandingCropModal';
 import { Badge } from '@/components/ui/badge';
@@ -43,6 +43,7 @@ export default function VideoSubmit() {
   const [multiSelectValues, setMultiSelectValues] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [cropField, setCropField] = useState<{ fieldId: string; src: string; aspect?: number; outputSize?: { width: number; height: number } } | null>(null);
 
   useEffect(() => { loadForm(); }, [submissionType]);
@@ -175,8 +176,11 @@ export default function VideoSubmit() {
       const { error: valError } = await supabase.from('video_submission_values').insert(valueInserts);
       if (valError) throw valError;
 
+      setSubmitted(true);
       toast.success('Submission sent successfully!');
-      navigate(submissionType === 'vevo_channel' ? '/vevo-channels' : '/my-videos');
+      setTimeout(() => {
+        navigate(submissionType === 'vevo_channel' ? '/vevo-channels' : '/my-videos');
+      }, 3000);
     } catch (err: any) {
       toast.error(err.message || 'Failed to submit');
     } finally {
@@ -195,6 +199,30 @@ export default function VideoSubmit() {
           <Card>
             <CardContent className="py-12 text-center">
               <p className="text-muted-foreground">No active form available for {typeLabel}. Please contact admin.</p>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (submitted) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card className="max-w-md w-full text-center">
+            <CardContent className="py-12 space-y-4">
+              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <CheckCircle className="h-8 w-8 text-primary" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">Submitted Successfully!</h2>
+              <p className="text-sm text-muted-foreground">
+                Your {submissionType === 'vevo_channel' ? 'Vevo Channel request' : 'video'} has been submitted and is now under review.
+              </p>
+              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Redirecting...
+              </div>
             </CardContent>
           </Card>
         </div>
