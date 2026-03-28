@@ -214,7 +214,7 @@ export default function Analytics() {
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
-    const mapEntries = (arr: any[], source: 'ott' | 'youtube') =>
+    const mapEntries = (arr: any[], source: 'ott' | 'youtube' | 'vevo') =>
       (arr || []).map((e: any) => ({ ...e, source, streams: e.streams || 0, downloads: e.downloads || 0, net_generated_revenue: e.net_generated_revenue || 0 }));
 
     const [{ data: profileData }, { data: subLabelData }] = await Promise.all([
