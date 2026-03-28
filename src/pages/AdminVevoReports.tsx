@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Upload, Trash2, FileSpreadsheet, Eye, ArrowLeft, Filter, X, Download, Search, Settings2, Save, GripVertical } from 'lucide-react';
+import { Upload, Trash2, FileSpreadsheet, Eye, ArrowLeft, Filter, X, Download, Search, Settings2, Save, GripVertical, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { normalizeIsrc } from '@/lib/isrc';
@@ -21,6 +21,7 @@ interface FormatColumn {
   is_enabled: boolean;
   is_required: boolean;
   sort_order: number;
+  is_custom: boolean;
 }
 
 const ALL_COLUMNS = [
@@ -129,6 +130,8 @@ export default function AdminVevoReports() {
   const [editingFormat, setEditingFormat] = useState<FormatColumn[]>([]);
   const [showFormatConfig, setShowFormatConfig] = useState(false);
   const [savingFormat, setSavingFormat] = useState(false);
+  const [newColumnName, setNewColumnName] = useState('');
+  const [deletingColumnId, setDeletingColumnId] = useState<string | null>(null);
 
   const applyUserCut = (entry: ReportEntry) => {
     const cut = entry.cut_percent_snapshot != null ? entry.cut_percent_snapshot : (userCutMap[entry.user_id] || 0);
@@ -346,15 +349,23 @@ export default function AdminVevoReports() {
           };
 
           // Map all other enabled columns dynamically
+          const extraData: Record<string, string> = {};
           uploadedHeaders.forEach(h => {
             const colKey = dynamicMap[h];
             if (!colKey || colKey === 'isrc' || colKey === 'net_generated_revenue') return;
-            if (colKey === 'streams' || colKey === 'downloads') {
+            // Custom columns go into extra_data
+            if (colKey.startsWith('custom_')) {
+              extraData[colKey] = row[h] || '';
+            } else if (colKey === 'streams' || colKey === 'downloads') {
               entry[colKey] = parseInt(row[h] || '0') || 0;
             } else {
               entry[colKey] = row[h] || null;
             }
           });
+
+          if (Object.keys(extraData).length > 0) {
+            entry.extra_data = extraData;
+          }
 
           // Ensure reporting_month exists
           if (!entry.reporting_month) entry.reporting_month = '';
@@ -411,6 +422,7 @@ export default function AdminVevoReports() {
     setSavingFormat(true);
     try {
       for (const col of editingFormat) {
+        if (col.id.startsWith('new-')) continue; // new columns handled separately
         const { error } = await supabase
           .from('vevo_report_format')
           .update({ csv_header: col.csv_header, is_enabled: col.is_enabled, updated_at: new Date().toISOString() })
@@ -418,12 +430,48 @@ export default function AdminVevoReports() {
         if (error) throw error;
       }
       toast.success('Format saved successfully');
-      setFormatColumns(editingFormat.map(c => ({ ...c })));
+      setFormatColumns(editingFormat.filter(c => !c.id.startsWith('new-')).map(c => ({ ...c })));
       setShowFormatConfig(false);
     } catch (err: any) {
       toast.error(err.message || 'Failed to save format');
     }
     setSavingFormat(false);
+  };
+
+  const handleAddCustomColumn = async () => {
+    const name = newColumnName.trim();
+    if (!name) { toast.error('Please enter a column name'); return; }
+    const columnKey = 'custom_' + name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    const exists = editingFormat.some(c => c.column_key === columnKey);
+    if (exists) { toast.error('A column with this key already exists'); return; }
+    
+    const maxOrder = Math.max(...editingFormat.map(c => c.sort_order), 0);
+    const { data, error } = await supabase.from('vevo_report_format').insert({
+      column_key: columnKey,
+      csv_header: name,
+      is_enabled: true,
+      is_required: false,
+      is_custom: true,
+      sort_order: maxOrder + 1,
+    }).select().single();
+
+    if (error) { toast.error(error.message); return; }
+    const newCol = data as FormatColumn;
+    setEditingFormat(prev => [...prev, newCol]);
+    setFormatColumns(prev => [...prev, newCol]);
+    setNewColumnName('');
+    toast.success(`Column "${name}" added`);
+  };
+
+  const handleDeleteCustomColumn = async () => {
+    if (!deletingColumnId) return;
+    const { error } = await supabase.from('vevo_report_format').delete().eq('id', deletingColumnId);
+    if (error) { toast.error(error.message); } else {
+      setEditingFormat(prev => prev.filter(c => c.id !== deletingColumnId));
+      setFormatColumns(prev => prev.filter(c => c.id !== deletingColumnId));
+      toast.success('Custom column removed');
+    }
+    setDeletingColumnId(null);
   };
 
   const downloadTemplate = () => {
@@ -524,7 +572,9 @@ export default function AdminVevoReports() {
                             <TableCell key={col.key} className="whitespace-nowrap">
                               {col.key === 'net_generated_revenue'
                                 ? applyUserCut(entry).toFixed(4)
-                                : String(entry[col.key as keyof ReportEntry] ?? '-')}
+                                : col.key.startsWith('custom_')
+                                  ? String(((entry as any).extra_data as Record<string, string>)?.[col.key] ?? '-')
+                                  : String(entry[col.key as keyof ReportEntry] ?? '-')}
                             </TableCell>
                           ))}
                         </TableRow>
@@ -584,7 +634,8 @@ export default function AdminVevoReports() {
                     <TableHead className="w-12">Enabled</TableHead>
                     <TableHead>Column</TableHead>
                     <TableHead>CSV Header Name</TableHead>
-                    <TableHead className="w-20">Required</TableHead>
+                    <TableHead className="w-20">Type</TableHead>
+                    <TableHead className="w-16"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -600,7 +651,7 @@ export default function AdminVevoReports() {
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           <GripVertical className="h-4 w-4 text-muted-foreground/40" />
-                          {ALL_COLUMNS.find(a => a.key === col.column_key)?.label || col.column_key}
+                          {col.is_custom ? col.csv_header : (ALL_COLUMNS.find(a => a.key === col.column_key)?.label || col.column_key)}
                           {col.column_key === 'reporting_month' && ' (Reporting Month)'}
                         </div>
                       </TableCell>
@@ -612,8 +663,17 @@ export default function AdminVevoReports() {
                         />
                       </TableCell>
                       <TableCell>
-                        {col.is_required && (
+                        {col.is_required ? (
                           <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">Required</span>
+                        ) : col.is_custom ? (
+                          <span className="text-xs font-medium text-accent-foreground bg-accent px-2 py-0.5 rounded-full">Custom</span>
+                        ) : null}
+                      </TableCell>
+                      <TableCell>
+                        {col.is_custom && (
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeletingColumnId(col.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         )}
                       </TableCell>
                     </TableRow>
@@ -621,6 +681,29 @@ export default function AdminVevoReports() {
                 </TableBody>
               </Table>
             </div>
+
+            {/* Add Custom Column */}
+            <div className="flex items-center gap-3 pt-2">
+              <Input
+                placeholder="New column name..."
+                value={newColumnName}
+                onChange={(e) => setNewColumnName(e.target.value)}
+                className="h-9 max-w-[250px]"
+                onKeyDown={(e) => e.key === 'Enter' && handleAddCustomColumn()}
+              />
+              <Button size="sm" variant="outline" onClick={handleAddCustomColumn}>
+                <Plus className="h-4 w-4 mr-1" /> Add Column
+              </Button>
+            </div>
+
+            {deletingColumnId && (
+              <ConfirmDialog
+                title="Delete Custom Column?"
+                message="This column will be removed from the format. Existing data in this column will remain stored but won't be displayed."
+                onConfirm={handleDeleteCustomColumn}
+                onCancel={() => setDeletingColumnId(null)}
+              />
+            )}
           </GlassCard>
         )}
 

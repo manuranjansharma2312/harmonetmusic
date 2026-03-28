@@ -22,6 +22,7 @@ interface FormatColumn {
   is_enabled: boolean;
   is_required: boolean;
   sort_order: number;
+  is_custom: boolean;
 }
 
 const ALL_COLUMN_LABELS: Record<string, string> = {
@@ -219,7 +220,9 @@ export default function VevoReports() {
       e.reporting_month,
       ...COLUMNS.map((c) => c.key === 'net_generated_revenue'
         ? String(applyRevenueCut(e))
-        : String(e[c.key as keyof ReportEntry] ?? '')),
+        : c.key.startsWith('custom_')
+          ? String(((e as any).extra_data as Record<string, string>)?.[c.key] ?? '')
+          : String(e[c.key as keyof ReportEntry] ?? '')),
     ]);
     const csv = [headers, ...rows].map((r) => r.map((v) => `"${v}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -346,7 +349,7 @@ export default function VevoReports() {
                         <TableRow key={entry.id}>
                           {COLUMNS.map((col) => (
                             <TableCell key={col.key} className="whitespace-nowrap">
-                              {col.key === 'net_generated_revenue' ? applyRevenueCut(entry).toFixed(4) : String(entry[col.key as keyof ReportEntry] ?? '-')}
+                              {col.key === 'net_generated_revenue' ? applyRevenueCut(entry).toFixed(4) : col.key.startsWith('custom_') ? String(((entry as any).extra_data as Record<string, string>)?.[col.key] ?? '-') : String(entry[col.key as keyof ReportEntry] ?? '-')}
                             </TableCell>
                           ))}
                         </TableRow>
