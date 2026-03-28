@@ -21,43 +21,27 @@ export default function DownloadSignedPdf() {
   const loadDocument = async () => {
     setStatus('loading');
 
-    const { data: doc, error } = await supabase
-      .from('signature_documents')
-      .select('title, signed_pdf_url, status, created_at')
-      .eq('id', documentId!)
-      .single();
+    try {
+      const { data, error } = await supabase.functions.invoke('download-signed-pdf', {
+        body: { document_id: documentId },
+      });
 
-    if (error || !doc) {
-      setStatus('error');
-      return;
-    }
+      if (error) {
+        setStatus('error');
+        return;
+      }
 
-    setDocTitle(doc.title);
-
-    if (doc.status !== 'completed' || !doc.signed_pdf_url) {
-      setStatus('error');
-      return;
-    }
-
-    // Check if document was completed more than 7 days ago
-    const completedAt = new Date(doc.created_at);
-    const now = new Date();
-    const daysDiff = (now.getTime() - completedAt.getTime()) / (1000 * 60 * 60 * 24);
-
-    if (daysDiff > 7) {
-      setStatus('expired');
-      return;
-    }
-
-    // Generate a fresh signed URL
-    const { data: signedUrl } = await supabase.storage
-      .from('signature-documents')
-      .createSignedUrl(doc.signed_pdf_url, 3600); // 1 hour
-
-    if (signedUrl?.signedUrl) {
-      setDownloadUrl(signedUrl.signedUrl);
-      setStatus('ready');
-    } else {
+      if (data?.status === 'expired') {
+        setDocTitle(data.title || '');
+        setStatus('expired');
+      } else if (data?.status === 'ready') {
+        setDocTitle(data.title || '');
+        setDownloadUrl(data.download_url);
+        setStatus('ready');
+      } else {
+        setStatus('error');
+      }
+    } catch {
       setStatus('error');
     }
   };
