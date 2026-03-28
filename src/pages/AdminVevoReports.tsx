@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Upload, Trash2, FileSpreadsheet, Eye, ArrowLeft, Filter, X, Download, Search, Settings2, Save, GripVertical } from 'lucide-react';
+import { Upload, Trash2, FileSpreadsheet, Eye, ArrowLeft, Filter, X, Download, Search, Settings2, Save, GripVertical, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { normalizeIsrc } from '@/lib/isrc';
