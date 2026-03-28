@@ -225,25 +225,38 @@ export default function VideoSubmit() {
     );
   }
 
-  if (submitted) {
+  if (submitting || submitted) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Card className="max-w-md w-full text-center">
-            <CardContent className="py-12 space-y-4">
-              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <CheckCircle className="h-8 w-8 text-primary" />
+        <div className="mx-auto w-full max-w-md flex flex-col items-center justify-center min-h-[50vh]">
+          <GlassCard glow className="w-full text-center animate-fade-in">
+            <div className="space-y-6 py-4">
+              {submitted ? (
+                <CheckCircle className="h-12 w-12 text-primary mx-auto" />
+              ) : (
+                <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+              )}
+              <div>
+                <h2 className="text-xl font-display font-bold text-foreground mb-1">
+                  {submitted ? 'Submitted Successfully!' : 'Submitting...'}
+                </h2>
+                <p className="text-sm text-muted-foreground">{submitStep}</p>
               </div>
-              <h2 className="text-xl font-bold text-foreground">Submitted Successfully!</h2>
-              <p className="text-sm text-muted-foreground">
-                Your {submissionType === 'vevo_channel' ? 'Vevo Channel request' : 'video'} has been submitted and is now under review.
-              </p>
-              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Redirecting...
+              <div className="w-full bg-muted/50 rounded-full h-3 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${submitProgress}%` }}
+                />
               </div>
-            </CardContent>
-          </Card>
+              <p className="text-lg font-bold text-primary">{submitProgress}%</p>
+              {submitted && (
+                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Redirecting...
+                </div>
+              )}
+            </div>
+          </GlassCard>
         </div>
       </DashboardLayout>
     );
