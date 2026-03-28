@@ -52,7 +52,7 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
   const [bulkRejectDialog, setBulkRejectDialog] = useState(false);
   const [bulkRejectReason, setBulkRejectReason] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(false);
-
+  const [vevoChannelName, setVevoChannelName] = useState<string | null>(null);
   const statuses = submissionType === 'upload_video' ? VIDEO_STATUSES : CHANNEL_STATUSES;
 
   const fetchSubmissions = async () => {
