@@ -2489,6 +2489,51 @@ export type Database = {
         }
         Relationships: []
       }
+      youtube_cms_links: {
+        Row: {
+          channel_name: string
+          channel_url: string
+          cms_company: string | null
+          cms_linked_date: string | null
+          created_at: string
+          id: string
+          is_monetized: boolean
+          noc_file_url: string | null
+          rejection_reason: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_name: string
+          channel_url: string
+          cms_company?: string | null
+          cms_linked_date?: string | null
+          created_at?: string
+          id?: string
+          is_monetized?: boolean
+          noc_file_url?: string | null
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel_name?: string
+          channel_url?: string
+          cms_company?: string | null
+          cms_linked_date?: string | null
+          created_at?: string
+          id?: string
+          is_monetized?: boolean
+          noc_file_url?: string | null
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       youtube_report_entries: {
         Row: {
           artist: string | null
