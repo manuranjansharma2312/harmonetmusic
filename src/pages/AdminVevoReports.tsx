@@ -349,15 +349,23 @@ export default function AdminVevoReports() {
           };
 
           // Map all other enabled columns dynamically
+          const extraData: Record<string, string> = {};
           uploadedHeaders.forEach(h => {
             const colKey = dynamicMap[h];
             if (!colKey || colKey === 'isrc' || colKey === 'net_generated_revenue') return;
-            if (colKey === 'streams' || colKey === 'downloads') {
+            // Custom columns go into extra_data
+            if (colKey.startsWith('custom_')) {
+              extraData[colKey] = row[h] || '';
+            } else if (colKey === 'streams' || colKey === 'downloads') {
               entry[colKey] = parseInt(row[h] || '0') || 0;
             } else {
               entry[colKey] = row[h] || null;
             }
           });
+
+          if (Object.keys(extraData).length > 0) {
+            entry.extra_data = extraData;
+          }
 
           // Ensure reporting_month exists
           if (!entry.reporting_month) entry.reporting_month = '';
