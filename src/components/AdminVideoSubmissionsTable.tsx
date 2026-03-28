@@ -526,6 +526,9 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
               <div className="flex gap-4 flex-wrap">
                 <div><span className="text-xs text-muted-foreground">Status:</span> <StatusBadge status={viewSubmission.status} /></div>
                 <div><span className="text-xs text-muted-foreground">Date:</span> <span className="text-sm">{format(new Date(viewSubmission.created_at), 'dd MMM yyyy HH:mm')}</span></div>
+                {vevoChannelName && (
+                  <div><span className="text-xs text-muted-foreground">Vevo Channel:</span> <span className="text-sm font-medium">{vevoChannelName}</span></div>
+                )}
               </div>
               {viewSubmission.rejection_reason && (
                 <div className="bg-destructive/10 p-3 rounded-lg">
