@@ -152,6 +152,10 @@ export function AppSidebar() {
   ];
   const showUserSubLabels = effectiveUserType === 'record_label' && !effectiveIsSubLabel;
 
+  // Filter report links based on settings
+  const reportLinks = reportLinksBase.filter(l => !l.vevoOnly || settings.enable_vevo);
+  const adminReportLinks = adminReportLinksBase.filter(l => !l.vevoOnly || settings.enable_vevo);
+
   const userLinksBottom = [
     ...(aiEnabled ? [{ to: '/ai-images', label: 'AI Poster Generate', icon: Sparkles }] : []),
     { to: '/poster-generator', label: 'Out Now Poster', icon: ImageIcon },
