@@ -26,6 +26,7 @@ export default function AdminVideoSubmissions() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [profiles, setProfiles] = useState<Record<string, any>>({});
+  const [subLabelMap, setSubLabelMap] = useState<Record<string, any>>({});
   const [viewSubmission, setViewSubmission] = useState<any>(null);
   const [viewValues, setViewValues] = useState<any[]>([]);
   const [viewFields, setViewFields] = useState<any[]>([]);
@@ -45,10 +46,26 @@ export default function AdminVideoSubmissions() {
     // Fetch profiles
     const userIds = [...new Set((data || []).map((s: any) => s.user_id))];
     if (userIds.length > 0) {
-      const { data: profs } = await supabase.from('profiles').select('user_id, display_id, legal_name, email').in('user_id', userIds);
+      const [{ data: profs }, { data: subLabels }] = await Promise.all([
+        supabase.from('profiles').select('user_id, display_id, legal_name, email, user_type, record_label_name, artist_name').in('user_id', userIds),
+        supabase.from('sub_labels').select('sub_user_id, parent_user_id, status').in('sub_user_id', userIds).eq('status', 'active'),
+      ]);
       const map: Record<string, any> = {};
       (profs || []).forEach((p: any) => { map[p.user_id] = p; });
       setProfiles(map);
+
+      // Fetch parent profiles for sub-labels
+      const parentIds = [...new Set((subLabels || []).map((s: any) => s.parent_user_id))];
+      const slMap: Record<string, any> = {};
+      if (parentIds.length > 0) {
+        const { data: parentProfs } = await supabase.from('profiles').select('user_id, display_id, legal_name, record_label_name, artist_name').in('user_id', parentIds);
+        const parentMap: Record<string, any> = {};
+        (parentProfs || []).forEach((p: any) => { parentMap[p.user_id] = p; });
+        (subLabels || []).forEach((sl: any) => {
+          slMap[sl.sub_user_id] = parentMap[sl.parent_user_id];
+        });
+      }
+      setSubLabelMap(slMap);
     }
     setLoading(false);
   };
@@ -151,8 +168,16 @@ export default function AdminVideoSubmissions() {
                         return (
                           <TableRow key={sub.id}>
                             <TableCell>
-                              <div className="text-sm font-medium">{profile?.legal_name || 'Unknown'}</div>
+                              <div className="text-sm font-medium">
+                                {profile?.user_type === 'record_label' ? profile?.record_label_name : profile?.artist_name || profile?.legal_name || 'Unknown'}
+                              </div>
                               <div className="text-xs text-muted-foreground">#{profile?.display_id}</div>
+                              {subLabelMap[sub.user_id] && (
+                                <div className="text-xs text-muted-foreground mt-0.5">
+                                  ↳ Under: <span className="font-medium">{subLabelMap[sub.user_id]?.record_label_name || subLabelMap[sub.user_id]?.legal_name}</span>
+                                  <span className="ml-1">#{subLabelMap[sub.user_id]?.display_id}</span>
+                                </div>
+                              )}
                             </TableCell>
                             <TableCell>{(sub as any).video_forms?.name || '—'}</TableCell>
                             <TableCell><StatusBadge status={sub.status} /></TableCell>
@@ -189,8 +214,19 @@ export default function AdminVideoSubmissions() {
           <DialogHeader>
             <DialogTitle>Submission Details</DialogTitle>
           </DialogHeader>
-          {viewSubmission && (
+          {viewSubmission && (() => {
+            const vProfile = profiles[viewSubmission.user_id];
+            const vParent = subLabelMap[viewSubmission.user_id];
+            const userName = vProfile?.user_type === 'record_label' ? vProfile?.record_label_name : vProfile?.artist_name || vProfile?.legal_name || 'Unknown';
+            return (
             <div className="space-y-4">
+              <div className="bg-muted/40 p-3 rounded-lg space-y-1">
+                <div className="text-sm font-medium">{userName} <span className="text-muted-foreground">#{vProfile?.display_id}</span></div>
+                <div className="text-xs text-muted-foreground">{vProfile?.email}</div>
+                {vParent && (
+                  <div className="text-xs text-muted-foreground">↳ Under: <span className="font-medium">{vParent?.record_label_name || vParent?.legal_name}</span> #{vParent?.display_id}</div>
+                )}
+              </div>
               <div className="flex gap-4 flex-wrap">
                 <div><span className="text-xs text-muted-foreground">Status:</span> <StatusBadge status={viewSubmission.status} /></div>
                 <div><span className="text-xs text-muted-foreground">Date:</span> <span className="text-sm">{format(new Date(viewSubmission.created_at), 'dd MMM yyyy HH:mm')}</span></div>
@@ -222,7 +258,8 @@ export default function AdminVideoSubmissions() {
                 })}
               </div>
             </div>
-          )}
+            );
+          })()}
         </DialogContent>
       </Dialog>
 
