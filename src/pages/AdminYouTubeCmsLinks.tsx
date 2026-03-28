@@ -288,7 +288,30 @@ export default function AdminYouTubeCmsLinks() {
     URL.revokeObjectURL(url);
   };
 
-  return (
+  const handleDeleteFile = async (itemId: string, field: 'noc_file_url' | 'yt_reports_screenshot_url', fileUrl: string) => {
+    try {
+      // Extract path from URL for storage deletion
+      const bucketName = 'cms-noc-files';
+      const urlParts = fileUrl.split(`/storage/v1/object/public/${bucketName}/`);
+      if (urlParts.length > 1) {
+        await supabase.storage.from(bucketName).remove([urlParts[1]]);
+      }
+      // Clear the URL in DB
+      const { error } = await supabase
+        .from('youtube_cms_links' as any)
+        .update({ [field]: null, updated_at: new Date().toISOString() } as any)
+        .eq('id', itemId);
+      if (error) throw error;
+      toast.success('File deleted successfully');
+      // Update local state
+      setLinks(prev => prev.map(l => l.id === itemId ? { ...l, [field]: null } : l));
+      if (viewItem?.id === itemId) setViewItem(prev => prev ? { ...prev, [field]: null } : null);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete file');
+    }
+  };
+
+
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-3">
