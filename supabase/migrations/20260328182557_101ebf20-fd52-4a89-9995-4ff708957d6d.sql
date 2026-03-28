@@ -1,0 +1,1 @@
+ALTER TABLE public.youtube_cms_links ADD COLUMN IF NOT EXISTS yt_reports_screenshot_url text;
