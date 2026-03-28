@@ -151,6 +151,7 @@ function App() {
                       <Route path="/admin/content-requests" element={<ProtectedRoute requiredRole="admin"><AdminContentRequests /></ProtectedRoute>} />
                       <Route path="/admin/reports/ott" element={<ProtectedRoute requiredRole="admin"><AdminReports /></ProtectedRoute>} />
                       <Route path="/admin/reports/youtube" element={<ProtectedRoute requiredRole="admin"><AdminYouTubeReports /></ProtectedRoute>} />
+                      <Route path="/admin/reports/vevo" element={<ProtectedRoute requiredRole="admin"><AdminVevoReports /></ProtectedRoute>} />
                       <Route path="/admin/reports" element={<Navigate to="/admin/reports/ott" replace />} />
                       <Route path="/revenue" element={<ProtectedRoute><Revenue /></ProtectedRoute>} />
                       <Route path="/admin/revenue" element={<ProtectedRoute requiredRole="admin"><AdminRevenue /></ProtectedRoute>} />
