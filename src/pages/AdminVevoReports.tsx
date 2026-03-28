@@ -572,7 +572,9 @@ export default function AdminVevoReports() {
                             <TableCell key={col.key} className="whitespace-nowrap">
                               {col.key === 'net_generated_revenue'
                                 ? applyUserCut(entry).toFixed(4)
-                                : String(entry[col.key as keyof ReportEntry] ?? '-')}
+                                : col.key.startsWith('custom_')
+                                  ? String(((entry as any).extra_data as Record<string, string>)?.[col.key] ?? '-')
+                                  : String(entry[col.key as keyof ReportEntry] ?? '-')}
                             </TableCell>
                           ))}
                         </TableRow>
