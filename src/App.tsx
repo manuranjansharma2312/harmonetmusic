@@ -11,6 +11,7 @@ import { ImpersonateProvider } from "@/hooks/useImpersonate";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SiteSettingsRuntime } from "@/components/SiteSettingsRuntime";
+import { BrandingHead } from "@/components/BrandingHead";
 
 // Lazy load all pages for code splitting
 const Auth = lazy(() => import("./pages/Auth"));
