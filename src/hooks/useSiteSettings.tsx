@@ -27,6 +27,9 @@ export interface SiteSettings {
   enable_text_selection: boolean;
   maintenance_mode: boolean;
   maintenance_message: string;
+  enable_vevo: boolean;
+  enable_video_distribution: boolean;
+  enable_reports: boolean;
   updated_at: string;
   updated_by: string | null;
 }
