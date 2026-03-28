@@ -409,7 +409,9 @@ export default function Reports() {
                             <TableCell key={col.key} className="whitespace-nowrap">
                               {col.key === 'net_generated_revenue'
                                 ? applyRevenueCut(entry).toFixed(4)
-                                : String(entry[col.key as keyof ReportEntry] ?? '-')}
+                                : col.key.startsWith('custom_')
+                                  ? String((entry.extra_data as Record<string, string>)?.[col.key] ?? '-')
+                                  : String(entry[col.key as keyof ReportEntry] ?? '-')}
                             </TableCell>
                           ))}
                         </TableRow>
