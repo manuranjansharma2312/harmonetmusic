@@ -216,8 +216,10 @@ export default function VideoSubmit() {
         user_id: user.id,
         submission_type: submissionType,
       };
-      if (submissionType === 'upload_video' && selectedVevoChannel) {
-        insertData.vevo_channel_id = selectedVevoChannel;
+      // Find vevo_channel field and set vevo_channel_id
+      const vevoField = fields.find(f => f.field_type === 'vevo_channel');
+      if (vevoField && values[vevoField.id]) {
+        insertData.vevo_channel_id = values[vevoField.id];
       }
       const { data: sub, error: subError } = await supabase.from('video_submissions').insert(insertData).select('id').single();
       if (subError) throw subError;
