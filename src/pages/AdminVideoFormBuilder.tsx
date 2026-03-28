@@ -153,6 +153,7 @@ export default function AdminVideoFormBuilder() {
         form_id: formId!,
         field_type: f.field_type,
         label: f.label,
+        description: f.description,
         placeholder: f.placeholder,
         is_required: f.is_required,
         sort_order: i,
