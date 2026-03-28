@@ -209,11 +209,15 @@ export default function VideoSubmit() {
 
       // Create submission
       setSubmitStep('Creating submission...');
-      const { data: sub, error: subError } = await supabase.from('video_submissions').insert({
+      const insertData: any = {
         form_id: form.id,
         user_id: user.id,
         submission_type: submissionType,
-      }).select('id').single();
+      };
+      if (submissionType === 'upload_video' && selectedVevoChannel) {
+        insertData.vevo_channel_id = selectedVevoChannel;
+      }
+      const { data: sub, error: subError } = await supabase.from('video_submissions').insert(insertData).select('id').single();
       if (subError) throw subError;
       advance('Submission created');
 
