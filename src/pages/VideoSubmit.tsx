@@ -48,6 +48,8 @@ export default function VideoSubmit() {
   const [submitProgress, setSubmitProgress] = useState(0);
   const [submitStep, setSubmitStep] = useState('');
   const [cropField, setCropField] = useState<{ fieldId: string; src: string; aspect?: number; outputSize?: { width: number; height: number } } | null>(null);
+  const [vevoChannels, setVevoChannels] = useState<any[]>([]);
+  const [selectedVevoChannel, setSelectedVevoChannel] = useState('');
 
   useEffect(() => { loadForm(); }, [submissionType]);
 
