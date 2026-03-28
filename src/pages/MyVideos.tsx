@@ -61,8 +61,7 @@ export default function MyVideos() {
     return true;
   });
 
-  const totalPages = Math.ceil(filtered.length / pageSize);
-  const paginated = pageSize === -1 ? filtered : filtered.slice((page - 1) * pageSize, page * pageSize);
+  const paginated = paginateItems(filtered, page, pageSize);
 
   return (
     <DashboardLayout>
@@ -74,13 +73,9 @@ export default function MyVideos() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input className="pl-9" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} />
           </div>
-          <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setPage(1); }}>
-          <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+          <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setPage(0); }}>
+            <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              {statuses.map(s => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
-            </SelectContent>
-          </Select>
               <SelectItem value="all">All Statuses</SelectItem>
               {statuses.map(s => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
             </SelectContent>
@@ -107,7 +102,7 @@ export default function MyVideos() {
                 <TableBody>
                   {paginated.map((sub, i) => (
                     <TableRow key={sub.id}>
-                      <TableCell className="font-mono text-xs">{(page - 1) * pageSize + i + 1}</TableCell>
+                      <TableCell className="font-mono text-xs">{(pageSize === 'all' ? 0 : page * (pageSize as number)) + i + 1}</TableCell>
                       <TableCell>{(sub as any).video_forms?.name || '—'}</TableCell>
                       <TableCell><StatusBadge status={sub.status} /></TableCell>
                       <TableCell>{format(new Date(sub.created_at), 'dd MMM yyyy')}</TableCell>
@@ -123,8 +118,7 @@ export default function MyVideos() {
             )}
           </CardContent>
         </Card>
-        {pageSize !== -1 && filtered.length > 0 && (
-          <TablePagination page={page} totalPages={totalPages} pageSize={pageSize} setPage={setPage} setPageSize={(v) => { setPageSize(v); setPage(1); }} totalItems={filtered.length} />
+        <TablePagination totalItems={filtered.length} currentPage={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={v => { setPageSize(v); setPage(0); }} />
         )}
       </div>
 
