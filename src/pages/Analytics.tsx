@@ -27,7 +27,7 @@ interface ReportEntry {
   track: string | null; artist: string | null; isrc: string | null;
   upc: string | null; currency: string | null; streams: number;
   downloads: number; net_generated_revenue: number; imported_at: string;
-  source: 'ott' | 'youtube';
+  source: 'ott' | 'youtube' | 'vevo';
   cut_percent_snapshot?: number | null;
 }
 
