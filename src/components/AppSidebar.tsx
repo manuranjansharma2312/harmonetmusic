@@ -77,6 +77,7 @@ const adminLinksTop = [
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
   { to: '/admin/branding-settings', label: 'Site Settings', icon: Globe },
   { to: '/admin/site-settings', label: 'System Settings', icon: Settings },
+  { to: '/admin/account-security', label: 'Account Security', icon: KeyRound },
 ];
 
 export function AppSidebar() {
