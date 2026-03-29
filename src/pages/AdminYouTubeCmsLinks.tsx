@@ -361,8 +361,8 @@ export default function AdminYouTubeCmsLinks() {
             <p className="text-center py-12 text-muted-foreground">No requests found.</p>
           ) : (
             <>
-              <div className="overflow-x-auto">
-                <Table>
+              <div className="responsive-table-wrap">
+                <Table className="min-w-max">
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-10">

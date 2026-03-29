@@ -639,8 +639,8 @@ export default function UserDashboard() {
         <SectionHeader icon={Disc3} iconBg="bg-amber-500/15" iconColor="text-amber-400" title="Recent Releases" />
         {recentReleases.length > 0 ? (
           <>
-            <div className="hidden sm:block overflow-x-auto">
-              <table className="w-full text-sm">
+            <div className="responsive-table-wrap">
+              <table className="w-full text-sm min-w-max">
                 <thead>
                   <tr className="border-b border-border/40">
                     {['Release', 'Type', 'Status', 'Date'].map(h => <th key={h} className="text-left py-2.5 px-3 text-muted-foreground font-medium text-xs uppercase tracking-wider">{h}</th>)}

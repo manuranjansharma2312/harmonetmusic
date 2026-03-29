@@ -137,8 +137,8 @@ export default function YouTubeCmsLink() {
           ) : links.length === 0 ? (
             <p className="text-center py-12 text-muted-foreground">No YouTube CMS Link requests yet.</p>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
+            <div className="responsive-table-wrap">
+              <Table className="min-w-max">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Channel Name</TableHead>

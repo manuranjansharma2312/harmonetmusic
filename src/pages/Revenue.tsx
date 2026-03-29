@@ -420,8 +420,8 @@ export default function Revenue() {
             )}
           </div>
 
-          <div className="overflow-x-auto">
-            <Table>
+          <div className="responsive-table-wrap">
+            <Table className="min-w-max">
               <TableHeader>
                 <TableRow>
                   <TableHead>Amount</TableHead>
