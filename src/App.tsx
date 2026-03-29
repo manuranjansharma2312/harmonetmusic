@@ -139,6 +139,7 @@ function App() {
                     <Routes>
                       <Route path="/" element={<Navigate to="/auth" replace />} />
                       <Route path="/auth" element={<Auth />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
                       <Route path="/submit" element={<ProtectedRoute><NewRelease /></ProtectedRoute>} />
                       <Route path="/admin/genres-languages" element={<ProtectedRoute requiredRole="admin"><AdminGenresLanguages /></ProtectedRoute>} />
