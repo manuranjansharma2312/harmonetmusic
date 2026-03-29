@@ -217,6 +217,7 @@ export default function AdminYouTubeCmsLinks() {
     if (editStatus === 'linked') {
       update.cms_company = editCmsCompany.trim() || null;
       update.cms_linked_date = editCmsDate ? format(editCmsDate, 'yyyy-MM-dd') : null;
+      update.cut_percent = parseFloat(editCutPercent) || 0;
     }
     if (editStatus !== 'rejected') update.rejection_reason = null;
 
