@@ -5,6 +5,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { formatRevenue, formatStreams } from '@/lib/formatNumbers';
+import { fetchAllRows } from '@/lib/supabaseFetchAll';
 import {
   Disc3, Clock, CheckCircle, XCircle, Loader2, Users,
   Wallet, FileText, UsersRound, Tag, MessageSquare, ArrowRight,
@@ -42,6 +43,7 @@ const tooltipStyle = {
 };
 
 const axisTickStyle = { fill: 'hsl(0 0% 40%)', fontSize: 10 };
+const reportSelect = 'reporting_month, net_generated_revenue, streams, downloads, store, track, artist, country';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -81,126 +83,216 @@ export default function AdminDashboard() {
   const [transferCount, setTransferCount] = useState(0);
   const [monthlyStoreData, setMonthlyStoreData] = useState<any[]>([]);
   const [topStoreNames, setTopStoreNames] = useState<string[]>([]);
-  // Combined growth chart
   const [growthData, setGrowthData] = useState<{ month: string; artists: number; releases: number; vevo: number; cms: number }[]>([]);
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => {
+    void fetchAll();
+  }, []);
 
   async function fetchAll() {
     try {
-    const [
-      releasesRes, profilesRes, labelsRes, subLabelsRes,
-      withdrawalsRes, contentRes, reportRes, ytReportRes,
-      pendingLabelsRes, pendingReleasesRes, pendingContentRes, pendingWithdrawalsRes,
-      recentReleasesRes,
-      cmsLinksRes, cmsEntriesRes, cmsWdRes,
-      videoSubsRes, vevoSubsRes, signatureDocsRes, transfersRes
-    ] = await Promise.all([
-      supabase.from('releases').select('status, created_at'),
-      supabase.from('profiles').select('id, created_at'),
-      supabase.from('labels').select('id'),
-      supabase.from('sub_labels').select('id'),
-      supabase.from('withdrawal_requests').select('status, amount'),
-      supabase.from('content_requests').select('id, status').eq('status', 'pending'),
-      supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, artist, country'),
-      supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, artist, country'),
-      supabase.from('labels').select('id, label_name, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
-      supabase.from('releases').select('id, album_name, ep_name, content_type, release_type, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
-      supabase.from('content_requests').select('id, request_type, song_title, artist_name, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
-      supabase.from('withdrawal_requests').select('id, amount, created_at, user_id').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
-      supabase.from('releases').select('id, album_name, ep_name, content_type, status, created_at').order('created_at', { ascending: false }).limit(5),
-      supabase.from('youtube_cms_links' as any).select('id, status, created_at'),
-      supabase.from('cms_report_entries' as any).select('net_generated_revenue'),
-      supabase.from('cms_withdrawal_requests' as any).select('status, amount'),
-      supabase.from('video_submissions' as any).select('id, status, created_at').eq('submission_type', 'upload_video'),
-      supabase.from('video_submissions' as any).select('id, status, created_at').eq('submission_type', 'vevo_channel'),
-      supabase.from('signature_documents').select('id'),
-      supabase.from('release_transfers').select('id'),
-    ]);
+      const [
+        releaseRows,
+        profileRows,
+        labelRows,
+        subLabelRows,
+        withdrawalRows,
+        pendingContentRows,
+        reportRows,
+        ytReportRows,
+        vevoReportRows,
+        pendingLabelsRes,
+        pendingReleasesRes,
+        pendingContentRes,
+        pendingWithdrawalsRes,
+        recentReleasesRes,
+        cmsLinksRows,
+        cmsEntriesRows,
+        cmsWdRows,
+        videoSubsRows,
+        vevoSubsRows,
+        signatureDocRows,
+        transferRows,
+      ] = await Promise.all([
+        fetchAllRows('releases', 'status, created_at'),
+        fetchAllRows('profiles', 'id, created_at'),
+        fetchAllRows('labels', 'id'),
+        fetchAllRows('sub_labels', 'id'),
+        fetchAllRows('withdrawal_requests', 'status, amount'),
+        fetchAllRows('content_requests', 'id, status', (query) => query.eq('status', 'pending')),
+        fetchAllRows('report_entries', reportSelect),
+        fetchAllRows('youtube_report_entries', reportSelect),
+        fetchAllRows('vevo_report_entries', reportSelect),
+        supabase.from('labels').select('id, label_name, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
+        supabase.from('releases').select('id, album_name, ep_name, content_type, release_type, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
+        supabase.from('content_requests').select('id, request_type, song_title, artist_name, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
+        supabase.from('withdrawal_requests').select('id, amount, created_at, user_id').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
+        supabase.from('releases').select('id, album_name, ep_name, content_type, status, created_at').order('created_at', { ascending: false }).limit(5),
+        fetchAllRows('youtube_cms_links', 'id, status, created_at'),
+        fetchAllRows('cms_report_entries', 'net_generated_revenue'),
+        fetchAllRows('cms_withdrawal_requests', 'status, amount'),
+        fetchAllRows('video_submissions', 'id, status, created_at', (query) => query.eq('submission_type', 'upload_video')),
+        fetchAllRows('video_submissions', 'id, status, created_at', (query) => query.eq('submission_type', 'vevo_channel')),
+        fetchAllRows('signature_documents', 'id'),
+        fetchAllRows('release_transfers', 'id'),
+      ]);
 
-    if (releasesRes.data) {
-      const d = releasesRes.data;
-      setReleaseStats({ total: d.length, pending: d.filter(s => s.status === 'pending').length, approved: d.filter(s => s.status === 'approved').length, rejected: d.filter(s => s.status === 'rejected').length });
-    }
-    setUserCount(profilesRes.data?.length || 0);
-    setLabelCount(labelsRes.data?.length || 0);
-    setSubLabelCount(subLabelsRes.data?.length || 0);
+      setReleaseStats({
+        total: releaseRows.length,
+        pending: releaseRows.filter((row: any) => row.status === 'pending').length,
+        approved: releaseRows.filter((row: any) => row.status === 'approved').length,
+        rejected: releaseRows.filter((row: any) => row.status === 'rejected').length,
+      });
+      setUserCount(profileRows.length);
+      setLabelCount(labelRows.length);
+      setSubLabelCount(subLabelRows.length);
 
-    if (withdrawalsRes.data) {
-      const d = withdrawalsRes.data;
       setWithdrawalStats({
-        pending: d.filter(w => w.status === 'pending').length,
-        paid: d.filter(w => w.status === 'paid').length,
-        totalAmount: d.filter(w => w.status === 'paid').reduce((acc, w) => acc + Number(w.amount), 0),
-        pendingAmount: d.filter(w => w.status === 'pending').reduce((acc, w) => acc + Number(w.amount), 0),
+        pending: withdrawalRows.filter((row: any) => row.status === 'pending').length,
+        paid: withdrawalRows.filter((row: any) => row.status === 'paid').length,
+        totalAmount: withdrawalRows.filter((row: any) => row.status === 'paid').reduce((sum: number, row: any) => sum + Number(row.amount), 0),
+        pendingAmount: withdrawalRows.filter((row: any) => row.status === 'pending').reduce((sum: number, row: any) => sum + Number(row.amount), 0),
       });
+      setContentRequestCount(pendingContentRows.length);
+      setPendingLabels(pendingLabelsRes.data || []);
+      setPendingReleases(pendingReleasesRes.data || []);
+      setPendingContentRequests(pendingContentRes.data || []);
+      setPendingWithdrawals(pendingWithdrawalsRes.data || []);
+      setRecentReleases(recentReleasesRes.data || []);
+
+      const cmsLinks = (cmsLinksRows as any[]) || [];
+      setCmsLinkCount(cmsLinks.filter((link) => link.status === 'linked').length);
+      setPendingCmsLinks(cmsLinks.filter((link) => link.status === 'pending_review' || link.status === 'reviewing').length);
+      const cmsEntries = (cmsEntriesRows as any[]) || [];
+      setCmsTotalRevenue(cmsEntries.reduce((sum, entry) => sum + (Number(entry.net_generated_revenue) || 0), 0));
+      const cmsWithdrawals = (cmsWdRows as any[]) || [];
+      setCmsWithdrawalPending(cmsWithdrawals.filter((row) => row.status === 'pending').length);
+
+      const videoSubs = (videoSubsRows as any[]) || [];
+      setVideoSubmissionCount(videoSubs.length);
+      setPendingVideoCount(videoSubs.filter((row) => row.status === 'pending').length);
+      const vevoSubs = (vevoSubsRows as any[]) || [];
+      setVevoChannelCount(vevoSubs.length);
+      setPendingVevoCount(vevoSubs.filter((row) => row.status === 'pending').length);
+      setSignatureDocCount(signatureDocRows.length);
+      setTransferCount(transferRows.length);
+
+      const allReports = [...reportRows, ...ytReportRows, ...vevoReportRows];
+      if (allReports.length > 0) {
+        let totalRev = 0;
+        let totalStr = 0;
+        let totalDl = 0;
+        const monthMap: Record<string, { revenue: number; streams: number; downloads: number }> = {};
+        const storeMap: Record<string, { streams: number; revenue: number }> = {};
+        const trackMap: Record<string, number> = {};
+        const artistMap: Record<string, number> = {};
+        const countryMap: Record<string, number> = {};
+        const monthStoreMap: Record<string, Record<string, number>> = {};
+
+        allReports.forEach((row: any) => {
+          const rev = Number(row.net_generated_revenue || 0);
+          const str = Number(row.streams || 0);
+          const dl = Number(row.downloads || 0);
+          totalRev += rev;
+          totalStr += str;
+          totalDl += dl;
+          const month = row.reporting_month?.length > 7 ? row.reporting_month.substring(0, 7) : row.reporting_month;
+          if (!monthMap[month]) monthMap[month] = { revenue: 0, streams: 0, downloads: 0 };
+          monthMap[month].revenue += rev;
+          monthMap[month].streams += str;
+          monthMap[month].downloads += dl;
+          const store = row.store || 'Unknown';
+          if (!storeMap[store]) storeMap[store] = { streams: 0, revenue: 0 };
+          storeMap[store].streams += str;
+          storeMap[store].revenue += rev;
+          if (row.track) trackMap[row.track] = (trackMap[row.track] || 0) + str;
+          if (row.artist) artistMap[row.artist] = (artistMap[row.artist] || 0) + str;
+          if (row.country) countryMap[row.country] = (countryMap[row.country] || 0) + str;
+          if (!monthStoreMap[month]) monthStoreMap[month] = {};
+          monthStoreMap[month][store] = (monthStoreMap[month][store] || 0) + str;
+        });
+
+        setTotalRevenue(totalRev);
+        setTotalStreams(totalStr);
+        setTotalDownloads(totalDl);
+        setMonthlyRevenue(Object.entries(monthMap).sort(([a], [b]) => a.localeCompare(b)).slice(-8).map(([month, data]) => ({ month, revenue: Math.round(data.revenue * 100) / 100, streams: data.streams, downloads: data.downloads })));
+        const sortedStores = Object.entries(storeMap).sort(([, a], [, b]) => b.streams - a.streams);
+        setTopStores(sortedStores.slice(0, 8).map(([name, data]) => ({ name, value: data.streams, revenue: data.revenue, color: STORE_COLORS[name] || CHART_COLORS[0] })));
+        setTopTracks(Object.entries(trackMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, streams]) => ({ name: name.length > 25 ? `${name.substring(0, 25)}…` : name, streams })));
+        setTopArtists(Object.entries(artistMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, streams]) => ({ name: name.length > 20 ? `${name.substring(0, 20)}…` : name, streams })));
+        setCountryData(Object.entries(countryMap).sort(([, a], [, b]) => b - a).slice(0, 10).map(([name, streams]) => ({ name, streams })));
+        const topSNames = sortedStores.slice(0, 4).map(([name]) => name);
+        setTopStoreNames(topSNames);
+        setMonthlyStoreData(Object.entries(monthStoreMap).sort(([a], [b]) => a.localeCompare(b)).slice(-6).map(([month, stores]) => {
+          const row: any = { month };
+          topSNames.forEach((storeName) => {
+            row[storeName] = stores[storeName] || 0;
+          });
+          return row;
+        }));
+      } else {
+        setTotalRevenue(0);
+        setTotalStreams(0);
+        setTotalDownloads(0);
+        setMonthlyRevenue([]);
+        setTopStores([]);
+        setTopTracks([]);
+        setTopArtists([]);
+        setCountryData([]);
+        setTopStoreNames([]);
+        setMonthlyStoreData([]);
+      }
+
+      const now = new Date();
+      const monthlyRelMap: Record<string, number> = {};
+      const monthlyUserMap: Record<string, number> = {};
+      const monthlyVevoMap: Record<string, number> = {};
+      const monthlyCmsMap: Record<string, number> = {};
+      for (let i = 5; i >= 0; i--) {
+        const key = format(subMonths(now, i), 'MMM');
+        monthlyRelMap[key] = 0;
+        monthlyUserMap[key] = 0;
+        monthlyVevoMap[key] = 0;
+        monthlyCmsMap[key] = 0;
+      }
+      releaseRows.forEach((row: any) => {
+        const month = format(new Date(row.created_at), 'MMM');
+        if (monthlyRelMap[month] !== undefined) monthlyRelMap[month]++;
+      });
+      profileRows.forEach((row: any) => {
+        const month = format(new Date(row.created_at), 'MMM');
+        if (monthlyUserMap[month] !== undefined) monthlyUserMap[month]++;
+      });
+      vevoSubs.forEach((row: any) => {
+        const month = format(new Date(row.created_at), 'MMM');
+        if (monthlyVevoMap[month] !== undefined) monthlyVevoMap[month]++;
+      });
+      cmsLinks.forEach((row: any) => {
+        if (row.status === 'linked' && row.created_at) {
+          const month = format(new Date(row.created_at), 'MMM');
+          if (monthlyCmsMap[month] !== undefined) monthlyCmsMap[month]++;
+        }
+      });
+
+      setMonthlyReleases(Object.entries(monthlyRelMap).map(([month, count]) => ({ month, count })));
+      setMonthlyUsers(Object.entries(monthlyUserMap).map(([month, count]) => ({ month, count })));
+      setMonthlyVevo(Object.entries(monthlyVevoMap).map(([month, count]) => ({ month, count })));
+      setMonthlyCmsLinked(Object.entries(monthlyCmsMap).map(([month, count]) => ({ month, count })));
+
+      const growthKeys = Object.keys(monthlyRelMap);
+      setGrowthData(growthKeys.map((month) => ({
+        month,
+        artists: monthlyUserMap[month] || 0,
+        releases: monthlyRelMap[month] || 0,
+        vevo: monthlyVevoMap[month] || 0,
+        cms: monthlyCmsMap[month] || 0,
+      })));
+    } catch (err) {
+      console.error('AdminDashboard fetchAll error:', err);
+    } finally {
+      setLoading(false);
     }
-    setContentRequestCount(contentRes.data?.length || 0);
-    setPendingLabels(pendingLabelsRes.data || []);
-    setPendingReleases(pendingReleasesRes.data || []);
-    setPendingContentRequests(pendingContentRes.data || []);
-    setPendingWithdrawals(pendingWithdrawalsRes.data || []);
-    setRecentReleases(recentReleasesRes.data || []);
-
-    const cmsLinks = (cmsLinksRes.data as any[]) || [];
-    setCmsLinkCount(cmsLinks.filter(l => l.status === 'linked').length);
-    setPendingCmsLinks(cmsLinks.filter(l => l.status === 'pending_review' || l.status === 'reviewing').length);
-    const cmsEntries = (cmsEntriesRes.data as any[]) || [];
-    setCmsTotalRevenue(cmsEntries.reduce((s, e) => s + (Number(e.net_generated_revenue) || 0), 0));
-    const cmsWds = (cmsWdRes.data as any[]) || [];
-    setCmsWithdrawalPending(cmsWds.filter(w => w.status === 'pending').length);
-
-    const videoSubs = (videoSubsRes.data as any[]) || [];
-    setVideoSubmissionCount(videoSubs.length);
-    setPendingVideoCount(videoSubs.filter(v => v.status === 'pending').length);
-    const vevoSubs = (vevoSubsRes.data as any[]) || [];
-    setVevoChannelCount(vevoSubs.length);
-    setPendingVevoCount(vevoSubs.filter(v => v.status === 'pending').length);
-    setSignatureDocCount((signatureDocsRes.data || []).length);
-    setTransferCount((transfersRes.data || []).length);
-
-    // Include vevo reports in total analytics
-    let vevoReportData: any[] = [];
-    try {
-      const res = await supabase
-        .from('vevo_report_entries')
-        .select('reporting_month, net_generated_revenue, streams, downloads, store, track, artist, country');
-      vevoReportData = (res.data as any[]) || [];
-    } catch (e) { console.warn('vevo_report_entries not available'); }
-    const allReports = [...(reportRes.data || []), ...(ytReportRes.data || []), ...vevoReportData];
-    if (allReports.length > 0) {
-      let totalRev = 0, totalStr = 0, totalDl = 0;
-      const monthMap: Record<string, { revenue: number; streams: number; downloads: number }> = {};
-      const storeMap: Record<string, { streams: number; revenue: number }> = {};
-      const trackMap: Record<string, number> = {};
-      const artistMap: Record<string, number> = {};
-      const countryMap: Record<string, number> = {};
-      const monthStoreMap: Record<string, Record<string, number>> = {};
-
-      allReports.forEach((r: any) => {
-        const rev = Number(r.net_generated_revenue || 0);
-        const str = Number(r.streams || 0);
-        const dl = Number(r.downloads || 0);
-        totalRev += rev; totalStr += str; totalDl += dl;
-        const month = r.reporting_month?.length > 7 ? r.reporting_month.substring(0, 7) : r.reporting_month;
-        if (!monthMap[month]) monthMap[month] = { revenue: 0, streams: 0, downloads: 0 };
-        monthMap[month].revenue += rev; monthMap[month].streams += str; monthMap[month].downloads += dl;
-        const store = r.store || 'Unknown';
-        if (!storeMap[store]) storeMap[store] = { streams: 0, revenue: 0 };
-        storeMap[store].streams += str; storeMap[store].revenue += rev;
-        if (r.track) trackMap[r.track] = (trackMap[r.track] || 0) + str;
-        if (r.artist) artistMap[r.artist] = (artistMap[r.artist] || 0) + str;
-        if (r.country) countryMap[r.country] = (countryMap[r.country] || 0) + str;
-        if (!monthStoreMap[month]) monthStoreMap[month] = {};
-        monthStoreMap[month][store] = (monthStoreMap[month][store] || 0) + str;
-      });
-
-      setTotalRevenue(totalRev);
-      setTotalStreams(totalStr);
-      setTotalDownloads(totalDl);
-      setMonthlyRevenue(Object.entries(monthMap).sort(([a], [b]) => a.localeCompare(b)).slice(-8).map(([month, data]) => ({ month, revenue: Math.round(data.revenue * 100) / 100, streams: data.streams, downloads: data.downloads })));
-      const sortedStores = Object.entries(storeMap).sort(([, a], [, b]) => b.streams - a.streams);
-      setTopStores(sortedStores.slice(0, 8).map(([name, data]) => ({ name, value: data.streams, revenue: data.revenue, color: STORE_COLORS[name] || CHART_COLORS[0] })));
+  }
       setTopTracks(Object.entries(trackMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, streams]) => ({ name: name.length > 25 ? name.substring(0, 25) + '…' : name, streams })));
       setTopArtists(Object.entries(artistMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, streams]) => ({ name: name.length > 20 ? name.substring(0, 20) + '…' : name, streams })));
       setCountryData(Object.entries(countryMap).sort(([, a], [, b]) => b - a).slice(0, 10).map(([name, streams]) => ({ name, streams })));
