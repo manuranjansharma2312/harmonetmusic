@@ -291,7 +291,7 @@ export default function AdminUsers() {
         {filtered.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">No users found.</p>
         ) : (
-          <div className="overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6 pb-1">
+          <div className="responsive-table-wrap">
             <table className="w-full text-sm min-w-[720px]">
               <thead>
                 <tr className="border-b border-border/50 text-muted-foreground">

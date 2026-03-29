@@ -557,8 +557,8 @@ export default function AdminInvoices() {
         </div>
 
         <GlassCard>
-          <div className="overflow-x-auto">
-            <Table>
+          <div className="responsive-table-wrap">
+            <Table className="min-w-max">
               <TableHeader>
                 <TableRow>
                   <TableHead>Billing Name</TableHead>

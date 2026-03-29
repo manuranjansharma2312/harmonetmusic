@@ -151,8 +151,8 @@ export default function AdminSubLabelWithdrawals() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <Table>
+          <div className="responsive-table-wrap">
+            <Table className="min-w-max">
               <TableHeader>
                 <TableRow>
                   <TableHead>Sub Label</TableHead>
