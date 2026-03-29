@@ -349,7 +349,7 @@ export default function Analytics() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold font-display tracking-tight">Analytics</h1>
-            <p className="text-muted-foreground text-xs sm:text-sm mt-1">YouTube + OTT combined · All amounts in ₹ INR</p>
+            <p className="text-muted-foreground text-xs sm:text-sm mt-1">YouTube + OTT + Vevo combined · All amounts in ₹ INR</p>
           </div>
           <div className="flex gap-1 p-1 rounded-2xl bg-muted/25 border border-border/15 w-full sm:w-fit backdrop-blur-sm overflow-x-auto scrollbar-none">
             {TIME_PERIODS.map((tp) => (
