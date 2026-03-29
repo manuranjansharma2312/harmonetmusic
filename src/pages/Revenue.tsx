@@ -338,7 +338,7 @@ export default function Revenue() {
               </div>
               <span className="text-sm font-medium text-muted-foreground">Total Earned</span>
             </div>
-            <p className="text-3xl font-bold text-blue-400">
+            <p className="text-2xl sm:text-3xl font-bold text-blue-400">
               {loading ? '...' : formatCurrency(netRevenue)}
             </p>
           </GlassCard>
