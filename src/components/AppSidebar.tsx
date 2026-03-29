@@ -145,6 +145,7 @@ export function AppSidebar() {
     { to: '/admin/youtube-cms-links', label: 'CMS Links', icon: Youtube },
     { to: '/admin/cms-reports', label: 'CMS Reports', icon: BarChart3 },
     { to: '/admin/cms-withdrawals', label: 'CMS Withdrawals', icon: Wallet },
+    { to: '/admin/youtube-cms-settings', label: 'CMS Settings', icon: Settings },
   ];
 
   // Video Distribution collapsible links
