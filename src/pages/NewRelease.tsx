@@ -640,7 +640,7 @@ export default function NewRelease() {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">℗ Line</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">℗ Line *</label>
                 <select className={inputClass} value={phonogramLine} onChange={(e) => setPhonogramLine(e.target.value)}>
                   <option value="">Select label</option>
                   {approvedLabels.map(name => <option key={name} value={name}>{name}</option>)}
