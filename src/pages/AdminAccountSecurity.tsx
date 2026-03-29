@@ -90,7 +90,7 @@ export default function AdminAccountSecurity() {
             Admin Account Settings
           </h1>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            Change your admin account email or password.
+            Change your admin account email or password settings.
           </p>
         </div>
 
