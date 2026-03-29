@@ -90,6 +90,7 @@ export default function AdminYouTubeCmsLinks() {
   const [editCmsCompany, setEditCmsCompany] = useState('');
   const [editCmsDate, setEditCmsDate] = useState<Date | undefined>();
   const [saving, setSaving] = useState(false);
+  const [editCutPercent, setEditCutPercent] = useState('0');
 
   // View modal
   const [viewItem, setViewItem] = useState<CmsLink | null>(null);
