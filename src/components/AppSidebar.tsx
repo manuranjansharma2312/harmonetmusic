@@ -73,8 +73,6 @@ const adminLinksTop = [
   { to: '/admin/email-settings', label: 'Manage Emails', icon: Mail },
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
   { to: '/admin/branding-settings', label: 'Site Settings', icon: Globe },
-  { to: '/admin/site-settings', label: 'System Settings', icon: Settings },
-  { to: '/admin/account-security', label: 'Account Security', icon: KeyRound },
 ];
 
 export function AppSidebar() {
@@ -95,6 +93,7 @@ export function AppSidebar() {
   const [adminVideoOpen, setAdminVideoOpen] = useState(false);
   const [userCmsOpen, setUserCmsOpen] = useState(false);
   const [adminCmsOpen, setAdminCmsOpen] = useState(false);
+  const [adminSettingsOpen, setAdminSettingsOpen] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
 
   // Fetch impersonated user's profile when impersonating
@@ -146,6 +145,12 @@ export function AppSidebar() {
     { to: '/admin/cms-reports', label: 'CMS Reports', icon: BarChart3 },
     { to: '/admin/cms-withdrawals', label: 'CMS Withdrawals', icon: Wallet },
     { to: '/admin/youtube-cms-settings', label: 'CMS Settings', icon: Settings },
+  ];
+
+  // Admin Settings collapsible links
+  const adminSettingsLinks = [
+    { to: '/admin/site-settings', label: 'System Settings', icon: Settings },
+    { to: '/admin/account-security', label: 'Admin Account Settings', icon: KeyRound },
   ];
 
   // Video Distribution collapsible links
@@ -296,6 +301,7 @@ export function AppSidebar() {
                   {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, adminVideoLinks, adminVideoOpen, setAdminVideoOpen)}
                   {renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}
+                  {renderCollapsibleGroup('Settings', Settings, adminSettingsLinks, adminSettingsOpen, setAdminSettingsOpen)}
                 </>
               )}
             </SidebarMenu>

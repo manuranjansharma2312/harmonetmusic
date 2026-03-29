@@ -87,10 +87,10 @@ export default function AdminAccountSecurity() {
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground flex items-center gap-3">
             <Shield className="h-7 w-7 text-primary" />
-            Account Security
+            Admin Account Settings
           </h1>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            Change your admin account email or password.
+            Change your admin account email or password settings.
           </p>
         </div>
 
