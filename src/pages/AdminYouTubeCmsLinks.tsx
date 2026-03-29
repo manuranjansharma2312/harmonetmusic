@@ -311,7 +311,7 @@ export default function AdminYouTubeCmsLinks() {
     }
   };
 
-
+  return (
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-3">
