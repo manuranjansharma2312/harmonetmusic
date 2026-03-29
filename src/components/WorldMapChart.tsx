@@ -91,7 +91,7 @@ export const WorldMapChart = memo(function WorldMapChart({ data, className }: Wo
   }, [data]);
 
   const mapData = useMemo(
-    () => normalizedData.map((entry) => ({ country: entry.code.toLowerCase(), value: entry.streams })),
+    () => normalizedData.map((entry) => ({ country: entry.code.toLowerCase() as any, value: entry.streams })),
     [normalizedData],
   );
 

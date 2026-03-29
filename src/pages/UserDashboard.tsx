@@ -653,20 +653,35 @@ function EmptyChart({ icon: Icon, text }: { icon: any; text: string }) {
   return <div className="text-center py-16"><Icon className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" /><p className="text-xs text-muted-foreground">{text}</p></div>;
 }
 
+type TutorialPreview = {
+  id: string;
+  subject: string;
+  content: string;
+  created_at: string;
+};
+
 function RecentTutorialsWidget() {
   const navigate = useNavigate();
-  const [viewTutorial, setViewTutorial] = useState<any>(null);
-  const { data: tutorials = [], isLoading } = useQuery({
+  const [viewTutorial, setViewTutorial] = useState<TutorialPreview | null>(null);
+  const { data: tutorials = [], isLoading } = useQuery<TutorialPreview[]>({
     queryKey: ['recent-tutorials'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('tutorials').select('*').order('created_at', { ascending: false }).limit(3);
+      const { data, error } = await supabase
+        .from('tutorials')
+        .select('id, subject, content, created_at')
+        .order('created_at', { ascending: false })
+        .limit(3);
       if (error) throw error;
-      return data;
+      return (data || []) as TutorialPreview[];
     },
   });
 
   if (isLoading || tutorials.length === 0) return null;
-  const stripHtml = (html: string) => { const tmp = document.createElement('div'); tmp.innerHTML = html; return tmp.textContent || tmp.innerText || ''; };
+  const stripHtml = (html: string) => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+  };
 
   return (
     <>
@@ -679,21 +694,23 @@ function RecentTutorialsWidget() {
           <button onClick={() => navigate('/help-tutorials')} className="text-[10px] sm:text-xs text-primary hover:underline flex items-center gap-1">View All <ArrowRight className="h-3 w-3" /></button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {tutorials.map((t: any) => (
-            <GlassCard key={t.id} className="cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all !p-4" onClick={() => setViewTutorial(t)}>
-              <h3 className="text-xs sm:text-sm font-semibold text-foreground truncate mb-1">{t.title}</h3>
-              <p className="text-[10px] text-muted-foreground line-clamp-2">{stripHtml(t.content)}</p>
-              <p className="text-[9px] text-muted-foreground/50 mt-2">{format(new Date(t.created_at), 'dd MMM yyyy')}</p>
+          {tutorials.map((tutorial) => (
+            <GlassCard key={tutorial.id} className="cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all !p-4" onClick={() => setViewTutorial(tutorial)}>
+              <h3 className="text-xs sm:text-sm font-semibold text-foreground truncate mb-1">{tutorial.subject}</h3>
+              <p className="text-[10px] text-muted-foreground line-clamp-2">{stripHtml(tutorial.content || '')}</p>
+              <p className="text-[9px] text-muted-foreground/50 mt-2">{format(new Date(tutorial.created_at), 'dd MMM yyyy')}</p>
             </GlassCard>
           ))}
         </div>
       </div>
-      <Dialog open={!!viewTutorial} onOpenChange={() => setViewTutorial(null)}>
-        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{viewTutorial?.title}</DialogTitle></DialogHeader>
-          {viewTutorial && <TutorialContent html={viewTutorial.content} />}
-        </DialogContent>
-      </Dialog>
+      {viewTutorial && (
+        <Dialog open={!!viewTutorial} onOpenChange={(open) => !open && setViewTutorial(null)}>
+          <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader><DialogTitle>{viewTutorial.subject}</DialogTitle></DialogHeader>
+            <TutorialContent html={viewTutorial.content || ''} />
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 }
