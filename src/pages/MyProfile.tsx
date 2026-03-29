@@ -4,7 +4,8 @@ import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
-import { Loader2, User, Mail, Phone, MapPin, Globe, Shield, ShieldCheck, ShieldX, ShieldAlert, Instagram, Facebook, Music, Youtube, Landmark } from 'lucide-react';
+import { Loader2, User, Mail, Phone, MapPin, Globe, Shield, ShieldCheck, ShieldX, ShieldAlert, Instagram, Facebook, Music, Youtube, Landmark, KeyRound, CheckCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 function VerificationBadge({ status }: { status: string }) {
   if (status === 'verified') return <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400"><ShieldCheck className="h-3.5 w-3.5" />Verified</span>;
