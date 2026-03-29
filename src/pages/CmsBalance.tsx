@@ -141,7 +141,7 @@ export default function CmsBalance() {
               </GlassCard>
               <GlassCard className="p-5">
                 <div className="flex items-center gap-3 mb-2">
-                  <Wallet className="h-5 w-5 text-amber-500" />
+                  <Wallet className="h-5 w-5 text-accent-foreground" />
                   <span className="text-sm text-muted-foreground">Available Balance</span>
                 </div>
                 <p className="text-2xl font-bold">₹{availableBalance.toFixed(2)}</p>
