@@ -170,8 +170,9 @@
 
   /* Responsive table wrapper */
   .responsive-table-wrap {
-    @apply w-full overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0;
+    @apply w-full overflow-x-auto;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
   }
 
   /* Mobile-friendly tabs */
