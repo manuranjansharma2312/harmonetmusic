@@ -297,17 +297,17 @@ export default function Analytics() {
     month.split(' ').map((w, i) => i === 0 ? w.slice(0, 3) : `'${w.slice(2)}`).join(' '), []);
 
   const revenueTrend = useMemo(() => {
-    const map: Record<string, { ott: number; youtube: number }> = {};
-    adjustedFiltered.forEach((e) => { if (!map[e.reporting_month]) map[e.reporting_month] = { ott: 0, youtube: 0 }; map[e.reporting_month][e.source] += Number(e.net_generated_revenue) || 0; });
+    const map: Record<string, { ott: number; youtube: number; vevo: number }> = {};
+    adjustedFiltered.forEach((e) => { if (!map[e.reporting_month]) map[e.reporting_month] = { ott: 0, youtube: 0, vevo: 0 }; map[e.reporting_month][e.source] += Number(e.net_generated_revenue) || 0; });
     return Object.entries(map).sort(([a], [b]) => (parseMonthToDate(a)?.getTime() || 0) - (parseMonthToDate(b)?.getTime() || 0))
-      .map(([month, vals]) => ({ month: formatMonth(month), OTT: Math.round(vals.ott * 100) / 100, YouTube: Math.round(vals.youtube * 100) / 100 }));
+      .map(([month, vals]) => ({ month: formatMonth(month), OTT: Math.round(vals.ott * 100) / 100, YouTube: Math.round(vals.youtube * 100) / 100, Vevo: Math.round(vals.vevo * 100) / 100 }));
   }, [adjustedFiltered, formatMonth]);
 
   const streamsTrend = useMemo(() => {
-    const map: Record<string, { ott: number; youtube: number }> = {};
-    filtered.forEach((e) => { if (!map[e.reporting_month]) map[e.reporting_month] = { ott: 0, youtube: 0 }; map[e.reporting_month][e.source] += Number(e.streams) || 0; });
+    const map: Record<string, { ott: number; youtube: number; vevo: number }> = {};
+    filtered.forEach((e) => { if (!map[e.reporting_month]) map[e.reporting_month] = { ott: 0, youtube: 0, vevo: 0 }; map[e.reporting_month][e.source] += Number(e.streams) || 0; });
     return Object.entries(map).sort(([a], [b]) => (parseMonthToDate(a)?.getTime() || 0) - (parseMonthToDate(b)?.getTime() || 0))
-      .map(([month, vals]) => ({ month: formatMonth(month), OTT: vals.ott, YouTube: vals.youtube }));
+      .map(([month, vals]) => ({ month: formatMonth(month), OTT: vals.ott, YouTube: vals.youtube, Vevo: vals.vevo }));
   }, [filtered, formatMonth]);
 
   const revenueByPlatform = useMemo(() => aggregateByKey(adjustedFiltered, 'store', 'revenue'), [adjustedFiltered]);
@@ -326,16 +326,21 @@ export default function Analytics() {
   }, [filtered]);
 
   const sourceSplit = useMemo(() => {
-    let ott = 0, yt = 0;
-    adjustedFiltered.forEach((e) => { if (e.source === 'ott') ott += Number(e.net_generated_revenue) || 0; else yt += Number(e.net_generated_revenue) || 0; });
-    const total = ott + yt;
+    let ott = 0, yt = 0, vevo = 0;
+    adjustedFiltered.forEach((e) => {
+      if (e.source === 'ott') ott += Number(e.net_generated_revenue) || 0;
+      else if (e.source === 'vevo') vevo += Number(e.net_generated_revenue) || 0;
+      else yt += Number(e.net_generated_revenue) || 0;
+    });
+    const total = ott + yt + vevo;
     return [
       { name: 'OTT Platforms', value: Math.round(ott * 100) / 100, total },
       { name: 'YouTube', value: Math.round(yt * 100) / 100, total },
+      { name: 'Vevo', value: Math.round(vevo * 100) / 100, total },
     ].filter((d) => d.value > 0);
   }, [adjustedFiltered]);
 
-  const PIE_COLORS = ['#f0932b', '#eb4d4b'];
+  const PIE_COLORS = ['#f0932b', '#eb4d4b', '#a55eea'];
 
   return (
     <DashboardLayout>
@@ -344,7 +349,7 @@ export default function Analytics() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold font-display tracking-tight">Analytics</h1>
-            <p className="text-muted-foreground text-xs sm:text-sm mt-1">YouTube + OTT combined · All amounts in ₹ INR</p>
+            <p className="text-muted-foreground text-xs sm:text-sm mt-1">YouTube + OTT + Vevo combined · All amounts in ₹ INR</p>
           </div>
           <div className="flex gap-1 p-1 rounded-2xl bg-muted/25 border border-border/15 w-full sm:w-fit backdrop-blur-sm overflow-x-auto scrollbar-none">
             {TIME_PERIODS.map((tp) => (
@@ -410,6 +415,11 @@ export default function Analytics() {
                           <stop offset="50%" stopColor="#eb4d4b" stopOpacity={0.12} />
                           <stop offset="100%" stopColor="#eb4d4b" stopOpacity={0} />
                         </linearGradient>
+                        <linearGradient id="gradVevoArea" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#a55eea" stopOpacity={0.45} />
+                          <stop offset="50%" stopColor="#a55eea" stopOpacity={0.12} />
+                          <stop offset="100%" stopColor="#a55eea" stopOpacity={0} />
+                        </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 6" stroke="hsl(0 0% 14%)" vertical={false} />
                       <XAxis dataKey="month" tick={{ fill: 'hsl(0 0% 45%)', fontSize: 10, fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} />
@@ -420,6 +430,8 @@ export default function Analytics() {
                         activeDot={(props: any) => <GlowDot cx={props.cx} cy={props.cy} color="#f0932b" />} />
                       <Area type="monotone" dataKey="YouTube" stroke="#eb4d4b" fill="url(#gradYtArea)" strokeWidth={2.5} dot={false}
                         activeDot={(props: any) => <GlowDot cx={props.cx} cy={props.cy} color="#eb4d4b" />} />
+                      <Area type="monotone" dataKey="Vevo" stroke="#a55eea" fill="url(#gradVevoArea)" strokeWidth={2.5} dot={false}
+                        activeDot={(props: any) => <GlowDot cx={props.cx} cy={props.cy} color="#a55eea" />} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -428,7 +440,7 @@ export default function Analytics() {
               {/* Revenue Split Donut */}
               <div className="rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm overflow-hidden">
                 <div className="p-4 sm:p-6 pb-2">
-                  <SectionHeader icon={Disc3} title="Revenue Split" subtitle="OTT vs YouTube share" accent="#eb4d4b" />
+                  <SectionHeader icon={Disc3} title="Revenue Split" subtitle="OTT vs YouTube vs Vevo" accent="#eb4d4b" />
                 </div>
                 <div className="h-[200px] sm:h-[240px] flex items-center justify-center relative">
                   {sourceSplit.length > 0 ? (
@@ -443,6 +455,10 @@ export default function Analytics() {
                             <linearGradient id="pieGrad1" x1="0" y1="0" x2="1" y2="1">
                               <stop offset="0%" stopColor="#ff6b6b" />
                               <stop offset="100%" stopColor="#eb4d4b" />
+                            </linearGradient>
+                            <linearGradient id="pieGrad2" x1="0" y1="0" x2="1" y2="1">
+                              <stop offset="0%" stopColor="#c56cf0" />
+                              <stop offset="100%" stopColor="#a55eea" />
                             </linearGradient>
                           </defs>
                           <Pie data={sourceSplit} cx="50%" cy="50%" innerRadius={45} outerRadius={72} paddingAngle={5}
@@ -500,6 +516,11 @@ export default function Analytics() {
                         <stop offset="50%" stopColor="#26de81" stopOpacity={0.12} />
                         <stop offset="100%" stopColor="#26de81" stopOpacity={0} />
                       </linearGradient>
+                      <linearGradient id="sVevoArea" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#a55eea" stopOpacity={0.45} />
+                        <stop offset="50%" stopColor="#a55eea" stopOpacity={0.12} />
+                        <stop offset="100%" stopColor="#a55eea" stopOpacity={0} />
+                      </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 6" stroke="hsl(0 0% 14%)" vertical={false} />
                     <XAxis dataKey="month" tick={{ fill: 'hsl(0 0% 45%)', fontSize: 10, fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} />
@@ -510,6 +531,8 @@ export default function Analytics() {
                       activeDot={(props: any) => <GlowDot cx={props.cx} cy={props.cy} color="#45aaf2" />} />
                     <Area type="monotone" dataKey="YouTube" stroke="#26de81" fill="url(#sYtArea)" strokeWidth={2.5} dot={false}
                       activeDot={(props: any) => <GlowDot cx={props.cx} cy={props.cy} color="#26de81" />} />
+                    <Area type="monotone" dataKey="Vevo" stroke="#a55eea" fill="url(#sVevoArea)" strokeWidth={2.5} dot={false}
+                      activeDot={(props: any) => <GlowDot cx={props.cx} cy={props.cy} color="#a55eea" />} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
