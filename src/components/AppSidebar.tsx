@@ -129,14 +129,22 @@ export function AppSidebar() {
     { to: '/submit', label: 'New Release', icon: Upload },
     { to: '/my-releases', label: 'My Releases', icon: ListMusic },
     { to: '/smart-links', label: 'Smart Links', icon: Link2 },
-    // YouTube CMS options hidden for sub-labels
-    ...(!effectiveIsSubLabel ? [
-      { to: '/youtube-cms-link', label: 'YouTube CMS Link', icon: Youtube },
-      { to: '/cms-reports', label: 'CMS Reports', icon: BarChart3 },
-      { to: '/cms-analytics', label: 'CMS Analytics', icon: BarChart3 },
-      { to: '/cms-balance', label: 'CMS Balance', icon: Wallet },
-    ] : []),
     { to: '/my-labels', label: 'My Labels', icon: Tag },
+  ];
+
+  // YouTube CMS collapsible links (hidden for sub-labels)
+  const userCmsLinks = [
+    { to: '/youtube-cms-link', label: 'CMS Link', icon: Youtube },
+    { to: '/cms-reports', label: 'CMS Reports', icon: BarChart3 },
+    { to: '/cms-analytics', label: 'CMS Analytics', icon: BarChart3 },
+    { to: '/cms-balance', label: 'CMS Balance', icon: Wallet },
+  ];
+
+  // Admin YouTube CMS collapsible links
+  const adminCmsLinks = [
+    { to: '/admin/youtube-cms-links', label: 'CMS Links', icon: Youtube },
+    { to: '/admin/cms-reports', label: 'CMS Reports', icon: BarChart3 },
+    { to: '/admin/cms-withdrawals', label: 'CMS Withdrawals', icon: Wallet },
   ];
 
   // Video Distribution collapsible links
