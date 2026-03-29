@@ -34,6 +34,7 @@ interface CmsLink {
   rejection_reason: string | null;
   cms_linked_date: string | null;
   cms_company: string | null;
+  cut_percent: number;
   created_at: string;
   updated_at: string;
 }
@@ -89,6 +90,7 @@ export default function AdminYouTubeCmsLinks() {
   const [editCmsCompany, setEditCmsCompany] = useState('');
   const [editCmsDate, setEditCmsDate] = useState<Date | undefined>();
   const [saving, setSaving] = useState(false);
+  const [editCutPercent, setEditCutPercent] = useState('0');
 
   // View modal
   const [viewItem, setViewItem] = useState<CmsLink | null>(null);
@@ -195,6 +197,7 @@ export default function AdminYouTubeCmsLinks() {
     setEditStatus(item.status);
     setEditCmsCompany(item.cms_company || '');
     setEditCmsDate(item.cms_linked_date ? new Date(item.cms_linked_date) : undefined);
+    setEditCutPercent(String(item.cut_percent || 0));
   };
 
   const handleSave = async () => {
@@ -214,6 +217,7 @@ export default function AdminYouTubeCmsLinks() {
     if (editStatus === 'linked') {
       update.cms_company = editCmsCompany.trim() || null;
       update.cms_linked_date = editCmsDate ? format(editCmsDate, 'yyyy-MM-dd') : null;
+      update.cut_percent = parseFloat(editCutPercent) || 0;
     }
     if (editStatus !== 'rejected') update.rejection_reason = null;
 
@@ -311,7 +315,7 @@ export default function AdminYouTubeCmsLinks() {
     }
   };
 
-
+  return (
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-3">
@@ -636,6 +640,7 @@ export default function AdminYouTubeCmsLinks() {
                     </PopoverContent>
                   </Popover>
                 </div>
+                <div><Label>Revenue % Cut</Label><Input type="number" min="0" max="100" step="0.01" value={editCutPercent} onChange={(e) => setEditCutPercent(e.target.value)} placeholder="e.g. 30" /></div>
               </>
             )}
           </div>

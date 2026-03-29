@@ -70,6 +70,8 @@ const adminLinksTop = [
   { to: '/admin/ai-image-system', label: 'AI Poster Generate', icon: Sparkles },
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
   { to: '/admin/youtube-cms-links', label: 'YouTube CMS Links', icon: Youtube },
+  { to: '/admin/cms-reports', label: 'CMS Reports', icon: BarChart3 },
+  { to: '/admin/cms-withdrawals', label: 'CMS Withdrawals', icon: Wallet },
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
   { to: '/admin/email-settings', label: 'Email Settings', icon: Mail },
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
@@ -127,7 +129,12 @@ export function AppSidebar() {
     { to: '/submit', label: 'New Release', icon: Upload },
     { to: '/my-releases', label: 'My Releases', icon: ListMusic },
     { to: '/smart-links', label: 'Smart Links', icon: Link2 },
-    { to: '/youtube-cms-link', label: 'YouTube CMS Link', icon: Youtube },
+    // YouTube CMS options hidden for sub-labels
+    ...(!effectiveIsSubLabel ? [
+      { to: '/youtube-cms-link', label: 'YouTube CMS Link', icon: Youtube },
+      { to: '/cms-reports', label: 'CMS Reports', icon: BarChart3 },
+      { to: '/cms-balance', label: 'CMS Balance', icon: Wallet },
+    ] : []),
     { to: '/my-labels', label: 'My Labels', icon: Tag },
   ];
 

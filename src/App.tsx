@@ -88,6 +88,10 @@ const VevoReports = lazy(() => import("./pages/VevoReports"));
 const AdminVevoSettings = lazy(() => import("./pages/AdminVevoSettings"));
 const YouTubeCmsLink = lazy(() => import("./pages/YouTubeCmsLink"));
 const AdminYouTubeCmsLinks = lazy(() => import("./pages/AdminYouTubeCmsLinks"));
+const AdminCmsReports = lazy(() => import("./pages/AdminCmsReports"));
+const CmsReports = lazy(() => import("./pages/CmsReports"));
+const CmsBalance = lazy(() => import("./pages/CmsBalance"));
+const AdminCmsWithdrawals = lazy(() => import("./pages/AdminCmsWithdrawals"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -212,7 +216,11 @@ function App() {
                       <Route path="/admin/video-guidelines" element={<ProtectedRoute requiredRole="admin"><AdminVideoGuidelines /></ProtectedRoute>} />
                       <Route path="/video-guidelines" element={<ProtectedRoute><VideoGuidelines /></ProtectedRoute>} />
                       <Route path="/youtube-cms-link" element={<ProtectedRoute><YouTubeCmsLink /></ProtectedRoute>} />
+                      <Route path="/cms-reports" element={<ProtectedRoute><CmsReports /></ProtectedRoute>} />
+                      <Route path="/cms-balance" element={<ProtectedRoute><CmsBalance /></ProtectedRoute>} />
                       <Route path="/admin/youtube-cms-links" element={<ProtectedRoute requiredRole="admin"><AdminYouTubeCmsLinks /></ProtectedRoute>} />
+                      <Route path="/admin/cms-reports" element={<ProtectedRoute requiredRole="admin"><AdminCmsReports /></ProtectedRoute>} />
+                      <Route path="/admin/cms-withdrawals" element={<ProtectedRoute requiredRole="admin"><AdminCmsWithdrawals /></ProtectedRoute>} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>
