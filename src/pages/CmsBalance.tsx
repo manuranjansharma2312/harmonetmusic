@@ -155,7 +155,7 @@ export default function CmsBalance() {
                   <p className="text-sm font-medium">Withdrawal Threshold</p>
                   <p className="text-xs text-muted-foreground">
                     {canWithdraw
-                      ? 'You can withdraw your CMS balance'
+                      ? 'You can withdraw your CMS revenue'
                       : `₹${amountNeeded.toFixed(2)} more needed to reach ₹${threshold.toFixed(2)} threshold`}
                   </p>
                 </div>
