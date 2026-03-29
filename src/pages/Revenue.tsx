@@ -131,6 +131,15 @@ export default function Revenue() {
         // Fetch hidden cut from own profile
         setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
       }
+      // Compute cut locally to avoid stale closure values
+      const localHiddenCut = subLabelData?.parent_user_id
+        ? Number((await supabase.from('profiles').select('hidden_cut_percent').eq('user_id', subLabelData.parent_user_id).maybeSingle()).data?.hidden_cut_percent || 0)
+        : Number(profileData?.hidden_cut_percent || 0);
+      const localSubLabelCut = Number(subLabelData?.percentage_cut || 0);
+      const localIsSubLabel = Boolean(subLabelData);
+      const localEffectiveCut = getEffectiveRevenueCutPercent({ hiddenCut: localHiddenCut, subLabelCut: localSubLabelCut, isSubLabel: localIsSubLabel });
+      const localApplyCut = shouldApplyRevenueCut({ role, currentUserId: user?.id, activeUserId });
+
       // When admin impersonates, we need to filter by user's ISRCs
       // because admin RLS sees all entries
       let ottTotal = 0;
@@ -167,9 +176,9 @@ export default function Revenue() {
             supabase.from('youtube_report_entries').select('net_generated_revenue, cut_percent_snapshot').in('isrc', ownedIsrcs).eq('revenue_frozen', false),
             supabase.from('vevo_report_entries').select('net_generated_revenue, cut_percent_snapshot').in('isrc', ownedIsrcs).eq('revenue_frozen', false),
           ]);
-          ottTotal = (ottData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
-          ytTotal = (ytData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
-          const vevoTotal = (vevoData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
+          ottTotal = (ottData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, localEffectiveCut, localApplyCut), 0);
+          ytTotal = (ytData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, localEffectiveCut, localApplyCut), 0);
+          const vevoTotal = (vevoData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, localEffectiveCut, localApplyCut), 0);
           ottTotal += vevoTotal;
         }
       } else {
@@ -179,9 +188,9 @@ export default function Revenue() {
           supabase.from('youtube_report_entries').select('net_generated_revenue, cut_percent_snapshot').eq('revenue_frozen', false),
           supabase.from('vevo_report_entries').select('net_generated_revenue, cut_percent_snapshot').eq('revenue_frozen', false),
         ]);
-        ottTotal = (ottData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
-        ytTotal = (ytData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
-        const vevoTotal = (vevoData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, effectiveCut, applyCut), 0);
+        ottTotal = (ottData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, localEffectiveCut, localApplyCut), 0);
+        ytTotal = (ytData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, localEffectiveCut, localApplyCut), 0);
+        const vevoTotal = (vevoData || []).reduce((sum, r: any) => sum + applySnapshotCut(Number(r.net_generated_revenue) || 0, r.cut_percent_snapshot, localEffectiveCut, localApplyCut), 0);
         ottTotal += vevoTotal;
       }
 
