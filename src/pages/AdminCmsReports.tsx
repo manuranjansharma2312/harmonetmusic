@@ -88,12 +88,37 @@ export default function AdminCmsReports() {
   const [editFormat, setEditFormat] = useState<FormatColumn[]>([]);
   const [newColHeader, setNewColHeader] = useState('');
 
-  const COLUMNS = useMemo(() =>
-    formatColumns.filter(c => c.is_enabled && c.column_key !== 'reporting_month')
+  const COLUMNS = useMemo(() => {
+    const baseCols = formatColumns
+      .filter(c => c.is_enabled && c.column_key !== 'reporting_month')
       .sort((a, b) => a.sort_order - b.sort_order)
-      .map(c => ({ key: c.column_key, label: ALL_COLUMNS[c.column_key] || c.csv_header })),
-    [formatColumns]
-  );
+      .map(c => ({ key: c.column_key, label: ALL_COLUMNS[c.column_key] || c.csv_header }));
+    // Add calculated columns after net_generated_revenue
+    const revenueIdx = baseCols.findIndex(c => c.key === 'net_generated_revenue');
+    const extra = [
+      { key: 'cms_cut', label: 'CMS Cut %' },
+      { key: 'cut_amount', label: 'Cut Amount' },
+      { key: 'net_payable', label: 'Net Payable' },
+    ];
+    if (revenueIdx >= 0) baseCols.splice(revenueIdx + 1, 0, ...extra);
+    else baseCols.push(...extra);
+    return baseCols;
+  }, [formatColumns]);
+
+  // CMS cut helpers
+  const getCutPercent = (channelName: string) => {
+    const link = cmsLinks.find(l => l.channel_name === channelName);
+    return Number(link?.cut_percent) || 0;
+  };
+  const calcCutAmount = (entry: ReportEntry) => {
+    const revenue = Number(entry.net_generated_revenue) || 0;
+    return Number((revenue * getCutPercent(entry.channel_name) / 100).toFixed(4));
+  };
+  const calcNetPayable = (entry: ReportEntry) => {
+    const revenue = Number(entry.net_generated_revenue) || 0;
+    const cut = getCutPercent(entry.channel_name);
+    return Number((revenue - (revenue * cut / 100)).toFixed(4));
+  };
 
   const fetchFormat = async () => {
     const { data } = await supabase.from('cms_report_format' as any).select('*').order('sort_order', { ascending: true });
@@ -102,8 +127,12 @@ export default function AdminCmsReports() {
 
   const fetchEntries = async () => {
     setLoading(true);
-    const { data } = await supabase.from('cms_report_entries' as any).select('*').order('reporting_month', { ascending: false });
+    const [{ data }, { data: links }] = await Promise.all([
+      supabase.from('cms_report_entries' as any).select('*').order('reporting_month', { ascending: false }),
+      supabase.from('youtube_cms_links' as any).select('channel_name, cut_percent').eq('status', 'linked'),
+    ]);
     setEntries((data as any) || []);
+    setCmsLinks((links as any) || []);
     setLoading(false);
   };
 
