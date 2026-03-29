@@ -45,7 +45,7 @@ interface CmsLink {
 const ALL_COLUMN_LABELS: Record<string, string> = {
   channel_name: 'Channel Name', label: 'Label', track: 'Track', artist: 'Artist',
   currency: 'Currency', streams: 'Streams', downloads: 'Downloads',
-  net_generated_revenue: 'Net Revenue', cut_amount: '% Cut Amount', net_payable: 'Net Payable',
+  net_generated_revenue: 'Net Revenue', cms_cut: 'CMS Cut %', cut_amount: '% Cut Amount', net_payable: 'Net Payable',
 };
 
 const FILTERABLE = [
