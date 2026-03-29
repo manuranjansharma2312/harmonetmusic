@@ -385,9 +385,9 @@ export default function Reports() {
               </div>
             </GlassCard>
 
-            <GlassCard className="p-0 overflow-hidden">
-              <div className="overflow-x-auto">
-                <Table>
+            <GlassCard className="p-0 overflow-hidden rounded-lg">
+              <div className="responsive-table-wrap">
+                <Table className="min-w-max">
                   <TableHeader>
                     <TableRow>
                       {COLUMNS.map((col) => (
