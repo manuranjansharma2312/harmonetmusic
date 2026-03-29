@@ -30,6 +30,7 @@ export interface SiteSettings {
   enable_vevo: boolean;
   enable_video_distribution: boolean;
   enable_reports: boolean;
+  enable_youtube_cms: boolean;
   updated_at: string;
   updated_by: string | null;
 }
