@@ -89,6 +89,7 @@ export default function CmsReports() {
     // Add calculated columns after net_generated_revenue
     const revenueIdx = baseCols.findIndex(c => c.key === 'net_generated_revenue');
     const extra = [
+      { key: 'cms_cut', label: 'CMS Cut %' },
       { key: 'cut_amount', label: '% Cut Amount' },
       { key: 'net_payable', label: 'Net Payable' },
     ];
