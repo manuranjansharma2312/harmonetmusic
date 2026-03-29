@@ -72,7 +72,6 @@ const adminLinksTop = [
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
   { to: '/admin/email-settings', label: 'Manage Emails', icon: Mail },
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
-  { to: '/admin/branding-settings', label: 'Site Settings', icon: Globe },
 ];
 
 export function AppSidebar() {
@@ -149,6 +148,7 @@ export function AppSidebar() {
 
   // Admin Settings collapsible links
   const adminSettingsLinks = [
+    { to: '/admin/branding-settings', label: 'Site Settings', icon: Globe },
     { to: '/admin/site-settings', label: 'System Settings', icon: Settings },
     { to: '/admin/account-security', label: 'Admin Account Settings', icon: KeyRound },
   ];
