@@ -127,6 +127,10 @@ export default function YouTubeCmsLink() {
           </Button>
         </div>
 
+        <p className="text-sm text-muted-foreground">
+          Connect your YouTube Channel with the YouTube CMS to gain better control over your content, ensure proper rights management, and simplify revenue tracking and distribution in a professional environment.
+        </p>
+
         <GlassCard>
           {loading ? (
             <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
