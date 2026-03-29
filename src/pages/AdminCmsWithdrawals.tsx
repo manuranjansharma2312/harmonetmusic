@@ -110,9 +110,12 @@ export default function AdminCmsWithdrawals() {
   const saveThreshold = async () => {
     const val = parseFloat(editThreshold);
     if (isNaN(val) || val < 0) { toast.error('Invalid threshold'); return; }
+    const { data: row } = await supabase.from('cms_settings' as any).select('id').limit(1).single();
+    const settingsId = (row as any)?.id;
+    if (!settingsId) { toast.error('Settings not found'); return; }
     const { error } = await supabase.from('cms_settings' as any)
       .update({ withdrawal_threshold: val, updated_at: new Date().toISOString() } as any)
-      .eq('id', (await supabase.from('cms_settings' as any).select('id').limit(1).single()).data?.id);
+      .eq('id', settingsId);
     if (error) toast.error(error.message);
     else { toast.success('Threshold updated'); setThreshold(val); }
   };

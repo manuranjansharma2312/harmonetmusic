@@ -134,7 +134,7 @@ export default function CmsBalance() {
               </GlassCard>
               <GlassCard className="p-5">
                 <div className="flex items-center gap-3 mb-2">
-                  <ArrowDownToLine className="h-5 w-5 text-green-500" />
+                  <ArrowDownToLine className="h-5 w-5 text-primary" />
                   <span className="text-sm text-muted-foreground">Total Paid</span>
                 </div>
                 <p className="text-2xl font-bold">₹{paidTotal.toFixed(2)}</p>
