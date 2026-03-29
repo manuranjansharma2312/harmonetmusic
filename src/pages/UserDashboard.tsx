@@ -716,7 +716,7 @@ function SparklineCard({ title, data, color, icon: Icon, iconBg, iconColor, tota
           <div className={`h-6 w-6 rounded-lg ${iconBg} flex items-center justify-center`}><Icon className={`h-3 w-3 ${iconColor}`} /></div>
           <span className="text-xs font-semibold text-foreground">{title}</span>
         </div>
-        <span className="text-lg font-bold text-foreground">{total}</span>
+        <span className="text-lg font-bold text-foreground whitespace-nowrap">{total}</span>
       </div>
       <div className="h-16">
         <ResponsiveContainer width="100%" height="100%">
