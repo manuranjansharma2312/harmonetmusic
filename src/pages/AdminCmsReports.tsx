@@ -515,8 +515,11 @@ export default function AdminCmsReports() {
                     ) : pagedEntries.map(entry => (
                       <TableRow key={entry.id}>
                         {COLUMNS.map(col => (
-                          <TableCell key={col.key} className="whitespace-nowrap">
+                          <TableCell key={col.key} className={`whitespace-nowrap ${col.key === 'net_payable' ? 'font-semibold text-primary' : col.key === 'cut_amount' ? 'text-destructive' : ''}`}>
                             {col.key === 'net_generated_revenue' ? `₹${(Number(entry.net_generated_revenue) || 0).toFixed(4)}`
+                              : col.key === 'cms_cut' ? `${getCutPercent(entry.channel_name)}%`
+                              : col.key === 'cut_amount' ? `₹${calcCutAmount(entry).toFixed(4)}`
+                              : col.key === 'net_payable' ? `₹${calcNetPayable(entry).toFixed(4)}`
                               : col.key.startsWith('custom_') ? String((entry.extra_data as Record<string, string>)?.[col.key] ?? '-')
                               : String(entry[col.key as keyof ReportEntry] ?? '-')}
                           </TableCell>
