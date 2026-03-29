@@ -87,6 +87,7 @@ export default function AdminDashboard() {
   useEffect(() => { fetchAll(); }, []);
 
   async function fetchAll() {
+    try {
     const [
       releasesRes, profilesRes, labelsRes, subLabelsRes,
       withdrawalsRes, contentRes, reportRes, ytReportRes,
