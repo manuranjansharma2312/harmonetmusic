@@ -64,6 +64,7 @@ const DEFAULTS: SiteSettings = {
   enable_vevo: true,
   enable_video_distribution: true,
   enable_reports: true,
+  enable_youtube_cms: true,
   updated_at: '',
   updated_by: null,
 };
