@@ -350,7 +350,7 @@ export default function Revenue() {
               </div>
               <span className="text-sm font-medium text-muted-foreground">Pending Withdrawals</span>
             </div>
-            <p className="text-3xl font-bold text-amber-400">
+            <p className="text-2xl sm:text-3xl font-bold text-amber-400">
               {loading ? '...' : formatCurrency(pendingWithdrawals)}
             </p>
           </GlassCard>
