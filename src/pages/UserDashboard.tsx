@@ -7,6 +7,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { formatStreams, formatRevenue } from '@/lib/formatNumbers';
+import { fetchAllRows } from '@/lib/supabaseFetchAll';
 import { applySnapshotCut, calculateAvailableBalance, getEffectiveRevenueCutPercent, shouldApplyRevenueCut, summarizeWithdrawals } from '@/lib/revenueCalculations';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
@@ -51,6 +52,7 @@ const tooltipStyle = {
 };
 
 const axisTickStyle = { fill: 'hsl(0 0% 40%)', fontSize: 10 };
+const reportSelect = 'reporting_month, net_generated_revenue, streams, downloads, store, track, artist, country, cut_percent_snapshot, revenue_frozen';
 
 export default function UserDashboard() {
   const { user, role } = useAuth();
@@ -90,26 +92,34 @@ export default function UserDashboard() {
 
   const fetchAll = useCallback(async () => {
     if (!effectiveUserId) return;
-    if (isFetchingRef.current) { shouldRefetchRef.current = true; return; }
+    if (isFetchingRef.current) {
+      shouldRefetchRef.current = true;
+      return;
+    }
+
     isFetchingRef.current = true;
+
     try {
-      const [releasesRes, profileRes, subLabelRes, withdrawalRes, recentReleasesRes] = await Promise.all([
-        supabase.from('releases').select('status').eq('user_id', effectiveUserId),
+      const [releaseRows, profileRes, subLabelRes, withdrawalRows, recentReleasesRes] = await Promise.all([
+        fetchAllRows('releases', 'status', (query) => query.eq('user_id', effectiveUserId)),
         supabase.from('profiles').select('display_id, hidden_cut_percent').eq('user_id', effectiveUserId).single(),
         supabase.from('sub_labels').select('percentage_cut, parent_user_id').eq('sub_user_id', effectiveUserId).maybeSingle(),
-        supabase.from('withdrawal_requests').select('status, amount').eq('user_id', effectiveUserId),
+        fetchAllRows('withdrawal_requests', 'status, amount', (query) => query.eq('user_id', effectiveUserId)),
         supabase.from('releases').select('id, album_name, ep_name, content_type, status, created_at, poster_url').eq('user_id', effectiveUserId).order('created_at', { ascending: false }).limit(5),
       ]);
 
-      if (releasesRes.data) {
-        const d = releasesRes.data;
-        setReleaseStats({ total: d.length, pending: d.filter((s) => s.status === 'pending').length, approved: d.filter((s) => s.status === 'approved').length, rejected: d.filter((s) => s.status === 'rejected').length });
-      }
+      setReleaseStats({
+        total: releaseRows.length,
+        pending: releaseRows.filter((s: any) => s.status === 'pending').length,
+        approved: releaseRows.filter((s: any) => s.status === 'approved').length,
+        rejected: releaseRows.filter((s: any) => s.status === 'rejected').length,
+      });
       setDisplayId(profileRes.data ? (profileRes.data as any).display_id : null);
 
       const hasSubLabel = Boolean(subLabelRes.data);
       const subLabelCutPercent = Number(subLabelRes.data?.percentage_cut || 0);
       let hiddenCutPercent = profileRes.data ? Number((profileRes.data as any).hidden_cut_percent || 0) : 0;
+
       if (hasSubLabel && subLabelRes.data?.parent_user_id) {
         const { data: parentProfile } = await supabase.from('profiles').select('hidden_cut_percent').eq('user_id', subLabelRes.data.parent_user_id).maybeSingle();
         hiddenCutPercent = Number(parentProfile?.hidden_cut_percent || 0);
@@ -117,7 +127,9 @@ export default function UserDashboard() {
 
       const effectiveCutPercent = getEffectiveRevenueCutPercent({ hiddenCut: hiddenCutPercent, subLabelCut: subLabelCutPercent, isSubLabel: hasSubLabel });
       const shouldCut = shouldApplyRevenueCut({ role, currentUserId: user?.id, activeUserId: effectiveUserId });
-      setHiddenCut(hiddenCutPercent); setSubLabelCut(subLabelCutPercent); setIsSubLabelUser(hasSubLabel);
+      setHiddenCut(hiddenCutPercent);
+      setSubLabelCut(subLabelCutPercent);
+      setIsSubLabelUser(hasSubLabel);
 
       let reportData: any[] = [];
       let ytReportData: any[] = [];
@@ -130,49 +142,58 @@ export default function UserDashboard() {
           supabase.from('tracks').select('isrc').in('user_id', allUserIds),
           supabase.from('songs').select('isrc').in('user_id', allUserIds),
         ]);
+
         const ownedIsrcs = [...new Set([...(trackRows ?? []), ...(songRows ?? [])].map((row) => (row.isrc || '').trim().toUpperCase()).filter(Boolean))];
+
         if (ownedIsrcs.length > 0) {
-          const [{ data: ottData }, { data: ytData }] = await Promise.all([
-            supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, artist, country, cut_percent_snapshot, revenue_frozen').in('isrc', ownedIsrcs),
-            supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, artist, country, cut_percent_snapshot, revenue_frozen').in('isrc', ownedIsrcs),
+          [reportData, ytReportData] = await Promise.all([
+            fetchAllRows('report_entries', reportSelect, (query) => query.in('isrc', ownedIsrcs)),
+            fetchAllRows('youtube_report_entries', reportSelect, (query) => query.in('isrc', ownedIsrcs)),
           ]);
-          reportData = ottData || []; ytReportData = ytData || [];
         }
       } else {
-        const [reportRes, ytReportRes] = await Promise.all([
-          supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, artist, country, cut_percent_snapshot, revenue_frozen').eq('user_id', effectiveUserId),
-          supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, artist, country, cut_percent_snapshot, revenue_frozen').eq('user_id', effectiveUserId),
+        [reportData, ytReportData] = await Promise.all([
+          fetchAllRows('report_entries', reportSelect, (query) => query.eq('user_id', effectiveUserId)),
+          fetchAllRows('youtube_report_entries', reportSelect, (query) => query.eq('user_id', effectiveUserId)),
         ]);
-        reportData = reportRes.data || []; ytReportData = ytReportRes.data || [];
       }
 
       if (!hasSubLabel) {
-        const [{ data: cmsLinks }, { data: cmsEntries }, { data: cmsWds }] = await Promise.all([
-          supabase.from('youtube_cms_links' as any).select('channel_name, cut_percent').eq('user_id', effectiveUserId).eq('status', 'linked'),
-          supabase.from('cms_report_entries' as any).select('net_generated_revenue, channel_name'),
-          supabase.from('cms_withdrawal_requests' as any).select('status, amount').eq('user_id', effectiveUserId),
+        const [cmsLinks, cmsEntries, cmsWithdrawals] = await Promise.all([
+          fetchAllRows('youtube_cms_links', 'channel_name, cut_percent', (query) => query.eq('user_id', effectiveUserId).eq('status', 'linked')),
+          fetchAllRows('cms_report_entries', 'net_generated_revenue, channel_name'),
+          fetchAllRows('cms_withdrawal_requests', 'status, amount', (query) => query.eq('user_id', effectiveUserId)),
         ]);
+
         const linkedChannels = (cmsLinks as any[]) || [];
         setCmsChannels(linkedChannels.length);
-        const linkedNames = new Set(linkedChannels.map(l => l.channel_name));
-        const userCmsEntries = ((cmsEntries as any[]) || []).filter(e => linkedNames.has(e.channel_name));
+        const linkedNames = new Set(linkedChannels.map((link) => link.channel_name));
+        const userCmsEntries = ((cmsEntries as any[]) || []).filter((entry) => linkedNames.has(entry.channel_name));
+
         let cmsTotal = 0;
-        userCmsEntries.forEach(e => {
-          const rev = Number(e.net_generated_revenue) || 0;
-          const cut = Number(linkedChannels.find(l => l.channel_name === e.channel_name)?.cut_percent || 0);
+        userCmsEntries.forEach((entry) => {
+          const rev = Number(entry.net_generated_revenue) || 0;
+          const cut = Number(linkedChannels.find((link) => link.channel_name === entry.channel_name)?.cut_percent || 0);
           cmsTotal += rev - (rev * cut / 100);
         });
+
         setCmsRevenue(Math.round(cmsTotal * 100) / 100);
-        const cmsWithdrawals = (cmsWds as any[]) || [];
-        setCmsPaid(cmsWithdrawals.filter(w => w.status === 'paid').reduce((s, w) => s + Number(w.amount), 0));
-        setCmsPending(cmsWithdrawals.filter(w => w.status === 'pending').reduce((s, w) => s + Number(w.amount), 0));
+
+        const cmsWithdrawalRows = (cmsWithdrawals as any[]) || [];
+        setCmsPaid(cmsWithdrawalRows.filter((w) => w.status === 'paid').reduce((sum, w) => sum + Number(w.amount), 0));
+        setCmsPending(cmsWithdrawalRows.filter((w) => w.status === 'pending').reduce((sum, w) => sum + Number(w.amount), 0));
       } else {
-        setCmsChannels(0); setCmsRevenue(0); setCmsPaid(0); setCmsPending(0);
+        setCmsChannels(0);
+        setCmsRevenue(0);
+        setCmsPaid(0);
+        setCmsPending(0);
       }
 
       const allReports = [...reportData, ...ytReportData];
       if (allReports.length > 0) {
-        let totalRev = 0, totalStr = 0, totalDl = 0;
+        let totalRev = 0;
+        let totalStr = 0;
+        let totalDl = 0;
         const monthMap: Record<string, { revenue: number; streams: number; downloads: number }> = {};
         const storeMap: Record<string, { streams: number; revenue: number }> = {};
         const trackMap: Record<string, { streams: number; revenue: number }> = {};
@@ -184,56 +205,86 @@ export default function UserDashboard() {
           const isFrozen = r.revenue_frozen === true;
           const grossRevenue = Number(r.net_generated_revenue || 0);
           const rev = isFrozen ? 0 : applySnapshotCut(grossRevenue, r.cut_percent_snapshot, effectiveCutPercent, shouldCut);
-          const str = Number(r.streams || 0); const dl = Number(r.downloads || 0);
-          totalRev += rev; totalStr += str; totalDl += dl;
+          const str = Number(r.streams || 0);
+          const dl = Number(r.downloads || 0);
+          totalRev += rev;
+          totalStr += str;
+          totalDl += dl;
           const month = r.reporting_month?.length > 7 ? r.reporting_month.substring(0, 7) : r.reporting_month;
           if (!monthMap[month]) monthMap[month] = { revenue: 0, streams: 0, downloads: 0 };
-          monthMap[month].revenue += rev; monthMap[month].streams += str; monthMap[month].downloads += dl;
+          monthMap[month].revenue += rev;
+          monthMap[month].streams += str;
+          monthMap[month].downloads += dl;
           const store = r.store || 'Other';
           if (!storeMap[store]) storeMap[store] = { streams: 0, revenue: 0 };
-          storeMap[store].streams += str; storeMap[store].revenue += rev;
-          if (r.track) { if (!trackMap[r.track]) trackMap[r.track] = { streams: 0, revenue: 0 }; trackMap[r.track].streams += str; trackMap[r.track].revenue += rev; }
+          storeMap[store].streams += str;
+          storeMap[store].revenue += rev;
+          if (r.track) {
+            if (!trackMap[r.track]) trackMap[r.track] = { streams: 0, revenue: 0 };
+            trackMap[r.track].streams += str;
+            trackMap[r.track].revenue += rev;
+          }
           if (r.country) countryMap[r.country] = (countryMap[r.country] || 0) + str;
           if (r.artist) artistMap[r.artist] = (artistMap[r.artist] || 0) + str;
           if (!monthStoreMap[month]) monthStoreMap[month] = {};
           monthStoreMap[month][store] = (monthStoreMap[month][store] || 0) + str;
         });
 
-        setTotalRevenue(Math.round(totalRev * 100) / 100); setTotalStreams(totalStr); setTotalDownloads(totalDl);
+        setTotalRevenue(Math.round(totalRev * 100) / 100);
+        setTotalStreams(totalStr);
+        setTotalDownloads(totalDl);
         setMonthlyRevenue(Object.entries(monthMap).sort(([a], [b]) => a.localeCompare(b)).slice(-8).map(([month, data]) => ({ month, revenue: Math.round(data.revenue * 100) / 100, streams: data.streams, downloads: data.downloads })));
         setTopStores(Object.entries(storeMap).sort(([, a], [, b]) => b.streams - a.streams).slice(0, 8).map(([name, data]) => ({ name, value: data.streams, revenue: data.revenue, color: STORE_COLORS[name] || CHART_COLORS[0] })));
         setTopTracks(Object.entries(trackMap).sort(([, a], [, b]) => b.streams - a.streams).slice(0, 6).map(([name, data]) => ({ name: name.length > 22 ? `${name.substring(0, 22)}…` : name, streams: data.streams, revenue: data.revenue })));
         setCountryData(Object.entries(countryMap).sort(([, a], [, b]) => b - a).slice(0, 10).map(([name, streams]) => ({ name, streams })));
-        setTopArtists(Object.entries(artistMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, streams]) => ({ name: name.length > 20 ? name.substring(0, 20) + '…' : name, streams })));
-        const topStoreNames = Object.entries(storeMap).sort(([, a], [, b]) => b.streams - a.streams).slice(0, 4).map(([n]) => n);
+        setTopArtists(Object.entries(artistMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, streams]) => ({ name: name.length > 20 ? `${name.substring(0, 20)}…` : name, streams })));
+        const topStoreNames = Object.entries(storeMap).sort(([, a], [, b]) => b.streams - a.streams).slice(0, 4).map(([name]) => name);
         setMonthlyStoreData(Object.entries(monthStoreMap).sort(([a], [b]) => a.localeCompare(b)).slice(-6).map(([month, stores]) => {
-          const row: any = { month }; topStoreNames.forEach(s => { row[s] = stores[s] || 0; }); return row;
+          const row: any = { month };
+          topStoreNames.forEach((storeName) => {
+            row[storeName] = stores[storeName] || 0;
+          });
+          return row;
         }));
       } else {
-        setTotalRevenue(0); setTotalStreams(0); setTotalDownloads(0);
-        setMonthlyRevenue([]); setTopStores([]); setTopTracks([]); setCountryData([]);
-        setTopArtists([]); setMonthlyStoreData([]);
+        setTotalRevenue(0);
+        setTotalStreams(0);
+        setTotalDownloads(0);
+        setMonthlyRevenue([]);
+        setTopStores([]);
+        setTopTracks([]);
+        setCountryData([]);
+        setTopArtists([]);
+        setMonthlyStoreData([]);
       }
 
-      if (withdrawalRes.data) setWithdrawalBalance(summarizeWithdrawals(withdrawalRes.data));
+      setWithdrawalBalance(summarizeWithdrawals(withdrawalRows as any[]));
       setRecentReleases(recentReleasesRes.data || []);
     } catch (error) {
       console.error('Failed to load dashboard', error);
       toast.error('Failed to load dashboard data.');
     } finally {
-      setLoading(false); isFetchingRef.current = false;
-      if (shouldRefetchRef.current) { shouldRefetchRef.current = false; void fetchAll(); }
+      setLoading(false);
+      isFetchingRef.current = false;
+      if (shouldRefetchRef.current) {
+        shouldRefetchRef.current = false;
+        void fetchAll();
+      }
     }
   }, [effectiveUserId, impersonatedUserId, isImpersonating, role, user?.id]);
 
   const scheduleFetchAll = useCallback(() => {
     if (refreshTimeoutRef.current !== null) window.clearTimeout(refreshTimeoutRef.current);
-    refreshTimeoutRef.current = window.setTimeout(() => { refreshTimeoutRef.current = null; void fetchAll(); }, 250);
+    refreshTimeoutRef.current = window.setTimeout(() => {
+      refreshTimeoutRef.current = null;
+      void fetchAll();
+    }, 250);
   }, [fetchAll]);
 
   useEffect(() => {
     if (!effectiveUserId) return;
-    setLoading(true); void fetchAll();
+    setLoading(true);
+    void fetchAll();
     const channel = supabase
       .channel(`dashboard-realtime-${effectiveUserId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'report_entries' }, scheduleFetchAll)
@@ -241,7 +292,13 @@ export default function UserDashboard() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawal_requests' }, scheduleFetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'releases' }, scheduleFetchAll)
       .subscribe();
-    return () => { if (refreshTimeoutRef.current !== null) { window.clearTimeout(refreshTimeoutRef.current); refreshTimeoutRef.current = null; } supabase.removeChannel(channel); };
+    return () => {
+      if (refreshTimeoutRef.current !== null) {
+        window.clearTimeout(refreshTimeoutRef.current);
+        refreshTimeoutRef.current = null;
+      }
+      supabase.removeChannel(channel);
+    };
   }, [effectiveUserId, fetchAll, scheduleFetchAll]);
 
   const copyUserId = () => { if (displayId) { navigator.clipboard.writeText(`#${displayId}`); toast.success('User ID copied!'); } };
