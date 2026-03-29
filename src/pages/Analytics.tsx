@@ -297,17 +297,17 @@ export default function Analytics() {
     month.split(' ').map((w, i) => i === 0 ? w.slice(0, 3) : `'${w.slice(2)}`).join(' '), []);
 
   const revenueTrend = useMemo(() => {
-    const map: Record<string, { ott: number; youtube: number }> = {};
-    adjustedFiltered.forEach((e) => { if (!map[e.reporting_month]) map[e.reporting_month] = { ott: 0, youtube: 0 }; map[e.reporting_month][e.source] += Number(e.net_generated_revenue) || 0; });
+    const map: Record<string, { ott: number; youtube: number; vevo: number }> = {};
+    adjustedFiltered.forEach((e) => { if (!map[e.reporting_month]) map[e.reporting_month] = { ott: 0, youtube: 0, vevo: 0 }; map[e.reporting_month][e.source] += Number(e.net_generated_revenue) || 0; });
     return Object.entries(map).sort(([a], [b]) => (parseMonthToDate(a)?.getTime() || 0) - (parseMonthToDate(b)?.getTime() || 0))
-      .map(([month, vals]) => ({ month: formatMonth(month), OTT: Math.round(vals.ott * 100) / 100, YouTube: Math.round(vals.youtube * 100) / 100 }));
+      .map(([month, vals]) => ({ month: formatMonth(month), OTT: Math.round(vals.ott * 100) / 100, YouTube: Math.round(vals.youtube * 100) / 100, Vevo: Math.round(vals.vevo * 100) / 100 }));
   }, [adjustedFiltered, formatMonth]);
 
   const streamsTrend = useMemo(() => {
-    const map: Record<string, { ott: number; youtube: number }> = {};
-    filtered.forEach((e) => { if (!map[e.reporting_month]) map[e.reporting_month] = { ott: 0, youtube: 0 }; map[e.reporting_month][e.source] += Number(e.streams) || 0; });
+    const map: Record<string, { ott: number; youtube: number; vevo: number }> = {};
+    filtered.forEach((e) => { if (!map[e.reporting_month]) map[e.reporting_month] = { ott: 0, youtube: 0, vevo: 0 }; map[e.reporting_month][e.source] += Number(e.streams) || 0; });
     return Object.entries(map).sort(([a], [b]) => (parseMonthToDate(a)?.getTime() || 0) - (parseMonthToDate(b)?.getTime() || 0))
-      .map(([month, vals]) => ({ month: formatMonth(month), OTT: vals.ott, YouTube: vals.youtube }));
+      .map(([month, vals]) => ({ month: formatMonth(month), OTT: vals.ott, YouTube: vals.youtube, Vevo: vals.vevo }));
   }, [filtered, formatMonth]);
 
   const revenueByPlatform = useMemo(() => aggregateByKey(adjustedFiltered, 'store', 'revenue'), [adjustedFiltered]);
@@ -326,16 +326,21 @@ export default function Analytics() {
   }, [filtered]);
 
   const sourceSplit = useMemo(() => {
-    let ott = 0, yt = 0;
-    adjustedFiltered.forEach((e) => { if (e.source === 'ott') ott += Number(e.net_generated_revenue) || 0; else yt += Number(e.net_generated_revenue) || 0; });
-    const total = ott + yt;
+    let ott = 0, yt = 0, vevo = 0;
+    adjustedFiltered.forEach((e) => {
+      if (e.source === 'ott') ott += Number(e.net_generated_revenue) || 0;
+      else if (e.source === 'vevo') vevo += Number(e.net_generated_revenue) || 0;
+      else yt += Number(e.net_generated_revenue) || 0;
+    });
+    const total = ott + yt + vevo;
     return [
       { name: 'OTT Platforms', value: Math.round(ott * 100) / 100, total },
       { name: 'YouTube', value: Math.round(yt * 100) / 100, total },
+      { name: 'Vevo', value: Math.round(vevo * 100) / 100, total },
     ].filter((d) => d.value > 0);
   }, [adjustedFiltered]);
 
-  const PIE_COLORS = ['#f0932b', '#eb4d4b'];
+  const PIE_COLORS = ['#f0932b', '#eb4d4b', '#a55eea'];
 
   return (
     <DashboardLayout>
