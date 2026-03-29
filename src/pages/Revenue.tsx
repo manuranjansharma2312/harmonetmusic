@@ -131,12 +131,12 @@ export default function Revenue() {
         // Fetch hidden cut from own profile
         setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
       }
-      // Compute cut locally to avoid stale closure values
-      const localHiddenCut = subLabelData?.parent_user_id
+      // Compute cut locally to avoid stale closure values (reuse already-fetched data)
+      const localHiddenCut = (isSubLabel && subLabelData?.parent_user_id)
         ? Number((await supabase.from('profiles').select('hidden_cut_percent').eq('user_id', subLabelData.parent_user_id).maybeSingle()).data?.hidden_cut_percent || 0)
         : Number(profileData?.hidden_cut_percent || 0);
       const localSubLabelCut = Number(subLabelData?.percentage_cut || 0);
-      const localIsSubLabel = Boolean(subLabelData);
+      const localIsSubLabel = isSubLabel;
       const localEffectiveCut = getEffectiveRevenueCutPercent({ hiddenCut: localHiddenCut, subLabelCut: localSubLabelCut, isSubLabel: localIsSubLabel });
       const localApplyCut = shouldApplyRevenueCut({ role, currentUserId: user?.id, activeUserId });
 
