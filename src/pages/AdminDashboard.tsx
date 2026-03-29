@@ -8,75 +8,38 @@ import { formatRevenue, formatStreams } from '@/lib/formatNumbers';
 import {
   Disc3, Clock, CheckCircle, XCircle, Loader2, Users,
   Wallet, FileText, UsersRound, Tag, MessageSquare, ArrowRight,
-  TrendingUp, TrendingDown, Music, BarChart3, Activity, DollarSign, Globe
+  TrendingUp, TrendingDown, Music, BarChart3, Activity, DollarSign, Globe,
+  Youtube, Film, PenTool, Monitor
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, AreaChart, Area, LineChart, Line, Legend, RadialBarChart, RadialBar
+  PieChart, Pie, Cell, AreaChart, Area, Legend
 } from 'recharts';
-import { format, subMonths, startOfMonth, isAfter } from 'date-fns';
+import { format, subMonths } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
 const CHART_COLORS = [
-  'hsl(0, 67%, 35%)',
-  'hsl(45, 80%, 45%)',
-  'hsl(140, 60%, 40%)',
-  'hsl(200, 70%, 50%)',
-  'hsl(280, 60%, 50%)',
-  'hsl(30, 80%, 50%)',
+  'hsl(0, 67%, 35%)', 'hsl(45, 80%, 45%)', 'hsl(140, 60%, 40%)',
+  'hsl(200, 70%, 50%)', 'hsl(280, 60%, 50%)', 'hsl(30, 80%, 50%)',
 ];
 
 const STORE_COLORS: Record<string, string> = {
-  Spotify: '#1DB954',
-  'Apple Music': '#FA2D48',
-  'YouTube Music': '#FF0000',
-  YouTube: '#FF0000',
-  JioSaavn: '#2BC5B4',
-  Gaana: '#E72C30',
-  Wynk: '#1E90FF',
-  Amazon: '#FF9900',
-  Hungama: '#EF2D56',
-  Instagram: '#E1306C',
-  Facebook: '#1877F2',
-  TikTok: '#000000',
+  Spotify: '#1DB954', 'Apple Music': '#FA2D48', 'YouTube Music': '#FF0000',
+  YouTube: '#FF0000', JioSaavn: '#2BC5B4', Gaana: '#E72C30',
+  Wynk: '#1E90FF', Amazon: '#FF9900', Hungama: '#EF2D56',
+  Instagram: '#E1306C', Facebook: '#1877F2', TikTok: '#000000',
 };
 
 const tooltipStyle = {
-  background: 'hsl(0 0% 10%)',
-  border: '1px solid hsl(0 0% 18%)',
-  borderRadius: '12px',
+  background: 'hsl(0 0% 7%)',
+  border: '1px solid hsl(0 0% 14%)',
+  borderRadius: '16px',
   color: 'hsl(0 0% 90%)',
-  fontSize: '12px',
-  boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-  padding: '10px 14px',
+  fontSize: '11px',
+  boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)',
+  padding: '12px 16px',
+  backdropFilter: 'blur(20px)',
 };
-
-function MiniStatCard({ title, value, icon: Icon, color, trend }: {
-  title: string; value: string | number; icon: any; color: string; trend?: { value: number; label: string };
-}) {
-  return (
-    <GlassCard className="!p-3 sm:!p-4 animate-fade-in group hover:scale-[1.02] transition-transform duration-200">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <p className="text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-wider">{title}</p>
-          <p className="text-lg sm:text-xl lg:text-2xl font-bold font-display mt-1 whitespace-nowrap text-foreground">{value}</p>
-          {trend && (
-            <div className={`flex items-center gap-1 mt-1.5 ${trend.value >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-              {trend.value >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-              <span className="text-[10px] sm:text-xs font-medium">{trend.value >= 0 ? '+' : ''}{trend.value}% {trend.label}</span>
-            </div>
-          )}
-        </div>
-        <div
-          className="rounded-xl p-2 sm:p-2.5 shrink-0 transition-all duration-200 group-hover:scale-110"
-          style={{ background: color }}
-        >
-          <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
-        </div>
-      </div>
-    </GlassCard>
-  );
-}
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -102,6 +65,19 @@ export default function AdminDashboard() {
   const [pendingWithdrawals, setPendingWithdrawals] = useState<any[]>([]);
   const [countryData, setCountryData] = useState<{ name: string; streams: number }[]>([]);
 
+  // CMS stats
+  const [cmsLinkCount, setCmsLinkCount] = useState(0);
+  const [cmsTotalRevenue, setCmsTotalRevenue] = useState(0);
+  const [pendingCmsLinks, setPendingCmsLinks] = useState(0);
+
+  // Video & Vevo stats
+  const [videoSubmissionCount, setVideoSubmissionCount] = useState(0);
+  const [vevoChannelCount, setVevoChannelCount] = useState(0);
+  const [pendingVideoCount, setPendingVideoCount] = useState(0);
+
+  // Signature stats
+  const [signatureDocCount, setSignatureDocCount] = useState(0);
+
   useEffect(() => { fetchAll(); }, []);
 
   async function fetchAll() {
@@ -109,7 +85,9 @@ export default function AdminDashboard() {
       releasesRes, profilesRes, labelsRes, subLabelsRes,
       withdrawalsRes, contentRes, reportRes, ytReportRes,
       pendingLabelsRes, pendingReleasesRes, pendingContentRes, pendingWithdrawalsRes,
-      recentReleasesRes
+      recentReleasesRes,
+      cmsLinksRes, cmsEntriesRes,
+      videoSubsRes, vevoSubsRes, signatureDocsRes
     ] = await Promise.all([
       supabase.from('releases').select('status, created_at'),
       supabase.from('profiles').select('id, created_at'),
@@ -124,16 +102,18 @@ export default function AdminDashboard() {
       supabase.from('content_requests').select('id, request_type, song_title, artist_name, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
       supabase.from('withdrawal_requests').select('id, amount, created_at, user_id').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
       supabase.from('releases').select('id, album_name, ep_name, content_type, status, created_at').order('created_at', { ascending: false }).limit(5),
+      // CMS
+      supabase.from('youtube_cms_links' as any).select('id, status'),
+      supabase.from('cms_report_entries' as any).select('net_generated_revenue'),
+      // Video & Vevo
+      supabase.from('video_submissions' as any).select('id, status').eq('submission_type', 'upload_video'),
+      supabase.from('video_submissions' as any).select('id, status').eq('submission_type', 'vevo_channel'),
+      supabase.from('signature_documents').select('id'),
     ]);
 
     if (releasesRes.data) {
       const d = releasesRes.data;
-      setReleaseStats({
-        total: d.length,
-        pending: d.filter(s => s.status === 'pending').length,
-        approved: d.filter(s => s.status === 'approved').length,
-        rejected: d.filter(s => s.status === 'rejected').length,
-      });
+      setReleaseStats({ total: d.length, pending: d.filter(s => s.status === 'pending').length, approved: d.filter(s => s.status === 'approved').length, rejected: d.filter(s => s.status === 'rejected').length });
     }
 
     setUserCount(profilesRes.data?.length || 0);
@@ -157,11 +137,24 @@ export default function AdminDashboard() {
     setPendingWithdrawals(pendingWithdrawalsRes.data || []);
     setRecentReleases(recentReleasesRes.data || []);
 
+    // CMS
+    const cmsLinks = (cmsLinksRes.data as any[]) || [];
+    setCmsLinkCount(cmsLinks.filter(l => l.status === 'linked').length);
+    setPendingCmsLinks(cmsLinks.filter(l => l.status === 'pending_review' || l.status === 'reviewing').length);
+    const cmsEntries = (cmsEntriesRes.data as any[]) || [];
+    setCmsTotalRevenue(cmsEntries.reduce((s, e) => s + (Number(e.net_generated_revenue) || 0), 0));
+
+    // Video & Vevo
+    const videoSubs = (videoSubsRes.data as any[]) || [];
+    setVideoSubmissionCount(videoSubs.length);
+    setPendingVideoCount(videoSubs.filter(v => v.status === 'pending').length);
+    setVevoChannelCount(((vevoSubsRes.data as any[]) || []).length);
+    setSignatureDocCount((signatureDocsRes.data || []).length);
+
     const allReports = [...(reportRes.data || []), ...(ytReportRes.data || [])];
 
     if (allReports.length > 0) {
-      let totalRev = 0;
-      let totalStr = 0;
+      let totalRev = 0, totalStr = 0;
       const monthMap: Record<string, { revenue: number; streams: number }> = {};
       const storeMap: Record<string, number> = {};
       const trackMap: Record<string, number> = {};
@@ -171,17 +164,13 @@ export default function AdminDashboard() {
       allReports.forEach((r: any) => {
         const rev = Number(r.net_generated_revenue || 0);
         const str = Number(r.streams || 0);
-        totalRev += rev;
-        totalStr += str;
-
+        totalRev += rev; totalStr += str;
         const month = r.reporting_month;
         if (!monthMap[month]) monthMap[month] = { revenue: 0, streams: 0 };
         monthMap[month].revenue += rev;
         monthMap[month].streams += str;
-
         const store = r.store || 'Unknown';
         storeMap[store] = (storeMap[store] || 0) + str;
-
         if (r.track) trackMap[r.track] = (trackMap[r.track] || 0) + str;
         if (r.artist) artistMap[r.artist] = (artistMap[r.artist] || 0) + str;
         if (r.country) countryMap[r.country] = (countryMap[r.country] || 0) + str;
@@ -189,35 +178,11 @@ export default function AdminDashboard() {
 
       setTotalRevenue(totalRev);
       setTotalStreams(totalStr);
-
-      setMonthlyRevenue(
-        Object.entries(monthMap).sort(([a], [b]) => a.localeCompare(b)).slice(-8)
-          .map(([month, data]) => ({
-            month: month.length > 7 ? month.substring(0, 7) : month,
-            revenue: Math.round(data.revenue * 100) / 100,
-            streams: data.streams,
-          }))
-      );
-
-      setTopStores(
-        Object.entries(storeMap).sort(([, a], [, b]) => b - a).slice(0, 6)
-          .map(([name, value]) => ({ name, value, color: STORE_COLORS[name] || CHART_COLORS[0] }))
-      );
-
-      setTopTracks(
-        Object.entries(trackMap).sort(([, a], [, b]) => b - a).slice(0, 5)
-          .map(([name, streams]) => ({ name: name.length > 25 ? name.substring(0, 25) + '…' : name, streams }))
-      );
-
-      setTopArtists(
-        Object.entries(artistMap).sort(([, a], [, b]) => b - a).slice(0, 5)
-          .map(([name, streams]) => ({ name: name.length > 20 ? name.substring(0, 20) + '…' : name, streams }))
-      );
-
-      setCountryData(
-        Object.entries(countryMap).sort(([, a], [, b]) => b - a).slice(0, 8)
-          .map(([name, streams]) => ({ name, streams }))
-      );
+      setMonthlyRevenue(Object.entries(monthMap).sort(([a], [b]) => a.localeCompare(b)).slice(-8).map(([month, data]) => ({ month: month.length > 7 ? month.substring(0, 7) : month, revenue: Math.round(data.revenue * 100) / 100, streams: data.streams })));
+      setTopStores(Object.entries(storeMap).sort(([, a], [, b]) => b - a).slice(0, 6).map(([name, value]) => ({ name, value, color: STORE_COLORS[name] || CHART_COLORS[0] })));
+      setTopTracks(Object.entries(trackMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, streams]) => ({ name: name.length > 25 ? name.substring(0, 25) + '…' : name, streams })));
+      setTopArtists(Object.entries(artistMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, streams]) => ({ name: name.length > 20 ? name.substring(0, 20) + '…' : name, streams })));
+      setCountryData(Object.entries(countryMap).sort(([, a], [, b]) => b - a).slice(0, 8).map(([name, streams]) => ({ name, streams })));
     }
 
     // Monthly releases + users trend (last 6 months)
@@ -229,21 +194,8 @@ export default function AdminDashboard() {
       monthlyRelMap[key] = 0;
       monthlyUserMap[key] = 0;
     }
-
-    if (releasesRes.data) {
-      releasesRes.data.forEach((r: any) => {
-        const m = format(new Date(r.created_at), 'MMM');
-        if (monthlyRelMap[m] !== undefined) monthlyRelMap[m]++;
-      });
-    }
-
-    if (profilesRes.data) {
-      (profilesRes.data as any[]).forEach((p: any) => {
-        const m = format(new Date(p.created_at), 'MMM');
-        if (monthlyUserMap[m] !== undefined) monthlyUserMap[m]++;
-      });
-    }
-
+    if (releasesRes.data) releasesRes.data.forEach((r: any) => { const m = format(new Date(r.created_at), 'MMM'); if (monthlyRelMap[m] !== undefined) monthlyRelMap[m]++; });
+    if (profilesRes.data) (profilesRes.data as any[]).forEach((p: any) => { const m = format(new Date(p.created_at), 'MMM'); if (monthlyUserMap[m] !== undefined) monthlyUserMap[m]++; });
     setMonthlyReleases(Object.entries(monthlyRelMap).map(([month, count]) => ({ month, count })));
     setMonthlyUsers(Object.entries(monthlyUserMap).map(([month, count]) => ({ month, count })));
     setLoading(false);
@@ -260,110 +212,161 @@ export default function AdminDashboard() {
   }
 
   const releaseStatusData = [
-    { name: 'Pending', value: releaseStats.pending, color: CHART_COLORS[1] },
-    { name: 'Approved', value: releaseStats.approved, color: CHART_COLORS[2] },
-    { name: 'Rejected', value: releaseStats.rejected, color: CHART_COLORS[0] },
+    { name: 'Pending', value: releaseStats.pending, color: 'hsl(45, 80%, 45%)' },
+    { name: 'Approved', value: releaseStats.approved, color: 'hsl(140, 60%, 40%)' },
+    { name: 'Rejected', value: releaseStats.rejected, color: 'hsl(0, 67%, 45%)' },
   ].filter(d => d.value > 0);
 
   const getReleaseName = (r: any) => r.album_name || r.ep_name || r.content_type || 'Untitled';
   const formatRequestType = (type: string) => type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-
   const totalStoreStreams = topStores.reduce((a, b) => a + b.value, 0);
 
   return (
     <DashboardLayout>
-      <div className="mb-4 sm:mb-6 lg:mb-8">
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold text-foreground">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-1 text-xs sm:text-sm lg:text-base">Platform overview and analytics</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground tracking-tight">Admin Dashboard</h1>
+        <p className="text-muted-foreground mt-1 text-xs sm:text-sm">Platform overview and analytics</p>
       </div>
 
-      {/* Hero Stats Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <MiniStatCard title="Users" value={userCount} icon={Users} color="hsla(200, 70%, 40%, 0.25)" />
-        <MiniStatCard title="Releases" value={releaseStats.total} icon={Disc3} color="hsla(0, 67%, 25%, 0.3)" />
-        <MiniStatCard title="Pending" value={releaseStats.pending} icon={Clock} color="hsla(45, 80%, 40%, 0.25)" />
-        <MiniStatCard title="Approved" value={releaseStats.approved} icon={CheckCircle} color="hsla(140, 60%, 30%, 0.25)" />
-        <MiniStatCard title="Labels" value={labelCount} icon={FileText} color="hsla(30, 80%, 40%, 0.25)" />
-        <MiniStatCard title="Sub Labels" value={subLabelCount} icon={UsersRound} color="hsla(200, 60%, 35%, 0.25)" />
-        <MiniStatCard title="Total Revenue" value={formatRevenue(totalRevenue)} icon={DollarSign} color="hsla(140, 60%, 35%, 0.25)" />
-        <MiniStatCard title="Total Streams" value={formatStreams(totalStreams)} icon={BarChart3} color="hsla(280, 60%, 40%, 0.25)" />
-      </div>
-
-      {/* Financial Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <GlassCard className="!p-3 sm:!p-4 animate-fade-in border-l-4" style={{ borderLeftColor: 'hsl(45, 80%, 45%)' }}>
-          <div className="flex items-center gap-2 mb-2">
-            <Clock className="h-4 w-4 text-yellow-400" />
-            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium">Pending Withdrawals</span>
+      {/* Hero Stats - Gradient Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="relative overflow-hidden rounded-2xl p-4 sm:p-5 bg-gradient-to-br from-sky-500/10 to-sky-600/5 border border-sky-500/15">
+          <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-sky-500/10 blur-3xl" />
+          <Users className="h-5 w-5 text-sky-400 mb-2" />
+          <p className="text-[10px] sm:text-xs text-sky-300/70 uppercase tracking-widest font-medium">Total Users</p>
+          <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">{userCount}</p>
+        </div>
+        <div className="relative overflow-hidden rounded-2xl p-4 sm:p-5 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-500/15">
+          <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-emerald-500/10 blur-3xl" />
+          <DollarSign className="h-5 w-5 text-emerald-400 mb-2" />
+          <p className="text-[10px] sm:text-xs text-emerald-300/70 uppercase tracking-widest font-medium">Total Revenue</p>
+          <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1 whitespace-nowrap">{formatRevenue(totalRevenue)}</p>
+        </div>
+        <div className="relative overflow-hidden rounded-2xl p-4 sm:p-5 bg-gradient-to-br from-violet-500/10 to-violet-600/5 border border-violet-500/15">
+          <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-violet-500/10 blur-3xl" />
+          <BarChart3 className="h-5 w-5 text-violet-400 mb-2" />
+          <p className="text-[10px] sm:text-xs text-violet-300/70 uppercase tracking-widest font-medium">Total Streams</p>
+          <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">{formatStreams(totalStreams)}</p>
+        </div>
+        <div className="relative overflow-hidden rounded-2xl p-4 sm:p-5 bg-gradient-to-br from-rose-500/10 to-rose-600/5 border border-rose-500/15">
+          <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-rose-500/10 blur-3xl" />
+          <Disc3 className="h-5 w-5 text-rose-400 mb-2" />
+          <p className="text-[10px] sm:text-xs text-rose-300/70 uppercase tracking-widest font-medium">Releases</p>
+          <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">{releaseStats.total}</p>
+          <div className="flex gap-2 mt-1">
+            <span className="text-[10px] text-emerald-400">{releaseStats.approved} live</span>
+            <span className="text-[10px] text-amber-400">{releaseStats.pending} pending</span>
           </div>
-          <p className="text-lg sm:text-xl font-bold text-foreground">{formatRevenue(withdrawalStats.pendingAmount)}</p>
-          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{withdrawalStats.pending} requests</p>
+        </div>
+      </div>
+
+      {/* Secondary Stats Grid */}
+      <div className="grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-9 gap-2 sm:gap-3 mb-6 sm:mb-8">
+        {[
+          { label: 'Labels', value: labelCount, icon: Tag, accent: 'text-amber-400' },
+          { label: 'Sub Labels', value: subLabelCount, icon: UsersRound, accent: 'text-sky-400' },
+          { label: 'Pending W/D', value: withdrawalStats.pending, icon: Clock, accent: 'text-yellow-400' },
+          { label: 'Total Paid', value: formatRevenue(withdrawalStats.totalAmount), icon: CheckCircle, accent: 'text-emerald-400' },
+          { label: 'Content Req', value: contentRequestCount, icon: MessageSquare, accent: 'text-blue-400' },
+          { label: 'CMS Links', value: cmsLinkCount, icon: Youtube, accent: 'text-red-400' },
+          { label: 'CMS Revenue', value: formatRevenue(cmsTotalRevenue), icon: Monitor, accent: 'text-emerald-400' },
+          { label: 'Videos', value: videoSubmissionCount, icon: Film, accent: 'text-violet-400' },
+          { label: 'E-Signatures', value: signatureDocCount, icon: PenTool, accent: 'text-pink-400' },
+        ].map((stat) => (
+          <GlassCard key={stat.label} className="!p-3 group hover:scale-[1.02] transition-transform duration-300">
+            <stat.icon className={`h-3.5 w-3.5 ${stat.accent} mb-1`} />
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wider leading-tight">{stat.label}</p>
+            <p className="text-sm sm:text-base font-bold text-foreground mt-0.5 whitespace-nowrap">{stat.value}</p>
+          </GlassCard>
+        ))}
+      </div>
+
+      {/* Financial Summary */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <GlassCard className="!p-4 border-l-4 animate-fade-in" style={{ borderLeftColor: 'hsl(45, 80%, 45%)' }}>
+          <div className="flex items-center gap-2 mb-2">
+            <Clock className="h-4 w-4 text-amber-400" />
+            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest font-medium">Pending Withdrawals</span>
+          </div>
+          <p className="text-xl font-bold text-foreground">{formatRevenue(withdrawalStats.pendingAmount)}</p>
+          <p className="text-[10px] text-muted-foreground mt-1">{withdrawalStats.pending} requests</p>
         </GlassCard>
-        <GlassCard className="!p-3 sm:!p-4 animate-fade-in border-l-4" style={{ borderLeftColor: 'hsl(140, 60%, 40%)' }}>
+        <GlassCard className="!p-4 border-l-4 animate-fade-in" style={{ borderLeftColor: 'hsl(140, 60%, 40%)' }}>
           <div className="flex items-center gap-2 mb-2">
             <CheckCircle className="h-4 w-4 text-emerald-400" />
-            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium">Total Paid</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest font-medium">Total Paid</span>
           </div>
-          <p className="text-lg sm:text-xl font-bold text-foreground">{formatRevenue(withdrawalStats.totalAmount)}</p>
-          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{withdrawalStats.paid} completed</p>
+          <p className="text-xl font-bold text-foreground">{formatRevenue(withdrawalStats.totalAmount)}</p>
+          <p className="text-[10px] text-muted-foreground mt-1">{withdrawalStats.paid} completed</p>
         </GlassCard>
-        <GlassCard className="!p-3 sm:!p-4 animate-fade-in border-l-4" style={{ borderLeftColor: 'hsl(200, 70%, 50%)' }}>
+        <GlassCard className="!p-4 border-l-4 animate-fade-in" style={{ borderLeftColor: 'hsl(0, 67%, 35%)' }}>
           <div className="flex items-center gap-2 mb-2">
-            <MessageSquare className="h-4 w-4 text-blue-400" />
-            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium">Pending Requests</span>
+            <Activity className="h-4 w-4 text-primary" />
+            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest font-medium">Action Required</span>
           </div>
-          <p className="text-lg sm:text-xl font-bold text-foreground">{contentRequestCount}</p>
-          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">content requests</p>
+          <p className="text-xl font-bold text-foreground">{releaseStats.pending + contentRequestCount + pendingCmsLinks + pendingVideoCount}</p>
+          <p className="text-[10px] text-muted-foreground mt-1">total pending items</p>
         </GlassCard>
       </div>
 
-      {/* Revenue & Streams Dual Chart */}
-      <GlassCard className="mb-4 sm:mb-6 animate-fade-in">
-        <h3 className="text-sm sm:text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-          <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+      {/* Revenue & Streams Trend */}
+      <GlassCard className="mb-6 sm:mb-8 animate-fade-in overflow-hidden">
+        <h3 className="text-sm sm:text-base font-semibold text-foreground mb-5 flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-xl bg-primary/15 flex items-center justify-center">
+            <Activity className="h-4 w-4 text-primary" />
+          </div>
           Revenue & Streams Trend
         </h3>
         {monthlyRevenue.length > 0 ? (
-          <div className="h-56 sm:h-72">
+          <div className="h-56 sm:h-72 -mx-2">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={monthlyRevenue}>
+              <AreaChart data={monthlyRevenue} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="adminRevenueGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(0, 67%, 35%)" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="hsl(0, 67%, 35%)" stopOpacity={0} />
+                  <linearGradient id="admRevGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(0, 67%, 42%)" stopOpacity={0.4} />
+                    <stop offset="50%" stopColor="hsl(0, 67%, 35%)" stopOpacity={0.15} />
+                    <stop offset="100%" stopColor="hsl(0, 67%, 35%)" stopOpacity={0} />
                   </linearGradient>
-                  <linearGradient id="adminStreamsGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(200, 70%, 50%)" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="hsl(200, 70%, 50%)" stopOpacity={0} />
+                  <linearGradient id="admStrGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(200, 70%, 55%)" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="hsl(200, 70%, 50%)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 16%)" />
-                <XAxis dataKey="month" tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} axisLine={{ stroke: 'hsl(0 0% 20%)' }} />
-                <YAxis yAxisId="left" tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} width={55} axisLine={{ stroke: 'hsl(0 0% 20%)' }} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} width={55} axisLine={{ stroke: 'hsl(0 0% 20%)' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 13%)" vertical={false} />
+                <XAxis dataKey="month" tick={{ fill: 'hsl(0 0% 45%)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis yAxisId="left" tick={{ fill: 'hsl(0 0% 45%)', fontSize: 10 }} width={55} axisLine={false} tickLine={false} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fill: 'hsl(0 0% 45%)', fontSize: 10 }} width={55} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={tooltipStyle} />
-                <Legend wrapperStyle={{ fontSize: '11px', color: 'hsl(0 0% 60%)' }} />
-                <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(0, 67%, 40%)" fill="url(#adminRevenueGrad)" strokeWidth={2.5} name="Revenue (₹)" dot={{ r: 3, fill: 'hsl(0, 67%, 40%)' }} />
-                <Area yAxisId="right" type="monotone" dataKey="streams" stroke="hsl(200, 70%, 50%)" fill="url(#adminStreamsGrad)" strokeWidth={2} name="Streams" dot={{ r: 2.5, fill: 'hsl(200, 70%, 50%)' }} />
+                <Legend wrapperStyle={{ fontSize: '11px', color: 'hsl(0 0% 50%)', paddingTop: '12px' }} />
+                <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(0, 67%, 45%)" fill="url(#admRevGrad)" strokeWidth={2.5} name="Revenue (₹)" dot={{ r: 3, fill: 'hsl(0, 67%, 45%)', strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 2, stroke: 'hsl(0, 67%, 55%)' }} />
+                <Area yAxisId="right" type="monotone" dataKey="streams" stroke="hsl(200, 70%, 55%)" fill="url(#admStrGrad)" strokeWidth={2} name="Streams" dot={{ r: 2.5, fill: 'hsl(200, 70%, 55%)', strokeWidth: 0 }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground text-center py-16">No revenue data yet</p>
+          <div className="text-center py-20">
+            <Activity className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+            <p className="text-xs text-muted-foreground">No revenue data yet</p>
+          </div>
         )}
       </GlassCard>
 
-      {/* Release Status Donut + Platform Distribution + User Growth */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+      {/* 3-Column: Release Status + Platform Distribution + User Growth */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 sm:mb-8">
         {/* Release Status Donut */}
         <GlassCard className="animate-fade-in">
-          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3">Release Status</h3>
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+            <div className="h-6 w-6 rounded-lg bg-primary/15 flex items-center justify-center">
+              <Disc3 className="h-3 w-3 text-primary" />
+            </div>
+            Release Status
+          </h3>
           {releaseStatusData.length > 0 ? (
             <>
               <div className="h-44 sm:h-52 relative">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={releaseStatusData} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value" strokeWidth={0} paddingAngle={3}>
+                    <Pie data={releaseStatusData} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value" strokeWidth={0} paddingAngle={4}>
                       {releaseStatusData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                     </Pie>
                     <Tooltip contentStyle={tooltipStyle} />
@@ -371,65 +374,80 @@ export default function AdminDashboard() {
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="text-center">
-                    <p className="text-xl sm:text-2xl font-bold text-foreground">{releaseStats.total}</p>
-                    <p className="text-[10px] text-muted-foreground">Total</p>
+                    <p className="text-2xl font-bold text-foreground">{releaseStats.total}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Total</p>
                   </div>
                 </div>
               </div>
-              <div className="flex flex-wrap justify-center gap-3 mt-2">
+              <div className="flex flex-wrap justify-center gap-3 mt-3">
                 {releaseStatusData.map(d => (
                   <div key={d.name} className="flex items-center gap-1.5 text-[10px] sm:text-xs">
-                    <div className="h-2.5 w-2.5 rounded-full" style={{ background: d.color }} />
-                    <span className="text-muted-foreground">{d.name}: <span className="text-foreground font-medium">{d.value}</span></span>
+                    <div className="h-2 w-2 rounded-full" style={{ background: d.color }} />
+                    <span className="text-muted-foreground">{d.name}: <span className="text-foreground font-semibold">{d.value}</span></span>
                   </div>
                 ))}
               </div>
             </>
           ) : (
-            <p className="text-xs text-muted-foreground text-center py-16">No release data</p>
+            <div className="text-center py-16"><Disc3 className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" /><p className="text-xs text-muted-foreground">No release data</p></div>
           )}
         </GlassCard>
 
         {/* Platform Distribution */}
-        {topStores.length > 0 && (
+        {topStores.length > 0 ? (
           <GlassCard className="animate-fade-in">
-            <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3">Platform Distribution</h3>
-            <div className="space-y-2.5 sm:space-y-3">
-              {topStores.map((store, i) => {
+            <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-sky-500/15 flex items-center justify-center">
+                <Music className="h-3 w-3 text-sky-400" />
+              </div>
+              Platform Distribution
+            </h3>
+            <div className="space-y-3">
+              {topStores.map((store) => {
                 const pct = totalStoreStreams > 0 ? (store.value / totalStoreStreams) * 100 : 0;
                 return (
-                  <div key={store.name}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-foreground font-medium">{store.name}</span>
-                      <span className="text-[10px] sm:text-xs text-muted-foreground">{formatStreams(store.value)} ({pct.toFixed(1)}%)</span>
+                  <div key={store.name} className="group">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2.5 w-2.5 rounded-full" style={{ background: store.color }} />
+                        <span className="text-xs text-foreground font-medium">{store.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-muted-foreground font-mono">{formatStreams(store.value)}</span>
+                        <span className="text-[10px] text-muted-foreground/60 w-10 text-right">{pct.toFixed(1)}%</span>
+                      </div>
                     </div>
-                    <div className="h-2 rounded-full bg-muted/40 overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${pct}%`, background: store.color }}
-                      />
+                    <div className="h-1.5 rounded-full bg-muted/30 overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-700 group-hover:brightness-125" style={{ width: `${pct}%`, background: store.color }} />
                     </div>
                   </div>
                 );
               })}
             </div>
           </GlassCard>
+        ) : (
+          <GlassCard className="animate-fade-in flex items-center justify-center">
+            <div className="text-center py-16"><Music className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" /><p className="text-xs text-muted-foreground">No platform data</p></div>
+          </GlassCard>
         )}
 
         {/* User Growth */}
         <GlassCard className="animate-fade-in">
-          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3">User Registrations (6 Months)</h3>
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+            <div className="h-6 w-6 rounded-lg bg-violet-500/15 flex items-center justify-center">
+              <Users className="h-3 w-3 text-violet-400" />
+            </div>
+            User Growth (6 Months)
+          </h3>
           <div className="h-44 sm:h-52">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthlyUsers}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 16%)" />
-                <XAxis dataKey="month" tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} axisLine={{ stroke: 'hsl(0 0% 20%)' }} />
-                <YAxis tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} width={30} axisLine={{ stroke: 'hsl(0 0% 20%)' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 13%)" vertical={false} />
+                <XAxis dataKey="month" tick={{ fill: 'hsl(0 0% 45%)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: 'hsl(0 0% 45%)', fontSize: 10 }} width={30} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="count" name="Users" radius={[6, 6, 0, 0]}>
-                  {monthlyUsers.map((_, i) => (
-                    <Cell key={i} fill={`hsl(200, 70%, ${35 + i * 5}%)`} />
-                  ))}
+                <Bar dataKey="count" name="Users" radius={[8, 8, 0, 0]}>
+                  {monthlyUsers.map((_, i) => <Cell key={i} fill={`hsl(200, 70%, ${30 + i * 6}%)`} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -438,18 +456,19 @@ export default function AdminDashboard() {
       </div>
 
       {/* Top Tracks + Top Artists + Release Submissions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        {/* Top Tracks */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 sm:mb-8">
         <GlassCard className="animate-fade-in">
-          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <Music className="h-4 w-4 text-primary" />
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+            <div className="h-6 w-6 rounded-lg bg-rose-500/15 flex items-center justify-center">
+              <Music className="h-3 w-3 text-rose-400" />
+            </div>
             Top Tracks
           </h3>
           {topTracks.length > 0 ? (
             <div className="space-y-2">
               {topTracks.map((track, i) => (
-                <div key={track.name} className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
-                  <span className="text-xs font-bold text-primary w-5 text-center">#{i + 1}</span>
+                <div key={track.name} className="flex items-center gap-3 p-3 rounded-xl bg-muted/15 hover:bg-muted/25 transition-colors border border-border/20">
+                  <div className="h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0" style={{ background: `${CHART_COLORS[i % CHART_COLORS.length]}22`, color: CHART_COLORS[i % CHART_COLORS.length] }}>{i + 1}</div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs sm:text-sm font-medium text-foreground truncate">{track.name}</p>
                     <p className="text-[10px] text-muted-foreground">{formatStreams(track.streams)} streams</p>
@@ -458,23 +477,22 @@ export default function AdminDashboard() {
               ))}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground text-center py-12">No track data</p>
+            <div className="text-center py-12"><Music className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" /><p className="text-xs text-muted-foreground">No track data</p></div>
           )}
         </GlassCard>
 
-        {/* Top Artists */}
         <GlassCard className="animate-fade-in">
-          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <Users className="h-4 w-4 text-primary" />
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+            <div className="h-6 w-6 rounded-lg bg-amber-500/15 flex items-center justify-center">
+              <Users className="h-3 w-3 text-amber-400" />
+            </div>
             Top Artists
           </h3>
           {topArtists.length > 0 ? (
             <div className="space-y-2">
               {topArtists.map((artist, i) => (
-                <div key={artist.name} className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
-                  <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: CHART_COLORS[i % CHART_COLORS.length] + '33', color: CHART_COLORS[i % CHART_COLORS.length] }}>
-                    {i + 1}
-                  </div>
+                <div key={artist.name} className="flex items-center gap-3 p-3 rounded-xl bg-muted/15 hover:bg-muted/25 transition-colors border border-border/20">
+                  <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: `${CHART_COLORS[i % CHART_COLORS.length]}22`, color: CHART_COLORS[i % CHART_COLORS.length] }}>{i + 1}</div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs sm:text-sm font-medium text-foreground truncate">{artist.name}</p>
                     <p className="text-[10px] text-muted-foreground">{formatStreams(artist.streams)} streams</p>
@@ -483,38 +501,44 @@ export default function AdminDashboard() {
               ))}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground text-center py-12">No artist data</p>
+            <div className="text-center py-12"><Users className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" /><p className="text-xs text-muted-foreground">No artist data</p></div>
           )}
         </GlassCard>
 
-        {/* Release Submissions Trend */}
         <GlassCard className="animate-fade-in">
-          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3">Release Submissions (6 Mo)</h3>
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+            <div className="h-6 w-6 rounded-lg bg-amber-500/15 flex items-center justify-center">
+              <TrendingUp className="h-3 w-3 text-amber-400" />
+            </div>
+            Release Submissions (6 Mo)
+          </h3>
           <div className="h-44 sm:h-52">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={monthlyReleases}>
                 <defs>
-                  <linearGradient id="releaseTrend" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(45, 80%, 45%)" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(45, 80%, 45%)" stopOpacity={0} />
+                  <linearGradient id="admRelTrend" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(45, 80%, 45%)" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="hsl(45, 80%, 45%)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 16%)" />
-                <XAxis dataKey="month" tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} axisLine={{ stroke: 'hsl(0 0% 20%)' }} />
-                <YAxis tick={{ fill: 'hsl(0 0% 55%)', fontSize: 10 }} width={30} axisLine={{ stroke: 'hsl(0 0% 20%)' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 13%)" vertical={false} />
+                <XAxis dataKey="month" tick={{ fill: 'hsl(0 0% 45%)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: 'hsl(0 0% 45%)', fontSize: 10 }} width={30} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={tooltipStyle} />
-                <Area type="monotone" dataKey="count" stroke="hsl(45, 80%, 45%)" fill="url(#releaseTrend)" strokeWidth={2} name="Releases" dot={{ r: 3, fill: 'hsl(45, 80%, 45%)' }} />
+                <Area type="monotone" dataKey="count" stroke="hsl(45, 80%, 50%)" fill="url(#admRelTrend)" strokeWidth={2.5} name="Releases" dot={{ r: 3, fill: 'hsl(45, 80%, 50%)', strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 2, stroke: 'hsl(45, 80%, 60%)' }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </GlassCard>
       </div>
 
-      {/* Country Distribution - World Map */}
+      {/* Country Map */}
       {countryData.length > 0 && (
-        <GlassCard className="mb-4 sm:mb-6 animate-fade-in">
-          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
-            <Globe className="h-4 w-4 text-primary" />
+        <GlassCard className="mb-6 sm:mb-8 animate-fade-in">
+          <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2.5">
+            <div className="h-7 w-7 rounded-xl bg-emerald-500/15 flex items-center justify-center">
+              <Globe className="h-3.5 w-3.5 text-emerald-400" />
+            </div>
             Streams by Country
           </h3>
           <WorldMapChart data={countryData} />
@@ -522,45 +546,45 @@ export default function AdminDashboard() {
       )}
 
       {/* Pending Requests Grid - 2x2 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 sm:mb-8">
         <PendingListCard title="Pending Releases" icon={Disc3} items={pendingReleases} emptyText="No pending releases" onViewAll={() => navigate('/admin/submissions')}
           renderItem={(r) => (
-            <div key={r.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
+            <div key={r.id} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-muted/15 hover:bg-muted/25 transition-colors border border-border/20">
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-foreground truncate">{getReleaseName(r)}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground capitalize">{r.content_type}</p>
+                <p className="text-[10px] text-muted-foreground capitalize">{r.content_type}</p>
               </div>
-              <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">{format(new Date(r.created_at), 'dd MMM')}</span>
+              <span className="text-[10px] text-muted-foreground shrink-0">{format(new Date(r.created_at), 'dd MMM')}</span>
             </div>
           )}
         />
         <PendingListCard title="Pending Content Requests" icon={MessageSquare} items={pendingContentRequests} emptyText="No pending requests" onViewAll={() => navigate('/admin/content-requests')}
           renderItem={(c) => (
-            <div key={c.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
+            <div key={c.id} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-muted/15 hover:bg-muted/25 transition-colors border border-border/20">
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-foreground truncate">{formatRequestType(c.request_type)}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{c.song_title || c.artist_name || '—'}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{c.song_title || c.artist_name || '—'}</p>
               </div>
-              <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">{format(new Date(c.created_at), 'dd MMM')}</span>
+              <span className="text-[10px] text-muted-foreground shrink-0">{format(new Date(c.created_at), 'dd MMM')}</span>
             </div>
           )}
         />
         <PendingListCard title="Pending Labels" icon={Tag} items={pendingLabels} emptyText="No pending labels" onViewAll={() => navigate('/admin/labels')}
           renderItem={(l) => (
-            <div key={l.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
+            <div key={l.id} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-muted/15 hover:bg-muted/25 transition-colors border border-border/20">
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm font-medium text-foreground truncate">{l.label_name}</p>
               </div>
-              <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">{format(new Date(l.created_at), 'dd MMM')}</span>
+              <span className="text-[10px] text-muted-foreground shrink-0">{format(new Date(l.created_at), 'dd MMM')}</span>
             </div>
           )}
         />
         <PendingListCard title="Pending Withdrawals" icon={Wallet} items={pendingWithdrawals} emptyText="No pending withdrawals" onViewAll={() => navigate('/admin/revenue')}
           renderItem={(w) => (
-            <div key={w.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
+            <div key={w.id} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-muted/15 hover:bg-muted/25 transition-colors border border-border/20">
               <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-bold text-foreground">₹{Number(w.amount).toLocaleString()}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">{format(new Date(w.created_at), 'dd MMM yyyy')}</p>
+                <p className="text-sm font-bold text-foreground">₹{Number(w.amount).toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground">{format(new Date(w.created_at), 'dd MMM yyyy')}</p>
               </div>
               <StatusBadge status="pending" />
             </div>
@@ -570,26 +594,31 @@ export default function AdminDashboard() {
 
       {/* Recent Releases */}
       <GlassCard className="animate-fade-in">
-        <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Recent Releases</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+          <div className="h-6 w-6 rounded-lg bg-amber-500/15 flex items-center justify-center">
+            <Disc3 className="h-3 w-3 text-amber-400" />
+          </div>
+          Recent Releases
+        </h3>
         {recentReleases.length > 0 ? (
           <>
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border/50">
-                    <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Release</th>
-                    <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Type</th>
-                    <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Status</th>
-                    <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Date</th>
+                  <tr className="border-b border-border/40">
+                    <th className="text-left py-2.5 px-3 text-muted-foreground font-medium text-xs uppercase tracking-wider">Release</th>
+                    <th className="text-left py-2.5 px-3 text-muted-foreground font-medium text-xs uppercase tracking-wider">Type</th>
+                    <th className="text-left py-2.5 px-3 text-muted-foreground font-medium text-xs uppercase tracking-wider">Status</th>
+                    <th className="text-left py-2.5 px-3 text-muted-foreground font-medium text-xs uppercase tracking-wider">Date</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recentReleases.map((r: any) => (
-                    <tr key={r.id} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
-                      <td className="py-2.5 px-3 text-foreground font-medium truncate max-w-[200px]">{getReleaseName(r)}</td>
-                      <td className="py-2.5 px-3 text-muted-foreground capitalize text-xs">{r.content_type}</td>
-                      <td className="py-2.5 px-3"><StatusBadge status={r.status} /></td>
-                      <td className="py-2.5 px-3 text-muted-foreground text-xs">{format(new Date(r.created_at), 'dd MMM yyyy')}</td>
+                    <tr key={r.id} className="border-b border-border/20 hover:bg-muted/15 transition-colors">
+                      <td className="py-3 px-3 text-foreground font-medium truncate max-w-[200px]">{getReleaseName(r)}</td>
+                      <td className="py-3 px-3 text-muted-foreground capitalize text-xs">{r.content_type}</td>
+                      <td className="py-3 px-3"><StatusBadge status={r.status} /></td>
+                      <td className="py-3 px-3 text-muted-foreground text-xs">{format(new Date(r.created_at), 'dd MMM yyyy')}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -597,7 +626,7 @@ export default function AdminDashboard() {
             </div>
             <div className="sm:hidden space-y-2">
               {recentReleases.map((r: any) => (
-                <div key={r.id} className="p-3 rounded-lg bg-muted/20">
+                <div key={r.id} className="p-3 rounded-xl bg-muted/15 border border-border/20">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-foreground truncate">{getReleaseName(r)}</p>
@@ -611,7 +640,7 @@ export default function AdminDashboard() {
             </div>
           </>
         ) : (
-          <p className="text-xs text-muted-foreground text-center py-8">No recent releases</p>
+          <div className="text-center py-8"><Disc3 className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" /><p className="text-xs text-muted-foreground">No recent releases</p></div>
         )}
       </GlassCard>
     </DashboardLayout>
@@ -623,24 +652,22 @@ function PendingListCard({ title, icon: Icon, items, emptyText, onViewAll, rende
 }) {
   return (
     <GlassCard className="animate-fade-in">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-4">
         <h3 className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-2">
-          <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+          <div className="h-6 w-6 rounded-lg bg-primary/15 flex items-center justify-center">
+            <Icon className="h-3 w-3 text-primary" />
+          </div>
           {title}
           {items.length > 0 && (
-            <span className="ml-1 inline-flex items-center justify-center h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] px-1 rounded-full text-[10px] sm:text-xs font-bold bg-primary/20 text-primary">
-              {items.length}
-            </span>
+            <span className="ml-1 inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full text-[10px] font-bold bg-primary/20 text-primary">{items.length}</span>
           )}
         </h3>
-        <button onClick={onViewAll} className="text-[10px] sm:text-xs text-primary hover:underline flex items-center gap-1">
-          View All <ArrowRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-        </button>
+        <button onClick={onViewAll} className="text-[10px] sm:text-xs text-primary hover:underline flex items-center gap-1">View All <ArrowRight className="h-3 w-3" /></button>
       </div>
       {items.length > 0 ? (
-        <div className="space-y-1.5 sm:space-y-2">{items.map(renderItem)}</div>
+        <div className="space-y-2">{items.map(renderItem)}</div>
       ) : (
-        <p className="text-xs text-muted-foreground text-center py-6 sm:py-8">{emptyText}</p>
+        <div className="text-center py-8"><p className="text-xs text-muted-foreground">{emptyText}</p></div>
       )}
     </GlassCard>
   );
