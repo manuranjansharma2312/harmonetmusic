@@ -73,6 +73,8 @@ export default function AdminCmsReports() {
   const [showFormat, setShowFormat] = useState(false);
   const [importing, setImporting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ month: string } | null>(null);
+  const [cmsLinks, setCmsLinks] = useState<CmsLink[]>([]);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ month: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Pagination
