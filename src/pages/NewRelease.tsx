@@ -251,6 +251,14 @@ export default function NewRelease() {
       toast.error('Please select a release date.');
       return;
     }
+    if (!copyrightLine.trim()) {
+      toast.error('Please select a © Line (Copyright Line).');
+      return;
+    }
+    if (!phonogramLine.trim()) {
+      toast.error('Please select a ℗ Line (Phonogram Line).');
+      return;
+    }
 
     setSubmitting(true);
     setSubmitProgress(0);
