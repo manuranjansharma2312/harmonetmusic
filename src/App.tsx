@@ -15,6 +15,7 @@ import { BrandingHead } from "@/components/BrandingHead";
 
 // Lazy load all pages for code splitting
 const Auth = lazy(() => import("./pages/Auth"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const UserDashboard = lazy(() => import("./pages/UserDashboard"));
 const NewRelease = lazy(() => import("./pages/NewRelease"));
 const AdminGenresLanguages = lazy(() => import("./pages/AdminGenresLanguages"));
@@ -138,6 +139,7 @@ function App() {
                     <Routes>
                       <Route path="/" element={<Navigate to="/auth" replace />} />
                       <Route path="/auth" element={<Auth />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
                       <Route path="/submit" element={<ProtectedRoute><NewRelease /></ProtectedRoute>} />
                       <Route path="/admin/genres-languages" element={<ProtectedRoute requiredRole="admin"><AdminGenresLanguages /></ProtectedRoute>} />

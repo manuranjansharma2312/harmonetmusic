@@ -25,6 +25,8 @@ export default function Auth() {
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
 
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -72,6 +74,18 @@ export default function Auth() {
     const { error } = await signIn(loginEmail, loginPassword);
     setSubmitting(false);
     if (error) toast.error(error.message);
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail.trim()) { toast.error('Please enter your email'); return; }
+    setSubmitting(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setSubmitting(false);
+    if (error) toast.error(error.message);
+    else { toast.success('Password reset link sent to your email'); setForgotMode(false); }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -167,11 +181,38 @@ export default function Auth() {
         <div className="flex flex-col items-center mb-6">
           <img src={logoSrc} alt={branding.site_name} style={{ height: `${branding.login_logo_height}px` }} className="w-auto mb-4" />
           <p className="text-muted-foreground text-sm">
-            {isLogin ? 'Sign in to your account' : 'Create your artist account'}
+            {forgotMode ? 'Reset your password' : isLogin ? 'Sign in to your account' : 'Create your artist account'}
           </p>
         </div>
 
-        {isLogin ? (
+        {forgotMode ? (
+          <form onSubmit={handleForgotPassword} className="space-y-4">
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground sm:h-5 sm:w-5" />
+              <input
+                type="email"
+                placeholder="Enter your email address"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                required
+                className={inputWithLeftIconClass}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full py-3 rounded-lg btn-primary-gradient text-primary-foreground font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              Send Reset Link
+            </button>
+            <p className="text-center text-sm text-muted-foreground">
+              <button type="button" onClick={() => setForgotMode(false)} className="text-primary hover:underline font-medium">
+                Back to Sign In
+              </button>
+            </p>
+          </form>
+        ) : isLogin ? (
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground sm:h-5 sm:w-5" />
@@ -200,6 +241,11 @@ export default function Auth() {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
+            <div className="text-right">
+              <button type="button" onClick={() => { setForgotMode(true); setForgotEmail(loginEmail); }} className="text-sm text-primary hover:underline">
+                Forgot Password?
               </button>
             </div>
             <button
