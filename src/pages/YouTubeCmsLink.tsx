@@ -215,11 +215,11 @@ export default function YouTubeCmsLink() {
               <span className="text-sm text-muted-foreground">{isMonetized ? 'On' : 'Off'}</span>
             </div>
             <div>
-              <Label>Clarification / NOC (PDF)</Label>
+              <Label>Clarification / NOC (PDF) *</Label>
               <Input type="file" accept=".pdf" onChange={(e) => setNocFile(e.target.files?.[0] || null)} />
             </div>
             <div>
-              <Label>Last 6 Month Reports of YouTube Reports (Image)</Label>
+              <Label>Last 6 Month Reports of YouTube Reports (Image) *</Label>
               <Input type="file" accept="image/*" onChange={(e) => setYtReportsFile(e.target.files?.[0] || null)} />
             </div>
           </div>
