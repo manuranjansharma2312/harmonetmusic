@@ -70,7 +70,7 @@ const adminLinksTop = [
   { to: '/admin/ai-image-system', label: 'AI Poster Generate', icon: Sparkles },
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
-  { to: '/admin/email-settings', label: 'Email Settings', icon: Mail },
+  { to: '/admin/email-settings', label: 'Manage Emails', icon: Mail },
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
   { to: '/admin/branding-settings', label: 'Site Settings', icon: Globe },
   { to: '/admin/site-settings', label: 'System Settings', icon: Settings },
