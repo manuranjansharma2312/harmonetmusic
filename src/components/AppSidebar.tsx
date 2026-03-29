@@ -281,7 +281,7 @@ export function AppSidebar() {
               {showUserView ? (
                 <>
                   {userLinksTop.map(renderNavLink)}
-                  {!effectiveIsSubLabel && renderCollapsibleGroup('YouTube CMS', Youtube, userCmsLinks, userCmsOpen, setUserCmsOpen)}
+                  {settings.enable_youtube_cms && !effectiveIsSubLabel && renderCollapsibleGroup('YouTube CMS', Youtube, userCmsLinks, userCmsOpen, setUserCmsOpen)}
                   {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, userVideoLinks, userVideoOpen, setUserVideoOpen)}
                   {showUserSubLabels && renderCollapsibleGroup('Sub Labels', UsersRound, userSubLabelLinks, userSubLabelsOpen, setUserSubLabelsOpen)}
                   {renderCollapsibleGroup('Support', Headset, contentToolLinks, toolsOpen, setToolsOpen)}
@@ -291,7 +291,7 @@ export function AppSidebar() {
               ) : (
                 <>
                   {adminLinksTop.map(renderNavLink)}
-                  {renderCollapsibleGroup('YouTube CMS', Youtube, adminCmsLinks, adminCmsOpen, setAdminCmsOpen)}
+                  {settings.enable_youtube_cms && renderCollapsibleGroup('YouTube CMS', Youtube, adminCmsLinks, adminCmsOpen, setAdminCmsOpen)}
                   {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, adminVideoLinks, adminVideoOpen, setAdminVideoOpen)}
                   {renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}

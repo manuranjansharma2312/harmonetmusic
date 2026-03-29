@@ -167,6 +167,39 @@ export default function AdminSiteSettings() {
           </div>
         </GlassCard>
 
+        {/* Feature Toggles */}
+        <GlassCard>
+          <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
+            <Monitor className="h-5 w-5 text-cyan-500" /> Feature Toggles
+          </h2>
+          <div className="space-y-4">
+            <ToggleRow
+              label="YouTube CMS"
+              description="Enable or disable the entire YouTube CMS section (CMS Link, Reports, Analytics, Revenue) for all users."
+              checked={form.enable_youtube_cms}
+              onChange={(v) => update('enable_youtube_cms', v)}
+            />
+            <ToggleRow
+              label="Vevo"
+              description="Show or hide Vevo-related features (Vevo Reports, Vevo Channels) across the platform."
+              checked={form.enable_vevo}
+              onChange={(v) => update('enable_vevo', v)}
+            />
+            <ToggleRow
+              label="Video Distribution"
+              description="Enable or disable the Video Distribution section for all users."
+              checked={form.enable_video_distribution}
+              onChange={(v) => update('enable_video_distribution', v)}
+            />
+            <ToggleRow
+              label="Reports Module"
+              description="Show or hide the Reports & Analytics section for users."
+              checked={form.enable_reports}
+              onChange={(v) => update('enable_reports', v)}
+            />
+          </div>
+        </GlassCard>
+
         {/* Maintenance Mode */}
         <GlassCard>
           <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
