@@ -15,7 +15,7 @@ import {
   Clock, CheckCircle, XCircle, Loader2, Copy, X, BookOpen, ArrowRight,
   Disc3, Wallet, DollarSign, BarChart3, Music, TrendingUp, TrendingDown,
   Activity, Globe, Headphones, Youtube, Monitor, Play, Film, Download,
-  PieChart as PieChartIcon, Zap
+  PieChart as PieChartIcon, Zap, Link2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -26,7 +26,7 @@ import {
   PieChart, Pie, Cell, BarChart, Bar, Legend,
   ComposedChart, Line
 } from 'recharts';
-import { format } from 'date-fns';
+import { format, subMonths } from 'date-fns';
 
 const CHART_COLORS = [
   'hsl(0, 67%, 35%)', 'hsl(45, 80%, 45%)', 'hsl(140, 60%, 40%)',
@@ -79,6 +79,10 @@ export default function UserDashboard() {
   const [cmsPending, setCmsPending] = useState(0);
   const [monthlyStoreData, setMonthlyStoreData] = useState<any[]>([]);
   const [topArtists, setTopArtists] = useState<{ name: string; streams: number }[]>([]);
+  const [monthlyStreamsData, setMonthlyStreamsData] = useState<{ month: string; count: number }[]>([]);
+  const [monthlyReleasesData, setMonthlyReleasesData] = useState<{ month: string; count: number }[]>([]);
+  const [monthlyRevenueSparkline, setMonthlyRevenueSparkline] = useState<{ month: string; count: number }[]>([]);
+  const [monthlyDownloadsData, setMonthlyDownloadsData] = useState<{ month: string; count: number }[]>([]);
 
   const refreshTimeoutRef = useRef<number | null>(null);
   const isFetchingRef = useRef(false);
@@ -101,7 +105,7 @@ export default function UserDashboard() {
 
     try {
       const [releaseRows, profileRes, subLabelRes, withdrawalRows, recentReleasesRes] = await Promise.all([
-        fetchAllRows('releases', 'status', (query) => query.eq('user_id', effectiveUserId)),
+        fetchAllRows('releases', 'status, created_at', (query) => query.eq('user_id', effectiveUserId)),
         supabase.from('profiles').select('display_id, hidden_cut_percent').eq('user_id', effectiveUserId).single(),
         supabase.from('sub_labels').select('percentage_cut, parent_user_id').eq('sub_user_id', effectiveUserId).maybeSingle(),
         fetchAllRows('withdrawal_requests', 'status, amount', (query) => query.eq('user_id', effectiveUserId)),
@@ -115,6 +119,20 @@ export default function UserDashboard() {
         rejected: releaseRows.filter((s: any) => s.status === 'rejected').length,
       });
       setDisplayId(profileRes.data ? (profileRes.data as any).display_id : null);
+
+      // Build monthly releases sparkline (last 6 months)
+      const now = new Date();
+      const monthlyRelMap: Record<string, number> = {};
+      for (let i = 5; i >= 0; i--) {
+        monthlyRelMap[format(subMonths(now, i), 'MMM')] = 0;
+      }
+      releaseRows.forEach((r: any) => {
+        if (r.created_at) {
+          const m = format(new Date(r.created_at), 'MMM');
+          if (monthlyRelMap[m] !== undefined) monthlyRelMap[m]++;
+        }
+      });
+      setMonthlyReleasesData(Object.entries(monthlyRelMap).map(([month, count]) => ({ month, count })));
 
       const hasSubLabel = Boolean(subLabelRes.data);
       const subLabelCutPercent = Number(subLabelRes.data?.percentage_cut || 0);
@@ -200,6 +218,16 @@ export default function UserDashboard() {
         const countryMap: Record<string, number> = {};
         const artistMap: Record<string, number> = {};
         const monthStoreMap: Record<string, Record<string, number>> = {};
+        // Sparkline maps for last 6 months
+        const sparkStreamsMap: Record<string, number> = {};
+        const sparkRevMap: Record<string, number> = {};
+        const sparkDlMap: Record<string, number> = {};
+        for (let i = 5; i >= 0; i--) {
+          const key = format(subMonths(now, i), 'MMM');
+          sparkStreamsMap[key] = 0;
+          sparkRevMap[key] = 0;
+          sparkDlMap[key] = 0;
+        }
 
         allReports.forEach((r: any) => {
           const isFrozen = r.revenue_frozen === true;
@@ -228,6 +256,18 @@ export default function UserDashboard() {
           if (r.artist) artistMap[r.artist] = (artistMap[r.artist] || 0) + str;
           if (!monthStoreMap[month]) monthStoreMap[month] = {};
           monthStoreMap[month][store] = (monthStoreMap[month][store] || 0) + str;
+
+          // Sparkline aggregation
+          if (r.reporting_month) {
+            try {
+              const sparkMonth = format(new Date(r.reporting_month + '-01'), 'MMM');
+              if (sparkStreamsMap[sparkMonth] !== undefined) {
+                sparkStreamsMap[sparkMonth] += str;
+                sparkRevMap[sparkMonth] += rev;
+                sparkDlMap[sparkMonth] += dl;
+              }
+            } catch { /* ignore parse errors */ }
+          }
         });
 
         setTotalRevenue(Math.round(totalRev * 100) / 100);
@@ -238,14 +278,15 @@ export default function UserDashboard() {
         setTopTracks(Object.entries(trackMap).sort(([, a], [, b]) => b.streams - a.streams).slice(0, 6).map(([name, data]) => ({ name: name.length > 22 ? `${name.substring(0, 22)}…` : name, streams: data.streams, revenue: data.revenue })));
         setCountryData(Object.entries(countryMap).sort(([, a], [, b]) => b - a).slice(0, 10).map(([name, streams]) => ({ name, streams })));
         setTopArtists(Object.entries(artistMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, streams]) => ({ name: name.length > 20 ? `${name.substring(0, 20)}…` : name, streams })));
-        const topStoreNames = Object.entries(storeMap).sort(([, a], [, b]) => b.streams - a.streams).slice(0, 4).map(([name]) => name);
+        const topStoreNamesArr = Object.entries(storeMap).sort(([, a], [, b]) => b.streams - a.streams).slice(0, 4).map(([name]) => name);
         setMonthlyStoreData(Object.entries(monthStoreMap).sort(([a], [b]) => a.localeCompare(b)).slice(-6).map(([month, stores]) => {
           const row: any = { month };
-          topStoreNames.forEach((storeName) => {
-            row[storeName] = stores[storeName] || 0;
-          });
+          topStoreNamesArr.forEach((storeName) => { row[storeName] = stores[storeName] || 0; });
           return row;
         }));
+        setMonthlyStreamsData(Object.entries(sparkStreamsMap).map(([month, count]) => ({ month, count })));
+        setMonthlyRevenueSparkline(Object.entries(sparkRevMap).map(([month, count]) => ({ month, count: Math.round(count) })));
+        setMonthlyDownloadsData(Object.entries(sparkDlMap).map(([month, count]) => ({ month, count })));
       } else {
         setTotalRevenue(0);
         setTotalStreams(0);
@@ -256,6 +297,9 @@ export default function UserDashboard() {
         setCountryData([]);
         setTopArtists([]);
         setMonthlyStoreData([]);
+        setMonthlyStreamsData([]);
+        setMonthlyRevenueSparkline([]);
+        setMonthlyDownloadsData([]);
       }
 
       setWithdrawalBalance(summarizeWithdrawals(withdrawalRows as any[]));
@@ -348,8 +392,8 @@ export default function UserDashboard() {
         )}
       </div>
 
-      {/* Revenue Hero */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+      {/* Hero Stats Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
         {[
           { label: 'Available', value: formatRevenue(availableRevenue), icon: DollarSign, gradient: 'from-emerald-500/12 to-emerald-600/5', border: 'border-emerald-500/15', iconColor: 'text-emerald-400', labelColor: 'text-emerald-300/70', glow: 'bg-emerald-500/10' },
           { label: 'Pending W/D', value: formatRevenue(withdrawalBalance.pending), icon: Clock, gradient: 'from-amber-500/12 to-amber-600/5', border: 'border-amber-500/15', iconColor: 'text-amber-400', labelColor: 'text-amber-300/70', glow: 'bg-amber-500/10' },
@@ -357,16 +401,16 @@ export default function UserDashboard() {
           { label: 'Net Revenue', value: formatRevenue(netRevenue), icon: TrendingUp, gradient: 'from-rose-500/12 to-rose-600/5', border: 'border-rose-500/15', iconColor: 'text-rose-400', labelColor: 'text-rose-300/70', glow: 'bg-rose-500/10' },
         ].map((stat) => (
           <div key={stat.label} className={`relative overflow-hidden rounded-2xl p-4 sm:p-5 bg-gradient-to-br ${stat.gradient} ${stat.border} border`}>
-            <div className={`absolute -top-6 -right-6 h-20 w-20 rounded-full ${stat.glow} blur-2xl`} />
+            <div className={`absolute -top-8 -right-8 h-24 w-24 rounded-full ${stat.glow} blur-3xl`} />
             <stat.icon className={`h-5 w-5 ${stat.iconColor} mb-2`} />
             <p className={`text-[10px] sm:text-xs ${stat.labelColor} uppercase tracking-widest font-medium`}>{stat.label}</p>
-            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mt-1 whitespace-nowrap">{stat.value}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1 whitespace-nowrap">{stat.value}</p>
           </div>
         ))}
       </div>
 
-      {/* KPI Stats Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-6 sm:mb-8">
+      {/* Secondary Compact Stats */}
+      <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-6 sm:mb-8">
         {[
           { label: 'Releases', value: releaseStats.total, icon: Disc3, accent: 'text-primary' },
           { label: 'Streams', value: formatStreams(totalStreams), icon: Headphones, accent: 'text-sky-400' },
@@ -374,16 +418,16 @@ export default function UserDashboard() {
           { label: 'Platforms', value: topStores.length, icon: Music, accent: 'text-amber-400' },
           ...(isSubLabelUser ? [
             { label: 'Countries', value: countryData.length, icon: Globe, accent: 'text-emerald-400' },
-            { label: 'Artists', value: topArtists.length, icon: Music, accent: 'text-pink-400' },
+            { label: 'Artists', value: topArtists.length, icon: Headphones, accent: 'text-pink-400' },
           ] : [
             { label: 'CMS Channels', value: cmsChannels, icon: Youtube, accent: 'text-red-400' },
             { label: 'CMS Available', value: formatRevenue(cmsAvailable), icon: Monitor, accent: 'text-emerald-400' },
           ]),
         ].map((stat) => (
-          <GlassCard key={stat.label} className="!p-3 sm:!p-4 group hover:scale-[1.02] transition-transform duration-300">
-            <stat.icon className={`h-4 w-4 ${stat.accent} mb-1.5`} />
-            <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">{stat.label}</p>
-            <p className="text-lg sm:text-xl font-bold text-foreground mt-0.5 whitespace-nowrap">{stat.value}</p>
+          <GlassCard key={stat.label} className="!p-3 group hover:scale-[1.02] transition-transform duration-300">
+            <stat.icon className={`h-3.5 w-3.5 ${stat.accent} mb-1`} />
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wider leading-tight">{stat.label}</p>
+            <p className="text-sm sm:text-base font-bold text-foreground mt-0.5 whitespace-nowrap">{stat.value}</p>
           </GlassCard>
         ))}
       </div>
@@ -398,15 +442,23 @@ export default function UserDashboard() {
             { label: 'CMS Available', value: formatRevenue(cmsAvailable), icon: Zap, color: 'hsl(200, 70%, 50%)', iconColor: 'text-sky-400' },
           ].map((stat) => (
             <GlassCard key={stat.label} className="!p-4 border-l-4 animate-fade-in" style={{ borderLeftColor: stat.color }}>
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-2">
                 <stat.icon className={`h-4 w-4 ${stat.iconColor}`} />
-                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">{stat.label}</span>
+                <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest font-medium">{stat.label}</span>
               </div>
-              <p className="text-lg font-bold text-foreground">{stat.value}</p>
+              <p className="text-xl font-bold text-foreground">{stat.value}</p>
             </GlassCard>
           ))}
         </div>
       )}
+
+      {/* Sparkline Overview Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <SparklineCard title="Monthly Streams" data={monthlyStreamsData} color="hsl(200, 70%, 50%)" icon={Headphones} iconBg="bg-sky-500/15" iconColor="text-sky-400" total={formatStreams(totalStreams)} />
+        <SparklineCard title="Monthly Revenue" data={monthlyRevenueSparkline} color="hsl(0, 67%, 45%)" icon={DollarSign} iconBg="bg-primary/15" iconColor="text-primary" total={formatRevenue(totalRevenue)} />
+        <SparklineCard title="Monthly Downloads" data={monthlyDownloadsData} color="hsl(280, 60%, 50%)" icon={Download} iconBg="bg-violet-500/15" iconColor="text-violet-400" total={formatStreams(totalDownloads)} />
+        <SparklineCard title="New Releases" data={monthlyReleasesData} color="hsl(45, 80%, 50%)" icon={Disc3} iconBg="bg-amber-500/15" iconColor="text-amber-400" total={releaseStats.total} />
+      </div>
 
       {/* Pending Releases */}
       {pendingReleases.length > 0 && (
@@ -421,7 +473,7 @@ export default function UserDashboard() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {pendingReleases.map(r => (
-              <div key={r.id} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-muted/20 hover:bg-muted/30 transition-colors border border-border/30">
+              <div key={r.id} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-muted/15 hover:bg-muted/25 transition-colors border border-border/20">
                 <div className="min-w-0 flex-1"><p className="text-xs sm:text-sm font-medium text-foreground truncate">{getReleaseName(r)}</p><p className="text-[10px] text-muted-foreground capitalize">{r.content_type}</p></div>
                 <span className="text-[10px] text-muted-foreground shrink-0">{format(new Date(r.created_at), 'dd MMM')}</span>
               </div>
@@ -434,11 +486,11 @@ export default function UserDashboard() {
       <GlassCard className="mb-6 sm:mb-8 animate-fade-in overflow-hidden">
         <h3 className="text-sm sm:text-base font-semibold text-foreground mb-5 flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-xl bg-primary/15 flex items-center justify-center"><Activity className="h-4 w-4 text-primary" /></div>
-          Revenue & Streams Trend
+          Revenue, Streams & Downloads Trend
         </h3>
         {monthlyRevenue.length > 0 ? (
           <div className="h-64 sm:h-80 -mx-2">
-            <ResponsiveContainer width="100%" height="100%" debounce={200}>
+            <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={monthlyRevenue} margin={{ top: 10, right: 15, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="userRevGrad" x1="0" y1="0" x2="0" y2="1">
@@ -466,14 +518,15 @@ export default function UserDashboard() {
         ) : <EmptyChart icon={Activity} text="No revenue data yet" />}
       </GlassCard>
 
-      {/* Release Status + Platform Distribution */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 sm:mb-8">
-        <GlassCard className="md:col-span-2 animate-fade-in">
+      {/* 3-Column: Release Status + Platform Distribution + Monthly Store Breakdown */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 sm:mb-8">
+        {/* Release Status Donut */}
+        <GlassCard className="animate-fade-in">
           <SectionHeader icon={Disc3} iconBg="bg-primary/15" iconColor="text-primary" title="Release Status" />
           {releaseStatusData.length > 0 ? (
             <>
               <div className="h-48 sm:h-56 relative">
-                <ResponsiveContainer width="100%" height="100%" debounce={200}>
+                <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie data={releaseStatusData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} dataKey="value" strokeWidth={0} paddingAngle={4} isAnimationActive={false}>
                       {releaseStatusData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
@@ -500,12 +553,13 @@ export default function UserDashboard() {
           ) : <EmptyChart icon={Disc3} text="No releases yet" />}
         </GlassCard>
 
-        <GlassCard className="md:col-span-3 animate-fade-in">
+        {/* Platform Distribution */}
+        <GlassCard className="animate-fade-in">
           <SectionHeader icon={Play} iconBg="bg-sky-500/15" iconColor="text-sky-400" title="Platform Distribution" />
           {topStores.length > 0 ? (
             <div className="space-y-3">
               {topStores.map((store) => {
-                const pctStreams = totalStoreStreams > 0 ? (store.value / totalStoreStreams) * 100 : 0;
+                const pct = totalStoreStreams > 0 ? (store.value / totalStoreStreams) * 100 : 0;
                 return (
                   <div key={store.name} className="group">
                     <div className="flex items-center justify-between mb-1.5">
@@ -513,14 +567,14 @@ export default function UserDashboard() {
                         <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: store.color }} />
                         <span className="text-xs text-foreground font-medium">{store.name}</span>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
                         <span className="text-[10px] text-muted-foreground font-mono">{formatStreams(store.value)}</span>
                         <span className="text-[10px] text-emerald-400 font-mono">{formatRevenue(store.revenue)}</span>
-                        <span className="text-[10px] text-muted-foreground/60 w-10 text-right">{pctStreams.toFixed(1)}%</span>
+                        <span className="text-[10px] text-muted-foreground/60 w-10 text-right">{pct.toFixed(1)}%</span>
                       </div>
                     </div>
                     <div className="h-1.5 rounded-full bg-muted/30 overflow-hidden">
-                      <div className="h-full rounded-full transition-all duration-700 group-hover:brightness-125" style={{ width: `${pctStreams}%`, background: store.color }} />
+                      <div className="h-full rounded-full transition-all duration-700 group-hover:brightness-125" style={{ width: `${pct}%`, background: store.color }} />
                     </div>
                   </div>
                 );
@@ -528,43 +582,36 @@ export default function UserDashboard() {
             </div>
           ) : <EmptyChart icon={Play} text="No platform data yet" />}
         </GlassCard>
-      </div>
 
-      {/* Monthly Store Breakdown */}
-      {monthlyStoreData.length > 0 && topStoreNames.length > 0 && (
-        <GlassCard className="mb-6 sm:mb-8 animate-fade-in overflow-hidden">
+        {/* Monthly Store Stacked Bar */}
+        <GlassCard className="animate-fade-in">
           <SectionHeader icon={BarChart3} iconBg="bg-violet-500/15" iconColor="text-violet-400" title="Monthly Platform Streams" />
-          <div className="h-52 sm:h-64 -mx-2">
-            <ResponsiveContainer width="100%" height="100%" debounce={200}>
-              <BarChart data={monthlyStoreData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 12%)" vertical={false} />
-                <XAxis dataKey="month" tick={axisTickStyle} axisLine={false} tickLine={false} />
-                <YAxis tick={axisTickStyle} width={45} axisLine={false} tickLine={false} tickFormatter={(v) => formatStreams(v)} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [formatStreams(v), undefined]} />
-                <Legend wrapperStyle={{ fontSize: '10px', color: 'hsl(0 0% 50%)', paddingTop: '8px' }} />
-                {topStoreNames.map((name, i) => (
-                  <Bar key={name} dataKey={name} stackId="stores" fill={STORE_COLORS[name] || CHART_COLORS[i % CHART_COLORS.length]} radius={i === topStoreNames.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]} isAnimationActive={false} />
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {monthlyStoreData.length > 0 ? (
+            <div className="h-48 sm:h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyStoreData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 12%)" vertical={false} />
+                  <XAxis dataKey="month" tick={axisTickStyle} axisLine={false} tickLine={false} />
+                  <YAxis tick={axisTickStyle} width={35} axisLine={false} tickLine={false} tickFormatter={(v) => formatStreams(v)} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [formatStreams(v), undefined]} />
+                  {topStoreNames.map((name, i) => (
+                    <Bar key={name} dataKey={name} stackId="stores" fill={STORE_COLORS[name] || CHART_COLORS[i % CHART_COLORS.length]} radius={i === topStoreNames.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]} isAnimationActive={false} />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : <EmptyChart icon={BarChart3} text="No data" />}
         </GlassCard>
-      )}
+      </div>
 
       {/* Top Tracks + Top Artists + Country Map */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 sm:mb-8">
         <GlassCard className="animate-fade-in">
-          <SectionHeader icon={Music} iconBg="bg-violet-500/15" iconColor="text-violet-400" title="Top Tracks" />
+          <SectionHeader icon={Music} iconBg="bg-rose-500/15" iconColor="text-rose-400" title="Top Tracks" />
           {topTracks.length > 0 ? (
             <div className="space-y-2">
               {topTracks.map((track, i) => (
-                <div key={track.name} className="flex items-center gap-3 p-3 rounded-xl bg-muted/15 hover:bg-muted/25 transition-colors border border-border/20">
-                  <div className="h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0" style={{ background: `${CHART_COLORS[i % CHART_COLORS.length]}22`, color: CHART_COLORS[i % CHART_COLORS.length] }}>{i + 1}</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-foreground truncate">{track.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{formatStreams(track.streams)} streams · {formatRevenue(track.revenue)}</p>
-                  </div>
-                </div>
+                <RankItem key={track.name} rank={i + 1} name={track.name} sub={`${formatStreams(track.streams)} streams · ${formatRevenue(track.revenue)}`} color={CHART_COLORS[i % CHART_COLORS.length]} />
               ))}
             </div>
           ) : <EmptyChart icon={Music} text="No track data yet" />}
@@ -575,20 +622,14 @@ export default function UserDashboard() {
           {topArtists.length > 0 ? (
             <div className="space-y-2">
               {topArtists.map((artist, i) => (
-                <div key={artist.name} className="flex items-center gap-3 p-3 rounded-xl bg-muted/15 hover:bg-muted/25 transition-colors border border-border/20">
-                  <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: `${CHART_COLORS[i % CHART_COLORS.length]}22`, color: CHART_COLORS[i % CHART_COLORS.length] }}>{i + 1}</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-foreground truncate">{artist.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{formatStreams(artist.streams)} streams</p>
-                  </div>
-                </div>
+                <RankItem key={artist.name} rank={i + 1} name={artist.name} sub={`${formatStreams(artist.streams)} streams`} color={CHART_COLORS[i % CHART_COLORS.length]} rounded />
               ))}
             </div>
           ) : <EmptyChart icon={Headphones} text="No artist data yet" />}
         </GlassCard>
 
         <GlassCard className="animate-fade-in">
-          <SectionHeader icon={Globe} iconBg="bg-emerald-500/15" iconColor="text-emerald-400" title="Top Countries" />
+          <SectionHeader icon={Globe} iconBg="bg-emerald-500/15" iconColor="text-emerald-400" title="Streams by Country" />
           {countryData.length > 0 ? <WorldMapChart data={countryData} /> : <EmptyChart icon={Globe} text="No country data yet" />}
         </GlassCard>
       </div>
@@ -651,6 +692,50 @@ function SectionHeader({ icon: Icon, iconBg, iconColor, title }: { icon: any; ic
 
 function EmptyChart({ icon: Icon, text }: { icon: any; text: string }) {
   return <div className="text-center py-16"><Icon className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" /><p className="text-xs text-muted-foreground">{text}</p></div>;
+}
+
+function RankItem({ rank, name, sub, color, rounded }: { rank: number; name: string; sub: string; color: string; rounded?: boolean }) {
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/15 hover:bg-muted/25 transition-colors border border-border/20">
+      <div className={`h-8 w-8 ${rounded ? 'rounded-full' : 'rounded-lg'} flex items-center justify-center text-xs font-bold shrink-0`} style={{ background: `${color}22`, color }}>{rank}</div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs sm:text-sm font-medium text-foreground truncate">{name}</p>
+        <p className="text-[10px] text-muted-foreground">{sub}</p>
+      </div>
+    </div>
+  );
+}
+
+function SparklineCard({ title, data, color, icon: Icon, iconBg, iconColor, total }: {
+  title: string; data: { month: string; count: number }[]; color: string; icon: any; iconBg: string; iconColor: string; total: string | number;
+}) {
+  return (
+    <GlassCard className="animate-fade-in !p-4 overflow-hidden">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className={`h-6 w-6 rounded-lg ${iconBg} flex items-center justify-center`}><Icon className={`h-3 w-3 ${iconColor}`} /></div>
+          <span className="text-xs font-semibold text-foreground">{title}</span>
+        </div>
+        <span className="text-lg font-bold text-foreground">{total}</span>
+      </div>
+      <div className="h-16">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id={`spark-user-${title.replace(/\s/g, '')}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+                <stop offset="100%" stopColor={color} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <Area type="monotone" dataKey="count" stroke={color} fill={`url(#spark-user-${title.replace(/\s/g, '')})`} strokeWidth={2} dot={false} isAnimationActive={false} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="flex justify-between text-[9px] text-muted-foreground/60 mt-1">
+        {data.map(d => <span key={d.month}>{d.month}</span>)}
+      </div>
+    </GlassCard>
+  );
 }
 
 type TutorialPreview = {
