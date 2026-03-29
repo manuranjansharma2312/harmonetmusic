@@ -786,7 +786,7 @@ function RecentTutorialsWidget() {
       <Dialog open={!!viewTutorial} onOpenChange={() => setViewTutorial(null)}>
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{viewTutorial?.title}</DialogTitle></DialogHeader>
-          {viewTutorial && <TutorialContent tutorial={viewTutorial} />}
+          {viewTutorial && <TutorialContent html={viewTutorial.content} />}
         </DialogContent>
       </Dialog>
     </>
