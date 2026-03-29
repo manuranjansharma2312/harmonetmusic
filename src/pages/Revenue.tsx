@@ -110,6 +110,9 @@ export default function Revenue() {
         .select('percentage_cut, withdrawal_threshold, parent_user_id')
         .eq('sub_user_id', activeUserId!)
         .maybeSingle();
+
+      let localHiddenCut = Number(profileData?.hidden_cut_percent || 0);
+
       if (subLabelData) {
         setSubLabelCut(Number(subLabelData.percentage_cut) || 0);
         if (isSubLabel) {
@@ -122,19 +125,17 @@ export default function Revenue() {
             .select('hidden_cut_percent')
             .eq('user_id', subLabelData.parent_user_id)
             .maybeSingle();
-          setHiddenCut(Number(parentProfile?.hidden_cut_percent) || 0);
+          localHiddenCut = Number(parentProfile?.hidden_cut_percent) || 0;
+          setHiddenCut(localHiddenCut);
         } else {
-          setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
+          setHiddenCut(localHiddenCut);
         }
       } else {
         setSubLabelCut(0);
-        // Fetch hidden cut from own profile
-        setHiddenCut(Number(profileData?.hidden_cut_percent) || 0);
+        setHiddenCut(localHiddenCut);
       }
-      // Compute cut locally to avoid stale closure values (reuse already-fetched data)
-      const localHiddenCut = (isSubLabel && subLabelData?.parent_user_id)
-        ? Number((await supabase.from('profiles').select('hidden_cut_percent').eq('user_id', subLabelData.parent_user_id).maybeSingle()).data?.hidden_cut_percent || 0)
-        : Number(profileData?.hidden_cut_percent || 0);
+
+      // Compute cut locally to avoid stale closure values
       const localSubLabelCut = Number(subLabelData?.percentage_cut || 0);
       const localIsSubLabel = isSubLabel;
       const localEffectiveCut = getEffectiveRevenueCutPercent({ hiddenCut: localHiddenCut, subLabelCut: localSubLabelCut, isSubLabel: localIsSubLabel });
