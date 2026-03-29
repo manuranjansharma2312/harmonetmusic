@@ -196,6 +196,11 @@ export default function MyProfile() {
           </GlassCard>
         </div>
 
+        {/* Account Security - Admin Only */}
+        {role === 'admin' && !isImpersonating && (
+          <AdminAccountSecurity userEmail={user?.email || ''} />
+        )}
+
         {/* Bank Details Section - hidden for sub-labels */}
         {profile.user_type !== 'sub_label' && (
         <GlassCard className="mt-6 animate-fade-in">
