@@ -41,8 +41,14 @@ interface ReportEntry {
 const ALL_COLUMNS: Record<string, string> = {
   channel_name: 'Channel Name', label: 'Label', track: 'Track', artist: 'Artist',
   currency: 'Currency', streams: 'Streams', downloads: 'Downloads',
-  net_generated_revenue: 'Net Generated Revenue',
+  net_generated_revenue: 'Net Generated Revenue', cms_cut: 'CMS Cut %',
+  cut_amount: 'Cut Amount', net_payable: 'Net Payable',
 };
+
+interface CmsLink {
+  channel_name: string;
+  cut_percent: number;
+}
 
 const FILTERABLE = [
   { key: 'channel_name', label: 'Channel' },
@@ -67,6 +73,7 @@ export default function AdminCmsReports() {
   const [showFormat, setShowFormat] = useState(false);
   const [importing, setImporting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ month: string } | null>(null);
+  const [cmsLinks, setCmsLinks] = useState<CmsLink[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Pagination
@@ -81,12 +88,37 @@ export default function AdminCmsReports() {
   const [editFormat, setEditFormat] = useState<FormatColumn[]>([]);
   const [newColHeader, setNewColHeader] = useState('');
 
-  const COLUMNS = useMemo(() =>
-    formatColumns.filter(c => c.is_enabled && c.column_key !== 'reporting_month')
+  const COLUMNS = useMemo(() => {
+    const baseCols = formatColumns
+      .filter(c => c.is_enabled && c.column_key !== 'reporting_month')
       .sort((a, b) => a.sort_order - b.sort_order)
-      .map(c => ({ key: c.column_key, label: ALL_COLUMNS[c.column_key] || c.csv_header })),
-    [formatColumns]
-  );
+      .map(c => ({ key: c.column_key, label: ALL_COLUMNS[c.column_key] || c.csv_header }));
+    // Add calculated columns after net_generated_revenue
+    const revenueIdx = baseCols.findIndex(c => c.key === 'net_generated_revenue');
+    const extra = [
+      { key: 'cms_cut', label: 'CMS Cut %' },
+      { key: 'cut_amount', label: 'Cut Amount' },
+      { key: 'net_payable', label: 'Net Payable' },
+    ];
+    if (revenueIdx >= 0) baseCols.splice(revenueIdx + 1, 0, ...extra);
+    else baseCols.push(...extra);
+    return baseCols;
+  }, [formatColumns]);
+
+  // CMS cut helpers
+  const getCutPercent = (channelName: string) => {
+    const link = cmsLinks.find(l => l.channel_name === channelName);
+    return Number(link?.cut_percent) || 0;
+  };
+  const calcCutAmount = (entry: ReportEntry) => {
+    const revenue = Number(entry.net_generated_revenue) || 0;
+    return Number((revenue * getCutPercent(entry.channel_name) / 100).toFixed(4));
+  };
+  const calcNetPayable = (entry: ReportEntry) => {
+    const revenue = Number(entry.net_generated_revenue) || 0;
+    const cut = getCutPercent(entry.channel_name);
+    return Number((revenue - (revenue * cut / 100)).toFixed(4));
+  };
 
   const fetchFormat = async () => {
     const { data } = await supabase.from('cms_report_format' as any).select('*').order('sort_order', { ascending: true });
@@ -95,8 +127,12 @@ export default function AdminCmsReports() {
 
   const fetchEntries = async () => {
     setLoading(true);
-    const { data } = await supabase.from('cms_report_entries' as any).select('*').order('reporting_month', { ascending: false });
+    const [{ data }, { data: links }] = await Promise.all([
+      supabase.from('cms_report_entries' as any).select('*').order('reporting_month', { ascending: false }),
+      supabase.from('youtube_cms_links' as any).select('channel_name, cut_percent').eq('status', 'linked'),
+    ]);
     setEntries((data as any) || []);
+    setCmsLinks((links as any) || []);
     setLoading(false);
   };
 
@@ -104,15 +140,16 @@ export default function AdminCmsReports() {
 
   // Monthly groups
   const monthlyGroups = useMemo(() => {
-    const groups: Record<string, { entries: ReportEntry[]; latestImport: string; totalRevenue: number }> = {};
+    const groups: Record<string, { entries: ReportEntry[]; latestImport: string; totalRevenue: number; totalNetPayable: number }> = {};
     entries.forEach(e => {
-      if (!groups[e.reporting_month]) groups[e.reporting_month] = { entries: [], latestImport: e.imported_at, totalRevenue: 0 };
+      if (!groups[e.reporting_month]) groups[e.reporting_month] = { entries: [], latestImport: e.imported_at, totalRevenue: 0, totalNetPayable: 0 };
       groups[e.reporting_month].entries.push(e);
       groups[e.reporting_month].totalRevenue += Number(e.net_generated_revenue) || 0;
+      groups[e.reporting_month].totalNetPayable += calcNetPayable(e);
       if (e.imported_at > groups[e.reporting_month].latestImport) groups[e.reporting_month].latestImport = e.imported_at;
     });
     return Object.entries(groups).sort(([a], [b]) => parseMonthKey(b) - parseMonthKey(a));
-  }, [entries]);
+  }, [entries, cmsLinks]);
 
   const filteredMonthlyGroups = useMemo(() => {
     if (!monthSearch.trim()) return monthlyGroups;
@@ -293,9 +330,13 @@ export default function AdminCmsReports() {
     const headers = ['Reporting Month', ...COLUMNS.map(c => c.label)];
     const rows = selectedEntries.map(e => [
       e.reporting_month,
-      ...COLUMNS.map(c => c.key.startsWith('custom_')
-        ? String((e.extra_data as Record<string, string>)?.[c.key] ?? '')
-        : String(e[c.key as keyof ReportEntry] ?? '')),
+      ...COLUMNS.map(c => {
+        if (c.key === 'cms_cut') return `${getCutPercent(e.channel_name)}%`;
+        if (c.key === 'cut_amount') return String(calcCutAmount(e));
+        if (c.key === 'net_payable') return String(calcNetPayable(e));
+        if (c.key.startsWith('custom_')) return String((e.extra_data as Record<string, string>)?.[c.key] ?? '');
+        return String(e[c.key as keyof ReportEntry] ?? '');
+      }),
     ]);
     const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -414,6 +455,7 @@ export default function AdminCmsReports() {
                       <TableHead>Reporting Month</TableHead>
                       <TableHead>Records</TableHead>
                       <TableHead>Total Revenue</TableHead>
+                      <TableHead>Net Payable</TableHead>
                       <TableHead>Last Updated</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -423,7 +465,8 @@ export default function AdminCmsReports() {
                       <TableRow key={month}>
                         <TableCell className="font-medium">{month}</TableCell>
                         <TableCell>{group.entries.length}</TableCell>
-                        <TableCell className="font-medium">₹{group.totalRevenue.toFixed(2)}</TableCell>
+                        <TableCell>₹{group.totalRevenue.toFixed(2)}</TableCell>
+                        <TableCell className="font-medium text-primary">₹{group.totalNetPayable.toFixed(2)}</TableCell>
                         <TableCell>{format(new Date(group.latestImport), 'dd MMM yyyy, hh:mm a')}</TableCell>
                         <TableCell className="text-right space-x-2">
                           <Button size="sm" variant="outline" onClick={() => setSelectedMonth(month)}><Eye className="h-4 w-4 mr-1" /> View</Button>
@@ -476,8 +519,11 @@ export default function AdminCmsReports() {
                     ) : pagedEntries.map(entry => (
                       <TableRow key={entry.id}>
                         {COLUMNS.map(col => (
-                          <TableCell key={col.key} className="whitespace-nowrap">
+                          <TableCell key={col.key} className={`whitespace-nowrap ${col.key === 'net_payable' ? 'font-semibold text-primary' : col.key === 'cut_amount' ? 'text-destructive' : ''}`}>
                             {col.key === 'net_generated_revenue' ? `₹${(Number(entry.net_generated_revenue) || 0).toFixed(4)}`
+                              : col.key === 'cms_cut' ? `${getCutPercent(entry.channel_name)}%`
+                              : col.key === 'cut_amount' ? `₹${calcCutAmount(entry).toFixed(4)}`
+                              : col.key === 'net_payable' ? `₹${calcNetPayable(entry).toFixed(4)}`
                               : col.key.startsWith('custom_') ? String((entry.extra_data as Record<string, string>)?.[col.key] ?? '-')
                               : String(entry[col.key as keyof ReportEntry] ?? '-')}
                           </TableCell>
