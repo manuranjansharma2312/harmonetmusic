@@ -93,6 +93,7 @@ export function AppSidebar() {
   const [adminVideoOpen, setAdminVideoOpen] = useState(false);
   const [userCmsOpen, setUserCmsOpen] = useState(false);
   const [adminCmsOpen, setAdminCmsOpen] = useState(false);
+  const [adminSettingsOpen, setAdminSettingsOpen] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
 
   // Fetch impersonated user's profile when impersonating
