@@ -221,6 +221,7 @@ function App() {
                       <Route path="/youtube-cms-link" element={<ProtectedRoute><YouTubeCmsLink /></ProtectedRoute>} />
                       <Route path="/cms-reports" element={<ProtectedRoute><CmsReports /></ProtectedRoute>} />
                       <Route path="/cms-balance" element={<ProtectedRoute><CmsBalance /></ProtectedRoute>} />
+                      <Route path="/cms-analytics" element={<ProtectedRoute><CmsAnalytics /></ProtectedRoute>} />
                       <Route path="/admin/youtube-cms-links" element={<ProtectedRoute requiredRole="admin"><AdminYouTubeCmsLinks /></ProtectedRoute>} />
                       <Route path="/admin/cms-reports" element={<ProtectedRoute requiredRole="admin"><AdminCmsReports /></ProtectedRoute>} />
                       <Route path="/admin/cms-withdrawals" element={<ProtectedRoute requiredRole="admin"><AdminCmsWithdrawals /></ProtectedRoute>} />
