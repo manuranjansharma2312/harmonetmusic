@@ -239,7 +239,11 @@ export default function AdminDashboard() {
       cms: monthlyCmsMap[month] || 0,
     })));
 
-    setLoading(false);
+    } catch (err) {
+      console.error('AdminDashboard fetchAll error:', err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (loading) {
