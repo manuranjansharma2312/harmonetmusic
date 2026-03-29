@@ -45,7 +45,7 @@ interface CmsLink {
 const ALL_COLUMN_LABELS: Record<string, string> = {
   channel_name: 'Channel Name', label: 'Label', track: 'Track', artist: 'Artist',
   currency: 'Currency', streams: 'Streams', downloads: 'Downloads',
-  net_generated_revenue: 'Net Revenue', cut_amount: '% Cut Amount', net_payable: 'Net Payable',
+  net_generated_revenue: 'Net Revenue', cms_cut: 'CMS Cut %', cut_amount: '% Cut Amount', net_payable: 'Net Payable',
 };
 
 const FILTERABLE = [
@@ -89,6 +89,7 @@ export default function CmsReports() {
     // Add calculated columns after net_generated_revenue
     const revenueIdx = baseCols.findIndex(c => c.key === 'net_generated_revenue');
     const extra = [
+      { key: 'cms_cut', label: 'CMS Cut %' },
       { key: 'cut_amount', label: '% Cut Amount' },
       { key: 'net_payable', label: 'Net Payable' },
     ];
@@ -181,6 +182,7 @@ export default function CmsReports() {
     const rows = selectedEntries.map(e => [
       e.reporting_month,
       ...COLUMNS.map(c => {
+        if (c.key === 'cms_cut') return `${getCutPercent(e.channel_name)}%`;
         if (c.key === 'cut_amount') return String(calcCutAmount(e));
         if (c.key === 'net_payable') return String(calcNetPayable(e));
         if (c.key.startsWith('custom_')) return String((e.extra_data as Record<string, string>)?.[c.key] ?? '');
@@ -197,6 +199,7 @@ export default function CmsReports() {
 
   const getCellValue = (entry: ReportEntry, colKey: string) => {
     if (colKey === 'net_generated_revenue') return `₹${(Number(entry.net_generated_revenue) || 0).toFixed(4)}`;
+    if (colKey === 'cms_cut') return `${getCutPercent(entry.channel_name)}%`;
     if (colKey === 'cut_amount') return `₹${calcCutAmount(entry).toFixed(4)}`;
     if (colKey === 'net_payable') return `₹${calcNetPayable(entry).toFixed(4)}`;
     if (colKey.startsWith('custom_')) return String((entry.extra_data as Record<string, string>)?.[colKey] ?? '-');
