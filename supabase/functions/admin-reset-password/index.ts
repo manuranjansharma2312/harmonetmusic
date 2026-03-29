@@ -76,6 +76,37 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === "change_email") {
+      if (!user_id || !email) {
+        return new Response(JSON.stringify({ error: "user_id and email required" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return new Response(JSON.stringify({ error: "Invalid email format" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(user_id, {
+        email,
+        email_confirm: true,
+      });
+      if (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      // Also update profiles table
+      await supabaseAdmin.from("profiles").update({ email }).eq("user_id", user_id);
+      return new Response(JSON.stringify({ success: true, message: "Email updated successfully" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (action === "send_reset_link") {
       if (!email) {
         return new Response(JSON.stringify({ error: "email required" }), {
@@ -106,7 +137,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ error: "Invalid action. Use 'set_password' or 'send_reset_link'" }), {
+    return new Response(JSON.stringify({ error: "Invalid action. Use 'set_password', 'send_reset_link', or 'change_email'" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
