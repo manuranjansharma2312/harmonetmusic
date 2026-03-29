@@ -56,7 +56,7 @@ const adminLinksTop = [
   { to: '/admin/submissions', label: 'All Releases', icon: ListMusic },
   { to: '/admin/transfer-history', label: 'Transfer History', icon: ArrowRightLeft },
   { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
-  { to: '/admin/labels', label: 'All Labels', icon: Tag },
+  { to: '/admin/labels', label: 'Manage Labels', icon: Tag },
   { to: '/admin/content-requests', label: 'Support Requests', icon: Headset },
   { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
   { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
