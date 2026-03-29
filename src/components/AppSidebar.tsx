@@ -72,7 +72,6 @@ const adminLinksTop = [
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
   { to: '/admin/email-settings', label: 'Manage Emails', icon: Mail },
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
-  { to: '/admin/branding-settings', label: 'Site Settings', icon: Globe },
 ];
 
 export function AppSidebar() {
