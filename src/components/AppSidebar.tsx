@@ -147,6 +147,12 @@ export function AppSidebar() {
     { to: '/admin/youtube-cms-settings', label: 'CMS Settings', icon: Settings },
   ];
 
+  // Admin Settings collapsible links
+  const adminSettingsLinks = [
+    { to: '/admin/site-settings', label: 'System Settings', icon: Settings },
+    { to: '/admin/account-security', label: 'Admin Account Settings', icon: KeyRound },
+  ];
+
   // Video Distribution collapsible links
   const userVideoLinks = [
     { to: '/video/upload?type=upload_video', label: 'Upload Video', icon: Upload },
