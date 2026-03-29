@@ -160,10 +160,14 @@ export default function AdminDashboard() {
     setTransferCount((transfersRes.data || []).length);
 
     // Include vevo reports in total analytics
-    const { data: vevoReportData } = await supabase
-      .from('vevo_report_entries')
-      .select('reporting_month, net_generated_revenue, streams, downloads, store, track, artist, country');
-    const allReports = [...(reportRes.data || []), ...(ytReportRes.data || []), ...(vevoReportData || [])];
+    let vevoReportData: any[] = [];
+    try {
+      const res = await supabase
+        .from('vevo_report_entries')
+        .select('reporting_month, net_generated_revenue, streams, downloads, store, track, artist, country');
+      vevoReportData = (res.data as any[]) || [];
+    } catch (e) { console.warn('vevo_report_entries not available'); }
+    const allReports = [...(reportRes.data || []), ...(ytReportRes.data || []), ...vevoReportData];
     if (allReports.length > 0) {
       let totalRev = 0, totalStr = 0, totalDl = 0;
       const monthMap: Record<string, { revenue: number; streams: number; downloads: number }> = {};
