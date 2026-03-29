@@ -1814,6 +1814,7 @@ export type Database = {
           enable_toast_notifications: boolean
           enable_vevo: boolean
           enable_video_distribution: boolean
+          enable_youtube_cms: boolean
           id: string
           image_quality: number
           maintenance_message: string
@@ -1846,6 +1847,7 @@ export type Database = {
           enable_toast_notifications?: boolean
           enable_vevo?: boolean
           enable_video_distribution?: boolean
+          enable_youtube_cms?: boolean
           id?: string
           image_quality?: number
           maintenance_message?: string
@@ -1878,6 +1880,7 @@ export type Database = {
           enable_toast_notifications?: boolean
           enable_vevo?: boolean
           enable_video_distribution?: boolean
+          enable_youtube_cms?: boolean
           id?: string
           image_quality?: number
           maintenance_message?: string
