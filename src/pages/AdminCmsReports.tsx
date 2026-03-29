@@ -451,6 +451,7 @@ export default function AdminCmsReports() {
                       <TableHead>Reporting Month</TableHead>
                       <TableHead>Records</TableHead>
                       <TableHead>Total Revenue</TableHead>
+                      <TableHead>Net Payable</TableHead>
                       <TableHead>Last Updated</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -460,7 +461,8 @@ export default function AdminCmsReports() {
                       <TableRow key={month}>
                         <TableCell className="font-medium">{month}</TableCell>
                         <TableCell>{group.entries.length}</TableCell>
-                        <TableCell className="font-medium">₹{group.totalRevenue.toFixed(2)}</TableCell>
+                        <TableCell>₹{group.totalRevenue.toFixed(2)}</TableCell>
+                        <TableCell className="font-medium text-primary">₹{group.totalNetPayable.toFixed(2)}</TableCell>
                         <TableCell>{format(new Date(group.latestImport), 'dd MMM yyyy, hh:mm a')}</TableCell>
                         <TableCell className="text-right space-x-2">
                           <Button size="sm" variant="outline" onClick={() => setSelectedMonth(month)}><Eye className="h-4 w-4 mr-1" /> View</Button>
