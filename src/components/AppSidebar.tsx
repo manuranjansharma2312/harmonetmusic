@@ -6,7 +6,7 @@ import {
   BarChart3, MonitorPlay, Wallet, FileText, Receipt,
   Image as ImageIcon, Bell, BookOpen, FileSignature,
   Megaphone, Landmark, CreditCard, UsersRound, Sparkles, Link2, ArrowRightLeft, Mail,
-  Settings, Globe, Video, Tv,
+  Settings, Globe, Video, Tv, KeyRound,
 } from 'lucide-react';
 import { useBranding } from '@/hooks/useBranding';
 import { supabase } from '@/integrations/supabase/client';
@@ -77,6 +77,7 @@ const adminLinksTop = [
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
   { to: '/admin/branding-settings', label: 'Site Settings', icon: Globe },
   { to: '/admin/site-settings', label: 'System Settings', icon: Settings },
+  { to: '/admin/account-security', label: 'Account Security', icon: KeyRound },
 ];
 
 export function AppSidebar() {
