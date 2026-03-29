@@ -456,6 +456,10 @@ export default function Analytics() {
                               <stop offset="0%" stopColor="#ff6b6b" />
                               <stop offset="100%" stopColor="#eb4d4b" />
                             </linearGradient>
+                            <linearGradient id="pieGrad2" x1="0" y1="0" x2="1" y2="1">
+                              <stop offset="0%" stopColor="#c56cf0" />
+                              <stop offset="100%" stopColor="#a55eea" />
+                            </linearGradient>
                           </defs>
                           <Pie data={sourceSplit} cx="50%" cy="50%" innerRadius={45} outerRadius={72} paddingAngle={5}
                             dataKey="value" stroke="none" labelLine={false}
