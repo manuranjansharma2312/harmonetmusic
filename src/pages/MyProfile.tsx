@@ -46,7 +46,7 @@ type BankDetail = {
 };
 
 export default function MyProfile() {
-  const { user, role } = useAuth();
+  const { user } = useAuth();
   const { isImpersonating, impersonatedUserId } = useImpersonate();
   const effectiveUserId = isImpersonating ? impersonatedUserId : user?.id;
   const [profile, setProfile] = useState<Profile | null>(null);
