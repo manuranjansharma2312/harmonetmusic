@@ -640,6 +640,7 @@ export default function AdminYouTubeCmsLinks() {
                     </PopoverContent>
                   </Popover>
                 </div>
+                <div><Label>Revenue % Cut</Label><Input type="number" min="0" max="100" step="0.01" value={editCutPercent} onChange={(e) => setEditCutPercent(e.target.value)} placeholder="e.g. 30" /></div>
               </>
             )}
           </div>
