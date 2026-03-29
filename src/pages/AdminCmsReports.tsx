@@ -506,8 +506,8 @@ export default function AdminCmsReports() {
             </GlassCard>
 
             <GlassCard className="p-0 overflow-hidden">
-              <div className="overflow-x-auto">
-                <Table>
+              <div className="responsive-table-wrap">
+                <Table className="min-w-max">
                   <TableHeader>
                     <TableRow>
                       {COLUMNS.map(col => <TableHead key={col.key} className="whitespace-nowrap">{col.label}</TableHead>)}

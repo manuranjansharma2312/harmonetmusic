@@ -528,8 +528,8 @@ export default function AdminYouTubeReports() {
             {detailLoading ? (
               <p className="p-6 text-center text-muted-foreground">Loading...</p>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
+              <div className="responsive-table-wrap">
+                <Table className="min-w-max">
                   <TableHeader>
                     <TableRow>
                       {COLUMNS.map((col) => (
