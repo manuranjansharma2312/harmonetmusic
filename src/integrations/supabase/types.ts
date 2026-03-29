@@ -386,6 +386,138 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_report_entries: {
+        Row: {
+          artist: string | null
+          channel_name: string
+          created_at: string | null
+          currency: string | null
+          downloads: number | null
+          extra_data: Json | null
+          id: string
+          imported_at: string | null
+          label: string | null
+          net_generated_revenue: number | null
+          reporting_month: string
+          streams: number | null
+          track: string | null
+        }
+        Insert: {
+          artist?: string | null
+          channel_name: string
+          created_at?: string | null
+          currency?: string | null
+          downloads?: number | null
+          extra_data?: Json | null
+          id?: string
+          imported_at?: string | null
+          label?: string | null
+          net_generated_revenue?: number | null
+          reporting_month: string
+          streams?: number | null
+          track?: string | null
+        }
+        Update: {
+          artist?: string | null
+          channel_name?: string
+          created_at?: string | null
+          currency?: string | null
+          downloads?: number | null
+          extra_data?: Json | null
+          id?: string
+          imported_at?: string | null
+          label?: string | null
+          net_generated_revenue?: number | null
+          reporting_month?: string
+          streams?: number | null
+          track?: string | null
+        }
+        Relationships: []
+      }
+      cms_report_format: {
+        Row: {
+          column_key: string
+          csv_header: string
+          id: string
+          is_custom: boolean
+          is_enabled: boolean
+          is_required: boolean
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          column_key: string
+          csv_header: string
+          id?: string
+          is_custom?: boolean
+          is_enabled?: boolean
+          is_required?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          column_key?: string
+          csv_header?: string
+          id?: string
+          is_custom?: boolean
+          is_enabled?: boolean
+          is_required?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_settings: {
+        Row: {
+          id: string
+          updated_at: string
+          updated_by: string | null
+          withdrawal_threshold: number
+        }
+        Insert: {
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+          withdrawal_threshold?: number
+        }
+        Update: {
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+          withdrawal_threshold?: number
+        }
+        Relationships: []
+      }
+      cms_withdrawal_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          rejection_reason: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       company_details: {
         Row: {
           address: string
@@ -2496,6 +2628,7 @@ export type Database = {
           cms_company: string | null
           cms_linked_date: string | null
           created_at: string
+          cut_percent: number
           id: string
           is_monetized: boolean
           noc_file_url: string | null
@@ -2511,6 +2644,7 @@ export type Database = {
           cms_company?: string | null
           cms_linked_date?: string | null
           created_at?: string
+          cut_percent?: number
           id?: string
           is_monetized?: boolean
           noc_file_url?: string | null
@@ -2526,6 +2660,7 @@ export type Database = {
           cms_company?: string | null
           cms_linked_date?: string | null
           created_at?: string
+          cut_percent?: number
           id?: string
           is_monetized?: boolean
           noc_file_url?: string | null
