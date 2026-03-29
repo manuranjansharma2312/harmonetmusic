@@ -366,26 +366,30 @@ export default function MyReleases() {
                       <p className="text-xs text-muted-foreground mb-2">UPC: <span className="text-foreground font-mono">{release.upc}</span></p>
                     )}
                     {release.tracks.map((track) => (
-                      <div key={track.id} className="flex items-center gap-3 rounded-lg bg-muted/20 px-4 py-3">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">
-                          {track.track_order}
+                      <div key={track.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 rounded-lg bg-muted/20 px-3 sm:px-4 py-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0">
+                            {track.track_order}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{track.song_title}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {track.primary_artist} • {track.genre}
+                              {track.isrc && <> • ISRC: <span className="font-mono">{track.isrc}</span></>}
+                            </p>
+                          </div>
                         </div>
-                      <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{track.song_title}</p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {track.primary_artist} • {track.genre}
-                            {track.isrc && <> • ISRC: <span className="font-mono">{track.isrc}</span></>}
-                          </p>
+                        <div className="flex items-center gap-2 pl-10 sm:pl-0 flex-wrap sm:flex-nowrap shrink-0">
+                          <StatusBadge status={track.status} />
+                          {track.status === 'rejected' && track.rejection_reason && (
+                            <span className="text-xs text-destructive max-w-[150px] truncate" title={track.rejection_reason}>
+                              {track.rejection_reason}
+                            </span>
+                          )}
+                          {track.audio_url && (
+                            <audio controls src={track.audio_url} className="h-8 w-full sm:w-48 shrink-0" />
+                          )}
                         </div>
-                        <StatusBadge status={track.status} />
-                        {track.status === 'rejected' && track.rejection_reason && (
-                          <span className="text-xs text-destructive max-w-[150px] truncate" title={track.rejection_reason}>
-                            {track.rejection_reason}
-                          </span>
-                        )}
-                        {track.audio_url && (
-                          <audio controls src={track.audio_url} className="h-8 w-48 shrink-0" />
-                        )}
                       </div>
                     ))}
                   </div>

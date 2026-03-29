@@ -534,17 +534,17 @@ export default function NewRelease() {
             {/* Release Type */}
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-3">Release Type *</label>
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <label className={`flex items-center gap-2 cursor-pointer rounded-lg border px-4 py-3 text-sm transition-all ${releaseType === 'new_release' ? 'border-primary bg-primary/10 text-foreground' : 'border-border text-muted-foreground hover:border-primary/50'}`}>
                   <input type="radio" name="releaseType" value="new_release" checked={releaseType === 'new_release'} onChange={() => setReleaseType('new_release')} className="sr-only" />
-                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${releaseType === 'new_release' ? 'border-primary' : 'border-muted-foreground'}`}>
+                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0 ${releaseType === 'new_release' ? 'border-primary' : 'border-muted-foreground'}`}>
                     {releaseType === 'new_release' && <div className="h-2 w-2 rounded-full bg-primary" />}
                   </div>
                   New Release
                 </label>
                 <label className={`flex items-center gap-2 cursor-pointer rounded-lg border px-4 py-3 text-sm transition-all ${releaseType === 'transfer' ? 'border-primary bg-primary/10 text-foreground' : 'border-border text-muted-foreground hover:border-primary/50'}`}>
                   <input type="radio" name="releaseType" value="transfer" checked={releaseType === 'transfer'} onChange={() => setReleaseType('transfer')} className="sr-only" />
-                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${releaseType === 'transfer' ? 'border-primary' : 'border-muted-foreground'}`}>
+                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0 ${releaseType === 'transfer' ? 'border-primary' : 'border-muted-foreground'}`}>
                     {releaseType === 'transfer' && <div className="h-2 w-2 rounded-full bg-primary" />}
                   </div>
                   Transfer from Another Distributor
