@@ -149,6 +149,7 @@ export function AppSidebar() {
 
   // Admin Settings collapsible links
   const adminSettingsLinks = [
+    { to: '/admin/branding-settings', label: 'Site Settings', icon: Globe },
     { to: '/admin/site-settings', label: 'System Settings', icon: Settings },
     { to: '/admin/account-security', label: 'Admin Account Settings', icon: KeyRound },
   ];
