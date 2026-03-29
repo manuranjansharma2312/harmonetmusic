@@ -15,6 +15,7 @@ import { BrandingHead } from "@/components/BrandingHead";
 
 // Lazy load all pages for code splitting
 const Auth = lazy(() => import("./pages/Auth"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const UserDashboard = lazy(() => import("./pages/UserDashboard"));
 const NewRelease = lazy(() => import("./pages/NewRelease"));
 const AdminGenresLanguages = lazy(() => import("./pages/AdminGenresLanguages"));
