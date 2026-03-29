@@ -88,6 +88,10 @@ const VevoReports = lazy(() => import("./pages/VevoReports"));
 const AdminVevoSettings = lazy(() => import("./pages/AdminVevoSettings"));
 const YouTubeCmsLink = lazy(() => import("./pages/YouTubeCmsLink"));
 const AdminYouTubeCmsLinks = lazy(() => import("./pages/AdminYouTubeCmsLinks"));
+const AdminCmsReports = lazy(() => import("./pages/AdminCmsReports"));
+const CmsReports = lazy(() => import("./pages/CmsReports"));
+const CmsBalance = lazy(() => import("./pages/CmsBalance"));
+const AdminCmsWithdrawals = lazy(() => import("./pages/AdminCmsWithdrawals"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
