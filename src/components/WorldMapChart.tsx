@@ -1,74 +1,66 @@
 import { memo, useMemo } from 'react';
+import { Country } from 'country-state-city';
 import WorldMap from 'react-svg-worldmap';
 import { formatStreams } from '@/lib/formatNumbers';
 
-// Map common country names to ISO alpha-2 codes
-const COUNTRY_CODE_MAP: Record<string, string> = {
-  'United States': 'US', 'USA': 'US', 'US': 'US',
-  'United Kingdom': 'GB', 'UK': 'GB', 'GB': 'GB',
-  'India': 'IN', 'IN': 'IN',
-  'Germany': 'DE', 'DE': 'DE',
-  'France': 'FR', 'FR': 'FR',
-  'Brazil': 'BR', 'BR': 'BR',
-  'Canada': 'CA', 'CA': 'CA',
-  'Australia': 'AU', 'AU': 'AU',
-  'Japan': 'JP', 'JP': 'JP',
-  'Mexico': 'MX', 'MX': 'MX',
-  'Spain': 'ES', 'ES': 'ES',
-  'Italy': 'IT', 'IT': 'IT',
-  'South Korea': 'KR', 'Korea': 'KR', 'KR': 'KR',
-  'Netherlands': 'NL', 'NL': 'NL',
-  'Russia': 'RU', 'RU': 'RU',
-  'Indonesia': 'ID', 'ID': 'ID',
-  'Turkey': 'TR', 'TR': 'TR',
-  'Saudi Arabia': 'SA', 'SA': 'SA',
-  'Sweden': 'SE', 'SE': 'SE',
-  'Poland': 'PL', 'PL': 'PL',
-  'Argentina': 'AR', 'AR': 'AR',
-  'Nigeria': 'NG', 'NG': 'NG',
-  'Thailand': 'TH', 'TH': 'TH',
-  'Philippines': 'PH', 'PH': 'PH',
-  'Colombia': 'CO', 'CO': 'CO',
-  'Egypt': 'EG', 'EG': 'EG',
-  'Pakistan': 'PK', 'PK': 'PK',
-  'Bangladesh': 'BD', 'BD': 'BD',
-  'Vietnam': 'VN', 'VN': 'VN',
-  'Malaysia': 'MY', 'MY': 'MY',
-  'South Africa': 'ZA', 'ZA': 'ZA',
-  'Chile': 'CL', 'CL': 'CL',
-  'Peru': 'PE', 'PE': 'PE',
-  'China': 'CN', 'CN': 'CN',
-  'Taiwan': 'TW', 'TW': 'TW',
-  'Singapore': 'SG', 'SG': 'SG',
-  'UAE': 'AE', 'United Arab Emirates': 'AE', 'AE': 'AE',
-  'Norway': 'NO', 'NO': 'NO',
-  'Denmark': 'DK', 'DK': 'DK',
-  'Finland': 'FI', 'FI': 'FI',
-  'Switzerland': 'CH', 'CH': 'CH',
-  'Austria': 'AT', 'AT': 'AT',
-  'Belgium': 'BE', 'BE': 'BE',
-  'Portugal': 'PT', 'PT': 'PT',
-  'Ireland': 'IE', 'IE': 'IE',
-  'New Zealand': 'NZ', 'NZ': 'NZ',
-  'Israel': 'IL', 'IL': 'IL',
-  'Greece': 'GR', 'GR': 'GR',
-  'Kenya': 'KE', 'KE': 'KE',
-  'Ghana': 'GH', 'GH': 'GH',
-  'Sri Lanka': 'LK', 'LK': 'LK',
-  'Nepal': 'NP', 'NP': 'NP',
-  'Ukraine': 'UA', 'UA': 'UA',
-  'Morocco': 'MA', 'MA': 'MA',
-  'Iraq': 'IQ', 'IQ': 'IQ',
-  'Iran': 'IR', 'IR': 'IR',
-  'Uganda': 'UG', 'UG': 'UG',
-  'Jamaica': 'JM', 'JM': 'JM',
-  'Algeria': 'DZ', 'DZ': 'DZ',
-  'Albania': 'AL', 'AL': 'AL',
-  'Afghanistan': 'AF', 'AF': 'AF',
+const COUNTRY_ALIASES: Record<string, string> = {
+  usa: 'US',
+  us: 'US',
+  uk: 'GB',
+  uae: 'AE',
+  korea: 'KR',
+  'south korea': 'KR',
+  'north korea': 'KP',
+  russia: 'RU',
+  vietnam: 'VN',
+  czechia: 'CZ',
+  'czech republic': 'CZ',
+  tanzania: 'TZ',
+  venezuela: 'VE',
+  bolivia: 'BO',
+  moldova: 'MD',
+  syria: 'SY',
+  laos: 'LA',
+  brunei: 'BN',
+  macedonia: 'MK',
+  'north macedonia': 'MK',
 };
 
+const COUNTRY_LOOKUP = (() => {
+  const lookup = new Map<string, string>();
+
+  Country.getAllCountries().forEach((country) => {
+    const normalizedName = normalizeCountryName(country.name);
+    lookup.set(normalizedName, country.isoCode);
+    lookup.set(normalizeCountryName(country.isoCode), country.isoCode);
+  });
+
+  Object.entries(COUNTRY_ALIASES).forEach(([alias, code]) => {
+    lookup.set(normalizeCountryName(alias), code);
+  });
+
+  return lookup;
+})();
+
+function normalizeCountryName(value: string) {
+  return value
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
 function getCountryCode(name: string): string | null {
-  return COUNTRY_CODE_MAP[name] || (name.length === 2 ? name.toUpperCase() : null);
+  if (!name?.trim()) return null;
+
+  const trimmed = name.trim();
+  if (/^[a-z]{2}$/i.test(trimmed)) {
+    return trimmed.toUpperCase();
+  }
+
+  return COUNTRY_LOOKUP.get(normalizeCountryName(trimmed)) || null;
 }
 
 interface WorldMapChartProps {
@@ -77,18 +69,33 @@ interface WorldMapChartProps {
 }
 
 export const WorldMapChart = memo(function WorldMapChart({ data, className }: WorldMapChartProps) {
+  const normalizedData = useMemo(() => {
+    const countryTotals = new Map<string, { label: string; streams: number }>();
+
+    data.forEach((entry) => {
+      const code = getCountryCode(entry.name);
+      if (!code) return;
+
+      const existing = countryTotals.get(code);
+      if (existing) {
+        existing.streams += entry.streams;
+        return;
+      }
+
+      countryTotals.set(code, { label: entry.name, streams: entry.streams });
+    });
+
+    return Array.from(countryTotals.entries())
+      .map(([code, entry]) => ({ code, name: entry.label, streams: entry.streams }))
+      .sort((a, b) => b.streams - a.streams);
+  }, [data]);
+
   const mapData = useMemo(
-    () =>
-      data
-        .map((d) => {
-          const code = getCountryCode(d.name);
-          return code ? { country: code.toLowerCase(), value: d.streams } : null;
-        })
-        .filter(Boolean) as any[],
-    [data],
+    () => normalizedData.map((entry) => ({ country: entry.code.toLowerCase(), value: entry.streams })),
+    [normalizedData],
   );
 
-  const maxStreams = useMemo(() => Math.max(...data.map((d) => d.streams), 1), [data]);
+  const maxStreams = useMemo(() => Math.max(...normalizedData.map((d) => d.streams), 1), [normalizedData]);
 
   return (
     <div className={className}>
@@ -105,18 +112,18 @@ export const WorldMapChart = memo(function WorldMapChart({ data, className }: Wo
         />
       </div>
       <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5">
-        {data.map((d) => {
-          const pct = (d.streams / maxStreams) * 100;
+        {normalizedData.map((entry) => {
+          const pct = (entry.streams / maxStreams) * 100;
           return (
-            <div key={d.name} className="flex items-center gap-2 text-[10px] sm:text-xs">
+            <div key={entry.code} className="flex items-center gap-2 text-[10px] sm:text-xs">
               <div className="h-2 flex-1 max-w-[60px] rounded-full bg-muted/40 overflow-hidden">
                 <div
                   className="h-full rounded-full bg-primary"
                   style={{ width: `${pct}%`, opacity: 0.5 + pct / 200 }}
                 />
               </div>
-              <span className="text-muted-foreground truncate">{d.name}</span>
-              <span className="ml-auto text-foreground font-medium">{formatStreams(d.streams)}</span>
+              <span className="text-muted-foreground truncate">{entry.name}</span>
+              <span className="ml-auto text-foreground font-medium">{formatStreams(entry.streams)}</span>
             </div>
           );
         })}
