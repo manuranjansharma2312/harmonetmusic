@@ -92,6 +92,7 @@ const AdminYouTubeCmsLinks = lazy(() => import("./pages/AdminYouTubeCmsLinks"));
 const AdminCmsReports = lazy(() => import("./pages/AdminCmsReports"));
 const CmsReports = lazy(() => import("./pages/CmsReports"));
 const CmsBalance = lazy(() => import("./pages/CmsBalance"));
+const CmsAnalytics = lazy(() => import("./pages/CmsAnalytics"));
 const AdminCmsWithdrawals = lazy(() => import("./pages/AdminCmsWithdrawals"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 

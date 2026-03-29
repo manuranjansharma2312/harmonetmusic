@@ -133,6 +133,7 @@ export function AppSidebar() {
     ...(!effectiveIsSubLabel ? [
       { to: '/youtube-cms-link', label: 'YouTube CMS Link', icon: Youtube },
       { to: '/cms-reports', label: 'CMS Reports', icon: BarChart3 },
+      { to: '/cms-analytics', label: 'CMS Analytics', icon: BarChart3 },
       { to: '/cms-balance', label: 'CMS Balance', icon: Wallet },
     ] : []),
     { to: '/my-labels', label: 'My Labels', icon: Tag },
