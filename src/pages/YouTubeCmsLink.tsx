@@ -63,8 +63,8 @@ export default function YouTubeCmsLink() {
   };
 
   const handleSubmit = async () => {
-    if (!user || !channelName.trim() || !channelUrl.trim()) {
-      toast.error('Please fill all required fields');
+    if (!user || !channelName.trim() || !channelUrl.trim() || !nocFile || !ytReportsFile) {
+      toast.error('Please fill all required fields including NOC and YouTube Reports screenshot');
       return;
     }
     setSubmitting(true);
