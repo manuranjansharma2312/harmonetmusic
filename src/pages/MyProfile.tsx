@@ -290,3 +290,143 @@ function ProfileRow({ icon: Icon, label, value, link, muted }: { icon: any; labe
     </div>
   );
 }
+
+function AdminAccountSecurity({ userEmail }: { userEmail: string }) {
+  const [newEmail, setNewEmail] = useState(userEmail);
+  const [confirmEmail, setConfirmEmail] = useState('');
+  const [emailSaving, setEmailSaving] = useState(false);
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordSaving, setPasswordSaving] = useState(false);
+
+  const inputClass =
+    'w-full px-3 sm:px-4 py-2.5 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
+
+  const handleChangeEmail = async () => {
+    if (!newEmail || newEmail === userEmail) {
+      toast.error('Enter a different email address');
+      return;
+    }
+    if (newEmail !== confirmEmail) {
+      toast.error('Email addresses do not match');
+      return;
+    }
+    setEmailSaving(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ email: newEmail });
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('A confirmation link has been sent to both your current and new email. Please confirm to complete the change.');
+        setConfirmEmail('');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update email');
+    }
+    setEmailSaving(false);
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    setPasswordSaving(true);
+    try {
+      // Re-authenticate with current password first
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: userEmail,
+        password: currentPassword,
+      });
+      if (signInError) {
+        toast.error('Current password is incorrect');
+        setPasswordSaving(false);
+        return;
+      }
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Password changed successfully!');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to change password');
+    }
+    setPasswordSaving(false);
+  };
+
+  return (
+    <GlassCard className="mt-6 animate-fade-in">
+      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+        <Shield className="h-4 w-4" /> Account Security
+      </h3>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Change Email */}
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <Mail className="h-4 w-4 text-primary" /> Change Email
+          </h4>
+          <p className="text-xs text-muted-foreground">A confirmation link will be sent to both your current and new email address.</p>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">Current Email</label>
+            <input className={`${inputClass} opacity-60 cursor-not-allowed`} value={userEmail} readOnly />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">New Email</label>
+            <input type="email" className={inputClass} value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Enter new email" />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">Confirm New Email</label>
+            <input type="email" className={inputClass} value={confirmEmail} onChange={(e) => setConfirmEmail(e.target.value)} placeholder="Re-enter new email" />
+          </div>
+          <button
+            onClick={handleChangeEmail}
+            disabled={emailSaving || !newEmail || newEmail === userEmail || newEmail !== confirmEmail}
+            className="w-full py-2.5 rounded-lg btn-primary-gradient text-primary-foreground font-semibold disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+          >
+            {emailSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+            Update Email
+          </button>
+        </div>
+
+        {/* Change Password */}
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <KeyRound className="h-4 w-4 text-primary" /> Change Password
+          </h4>
+          <p className="text-xs text-muted-foreground">Enter your current password to verify, then set a new one.</p>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">Current Password</label>
+            <input type="password" className={inputClass} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Enter current password" />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">New Password</label>
+            <input type="password" className={inputClass} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Min 6 characters" />
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">Confirm New Password</label>
+            <input type="password" className={inputClass} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Re-enter new password" />
+          </div>
+          <button
+            onClick={handleChangePassword}
+            disabled={passwordSaving || !currentPassword || newPassword.length < 6 || newPassword !== confirmPassword}
+            className="w-full py-2.5 rounded-lg btn-primary-gradient text-primary-foreground font-semibold disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+          >
+            {passwordSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+            Update Password
+          </button>
+        </div>
+      </div>
+    </GlassCard>
+  );
+}
