@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, KeyRound, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { countries, getStatesForCountry } from '@/data/locations';
 
@@ -38,7 +38,6 @@ export function EditProfileModal({
     artist_name: profile.artist_name || '',
     record_label_name: profile.record_label_name || '',
     legal_name: profile.legal_name,
-    email: profile.email,
     whatsapp_country_code: profile.whatsapp_country_code,
     whatsapp_number: profile.whatsapp_number,
     instagram_link: profile.instagram_link || '',
@@ -51,6 +50,16 @@ export function EditProfileModal({
     verification_status: profile.verification_status,
   });
   const [saving, setSaving] = useState(false);
+
+  // Change email state
+  const [showEmailChange, setShowEmailChange] = useState(false);
+  const [newEmail, setNewEmail] = useState(profile.email);
+  const [emailSaving, setEmailSaving] = useState(false);
+
+  // Change password state
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordSaving, setPasswordSaving] = useState(false);
 
   const update = (field: string, value: string) => setForm((p) => ({ ...p, [field]: value }));
 
@@ -69,7 +78,6 @@ export function EditProfileModal({
         artist_name: form.user_type === 'artist' ? form.artist_name || null : null,
         record_label_name: form.user_type === 'record_label' ? form.record_label_name || null : null,
         legal_name: form.legal_name,
-        email: form.email,
         whatsapp_country_code: form.whatsapp_country_code,
         whatsapp_number: form.whatsapp_number,
         instagram_link: form.instagram_link || null,
@@ -91,6 +99,53 @@ export function EditProfileModal({
     onSaved();
   };
 
+  const handleChangeEmail = async () => {
+    if (!newEmail || newEmail === profile.email) return;
+    setEmailSaving(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke('admin-reset-password', {
+        body: { action: 'change_email', user_id: profile.user_id, email: newEmail },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (res.error || res.data?.error) {
+        toast.error(res.data?.error || res.error?.message || 'Failed to change email');
+      } else {
+        toast.success('Email changed successfully!');
+        setShowEmailChange(false);
+        onSaved();
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to change email');
+    }
+    setEmailSaving(false);
+  };
+
+  const handleChangePassword = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    setPasswordSaving(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke('admin-reset-password', {
+        body: { action: 'set_password', user_id: profile.user_id, new_password: newPassword },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (res.error || res.data?.error) {
+        toast.error(res.data?.error || res.error?.message || 'Failed to change password');
+      } else {
+        toast.success('Password changed successfully!');
+        setNewPassword('');
+        setShowPasswordChange(false);
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to change password');
+    }
+    setPasswordSaving(false);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
@@ -103,6 +158,70 @@ export function EditProfileModal({
         </button>
         <h2 className="font-display text-xl font-bold text-foreground mb-4">Edit User Profile</h2>
         <p className="text-xs text-muted-foreground mb-4 break-all">User ID: {profile.user_id}</p>
+
+        {/* Admin Quick Actions: Change Email & Password */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+          <button
+            type="button"
+            onClick={() => { setShowEmailChange(!showEmailChange); setShowPasswordChange(false); }}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${showEmailChange ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/50 border-border text-foreground hover:bg-muted'}`}
+          >
+            <Mail className="h-4 w-4" /> Change Email
+          </button>
+          <button
+            type="button"
+            onClick={() => { setShowPasswordChange(!showPasswordChange); setShowEmailChange(false); }}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${showPasswordChange ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/50 border-border text-foreground hover:bg-muted'}`}
+          >
+            <KeyRound className="h-4 w-4" /> Change Password
+          </button>
+        </div>
+
+        {/* Change Email Panel */}
+        {showEmailChange && (
+          <div className="mb-4 p-3 rounded-lg border border-primary/30 bg-primary/5 space-y-2">
+            <label className="block text-xs font-medium text-foreground">New Email Address</label>
+            <input
+              type="email"
+              className={inputClass}
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder="Enter new email"
+            />
+            <button
+              type="button"
+              onClick={handleChangeEmail}
+              disabled={emailSaving || !newEmail || newEmail === profile.email}
+              className="w-full py-2 rounded-lg btn-primary-gradient text-primary-foreground font-semibold disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+            >
+              {emailSaving && <Loader2 className="h-4 w-4 animate-spin" />}
+              Update Auth Email
+            </button>
+          </div>
+        )}
+
+        {/* Change Password Panel */}
+        {showPasswordChange && (
+          <div className="mb-4 p-3 rounded-lg border border-primary/30 bg-primary/5 space-y-2">
+            <label className="block text-xs font-medium text-foreground">New Password</label>
+            <input
+              type="password"
+              className={inputClass}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Min 6 characters"
+            />
+            <button
+              type="button"
+              onClick={handleChangePassword}
+              disabled={passwordSaving || newPassword.length < 6}
+              className="w-full py-2 rounded-lg btn-primary-gradient text-primary-foreground font-semibold disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+            >
+              {passwordSaving && <Loader2 className="h-4 w-4 animate-spin" />}
+              Set New Password
+            </button>
+          </div>
+        )}
 
         <form onSubmit={handleSave} className="space-y-3">
           <div>
@@ -131,8 +250,8 @@ export function EditProfileModal({
           </div>
 
           <div>
-            <label className="block text-xs text-muted-foreground mb-1">Email</label>
-            <input type="email" className={inputClass} value={form.email} onChange={(e) => update('email', e.target.value)} required />
+            <label className="block text-xs text-muted-foreground mb-1">Email (read-only — use Change Email above)</label>
+            <input type="email" className={`${inputClass} opacity-60 cursor-not-allowed`} value={profile.email} readOnly />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
