@@ -34,6 +34,7 @@ interface CmsLink {
   rejection_reason: string | null;
   cms_linked_date: string | null;
   cms_company: string | null;
+  cut_percent: number;
   created_at: string;
   updated_at: string;
 }
