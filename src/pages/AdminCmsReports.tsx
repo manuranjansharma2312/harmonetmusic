@@ -140,15 +140,16 @@ export default function AdminCmsReports() {
 
   // Monthly groups
   const monthlyGroups = useMemo(() => {
-    const groups: Record<string, { entries: ReportEntry[]; latestImport: string; totalRevenue: number }> = {};
+    const groups: Record<string, { entries: ReportEntry[]; latestImport: string; totalRevenue: number; totalNetPayable: number }> = {};
     entries.forEach(e => {
-      if (!groups[e.reporting_month]) groups[e.reporting_month] = { entries: [], latestImport: e.imported_at, totalRevenue: 0 };
+      if (!groups[e.reporting_month]) groups[e.reporting_month] = { entries: [], latestImport: e.imported_at, totalRevenue: 0, totalNetPayable: 0 };
       groups[e.reporting_month].entries.push(e);
       groups[e.reporting_month].totalRevenue += Number(e.net_generated_revenue) || 0;
+      groups[e.reporting_month].totalNetPayable += calcNetPayable(e);
       if (e.imported_at > groups[e.reporting_month].latestImport) groups[e.reporting_month].latestImport = e.imported_at;
     });
     return Object.entries(groups).sort(([a], [b]) => parseMonthKey(b) - parseMonthKey(a));
-  }, [entries]);
+  }, [entries, cmsLinks]);
 
   const filteredMonthlyGroups = useMemo(() => {
     if (!monthSearch.trim()) return monthlyGroups;
