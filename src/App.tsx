@@ -94,6 +94,7 @@ const CmsReports = lazy(() => import("./pages/CmsReports"));
 const CmsBalance = lazy(() => import("./pages/CmsBalance"));
 const CmsAnalytics = lazy(() => import("./pages/CmsAnalytics"));
 const AdminCmsWithdrawals = lazy(() => import("./pages/AdminCmsWithdrawals"));
+const AdminYouTubeCmsSettings = lazy(() => import("./pages/AdminYouTubeCmsSettings"));
 const AdminAccountSecurity = lazy(() => import("./pages/AdminAccountSecurity"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -227,6 +228,7 @@ function App() {
                       <Route path="/admin/youtube-cms-links" element={<ProtectedRoute requiredRole="admin"><AdminYouTubeCmsLinks /></ProtectedRoute>} />
                       <Route path="/admin/cms-reports" element={<ProtectedRoute requiredRole="admin"><AdminCmsReports /></ProtectedRoute>} />
                       <Route path="/admin/cms-withdrawals" element={<ProtectedRoute requiredRole="admin"><AdminCmsWithdrawals /></ProtectedRoute>} />
+                      <Route path="/admin/youtube-cms-settings" element={<ProtectedRoute requiredRole="admin"><AdminYouTubeCmsSettings /></ProtectedRoute>} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>
