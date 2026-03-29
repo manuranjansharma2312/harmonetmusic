@@ -516,6 +516,11 @@ export default function Analytics() {
                         <stop offset="50%" stopColor="#26de81" stopOpacity={0.12} />
                         <stop offset="100%" stopColor="#26de81" stopOpacity={0} />
                       </linearGradient>
+                      <linearGradient id="sVevoArea" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#a55eea" stopOpacity={0.45} />
+                        <stop offset="50%" stopColor="#a55eea" stopOpacity={0.12} />
+                        <stop offset="100%" stopColor="#a55eea" stopOpacity={0} />
+                      </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 6" stroke="hsl(0 0% 14%)" vertical={false} />
                     <XAxis dataKey="month" tick={{ fill: 'hsl(0 0% 45%)', fontSize: 10, fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} />
@@ -526,6 +531,8 @@ export default function Analytics() {
                       activeDot={(props: any) => <GlowDot cx={props.cx} cy={props.cy} color="#45aaf2" />} />
                     <Area type="monotone" dataKey="YouTube" stroke="#26de81" fill="url(#sYtArea)" strokeWidth={2.5} dot={false}
                       activeDot={(props: any) => <GlowDot cx={props.cx} cy={props.cy} color="#26de81" />} />
+                    <Area type="monotone" dataKey="Vevo" stroke="#a55eea" fill="url(#sVevoArea)" strokeWidth={2.5} dot={false}
+                      activeDot={(props: any) => <GlowDot cx={props.cx} cy={props.cy} color="#a55eea" />} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
