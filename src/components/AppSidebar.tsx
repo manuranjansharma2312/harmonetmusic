@@ -137,7 +137,7 @@ export function AppSidebar() {
     { to: '/youtube-cms-link', label: 'CMS Link', icon: Youtube },
     { to: '/cms-reports', label: 'CMS Reports', icon: BarChart3 },
     { to: '/cms-analytics', label: 'CMS Analytics', icon: BarChart3 },
-    { to: '/cms-balance', label: 'CMS Balance', icon: Wallet },
+    { to: '/cms-balance', label: 'CMS Revenue', icon: Wallet },
   ];
 
   // Admin YouTube CMS collapsible links
