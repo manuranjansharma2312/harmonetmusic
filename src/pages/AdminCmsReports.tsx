@@ -41,8 +41,14 @@ interface ReportEntry {
 const ALL_COLUMNS: Record<string, string> = {
   channel_name: 'Channel Name', label: 'Label', track: 'Track', artist: 'Artist',
   currency: 'Currency', streams: 'Streams', downloads: 'Downloads',
-  net_generated_revenue: 'Net Generated Revenue',
+  net_generated_revenue: 'Net Generated Revenue', cms_cut: 'CMS Cut %',
+  cut_amount: 'Cut Amount', net_payable: 'Net Payable',
 };
+
+interface CmsLink {
+  channel_name: string;
+  cut_percent: number;
+}
 
 const FILTERABLE = [
   { key: 'channel_name', label: 'Channel' },
