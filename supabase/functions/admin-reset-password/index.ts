@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ error: "Invalid action. Use 'set_password' or 'send_reset_link'" }), {
+    return new Response(JSON.stringify({ error: "Invalid action. Use 'set_password', 'send_reset_link', or 'change_email'" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
