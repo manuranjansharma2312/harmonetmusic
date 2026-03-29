@@ -69,9 +69,6 @@ const adminLinksTop = [
   { to: '/admin/payment-settings', label: 'Payment Settings', icon: CreditCard },
   { to: '/admin/ai-image-system', label: 'AI Poster Generate', icon: Sparkles },
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
-  { to: '/admin/youtube-cms-links', label: 'YouTube CMS Links', icon: Youtube },
-  { to: '/admin/cms-reports', label: 'CMS Reports', icon: BarChart3 },
-  { to: '/admin/cms-withdrawals', label: 'CMS Withdrawals', icon: Wallet },
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
   { to: '/admin/email-settings', label: 'Email Settings', icon: Mail },
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
@@ -96,6 +93,8 @@ export function AppSidebar() {
   const [impIsSubLabel, setImpIsSubLabel] = useState(false);
   const [userVideoOpen, setUserVideoOpen] = useState(false);
   const [adminVideoOpen, setAdminVideoOpen] = useState(false);
+  const [userCmsOpen, setUserCmsOpen] = useState(false);
+  const [adminCmsOpen, setAdminCmsOpen] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
 
   // Fetch impersonated user's profile when impersonating
@@ -130,14 +129,22 @@ export function AppSidebar() {
     { to: '/submit', label: 'New Release', icon: Upload },
     { to: '/my-releases', label: 'My Releases', icon: ListMusic },
     { to: '/smart-links', label: 'Smart Links', icon: Link2 },
-    // YouTube CMS options hidden for sub-labels
-    ...(!effectiveIsSubLabel ? [
-      { to: '/youtube-cms-link', label: 'YouTube CMS Link', icon: Youtube },
-      { to: '/cms-reports', label: 'CMS Reports', icon: BarChart3 },
-      { to: '/cms-analytics', label: 'CMS Analytics', icon: BarChart3 },
-      { to: '/cms-balance', label: 'CMS Balance', icon: Wallet },
-    ] : []),
     { to: '/my-labels', label: 'My Labels', icon: Tag },
+  ];
+
+  // YouTube CMS collapsible links (hidden for sub-labels)
+  const userCmsLinks = [
+    { to: '/youtube-cms-link', label: 'CMS Link', icon: Youtube },
+    { to: '/cms-reports', label: 'CMS Reports', icon: BarChart3 },
+    { to: '/cms-analytics', label: 'CMS Analytics', icon: BarChart3 },
+    { to: '/cms-balance', label: 'CMS Balance', icon: Wallet },
+  ];
+
+  // Admin YouTube CMS collapsible links
+  const adminCmsLinks = [
+    { to: '/admin/youtube-cms-links', label: 'CMS Links', icon: Youtube },
+    { to: '/admin/cms-reports', label: 'CMS Reports', icon: BarChart3 },
+    { to: '/admin/cms-withdrawals', label: 'CMS Withdrawals', icon: Wallet },
   ];
 
   // Video Distribution collapsible links
@@ -274,6 +281,7 @@ export function AppSidebar() {
               {showUserView ? (
                 <>
                   {userLinksTop.map(renderNavLink)}
+                  {!effectiveIsSubLabel && renderCollapsibleGroup('YouTube CMS', Youtube, userCmsLinks, userCmsOpen, setUserCmsOpen)}
                   {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, userVideoLinks, userVideoOpen, setUserVideoOpen)}
                   {showUserSubLabels && renderCollapsibleGroup('Sub Labels', UsersRound, userSubLabelLinks, userSubLabelsOpen, setUserSubLabelsOpen)}
                   {renderCollapsibleGroup('Support', Headset, contentToolLinks, toolsOpen, setToolsOpen)}
@@ -283,6 +291,7 @@ export function AppSidebar() {
               ) : (
                 <>
                   {adminLinksTop.map(renderNavLink)}
+                  {renderCollapsibleGroup('YouTube CMS', Youtube, adminCmsLinks, adminCmsOpen, setAdminCmsOpen)}
                   {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, adminVideoLinks, adminVideoOpen, setAdminVideoOpen)}
                   {renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}
