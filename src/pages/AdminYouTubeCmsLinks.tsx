@@ -197,6 +197,7 @@ export default function AdminYouTubeCmsLinks() {
     setEditStatus(item.status);
     setEditCmsCompany(item.cms_company || '');
     setEditCmsDate(item.cms_linked_date ? new Date(item.cms_linked_date) : undefined);
+    setEditCutPercent(String(item.cut_percent || 0));
   };
 
   const handleSave = async () => {
