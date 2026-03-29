@@ -13,7 +13,8 @@ import { useImpersonate } from '@/hooks/useImpersonate';
 import {
   Clock, CheckCircle, XCircle, Loader2, Copy, X, BookOpen, ArrowRight,
   Disc3, Wallet, DollarSign, BarChart3, Music, TrendingUp, TrendingDown,
-  Activity, Globe, Headphones, Youtube, Monitor, Play
+  Activity, Globe, Headphones, Youtube, Monitor, Play, Film, Download,
+  PieChart as PieChartIcon, Zap
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +22,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { TutorialContent } from '@/components/TutorialContent';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, BarChart, Bar, Legend, RadialBarChart, RadialBar
+  PieChart, Pie, Cell, BarChart, Bar, Legend, RadialBarChart, RadialBar,
+  ComposedChart, Line
 } from 'recharts';
 import { format } from 'date-fns';
 
@@ -59,9 +61,9 @@ export default function UserDashboard() {
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [totalStreams, setTotalStreams] = useState(0);
   const [totalDownloads, setTotalDownloads] = useState(0);
-  const [monthlyRevenue, setMonthlyRevenue] = useState<{ month: string; revenue: number; streams: number }[]>([]);
-  const [topTracks, setTopTracks] = useState<{ name: string; streams: number }[]>([]);
-  const [topStores, setTopStores] = useState<{ name: string; value: number; color: string }[]>([]);
+  const [monthlyRevenue, setMonthlyRevenue] = useState<{ month: string; revenue: number; streams: number; downloads: number }[]>([]);
+  const [topTracks, setTopTracks] = useState<{ name: string; streams: number; revenue: number }[]>([]);
+  const [topStores, setTopStores] = useState<{ name: string; value: number; revenue: number; color: string }[]>([]);
   const [countryData, setCountryData] = useState<{ name: string; streams: number }[]>([]);
   const [recentReleases, setRecentReleases] = useState<any[]>([]);
   const [withdrawalBalance, setWithdrawalBalance] = useState({ pending: 0, paid: 0 });
@@ -72,6 +74,13 @@ export default function UserDashboard() {
   // CMS data
   const [cmsRevenue, setCmsRevenue] = useState(0);
   const [cmsChannels, setCmsChannels] = useState(0);
+  const [cmsPaid, setCmsPaid] = useState(0);
+  const [cmsPending, setCmsPending] = useState(0);
+
+  // Monthly breakdown for stores (bar chart)
+  const [monthlyStoreData, setMonthlyStoreData] = useState<any[]>([]);
+  // Top artists for the user
+  const [topArtists, setTopArtists] = useState<{ name: string; streams: number }[]>([]);
 
   const refreshTimeoutRef = useRef<number | null>(null);
   const isFetchingRef = useRef(false);
@@ -81,6 +90,7 @@ export default function UserDashboard() {
   const effectiveCut = getEffectiveRevenueCutPercent({ hiddenCut, subLabelCut, isSubLabel: isSubLabelUser });
   const netRevenue = totalRevenue;
   const availableRevenue = Math.max(calculateAvailableBalance(netRevenue, withdrawalBalance.paid, withdrawalBalance.pending), 0);
+  const cmsAvailable = Math.max(0, cmsRevenue - cmsPaid - cmsPending);
 
   const fetchAll = useCallback(async () => {
     if (!effectiveUserId) return;
@@ -137,46 +147,57 @@ export default function UserDashboard() {
         const ownedIsrcs = [...new Set([...(trackRows ?? []), ...(songRows ?? [])].map((row) => (row.isrc || '').trim().toUpperCase()).filter(Boolean))];
         if (ownedIsrcs.length > 0) {
           const [{ data: ottData }, { data: ytData }] = await Promise.all([
-            supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot, revenue_frozen').in('isrc', ownedIsrcs),
-            supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot, revenue_frozen').in('isrc', ownedIsrcs),
+            supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, artist, country, cut_percent_snapshot, revenue_frozen').in('isrc', ownedIsrcs),
+            supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, artist, country, cut_percent_snapshot, revenue_frozen').in('isrc', ownedIsrcs),
           ]);
           reportData = ottData || [];
           ytReportData = ytData || [];
         }
       } else {
         const [reportRes, ytReportRes] = await Promise.all([
-          supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot, revenue_frozen').eq('user_id', effectiveUserId),
-          supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, country, cut_percent_snapshot, revenue_frozen').eq('user_id', effectiveUserId),
+          supabase.from('report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, artist, country, cut_percent_snapshot, revenue_frozen').eq('user_id', effectiveUserId),
+          supabase.from('youtube_report_entries').select('reporting_month, net_generated_revenue, streams, downloads, store, track, artist, country, cut_percent_snapshot, revenue_frozen').eq('user_id', effectiveUserId),
         ]);
         reportData = reportRes.data || [];
         ytReportData = ytReportRes.data || [];
       }
 
-      // CMS data
-      const [{ data: cmsLinks }, { data: cmsEntries }] = await Promise.all([
-        supabase.from('youtube_cms_links' as any).select('channel_name, cut_percent').eq('user_id', effectiveUserId).eq('status', 'linked'),
-        supabase.from('cms_report_entries' as any).select('net_generated_revenue, channel_name'),
-      ]);
-      const linkedChannels = (cmsLinks as any[]) || [];
-      setCmsChannels(linkedChannels.length);
-      const linkedNames = new Set(linkedChannels.map(l => l.channel_name));
-      const userCmsEntries = ((cmsEntries as any[]) || []).filter(e => linkedNames.has(e.channel_name));
-      let cmsTotal = 0;
-      userCmsEntries.forEach(e => {
-        const rev = Number(e.net_generated_revenue) || 0;
-        const cut = Number(linkedChannels.find(l => l.channel_name === e.channel_name)?.cut_percent || 0);
-        cmsTotal += rev - (rev * cut / 100);
-      });
-      setCmsRevenue(Math.round(cmsTotal * 100) / 100);
+      // CMS data (not for sub-label users)
+      if (!hasSubLabel) {
+        const [{ data: cmsLinks }, { data: cmsEntries }, { data: cmsWds }] = await Promise.all([
+          supabase.from('youtube_cms_links' as any).select('channel_name, cut_percent').eq('user_id', effectiveUserId).eq('status', 'linked'),
+          supabase.from('cms_report_entries' as any).select('net_generated_revenue, channel_name'),
+          supabase.from('cms_withdrawal_requests' as any).select('status, amount').eq('user_id', effectiveUserId),
+        ]);
+        const linkedChannels = (cmsLinks as any[]) || [];
+        setCmsChannels(linkedChannels.length);
+        const linkedNames = new Set(linkedChannels.map(l => l.channel_name));
+        const userCmsEntries = ((cmsEntries as any[]) || []).filter(e => linkedNames.has(e.channel_name));
+        let cmsTotal = 0;
+        userCmsEntries.forEach(e => {
+          const rev = Number(e.net_generated_revenue) || 0;
+          const cut = Number(linkedChannels.find(l => l.channel_name === e.channel_name)?.cut_percent || 0);
+          cmsTotal += rev - (rev * cut / 100);
+        });
+        setCmsRevenue(Math.round(cmsTotal * 100) / 100);
+        const cmsWithdrawals = (cmsWds as any[]) || [];
+        setCmsPaid(cmsWithdrawals.filter(w => w.status === 'paid').reduce((s, w) => s + Number(w.amount), 0));
+        setCmsPending(cmsWithdrawals.filter(w => w.status === 'pending').reduce((s, w) => s + Number(w.amount), 0));
+      } else {
+        setCmsChannels(0); setCmsRevenue(0); setCmsPaid(0); setCmsPending(0);
+      }
 
       const allReports = [...reportData, ...ytReportData];
 
       if (allReports.length > 0) {
         let totalRev = 0, totalStr = 0, totalDl = 0;
-        const monthMap: Record<string, { revenue: number; streams: number }> = {};
-        const storeMap: Record<string, number> = {};
-        const trackMap: Record<string, number> = {};
+        const monthMap: Record<string, { revenue: number; streams: number; downloads: number }> = {};
+        const storeMap: Record<string, { streams: number; revenue: number }> = {};
+        const trackMap: Record<string, { streams: number; revenue: number }> = {};
         const countryMap: Record<string, number> = {};
+        const artistMap: Record<string, number> = {};
+        // Monthly store breakdown
+        const monthStoreMap: Record<string, Record<string, number>> = {};
 
         allReports.forEach((r: any) => {
           const isFrozen = r.revenue_frozen === true;
@@ -185,25 +206,47 @@ export default function UserDashboard() {
           const str = Number(r.streams || 0);
           const dl = Number(r.downloads || 0);
           totalRev += rev; totalStr += str; totalDl += dl;
-          const month = r.reporting_month;
-          if (!monthMap[month]) monthMap[month] = { revenue: 0, streams: 0 };
+          const month = r.reporting_month?.length > 7 ? r.reporting_month.substring(0, 7) : r.reporting_month;
+          if (!monthMap[month]) monthMap[month] = { revenue: 0, streams: 0, downloads: 0 };
           monthMap[month].revenue += rev;
           monthMap[month].streams += str;
-          if (r.store) storeMap[r.store] = (storeMap[r.store] || 0) + str;
-          if (r.track) trackMap[r.track] = (trackMap[r.track] || 0) + str;
+          monthMap[month].downloads += dl;
+          const store = r.store || 'Other';
+          if (!storeMap[store]) storeMap[store] = { streams: 0, revenue: 0 };
+          storeMap[store].streams += str;
+          storeMap[store].revenue += rev;
+          if (r.track) {
+            if (!trackMap[r.track]) trackMap[r.track] = { streams: 0, revenue: 0 };
+            trackMap[r.track].streams += str;
+            trackMap[r.track].revenue += rev;
+          }
           if (r.country) countryMap[r.country] = (countryMap[r.country] || 0) + str;
+          if (r.artist) artistMap[r.artist] = (artistMap[r.artist] || 0) + str;
+          // Monthly store
+          if (!monthStoreMap[month]) monthStoreMap[month] = {};
+          monthStoreMap[month][store] = (monthStoreMap[month][store] || 0) + str;
         });
 
         setTotalRevenue(Math.round(totalRev * 100) / 100);
         setTotalStreams(totalStr);
         setTotalDownloads(totalDl);
-        setMonthlyRevenue(Object.entries(monthMap).sort(([a], [b]) => a.localeCompare(b)).slice(-8).map(([month, data]) => ({ month: month.length > 7 ? month.substring(0, 7) : month, revenue: Math.round(data.revenue * 100) / 100, streams: data.streams })));
-        setTopStores(Object.entries(storeMap).sort(([, a], [, b]) => b - a).slice(0, 6).map(([name, value]) => ({ name, value, color: STORE_COLORS[name] || CHART_COLORS[0] })));
-        setTopTracks(Object.entries(trackMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, streams]) => ({ name: name.length > 22 ? `${name.substring(0, 22)}…` : name, streams })));
-        setCountryData(Object.entries(countryMap).sort(([, a], [, b]) => b - a).slice(0, 6).map(([name, streams]) => ({ name, streams })));
+        setMonthlyRevenue(Object.entries(monthMap).sort(([a], [b]) => a.localeCompare(b)).slice(-8).map(([month, data]) => ({ month, revenue: Math.round(data.revenue * 100) / 100, streams: data.streams, downloads: data.downloads })));
+        setTopStores(Object.entries(storeMap).sort(([, a], [, b]) => b.streams - a.streams).slice(0, 8).map(([name, data]) => ({ name, value: data.streams, revenue: data.revenue, color: STORE_COLORS[name] || CHART_COLORS[0] })));
+        setTopTracks(Object.entries(trackMap).sort(([, a], [, b]) => b.streams - a.streams).slice(0, 6).map(([name, data]) => ({ name: name.length > 22 ? `${name.substring(0, 22)}…` : name, streams: data.streams, revenue: data.revenue })));
+        setCountryData(Object.entries(countryMap).sort(([, a], [, b]) => b - a).slice(0, 10).map(([name, streams]) => ({ name, streams })));
+        setTopArtists(Object.entries(artistMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, streams]) => ({ name: name.length > 20 ? name.substring(0, 20) + '…' : name, streams })));
+
+        // Top 4 stores for monthly breakdown
+        const topStoreNames = Object.entries(storeMap).sort(([, a], [, b]) => b.streams - a.streams).slice(0, 4).map(([n]) => n);
+        setMonthlyStoreData(Object.entries(monthStoreMap).sort(([a], [b]) => a.localeCompare(b)).slice(-6).map(([month, stores]) => {
+          const row: any = { month };
+          topStoreNames.forEach(s => { row[s] = stores[s] || 0; });
+          return row;
+        }));
       } else {
         setTotalRevenue(0); setTotalStreams(0); setTotalDownloads(0);
         setMonthlyRevenue([]); setTopStores([]); setTopTracks([]); setCountryData([]);
+        setTopArtists([]); setMonthlyStoreData([]);
       }
 
       if (withdrawalRes.data) setWithdrawalBalance(summarizeWithdrawals(withdrawalRes.data));
@@ -248,6 +291,8 @@ export default function UserDashboard() {
 
   const pendingReleases = useMemo(() => recentReleases.filter(r => r.status === 'pending'), [recentReleases]);
   const totalStoreStreams = useMemo(() => topStores.reduce((a, b) => a + b.value, 0), [topStores]);
+  const totalStoreRevenue = useMemo(() => topStores.reduce((a, b) => a + b.revenue, 0), [topStores]);
+  const topStoreNames = useMemo(() => topStores.slice(0, 4).map(s => s.name), [topStores]);
 
   const getReleaseName = (r: any) => {
     if (r.content_type === 'album') return r.album_name || 'Untitled Album';
@@ -326,10 +371,16 @@ export default function UserDashboard() {
         {[
           { label: 'Releases', value: releaseStats.total, icon: Disc3, accent: 'text-primary' },
           { label: 'Streams', value: formatStreams(totalStreams), icon: Headphones, accent: 'text-sky-400' },
-          { label: 'Downloads', value: formatStreams(totalDownloads), icon: BarChart3, accent: 'text-violet-400' },
+          { label: 'Downloads', value: formatStreams(totalDownloads), icon: Download, accent: 'text-violet-400' },
           { label: 'Platforms', value: topStores.length, icon: Music, accent: 'text-amber-400' },
-          { label: 'CMS Channels', value: cmsChannels, icon: Youtube, accent: 'text-red-400' },
-          { label: 'CMS Revenue', value: formatRevenue(cmsRevenue), icon: Monitor, accent: 'text-emerald-400' },
+          ...(isSubLabelUser ? [] : [
+            { label: 'CMS Channels', value: cmsChannels, icon: Youtube, accent: 'text-red-400' },
+            { label: 'CMS Available', value: formatRevenue(cmsAvailable), icon: Monitor, accent: 'text-emerald-400' },
+          ]),
+          ...(isSubLabelUser ? [
+            { label: 'Countries', value: countryData.length, icon: Globe, accent: 'text-emerald-400' },
+            { label: 'Artists', value: topArtists.length, icon: Music, accent: 'text-pink-400' },
+          ] : []),
         ].map((stat) => (
           <GlassCard key={stat.label} className="!p-3 sm:!p-4 group hover:scale-[1.02] transition-transform duration-300">
             <stat.icon className={`h-4 w-4 ${stat.accent} mb-1.5`} />
@@ -338,6 +389,40 @@ export default function UserDashboard() {
           </GlassCard>
         ))}
       </div>
+
+      {/* CMS Balance Summary (not for sub-label users) */}
+      {!isSubLabelUser && cmsChannels > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <GlassCard className="!p-4 border-l-4 animate-fade-in" style={{ borderLeftColor: 'hsl(0, 67%, 40%)' }}>
+            <div className="flex items-center gap-2 mb-1">
+              <Youtube className="h-4 w-4 text-red-400" />
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">CMS Net Payable</span>
+            </div>
+            <p className="text-lg font-bold text-foreground">{formatRevenue(cmsRevenue)}</p>
+          </GlassCard>
+          <GlassCard className="!p-4 border-l-4 animate-fade-in" style={{ borderLeftColor: 'hsl(140, 60%, 40%)' }}>
+            <div className="flex items-center gap-2 mb-1">
+              <CheckCircle className="h-4 w-4 text-emerald-400" />
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">CMS Paid</span>
+            </div>
+            <p className="text-lg font-bold text-foreground">{formatRevenue(cmsPaid)}</p>
+          </GlassCard>
+          <GlassCard className="!p-4 border-l-4 animate-fade-in" style={{ borderLeftColor: 'hsl(45, 80%, 45%)' }}>
+            <div className="flex items-center gap-2 mb-1">
+              <Clock className="h-4 w-4 text-amber-400" />
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">CMS Pending</span>
+            </div>
+            <p className="text-lg font-bold text-foreground">{formatRevenue(cmsPending)}</p>
+          </GlassCard>
+          <GlassCard className="!p-4 border-l-4 animate-fade-in" style={{ borderLeftColor: 'hsl(200, 70%, 50%)' }}>
+            <div className="flex items-center gap-2 mb-1">
+              <Zap className="h-4 w-4 text-sky-400" />
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">CMS Available</span>
+            </div>
+            <p className="text-lg font-bold text-foreground">{formatRevenue(cmsAvailable)}</p>
+          </GlassCard>
+        </div>
+      )}
 
       {/* Pending Releases */}
       {pendingReleases.length > 0 && (
@@ -377,7 +462,7 @@ export default function UserDashboard() {
         {monthlyRevenue.length > 0 ? (
           <div className="h-56 sm:h-72 -mx-2">
             <ResponsiveContainer width="100%" height="100%" debounce={200}>
-              <AreaChart data={monthlyRevenue} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+              <ComposedChart data={monthlyRevenue} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="userRevGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="hsl(0, 67%, 42%)" stopOpacity={0.4} />
@@ -397,7 +482,8 @@ export default function UserDashboard() {
                 <Legend wrapperStyle={{ fontSize: '11px', color: 'hsl(0 0% 50%)', paddingTop: '12px' }} />
                 <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(0, 67%, 45%)" fill="url(#userRevGrad)" strokeWidth={2.5} name="Revenue (₹)" dot={{ r: 3, fill: 'hsl(0, 67%, 45%)', strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 2, stroke: 'hsl(0, 67%, 55%)' }} isAnimationActive={false} />
                 <Area yAxisId="right" type="monotone" dataKey="streams" stroke="hsl(200, 70%, 55%)" fill="url(#userStrGrad)" strokeWidth={2} name="Streams" dot={{ r: 2.5, fill: 'hsl(200, 70%, 55%)', strokeWidth: 0 }} isAnimationActive={false} />
-              </AreaChart>
+                <Line yAxisId="right" type="monotone" dataKey="downloads" stroke="hsl(280, 60%, 55%)" strokeWidth={1.5} strokeDasharray="5 5" name="Downloads" dot={false} isAnimationActive={false} />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
         ) : (
@@ -408,7 +494,7 @@ export default function UserDashboard() {
         )}
       </GlassCard>
 
-      {/* Release Status + Platform Distribution - Asymmetric Bento */}
+      {/* Release Status + Platform Distribution + Streams by Store - Asymmetric Bento */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 sm:mb-8">
         {/* Release Donut - Compact */}
         <GlassCard className="md:col-span-2 animate-fade-in">
@@ -464,7 +550,8 @@ export default function UserDashboard() {
           {topStores.length > 0 ? (
             <div className="space-y-3">
               {topStores.map((store) => {
-                const pct = totalStoreStreams > 0 ? (store.value / totalStoreStreams) * 100 : 0;
+                const pctStreams = totalStoreStreams > 0 ? (store.value / totalStoreStreams) * 100 : 0;
+                const pctRevenue = totalStoreRevenue > 0 ? (store.revenue / totalStoreRevenue) * 100 : 0;
                 return (
                   <div key={store.name} className="group">
                     <div className="flex items-center justify-between mb-1.5">
@@ -472,13 +559,14 @@ export default function UserDashboard() {
                         <div className="h-2.5 w-2.5 rounded-full" style={{ background: store.color }} />
                         <span className="text-xs text-foreground font-medium">{store.name}</span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <span className="text-[10px] text-muted-foreground font-mono">{formatStreams(store.value)}</span>
-                        <span className="text-[10px] text-muted-foreground/60 w-10 text-right">{pct.toFixed(1)}%</span>
+                        <span className="text-[10px] text-emerald-400 font-mono">{formatRevenue(store.revenue)}</span>
+                        <span className="text-[10px] text-muted-foreground/60 w-10 text-right">{pctStreams.toFixed(1)}%</span>
                       </div>
                     </div>
                     <div className="h-1.5 rounded-full bg-muted/30 overflow-hidden">
-                      <div className="h-full rounded-full transition-all duration-700 group-hover:brightness-125" style={{ width: `${pct}%`, background: store.color }} />
+                      <div className="h-full rounded-full transition-all duration-700 group-hover:brightness-125" style={{ width: `${pctStreams}%`, background: store.color }} />
                     </div>
                   </div>
                 );
@@ -493,8 +581,34 @@ export default function UserDashboard() {
         </GlassCard>
       </div>
 
-      {/* Top Tracks + Country Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 sm:mb-8">
+      {/* Monthly Store Breakdown Bar Chart */}
+      {monthlyStoreData.length > 0 && topStoreNames.length > 0 && (
+        <GlassCard className="mb-6 sm:mb-8 animate-fade-in overflow-hidden">
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+            <div className="h-6 w-6 rounded-lg bg-violet-500/15 flex items-center justify-center">
+              <BarChart3 className="h-3 w-3 text-violet-400" />
+            </div>
+            Monthly Platform Streams
+          </h3>
+          <div className="h-48 sm:h-60 -mx-2">
+            <ResponsiveContainer width="100%" height="100%" debounce={200}>
+              <BarChart data={monthlyStoreData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 13%)" vertical={false} />
+                <XAxis dataKey="month" tick={{ fill: 'hsl(0 0% 45%)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: 'hsl(0 0% 45%)', fontSize: 10 }} width={45} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend wrapperStyle={{ fontSize: '10px', color: 'hsl(0 0% 50%)', paddingTop: '8px' }} />
+                {topStoreNames.map((name, i) => (
+                  <Bar key={name} dataKey={name} stackId="stores" fill={STORE_COLORS[name] || CHART_COLORS[i % CHART_COLORS.length]} radius={i === topStoreNames.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]} isAnimationActive={false} />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </GlassCard>
+      )}
+
+      {/* Top Tracks + Top Artists + Country Map */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 sm:mb-8">
         <GlassCard className="animate-fade-in">
           <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
             <div className="h-6 w-6 rounded-lg bg-violet-500/15 flex items-center justify-center">
@@ -511,10 +625,7 @@ export default function UserDashboard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs sm:text-sm font-medium text-foreground truncate">{track.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{formatStreams(track.streams)} streams</p>
-                  </div>
-                  <div className="w-14 h-1 rounded-full bg-muted/30 overflow-hidden shrink-0">
-                    <div className="h-full rounded-full" style={{ width: `${topTracks[0]?.streams ? (track.streams / topTracks[0].streams) * 100 : 0}%`, background: CHART_COLORS[i % CHART_COLORS.length] }} />
+                    <p className="text-[10px] text-muted-foreground">{formatStreams(track.streams)} streams · {formatRevenue(track.revenue)}</p>
                   </div>
                 </div>
               ))}
@@ -523,6 +634,35 @@ export default function UserDashboard() {
             <div className="text-center py-12">
               <Music className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
               <p className="text-xs text-muted-foreground">No track data yet</p>
+            </div>
+          )}
+        </GlassCard>
+
+        <GlassCard className="animate-fade-in">
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+            <div className="h-6 w-6 rounded-lg bg-amber-500/15 flex items-center justify-center">
+              <Headphones className="h-3 w-3 text-amber-400" />
+            </div>
+            Top Artists
+          </h3>
+          {topArtists.length > 0 ? (
+            <div className="space-y-2">
+              {topArtists.map((artist, i) => (
+                <div key={artist.name} className="flex items-center gap-3 p-3 rounded-xl bg-muted/15 hover:bg-muted/25 transition-colors border border-border/20">
+                  <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: `${CHART_COLORS[i % CHART_COLORS.length]}22`, color: CHART_COLORS[i % CHART_COLORS.length] }}>
+                    {i + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-foreground truncate">{artist.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{formatStreams(artist.streams)} streams</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Headphones className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
+              <p className="text-xs text-muted-foreground">No artist data yet</p>
             </div>
           )}
         </GlassCard>
@@ -629,24 +769,24 @@ function RecentTutorialsWidget() {
             <div className="h-7 w-7 rounded-xl bg-primary/15 flex items-center justify-center">
               <BookOpen className="h-3.5 w-3.5 text-primary" />
             </div>
-            Help Tutorials
+            Recent Tutorials
           </h2>
           <button onClick={() => navigate('/help-tutorials')} className="text-[10px] sm:text-xs text-primary hover:underline flex items-center gap-1">View All <ArrowRight className="h-3 w-3" /></button>
         </div>
-        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {tutorials.map((t: any) => (
-            <GlassCard key={t.id} className="!p-4 cursor-pointer hover:ring-1 hover:ring-primary/20 transition-all group" onClick={() => setViewTutorial(t)}>
-              <h3 className="font-medium text-xs sm:text-sm line-clamp-1 group-hover:text-primary transition-colors">{t.subject}</h3>
-              <p className="text-[10px] text-muted-foreground mt-1.5 line-clamp-2">{stripHtml(t.content)}</p>
-              <span className="text-[10px] text-primary mt-2.5 inline-block font-medium">Read more →</span>
+            <GlassCard key={t.id} className="cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all !p-4" onClick={() => setViewTutorial(t)}>
+              <h3 className="text-xs sm:text-sm font-semibold text-foreground truncate mb-1">{t.title}</h3>
+              <p className="text-[10px] text-muted-foreground line-clamp-2">{stripHtml(t.content)}</p>
+              <p className="text-[9px] text-muted-foreground/50 mt-2">{format(new Date(t.created_at), 'dd MMM yyyy')}</p>
             </GlassCard>
           ))}
         </div>
       </div>
-      <Dialog open={!!viewTutorial} onOpenChange={(open) => !open && setViewTutorial(null)}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{viewTutorial?.subject}</DialogTitle></DialogHeader>
-          <TutorialContent html={viewTutorial?.content || ''} />
+      <Dialog open={!!viewTutorial} onOpenChange={() => setViewTutorial(null)}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>{viewTutorial?.title}</DialogTitle></DialogHeader>
+          {viewTutorial && <TutorialContent tutorial={viewTutorial} />}
         </DialogContent>
       </Dialog>
     </>
