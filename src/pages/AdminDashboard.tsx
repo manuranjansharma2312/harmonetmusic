@@ -293,54 +293,6 @@ export default function AdminDashboard() {
       setLoading(false);
     }
   }
-      setTopTracks(Object.entries(trackMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, streams]) => ({ name: name.length > 25 ? name.substring(0, 25) + '…' : name, streams })));
-      setTopArtists(Object.entries(artistMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, streams]) => ({ name: name.length > 20 ? name.substring(0, 20) + '…' : name, streams })));
-      setCountryData(Object.entries(countryMap).sort(([, a], [, b]) => b - a).slice(0, 10).map(([name, streams]) => ({ name, streams })));
-      const topSNames = sortedStores.slice(0, 4).map(([n]) => n);
-      setTopStoreNames(topSNames);
-      setMonthlyStoreData(Object.entries(monthStoreMap).sort(([a], [b]) => a.localeCompare(b)).slice(-6).map(([month, stores]) => {
-        const row: any = { month };
-        topSNames.forEach(s => { row[s] = stores[s] || 0; });
-        return row;
-      }));
-    }
-
-    // Build combined growth data (last 6 months)
-    const now = new Date();
-    const monthlyRelMap: Record<string, number> = {};
-    const monthlyUserMap: Record<string, number> = {};
-    const monthlyVevoMap: Record<string, number> = {};
-    const monthlyCmsMap: Record<string, number> = {};
-    for (let i = 5; i >= 0; i--) {
-      const key = format(subMonths(now, i), 'MMM');
-      monthlyRelMap[key] = 0; monthlyUserMap[key] = 0; monthlyVevoMap[key] = 0; monthlyCmsMap[key] = 0;
-    }
-    if (releasesRes.data) releasesRes.data.forEach((r: any) => { const m = format(new Date(r.created_at), 'MMM'); if (monthlyRelMap[m] !== undefined) monthlyRelMap[m]++; });
-    if (profilesRes.data) (profilesRes.data as any[]).forEach((p: any) => { const m = format(new Date(p.created_at), 'MMM'); if (monthlyUserMap[m] !== undefined) monthlyUserMap[m]++; });
-    if (vevoSubsRes.data) (vevoSubsRes.data as any[]).forEach((v: any) => { const m = format(new Date(v.created_at), 'MMM'); if (monthlyVevoMap[m] !== undefined) monthlyVevoMap[m]++; });
-    cmsLinks.forEach((c: any) => { if (c.status === 'linked' && c.created_at) { const m = format(new Date(c.created_at), 'MMM'); if (monthlyCmsMap[m] !== undefined) monthlyCmsMap[m]++; } });
-
-    setMonthlyReleases(Object.entries(monthlyRelMap).map(([month, count]) => ({ month, count })));
-    setMonthlyUsers(Object.entries(monthlyUserMap).map(([month, count]) => ({ month, count })));
-    setMonthlyVevo(Object.entries(monthlyVevoMap).map(([month, count]) => ({ month, count })));
-    setMonthlyCmsLinked(Object.entries(monthlyCmsMap).map(([month, count]) => ({ month, count })));
-
-    // Combined growth data
-    const growthKeys = Object.keys(monthlyRelMap);
-    setGrowthData(growthKeys.map(month => ({
-      month,
-      artists: monthlyUserMap[month] || 0,
-      releases: monthlyRelMap[month] || 0,
-      vevo: monthlyVevoMap[month] || 0,
-      cms: monthlyCmsMap[month] || 0,
-    })));
-
-    } catch (err) {
-      console.error('AdminDashboard fetchAll error:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   if (loading) {
     return (
