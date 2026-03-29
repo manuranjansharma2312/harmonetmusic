@@ -318,7 +318,7 @@ export default function Revenue() {
         )}
 
         {/* Balance Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <GlassCard className="p-6">
             <div className="flex items-center gap-3 mb-3">
               <div className="p-2.5 rounded-xl bg-emerald-500/10">
@@ -326,7 +326,7 @@ export default function Revenue() {
               </div>
               <span className="text-sm font-medium text-muted-foreground">Available Balance</span>
             </div>
-            <p className="text-3xl font-bold text-emerald-400">
+            <p className="text-2xl sm:text-3xl font-bold text-emerald-400">
               {loading ? '...' : formatCurrency(Math.max(availableBalance, 0))}
             </p>
           </GlassCard>
@@ -338,7 +338,7 @@ export default function Revenue() {
               </div>
               <span className="text-sm font-medium text-muted-foreground">Total Earned</span>
             </div>
-            <p className="text-3xl font-bold text-blue-400">
+            <p className="text-2xl sm:text-3xl font-bold text-blue-400">
               {loading ? '...' : formatCurrency(netRevenue)}
             </p>
           </GlassCard>
@@ -350,7 +350,7 @@ export default function Revenue() {
               </div>
               <span className="text-sm font-medium text-muted-foreground">Pending Withdrawals</span>
             </div>
-            <p className="text-3xl font-bold text-amber-400">
+            <p className="text-2xl sm:text-3xl font-bold text-amber-400">
               {loading ? '...' : formatCurrency(pendingWithdrawals)}
             </p>
           </GlassCard>

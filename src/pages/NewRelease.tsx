@@ -534,17 +534,17 @@ export default function NewRelease() {
             {/* Release Type */}
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-3">Release Type *</label>
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <label className={`flex items-center gap-2 cursor-pointer rounded-lg border px-4 py-3 text-sm transition-all ${releaseType === 'new_release' ? 'border-primary bg-primary/10 text-foreground' : 'border-border text-muted-foreground hover:border-primary/50'}`}>
                   <input type="radio" name="releaseType" value="new_release" checked={releaseType === 'new_release'} onChange={() => setReleaseType('new_release')} className="sr-only" />
-                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${releaseType === 'new_release' ? 'border-primary' : 'border-muted-foreground'}`}>
+                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0 ${releaseType === 'new_release' ? 'border-primary' : 'border-muted-foreground'}`}>
                     {releaseType === 'new_release' && <div className="h-2 w-2 rounded-full bg-primary" />}
                   </div>
                   New Release
                 </label>
                 <label className={`flex items-center gap-2 cursor-pointer rounded-lg border px-4 py-3 text-sm transition-all ${releaseType === 'transfer' ? 'border-primary bg-primary/10 text-foreground' : 'border-border text-muted-foreground hover:border-primary/50'}`}>
                   <input type="radio" name="releaseType" value="transfer" checked={releaseType === 'transfer'} onChange={() => setReleaseType('transfer')} className="sr-only" />
-                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${releaseType === 'transfer' ? 'border-primary' : 'border-muted-foreground'}`}>
+                  <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0 ${releaseType === 'transfer' ? 'border-primary' : 'border-muted-foreground'}`}>
                     {releaseType === 'transfer' && <div className="h-2 w-2 rounded-full bg-primary" />}
                   </div>
                   Transfer from Another Distributor
@@ -652,25 +652,25 @@ export default function NewRelease() {
               {tracks.length > 0 && (
                 <div className="space-y-2 mb-4">
                   {tracks.map((track, i) => (
-                    <div key={i} className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold">
-                          {i + 1}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{track.songTitle}</p>
-                          <p className="text-xs text-muted-foreground">{track.primaryArtists.map(a => a.name).filter(Boolean).join(', ')} • {track.genre}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => { setEditingTrackIndex(i); setShowTrackForm(true); }}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleRemoveTrack(i)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
+                     <div key={i} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border border-border bg-muted/30 px-3 sm:px-4 py-3">
+                       <div className="flex items-center gap-3 min-w-0">
+                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold shrink-0">
+                           {i + 1}
+                         </div>
+                         <div className="min-w-0">
+                           <p className="text-sm font-medium text-foreground truncate">{track.songTitle}</p>
+                           <p className="text-xs text-muted-foreground truncate">{track.primaryArtists.map(a => a.name).filter(Boolean).join(', ')} • {track.genre}</p>
+                         </div>
+                       </div>
+                       <div className="flex gap-2 pl-11 sm:pl-0 shrink-0">
+                         <Button variant="ghost" size="icon" onClick={() => { setEditingTrackIndex(i); setShowTrackForm(true); }}>
+                           <Pencil className="h-4 w-4" />
+                         </Button>
+                         <Button variant="ghost" size="icon" onClick={() => handleRemoveTrack(i)}>
+                           <Trash2 className="h-4 w-4 text-destructive" />
+                         </Button>
+                       </div>
+                     </div>
                   ))}
                 </div>
               )}

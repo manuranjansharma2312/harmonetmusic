@@ -282,75 +282,80 @@ export default function MyReleases() {
             return (
               <GlassCard key={release.id} className="animate-fade-in">
                 {/* Release header */}
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); toggleSelect(release.id); }}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    {selected.has(release.id) ? <CheckSquare className="h-5 w-5 text-primary" /> : <Square className="h-5 w-5" />}
-                  </button>
-                  <button onClick={() => setExpandedId(isExpanded ? null : release.id)} className="text-muted-foreground hover:text-foreground">
-                    {isExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                  </button>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); toggleSelect(release.id); }}
+                      className="text-muted-foreground hover:text-foreground shrink-0"
+                    >
+                      {selected.has(release.id) ? <CheckSquare className="h-5 w-5 text-primary" /> : <Square className="h-5 w-5" />}
+                    </button>
+                    <button onClick={() => setExpandedId(isExpanded ? null : release.id)} className="text-muted-foreground hover:text-foreground shrink-0">
+                      {isExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                    </button>
 
-                  {release.poster_url ? (
-                    <img src={release.poster_url} alt="" className="h-14 w-14 rounded-lg object-cover border border-border" />
-                  ) : (
-                    <div className="h-14 w-14 rounded-lg bg-muted/50 flex items-center justify-center border border-border">
-                      <Music className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                  )}
+                    {release.poster_url ? (
+                      <img src={release.poster_url} alt="" className="h-12 w-12 sm:h-14 sm:w-14 rounded-lg object-cover border border-border shrink-0" />
+                    ) : (
+                      <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-lg bg-muted/50 flex items-center justify-center border border-border shrink-0">
+                        <Music className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
+                      </div>
+                    )}
 
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-foreground truncate">{getReleaseName(release)}</p>
-                    <div className="flex flex-wrap items-center gap-2 mt-1">
-                      <span className="text-xs px-2 py-0.5 rounded bg-muted/50 text-muted-foreground capitalize">{release.content_type}</span>
-                      {release.release_type === 'transfer' && (
-                        <span className="text-xs px-2 py-0.5 rounded bg-accent/50 text-accent-foreground">Transfer</span>
-                      )}
-                      {release.was_transferred && (
-                        <span className="text-xs px-2 py-0.5 rounded bg-accent/50 text-accent-foreground flex items-center gap-1">
-                          <ArrowRightLeft className="h-3 w-3" /> Transferred
-                        </span>
-                      )}
-                      {release.submitted_by_label && (
-                        <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary flex items-center gap-1">
-                          <Users className="h-3 w-3" /> {release.submitted_by_label}
-                        </span>
-                      )}
-                      <span className="text-xs text-muted-foreground">{release.tracks.length} track(s)</span>
-                      <span className="text-xs text-muted-foreground">•</span>
-                      <span className="text-xs text-muted-foreground">{new Date(release.release_date).toLocaleDateString()}</span>
-                      {release.upc && (
-                        <>
-                          <span className="text-xs text-muted-foreground">•</span>
-                          <span className="text-xs text-muted-foreground">UPC: <span className="font-mono text-foreground">{release.upc}</span></span>
-                        </>
-                      )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-foreground truncate text-sm sm:text-base">{getReleaseName(release)}</p>
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1">
+                        <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded bg-muted/50 text-muted-foreground capitalize">{release.content_type}</span>
+                        {release.release_type === 'transfer' && (
+                          <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded bg-accent/50 text-accent-foreground">Transfer</span>
+                        )}
+                        {release.was_transferred && (
+                          <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded bg-accent/50 text-accent-foreground flex items-center gap-1">
+                            <ArrowRightLeft className="h-3 w-3" /> Transferred
+                          </span>
+                        )}
+                        {release.submitted_by_label && (
+                          <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded bg-primary/10 text-primary flex items-center gap-1">
+                            <Users className="h-3 w-3" /> {release.submitted_by_label}
+                          </span>
+                        )}
+                        <span className="text-[10px] sm:text-xs text-muted-foreground">{release.tracks.length} track(s)</span>
+                        <span className="text-[10px] sm:text-xs text-muted-foreground hidden sm:inline">•</span>
+                        <span className="text-[10px] sm:text-xs text-muted-foreground">{new Date(release.release_date).toLocaleDateString()}</span>
+                        {release.upc && (
+                          <>
+                            <span className="text-[10px] sm:text-xs text-muted-foreground hidden sm:inline">•</span>
+                            <span className="text-[10px] sm:text-xs text-muted-foreground">UPC: <span className="font-mono text-foreground">{release.upc}</span></span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  <StatusBadge status={release.status} />
-                  {release.status === 'rejected' && release.rejection_reason && (
-                    <p className="text-xs text-destructive max-w-[200px] truncate" title={release.rejection_reason}>
-                      {release.rejection_reason}
-                    </p>
-                  )}
-
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewRelease(release)}>
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    {release.status === 'pending' && !release.submitted_by_label && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/submit?edit=${release.id}`)}>
-                        <Pencil className="h-4 w-4" />
+                  <div className="flex items-center justify-between sm:justify-end gap-2 pl-[5.5rem] sm:pl-0 shrink-0">
+                    <div className="flex items-center gap-2">
+                      <StatusBadge status={release.status} />
+                      {release.status === 'rejected' && release.rejection_reason && (
+                        <p className="text-xs text-destructive max-w-[120px] sm:max-w-[200px] truncate" title={release.rejection_reason}>
+                          {release.rejection_reason}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewRelease(release)}>
+                        <Eye className="h-4 w-4" />
                       </Button>
-                    )}
-                    {release.status === 'pending' && !release.submitted_by_label && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteRelease(release)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    )}
+                      {release.status === 'pending' && !release.submitted_by_label && (
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/submit?edit=${release.id}`)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {release.status === 'pending' && !release.submitted_by_label && (
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteRelease(release)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -361,26 +366,30 @@ export default function MyReleases() {
                       <p className="text-xs text-muted-foreground mb-2">UPC: <span className="text-foreground font-mono">{release.upc}</span></p>
                     )}
                     {release.tracks.map((track) => (
-                      <div key={track.id} className="flex items-center gap-3 rounded-lg bg-muted/20 px-4 py-3">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">
-                          {track.track_order}
+                      <div key={track.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 rounded-lg bg-muted/20 px-3 sm:px-4 py-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0">
+                            {track.track_order}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{track.song_title}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {track.primary_artist} • {track.genre}
+                              {track.isrc && <> • ISRC: <span className="font-mono">{track.isrc}</span></>}
+                            </p>
+                          </div>
                         </div>
-                      <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{track.song_title}</p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {track.primary_artist} • {track.genre}
-                            {track.isrc && <> • ISRC: <span className="font-mono">{track.isrc}</span></>}
-                          </p>
+                        <div className="flex items-center gap-2 pl-10 sm:pl-0 flex-wrap sm:flex-nowrap shrink-0">
+                          <StatusBadge status={track.status} />
+                          {track.status === 'rejected' && track.rejection_reason && (
+                            <span className="text-xs text-destructive max-w-[150px] truncate" title={track.rejection_reason}>
+                              {track.rejection_reason}
+                            </span>
+                          )}
+                          {track.audio_url && (
+                            <audio controls src={track.audio_url} className="h-8 w-full sm:w-48 shrink-0" />
+                          )}
                         </div>
-                        <StatusBadge status={track.status} />
-                        {track.status === 'rejected' && track.rejection_reason && (
-                          <span className="text-xs text-destructive max-w-[150px] truncate" title={track.rejection_reason}>
-                            {track.rejection_reason}
-                          </span>
-                        )}
-                        {track.audio_url && (
-                          <audio controls src={track.audio_url} className="h-8 w-48 shrink-0" />
-                        )}
                       </div>
                     ))}
                   </div>
