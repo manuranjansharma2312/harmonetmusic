@@ -652,25 +652,25 @@ export default function NewRelease() {
               {tracks.length > 0 && (
                 <div className="space-y-2 mb-4">
                   {tracks.map((track, i) => (
-                    <div key={i} className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold">
-                          {i + 1}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{track.songTitle}</p>
-                          <p className="text-xs text-muted-foreground">{track.primaryArtists.map(a => a.name).filter(Boolean).join(', ')} • {track.genre}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => { setEditingTrackIndex(i); setShowTrackForm(true); }}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleRemoveTrack(i)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
+                     <div key={i} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border border-border bg-muted/30 px-3 sm:px-4 py-3">
+                       <div className="flex items-center gap-3 min-w-0">
+                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold shrink-0">
+                           {i + 1}
+                         </div>
+                         <div className="min-w-0">
+                           <p className="text-sm font-medium text-foreground truncate">{track.songTitle}</p>
+                           <p className="text-xs text-muted-foreground truncate">{track.primaryArtists.map(a => a.name).filter(Boolean).join(', ')} • {track.genre}</p>
+                         </div>
+                       </div>
+                       <div className="flex gap-2 pl-11 sm:pl-0 shrink-0">
+                         <Button variant="ghost" size="icon" onClick={() => { setEditingTrackIndex(i); setShowTrackForm(true); }}>
+                           <Pencil className="h-4 w-4" />
+                         </Button>
+                         <Button variant="ghost" size="icon" onClick={() => handleRemoveTrack(i)}>
+                           <Trash2 className="h-4 w-4 text-destructive" />
+                         </Button>
+                       </div>
+                     </div>
                   ))}
                 </div>
               )}

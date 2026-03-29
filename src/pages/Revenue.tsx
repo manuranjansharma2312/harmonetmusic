@@ -318,7 +318,7 @@ export default function Revenue() {
         )}
 
         {/* Balance Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <GlassCard className="p-6">
             <div className="flex items-center gap-3 mb-3">
               <div className="p-2.5 rounded-xl bg-emerald-500/10">
