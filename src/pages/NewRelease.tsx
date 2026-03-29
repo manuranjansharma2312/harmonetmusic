@@ -251,6 +251,14 @@ export default function NewRelease() {
       toast.error('Please select a release date.');
       return;
     }
+    if (!copyrightLine.trim()) {
+      toast.error('Please select a © Line (Copyright Line).');
+      return;
+    }
+    if (!phonogramLine.trim()) {
+      toast.error('Please select a ℗ Line (Phonogram Line).');
+      return;
+    }
 
     setSubmitting(true);
     setSubmitProgress(0);
@@ -622,7 +630,7 @@ export default function NewRelease() {
             {/* © Line & ℗ Line */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">© Line</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">© Line *</label>
                 <select className={inputClass} value={copyrightLine} onChange={(e) => setCopyrightLine(e.target.value)}>
                   <option value="">Select label</option>
                   {approvedLabels.map(name => <option key={name} value={name}>{name}</option>)}
@@ -632,7 +640,7 @@ export default function NewRelease() {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">℗ Line</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">℗ Line *</label>
                 <select className={inputClass} value={phonogramLine} onChange={(e) => setPhonogramLine(e.target.value)}>
                   <option value="">Select label</option>
                   {approvedLabels.map(name => <option key={name} value={name}>{name}</option>)}

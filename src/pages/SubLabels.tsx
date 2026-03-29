@@ -212,8 +212,8 @@ export default function SubLabels() {
 
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Withdrawal Threshold (₹)</label>
-              <input className={inputClass} type="text" inputMode="decimal" value={formData.withdrawal_threshold} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setFormData(p => ({ ...p, withdrawal_threshold: e.target.value })); }} placeholder="e.g. 1000" />
-              <p className="text-xs text-muted-foreground mt-1">Minimum balance required for sub-label to request withdrawal</p>
+              <input className={`${inputClass} opacity-60 cursor-not-allowed`} type="text" value="₹1,000" disabled />
+              <p className="text-xs text-muted-foreground mt-1">Default withdrawal threshold is ₹1,000 (set automatically)</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
