@@ -326,7 +326,7 @@ export default function Revenue() {
               </div>
               <span className="text-sm font-medium text-muted-foreground">Available Balance</span>
             </div>
-            <p className="text-3xl font-bold text-emerald-400">
+            <p className="text-2xl sm:text-3xl font-bold text-emerald-400">
               {loading ? '...' : formatCurrency(Math.max(availableBalance, 0))}
             </p>
           </GlassCard>
