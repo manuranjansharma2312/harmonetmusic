@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { WorldMapChart } from '@/components/WorldMapChart';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { NoticePopup } from '@/components/NoticePopup';
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -27,6 +26,10 @@ import {
   ComposedChart, Line
 } from 'recharts';
 import { format, subMonths } from 'date-fns';
+
+const LazyWorldMapChart = lazy(() =>
+  import('@/components/WorldMapChart').then((module) => ({ default: module.WorldMapChart }))
+);
 
 const CHART_COLORS = [
   'hsl(0, 67%, 35%)', 'hsl(45, 80%, 45%)', 'hsl(140, 60%, 40%)',
@@ -182,20 +185,22 @@ export default function UserDashboard() {
       }
 
       if (!hasSubLabel) {
-        const [cmsLinks, cmsEntries, cmsWithdrawals] = await Promise.all([
+        const [cmsLinks, cmsWithdrawals] = await Promise.all([
           fetchAllRows('youtube_cms_links', 'channel_name, cut_percent', (query) => query.eq('user_id', effectiveUserId).eq('status', 'linked')),
-          fetchAllRows('cms_report_entries', 'net_generated_revenue, channel_name'),
           fetchAllRows('cms_withdrawal_requests', 'status, amount', (query) => query.eq('user_id', effectiveUserId)),
         ]);
 
         const linkedChannels = (cmsLinks as any[]) || [];
+        const linkedNamesArr = linkedChannels.map((link) => link.channel_name).filter(Boolean);
         setCmsChannels(linkedChannels.length);
-        const linkedNames = new Set(linkedChannels.map((link) => link.channel_name));
-        const userCmsEntries = ((cmsEntries as any[]) || []).filter((entry) => linkedNames.has(entry.channel_name));
+
+        const cmsEntries = linkedNamesArr.length > 0
+          ? await fetchAllRows('cms_report_entries', 'net_generated_revenue, channel_name', (query) => query.in('channel_name', linkedNamesArr))
+          : [];
 
         let cmsGross = 0;
         let cmsNet = 0;
-        userCmsEntries.forEach((entry) => {
+        (cmsEntries as any[]).forEach((entry) => {
           const rev = Number(entry.net_generated_revenue) || 0;
           const cut = Number(linkedChannels.find((link) => link.channel_name === entry.channel_name)?.cut_percent || 0);
           cmsGross += rev;
@@ -350,13 +355,21 @@ export default function UserDashboard() {
     if (!effectiveUserId) return;
     setLoading(true);
     void fetchAll();
+
     const channel = supabase
       .channel(`dashboard-realtime-${effectiveUserId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'report_entries' }, scheduleFetchAll)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'youtube_report_entries' }, scheduleFetchAll)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawal_requests' }, scheduleFetchAll)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'releases' }, scheduleFetchAll)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'withdrawal_requests', filter: `user_id=eq.${effectiveUserId}` },
+        scheduleFetchAll,
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'releases', filter: `user_id=eq.${effectiveUserId}` },
+        scheduleFetchAll,
+      )
       .subscribe();
+
     return () => {
       if (refreshTimeoutRef.current !== null) {
         window.clearTimeout(refreshTimeoutRef.current);
@@ -655,7 +668,11 @@ export default function UserDashboard() {
 
         <GlassCard className="animate-fade-in">
           <SectionHeader icon={Globe} iconBg="bg-emerald-500/15" iconColor="text-emerald-400" title="Streams by Country" />
-          {countryData.length > 0 ? <WorldMapChart data={countryData} /> : <EmptyChart icon={Globe} text="No country data yet" />}
+          {countryData.length > 0 ? (
+            <Suspense fallback={<EmptyChart icon={Globe} text="Loading country map" />}>
+              <LazyWorldMapChart data={countryData} />
+            </Suspense>
+          ) : <EmptyChart icon={Globe} text="No country data yet" />}
         </GlassCard>
       </div>
 
@@ -784,6 +801,9 @@ function RecentTutorialsWidget() {
       if (error) throw error;
       return (data || []) as TutorialPreview[];
     },
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   if (isLoading || tutorials.length === 0) return null;
