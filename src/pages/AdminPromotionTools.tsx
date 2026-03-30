@@ -55,7 +55,7 @@ interface Order {
 }
 
 export default function AdminPromotionTools() {
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(true);
   const [settingsId, setSettingsId] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
