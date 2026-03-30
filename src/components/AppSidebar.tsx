@@ -55,6 +55,10 @@ const adminPosterLinks = [
   { to: '/admin/poster-generator', label: 'Out Now Poster Generator', icon: ImageIcon },
 ];
 
+const adminContactPoliciesLinks = [
+  { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
+  { to: '/admin/contact-support', label: 'Contact Details', icon: Headset },
+];
 const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'All Users', icon: Users },
