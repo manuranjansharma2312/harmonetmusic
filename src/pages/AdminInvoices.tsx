@@ -89,6 +89,7 @@ const loadLogoBase64 = (): Promise<string> => {
 };
 
 export default function AdminInvoices() {
+  const { canDelete, canChangeSettings } = useTeamPermissions();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
