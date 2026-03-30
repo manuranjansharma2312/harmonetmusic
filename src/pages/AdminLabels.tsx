@@ -207,9 +207,11 @@ export default function AdminLabels() {
                       <button onClick={() => handleDownloadB2b(label.b2b_url!)} className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors">
                         <FileText className="h-3 w-3" /> View B2B
                       </button>
-                      <button onClick={() => setDeleteTarget({ type: 'b2b', label })} className="text-xs text-destructive hover:text-destructive/80 transition-colors">
-                        Delete B2B
-                      </button>
+                      {canDelete && (
+                        <button onClick={() => setDeleteTarget({ type: 'b2b', label })} className="text-xs text-destructive hover:text-destructive/80 transition-colors">
+                          Delete B2B
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
