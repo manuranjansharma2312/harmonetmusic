@@ -79,7 +79,7 @@ const adminLinksTop = [
   
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
   { to: '/admin/promotion-tools', label: 'Promotional Tools', icon: Megaphone },
-  { to: '/admin/payment-settings', label: 'Payment Settings', icon: CreditCard },
+  { to: '/admin/payment-settings', label: 'Tax Settings', icon: CreditCard },
   
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
   
