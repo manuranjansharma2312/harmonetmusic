@@ -256,7 +256,7 @@ export default function AdminContentRequests() {
               <span className="hidden sm:inline">{selectedIds.size > 0 ? `Export ${selectedIds.size} Selected` : 'Export All CSV'}</span>
               <span className="sm:hidden">Export</span>
             </Button>
-            {selectedIds.size > 0 && (
+            {selectedIds.size > 0 && canDelete && (
               <Button size="sm" variant="destructive" onClick={() => setShowDeleteConfirm(true)}>
                 <Trash2 className="h-4 w-4 mr-1" />
                 Delete {selectedIds.size}
