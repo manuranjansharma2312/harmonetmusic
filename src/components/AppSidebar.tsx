@@ -71,6 +71,11 @@ const adminPromotionalLinks = [
   { to: '/admin/promotional-settings', label: 'Promotional Settings', icon: Settings },
 ];
 
+const adminBillingLinks = [
+  { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
+  { to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt },
+];
+
 const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'All Users', icon: Users },
@@ -78,8 +83,6 @@ const adminLinksTop = [
   { to: '/admin/transfer-history', label: 'Transfer History', icon: ArrowRightLeft },
   { to: '/admin/labels', label: 'Manage Labels', icon: Tag },
   { to: '/admin/content-requests', label: 'Support Requests', icon: Headset },
-  { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
-  { to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt },
   
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
