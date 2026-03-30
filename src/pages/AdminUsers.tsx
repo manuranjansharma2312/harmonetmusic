@@ -645,16 +645,22 @@ export default function AdminUsers() {
   );
 }
 
+import { CopyButton } from '@/components/CopyButton';
+
 const Row = React.forwardRef<HTMLDivElement, { label: string; value: string; link?: boolean }>(
   ({ label, value, link }, ref) => {
+    const showCopy = value && value !== '—' && value !== 'N/A';
     return (
       <div ref={ref} className="flex items-start justify-between gap-4">
         <span className="text-muted-foreground flex-shrink-0">{label}</span>
-        {link ? (
-          <a href={value} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-right truncate max-w-[200px]">{value}</a>
-        ) : (
-          <span className="text-foreground font-medium text-right">{value}</span>
-        )}
+        <div className="flex items-center gap-1 min-w-0 justify-end">
+          {link ? (
+            <a href={value} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-right truncate max-w-[200px]">{value}</a>
+          ) : (
+            <span className="text-foreground font-medium text-right">{value}</span>
+          )}
+          {showCopy && <CopyButton value={value} />}
+        </div>
       </div>
     );
   }

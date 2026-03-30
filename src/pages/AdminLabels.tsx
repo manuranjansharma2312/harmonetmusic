@@ -11,6 +11,7 @@ import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { toast } from 'sonner';
 import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import { Checkbox } from '@/components/ui/checkbox';
+import { CopyButton } from '@/components/CopyButton';
 
 type Label = {
   id: string;
@@ -241,13 +242,16 @@ export default function AdminLabels() {
                   ) : (
                     <div className="flex items-center gap-2">
                       <p className="font-semibold text-foreground">{label.label_name}</p>
+                      <CopyButton value={label.label_name} />
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEditingId(label.id); setEditName(label.label_name); }}>
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    By: <span className="text-foreground font-medium">{userEmails[label.user_id] || label.user_id.slice(0, 8)}</span> {userDisplayIds[label.user_id] ? <span className="font-mono font-bold text-primary">(#{userDisplayIds[label.user_id]})</span> : null} • {new Date(label.created_at).toLocaleDateString()}
+                    By: <span className="text-foreground font-medium">{userEmails[label.user_id] || label.user_id.slice(0, 8)}</span>
+                    {userEmails[label.user_id] && <CopyButton value={userEmails[label.user_id]} />}
+                    {userDisplayIds[label.user_id] ? <span className="font-mono font-bold text-primary ml-1">(#{userDisplayIds[label.user_id]})</span> : null} • {new Date(label.created_at).toLocaleDateString()}
                   </p>
                   {userTypes[label.user_id] === 'sub_label' && subLabelInfo[label.user_id] && (
                     <div className="text-xs mt-0.5">
