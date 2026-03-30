@@ -117,6 +117,7 @@ export default function VevoChannels() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>

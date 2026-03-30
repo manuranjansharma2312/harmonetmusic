@@ -141,6 +141,7 @@ export default function MyVideos() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>
