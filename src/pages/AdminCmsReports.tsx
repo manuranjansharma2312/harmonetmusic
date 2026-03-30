@@ -66,6 +66,7 @@ function parseMonthKey(m: string): number {
 }
 
 export default function AdminCmsReports() {
+  const { canDelete, canChangeSettings } = useTeamPermissions();
   const [entries, setEntries] = useState<ReportEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
