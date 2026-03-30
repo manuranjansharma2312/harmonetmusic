@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import {
   Users, Plus, Trash2, Pencil, Loader2, Shield, FolderOpen, Eye, EyeOff,
-  Download, LogIn, CreditCard,
+  Download, LogIn, CreditCard, KeyRound, Mail,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -88,6 +88,13 @@ export default function AdminTeamManagement() {
 
   // Selection & export
   const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  // Password management
+  const [pwModalOpen, setPwModalOpen] = useState(false);
+  const [pwTarget, setPwTarget] = useState<TeamMember | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [pwSubmitting, setPwSubmitting] = useState(false);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -216,6 +223,7 @@ export default function AdminTeamManagement() {
   const deselectAllPages = () => setMemberForm(prev => ({ ...prev, allowed_pages: [] }));
 
   const getCategoryName = (id: string | null) => categories.find(c => c.id === id)?.name || '—';
+  const getPageLabel = (key: string) => ALL_ADMIN_PAGES.find(p => p.key === key)?.label || key;
 
   // ---- Govt ID helpers ----
   const addGovtId = () => setMemberForm(prev => ({ ...prev, govt_ids: [...prev.govt_ids, { name: '', number: '' }] }));
@@ -265,6 +273,53 @@ export default function AdminTeamManagement() {
     }
   };
 
+  // ---- Set Password ----
+  const handleSetPassword = async () => {
+    if (!pwTarget || !newPassword || newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    setPwSubmitting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke('admin-reset-password', {
+        body: { action: 'set_password', user_id: pwTarget.user_id, new_password: newPassword },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || error?.message || 'Failed to set password');
+      } else {
+        toast.success(`Password updated for ${pwTarget.name}`);
+        setPwModalOpen(false);
+        setPwTarget(null);
+        setNewPassword('');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed');
+    }
+    setPwSubmitting(false);
+  };
+
+  // ---- Send Forgot Password ----
+  const handleSendResetLink = async (member: TeamMember) => {
+    const confirm = window.confirm(`Send password reset email to ${member.email}?`);
+    if (!confirm) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke('admin-reset-password', {
+        body: { action: 'send_reset_link', email: member.email },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || error?.message || 'Failed to send reset link');
+      } else {
+        toast.success(`Password reset link sent to ${member.email}`);
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed');
+    }
+  };
+
   // ---- CSV Export ----
   const exportCSV = () => {
     const rows = selected.size > 0 ? members.filter(m => selected.has(m.id)) : members;
@@ -275,7 +330,7 @@ export default function AdminTeamManagement() {
       const govtStr = (m.govt_ids || []).map(g => `${g.name}: ${g.number}`).join(' | ');
       csvRows.push([
         `"${m.name}"`, `"${m.email}"`, `"${getCategoryName(m.category_id)}"`,
-        `"${m.allowed_pages.join(', ')}"`, `"${govtStr}"`,
+        `"${m.allowed_pages.map(k => getPageLabel(k)).join(', ')}"`, `"${govtStr}"`,
         `"${format(new Date(m.created_at), 'dd MMM yyyy')}"`,
       ].join(','));
     });
@@ -389,6 +444,12 @@ export default function AdminTeamManagement() {
                         </TableCell>
                         <TableCell className="whitespace-nowrap">{format(new Date(m.created_at), 'dd MMM yyyy')}</TableCell>
                         <TableCell className="text-right whitespace-nowrap space-x-1">
+                          <Button variant="outline" size="sm" title="Set Password" onClick={() => { setPwTarget(m); setNewPassword(''); setPwModalOpen(true); }}>
+                            <KeyRound className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="outline" size="sm" title="Send Reset Password Email" onClick={() => handleSendResetLink(m)}>
+                            <Mail className="h-3.5 w-3.5" />
+                          </Button>
                           <Button variant="outline" size="sm" title="Login as this member" onClick={() => handleLoginAs(m)}>
                             <LogIn className="h-3.5 w-3.5" />
                           </Button>
@@ -569,6 +630,37 @@ export default function AdminTeamManagement() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteConfirm(null)}>Cancel</Button>
             <Button variant="destructive" onClick={() => deleteConfirm?.type === 'cat' ? handleDeleteCategory(deleteConfirm.id) : handleDeleteMember(deleteConfirm.id)}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ---- SET PASSWORD MODAL ---- */}
+      <Dialog open={pwModalOpen} onOpenChange={v => { setPwModalOpen(v); if (!v) { setPwTarget(null); setNewPassword(''); } }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Set Password for {pwTarget?.name}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">Set a new password for <strong>{pwTarget?.email}</strong></p>
+            <div>
+              <Label>New Password *</Label>
+              <div className="relative">
+                <Input
+                  type={showNewPw ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  placeholder="Min 6 characters"
+                />
+                <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showNewPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPwModalOpen(false)}>Cancel</Button>
+            <Button onClick={handleSetPassword} disabled={pwSubmitting}>
+              {pwSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Set Password
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
