@@ -254,6 +254,7 @@ export default function AdminSubLabels() {
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex gap-1">
+                        {!isTeam && (
                         <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!sl.sub_user_id} onClick={() => {
                           if (sl.sub_user_id) {
                             startImpersonating(sl.sub_user_id, sl.email);
@@ -262,6 +263,7 @@ export default function AdminSubLabels() {
                         }} title={sl.sub_user_id ? "Login as User" : "No account linked"}>
                           <LogIn className={`h-4 w-4 ${sl.sub_user_id ? 'text-blue-500' : 'text-muted-foreground'}`} />
                         </Button>
+                        )}
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewSL(sl)} title="View">
                           <Eye className="h-4 w-4" />
                         </Button>
