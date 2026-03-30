@@ -12,8 +12,11 @@ const safeFormat = (dateStr: string, fmt: string = 'dd MMM yyyy') => {
   return isValid(d) ? format(d, fmt) : '—';
 };
 
+const ACRONYMS = ['oac', 'cms', 'id', 'url', 'api', 'csv', 'upc', 'isrc', 'ai'];
 const formatLabel = (val: string) =>
-  val?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || '—';
+  val?.replace(/_/g, ' ').replace(/\b\w+/g, w =>
+    ACRONYMS.includes(w.toLowerCase()) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)
+  ) || '—';
 import {
   Users, ListMusic, Tag, Headset, Video, Wallet, Megaphone, UsersRound, Youtube,
   Sparkles, CheckCircle, XCircle, Eye, Loader2, Clock, Link2, FileSignature,
