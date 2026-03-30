@@ -5,7 +5,12 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { StatusBadge } from '@/components/StatusBadge';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
+
+const safeFormat = (dateStr: string, fmt: string = 'dd MMM yyyy') => {
+  const d = new Date(dateStr);
+  return isValid(d) ? format(d, fmt) : '—';
+};
 import {
   Users, ListMusic, Tag, Headset, Video, Wallet, Megaphone, UsersRound, Youtube,
   Sparkles, CheckCircle, XCircle, Eye, Loader2, Clock, Link2, FileSignature,
