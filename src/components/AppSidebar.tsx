@@ -83,9 +83,7 @@ const adminLinksTop = [
   { to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt },
   
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
-  
-  { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
-  
+  { to: '/admin/payment-settings', label: 'Tax Settings', icon: CreditCard },
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
   
   { to: '/admin/email-settings', label: 'Manage Emails', icon: Mail },
