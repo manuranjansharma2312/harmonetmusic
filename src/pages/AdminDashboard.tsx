@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -10,12 +10,11 @@ import {
   TrendingUp, TrendingDown, Music, BarChart3, Activity, DollarSign, Globe,
   Youtube, Film, PenTool, Monitor, Download, Headphones, Play, Zap, Link2
 } from 'lucide-react';
-import { format, subMonths } from 'date-fns';
+import { format, parse, subMonths } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
 // Lazy-load heavy chart dependencies
 const LazyCharts = lazy(() => import('@/components/admin/AdminDashboardCharts'));
-const LazyWorldMapChart = lazy(() => import('@/components/WorldMapChart').then(m => ({ default: m.WorldMapChart })));
 
 const STORE_COLORS: Record<string, string> = {
   Spotify: '#1DB954', 'Apple Music': '#FA2D48', 'YouTube Music': '#FF0000',
@@ -45,30 +44,124 @@ interface DashboardState {
   monthlyCmsLinked: { month: string; count: number }[];
 }
 
-export default function AdminDashboard() {
-  const navigate = useNavigate();
-  const [state, setState] = useState<DashboardState>({
-    loading: true,
-    counts: null,
-    reportStats: null,
-    pendingLabels: [],
-    pendingReleases: [],
-    pendingContentRequests: [],
-    pendingWithdrawals: [],
-    recentReleases: [],
-    monthlyReleases: [],
-    monthlyUsers: [],
-    monthlyVevo: [],
-    monthlyCmsLinked: [],
+type DashboardData = Omit<DashboardState, 'loading'>;
+
+interface SafeRequestResult<T> {
+  data: T;
+  failed: boolean;
+}
+
+const EMPTY_DASHBOARD_DATA: DashboardData = {
+  counts: {},
+  reportStats: {},
+  pendingLabels: [],
+  pendingReleases: [],
+  pendingContentRequests: [],
+  pendingWithdrawals: [],
+  recentReleases: [],
+  monthlyReleases: [],
+  monthlyUsers: [],
+  monthlyVevo: [],
+  monthlyCmsLinked: [],
+};
+
+const DASHBOARD_CACHE_TTL_MS = 60_000;
+
+let adminDashboardCache: DashboardData | null = null;
+let adminDashboardCacheAt = 0;
+
+function hasFreshDashboardCache() {
+  return adminDashboardCache && Date.now() - adminDashboardCacheAt < DASHBOARD_CACHE_TTL_MS;
+}
+
+function getInitialDashboardState(): DashboardState {
+  return hasFreshDashboardCache()
+    ? { loading: false, ...(adminDashboardCache as DashboardData) }
+    : { loading: true, ...EMPTY_DASHBOARD_DATA };
+}
+
+async function safeRequest<T>(label: string, request: Promise<{ data: T | null; error: any }>, fallback: T): Promise<SafeRequestResult<T>> {
+  try {
+    const { data, error } = await request;
+
+    if (error) {
+      console.error(`AdminDashboard ${label} failed:`, error);
+      return { data: fallback, failed: true };
+    }
+
+    return { data: (data ?? fallback) as T, failed: false };
+  } catch (error) {
+    console.error(`AdminDashboard ${label} crashed:`, error);
+    return { data: fallback, failed: true };
+  }
+}
+
+function withCachedFallback<T>(result: SafeRequestResult<T>, cachedValue: T) {
+  return result.failed ? cachedValue : result.data;
+}
+
+function toMonthlySeries(rows: Array<{ created_at?: string | null }>) {
+  const now = new Date();
+  const monthKeys: string[] = [];
+  const counts: Record<string, number> = {};
+
+  for (let i = 5; i >= 0; i -= 1) {
+    const key = format(subMonths(now, i), 'MMM');
+    monthKeys.push(key);
+    counts[key] = 0;
+  }
+
+  rows.forEach((row) => {
+    if (!row.created_at) return;
+
+    const date = new Date(row.created_at);
+    if (Number.isNaN(date.getTime())) return;
+
+    const key = format(date, 'MMM');
+    if (counts[key] !== undefined) counts[key] += 1;
   });
 
+  return monthKeys.map((month) => ({ month, count: counts[month] }));
+}
+
+function getReportingMonthTime(value: string) {
+  const parsed = parse(value, 'MMMM yyyy', new Date());
+  if (!Number.isNaN(parsed.getTime())) return parsed.getTime();
+
+  const shortParsed = parse(value, 'MMM yyyy', new Date());
+  if (!Number.isNaN(shortParsed.getTime())) return shortParsed.getTime();
+
+  return 0;
+}
+
+function safeFormatDate(value: string | null | undefined, pattern: string) {
+  if (!value) return '—';
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return '—';
+
+  return format(parsed, pattern);
+}
+
+export default function AdminDashboard() {
+  const navigate = useNavigate();
+  const requestIdRef = useRef(0);
+  const [state, setState] = useState<DashboardState>(() => getInitialDashboardState());
+
   useEffect(() => {
-    void fetchAll();
+    const requestId = ++requestIdRef.current;
+    void fetchAll(requestId);
+
+    return () => {
+      requestIdRef.current += 1;
+    };
   }, []);
 
-  async function fetchAll() {
+  async function fetchAll(requestId: number) {
     try {
-      // All queries in parallel - using server-side aggregation for reports
+      const cachedData = adminDashboardCache ?? EMPTY_DASHBOARD_DATA;
+      const sixMonthsAgo = subMonths(new Date(), 6).toISOString();
+
       const [
         countsRes,
         reportStatsRes,
@@ -83,66 +176,46 @@ export default function AdminDashboard() {
         vevoDatesRes,
         cmsDatesRes,
       ] = await Promise.all([
-        supabase.rpc('admin_dashboard_counts' as any),
-        supabase.rpc('admin_dashboard_report_stats' as any),
-        supabase.from('labels').select('id, label_name, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
-        supabase.from('releases').select('id, album_name, ep_name, content_type, release_type, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
-        supabase.from('content_requests').select('id, request_type, song_title, artist_name, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
-        supabase.from('withdrawal_requests' as any).select('id, amount, created_at, user_id').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
-        supabase.from('releases').select('id, album_name, ep_name, content_type, status, created_at').order('created_at', { ascending: false }).limit(5),
-        // Only fetch created_at for last 6 months growth charts
-        supabase.from('releases').select('created_at').gte('created_at', subMonths(new Date(), 6).toISOString()),
-        supabase.from('profiles').select('created_at').gte('created_at', subMonths(new Date(), 6).toISOString()),
-        supabase.from('video_submissions' as any).select('created_at').eq('submission_type', 'vevo_channel').gte('created_at', subMonths(new Date(), 6).toISOString()),
-        supabase.from('youtube_cms_links' as any).select('created_at, status').eq('status', 'linked').gte('created_at', subMonths(new Date(), 6).toISOString()),
+        safeRequest('counts', supabase.rpc('admin_dashboard_counts' as any), cachedData.counts),
+        safeRequest('report stats', supabase.rpc('admin_dashboard_report_stats' as any), cachedData.reportStats),
+        safeRequest('pending labels', supabase.from('labels').select('id, label_name, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5), cachedData.pendingLabels),
+        safeRequest('pending releases', supabase.from('releases').select('id, album_name, ep_name, content_type, release_type, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5), cachedData.pendingReleases),
+        safeRequest('pending content requests', supabase.from('content_requests').select('id, request_type, song_title, artist_name, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5), cachedData.pendingContentRequests),
+        safeRequest('pending withdrawals', supabase.from('withdrawal_requests' as any).select('id, amount, created_at, user_id').eq('status', 'pending').order('created_at', { ascending: false }).limit(5), cachedData.pendingWithdrawals),
+        safeRequest('recent releases', supabase.from('releases').select('id, album_name, ep_name, content_type, status, created_at').order('created_at', { ascending: false }).limit(5), cachedData.recentReleases),
+        safeRequest('release growth', supabase.from('releases').select('created_at').gte('created_at', sixMonthsAgo), [] as Array<{ created_at?: string | null }>),
+        safeRequest('user growth', supabase.from('profiles').select('created_at').gte('created_at', sixMonthsAgo), [] as Array<{ created_at?: string | null }>),
+        safeRequest('vevo growth', supabase.from('video_submissions' as any).select('created_at').eq('submission_type', 'vevo_channel').gte('created_at', sixMonthsAgo), [] as Array<{ created_at?: string | null }>),
+        safeRequest('cms growth', supabase.from('youtube_cms_links' as any).select('created_at').eq('status', 'linked').gte('created_at', sixMonthsAgo), [] as Array<{ created_at?: string | null }>),
       ]);
 
-      // Build growth chart data
-      const now = new Date();
-      const monthKeys: string[] = [];
-      const monthlyRelMap: Record<string, number> = {};
-      const monthlyUserMap: Record<string, number> = {};
-      const monthlyVevoMap: Record<string, number> = {};
-      const monthlyCmsMap: Record<string, number> = {};
-      for (let i = 5; i >= 0; i--) {
-        const key = format(subMonths(now, i), 'MMM');
-        monthKeys.push(key);
-        monthlyRelMap[key] = 0;
-        monthlyUserMap[key] = 0;
-        monthlyVevoMap[key] = 0;
-        monthlyCmsMap[key] = 0;
+      if (requestId !== requestIdRef.current) {
+        return;
       }
 
-      (releaseDatesRes.data || []).forEach((r: any) => {
-        try { const m = format(new Date(r.created_at), 'MMM'); if (monthlyRelMap[m] !== undefined) monthlyRelMap[m]++; } catch {}
-      });
-      (userDatesRes.data || []).forEach((r: any) => {
-        try { const m = format(new Date(r.created_at), 'MMM'); if (monthlyUserMap[m] !== undefined) monthlyUserMap[m]++; } catch {}
-      });
-      (vevoDatesRes.data || []).forEach((r: any) => {
-        try { const m = format(new Date(r.created_at), 'MMM'); if (monthlyVevoMap[m] !== undefined) monthlyVevoMap[m]++; } catch {}
-      });
-      (cmsDatesRes.data || []).forEach((r: any) => {
-        try { const m = format(new Date(r.created_at), 'MMM'); if (monthlyCmsMap[m] !== undefined) monthlyCmsMap[m]++; } catch {}
-      });
+      const nextData: DashboardData = {
+        counts: withCachedFallback(countsRes, cachedData.counts),
+        reportStats: withCachedFallback(reportStatsRes, cachedData.reportStats),
+        pendingLabels: withCachedFallback(pendingLabelsRes, cachedData.pendingLabels),
+        pendingReleases: withCachedFallback(pendingReleasesRes, cachedData.pendingReleases),
+        pendingContentRequests: withCachedFallback(pendingContentRes, cachedData.pendingContentRequests),
+        pendingWithdrawals: withCachedFallback(pendingWithdrawalsRes, cachedData.pendingWithdrawals),
+        recentReleases: withCachedFallback(recentReleasesRes, cachedData.recentReleases),
+        monthlyReleases: releaseDatesRes.failed ? cachedData.monthlyReleases : toMonthlySeries(releaseDatesRes.data),
+        monthlyUsers: userDatesRes.failed ? cachedData.monthlyUsers : toMonthlySeries(userDatesRes.data),
+        monthlyVevo: vevoDatesRes.failed ? cachedData.monthlyVevo : toMonthlySeries(vevoDatesRes.data),
+        monthlyCmsLinked: cmsDatesRes.failed ? cachedData.monthlyCmsLinked : toMonthlySeries(cmsDatesRes.data),
+      };
 
-      setState({
-        loading: false,
-        counts: countsRes.data || {},
-        reportStats: reportStatsRes.data || {},
-        pendingLabels: pendingLabelsRes.data || [],
-        pendingReleases: pendingReleasesRes.data || [],
-        pendingContentRequests: pendingContentRes.data || [],
-        pendingWithdrawals: (pendingWithdrawalsRes.data as any[]) || [],
-        recentReleases: recentReleasesRes.data || [],
-        monthlyReleases: monthKeys.map(m => ({ month: m, count: monthlyRelMap[m] })),
-        monthlyUsers: monthKeys.map(m => ({ month: m, count: monthlyUserMap[m] })),
-        monthlyVevo: monthKeys.map(m => ({ month: m, count: monthlyVevoMap[m] })),
-        monthlyCmsLinked: monthKeys.map(m => ({ month: m, count: monthlyCmsMap[m] })),
-      });
+      adminDashboardCache = nextData;
+      adminDashboardCacheAt = Date.now();
+
+      setState({ loading: false, ...nextData });
     } catch (err) {
       console.error('AdminDashboard fetchAll error:', err);
-      setState(prev => ({ ...prev, loading: false }));
+      if (requestId === requestIdRef.current) {
+        setState((prev) => ({ ...prev, loading: false }));
+      }
     }
   }
 
@@ -197,8 +270,8 @@ export default function AdminDashboard() {
 
   // Process chart data from RPC results
   const monthlyRevenue = ((rs.monthly_trend || []) as any[])
-    .sort((a: any, b: any) => String(a.month).localeCompare(String(b.month)))
-    .map((r: any) => ({ month: r.month, revenue: Math.round(Number(r.revenue) * 100) / 100, streams: Number(r.streams), downloads: Number(r.downloads) }));
+    .map((r: any) => ({ month: r.month, revenue: Math.round(Number(r.revenue) * 100) / 100, streams: Number(r.streams), downloads: Number(r.downloads) }))
+    .sort((a, b) => getReportingMonthTime(a.month) - getReportingMonthTime(b.month));
 
   const topStores = ((rs.top_stores || []) as any[]).map((s: any) => ({
     name: s.name, value: Number(s.streams), revenue: Number(s.revenue),
@@ -332,27 +405,27 @@ export default function AdminDashboard() {
           renderItem={(r) => (
             <div key={r.id} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-muted/15 hover:bg-muted/25 transition-colors border border-border/20">
               <div className="min-w-0 flex-1"><p className="text-xs sm:text-sm font-medium text-foreground truncate">{getReleaseName(r)}</p><p className="text-[10px] text-muted-foreground capitalize">{r.content_type}</p></div>
-              <span className="text-[10px] text-muted-foreground shrink-0">{format(new Date(r.created_at), 'dd MMM')}</span>
+              <span className="text-[10px] text-muted-foreground shrink-0">{safeFormatDate(r.created_at, 'dd MMM')}</span>
             </div>
           )} />
         <PendingListCard title="Pending Content Requests" icon={MessageSquare} items={state.pendingContentRequests} emptyText="No pending requests" onViewAll={() => navigate('/admin/content-requests')}
           renderItem={(c) => (
             <div key={c.id} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-muted/15 hover:bg-muted/25 transition-colors border border-border/20">
               <div className="min-w-0 flex-1"><p className="text-xs sm:text-sm font-medium text-foreground truncate">{formatRequestType(c.request_type)}</p><p className="text-[10px] text-muted-foreground truncate">{c.song_title || c.artist_name || '—'}</p></div>
-              <span className="text-[10px] text-muted-foreground shrink-0">{format(new Date(c.created_at), 'dd MMM')}</span>
+              <span className="text-[10px] text-muted-foreground shrink-0">{safeFormatDate(c.created_at, 'dd MMM')}</span>
             </div>
           )} />
         <PendingListCard title="Pending Labels" icon={Tag} items={state.pendingLabels} emptyText="No pending labels" onViewAll={() => navigate('/admin/labels')}
           renderItem={(l) => (
             <div key={l.id} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-muted/15 hover:bg-muted/25 transition-colors border border-border/20">
               <div className="min-w-0 flex-1"><p className="text-xs sm:text-sm font-medium text-foreground truncate">{l.label_name}</p></div>
-              <span className="text-[10px] text-muted-foreground shrink-0">{format(new Date(l.created_at), 'dd MMM')}</span>
+              <span className="text-[10px] text-muted-foreground shrink-0">{safeFormatDate(l.created_at, 'dd MMM')}</span>
             </div>
           )} />
         <PendingListCard title="Pending Withdrawals" icon={Wallet} items={state.pendingWithdrawals} emptyText="No pending withdrawals" onViewAll={() => navigate('/admin/revenue')}
           renderItem={(w) => (
             <div key={w.id} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-muted/15 hover:bg-muted/25 transition-colors border border-border/20">
-              <div className="min-w-0 flex-1"><p className="text-sm font-bold text-foreground">₹{Number(w.amount).toLocaleString()}</p><p className="text-[10px] text-muted-foreground">{format(new Date(w.created_at), 'dd MMM yyyy')}</p></div>
+              <div className="min-w-0 flex-1"><p className="text-sm font-bold text-foreground">₹{Number(w.amount).toLocaleString()}</p><p className="text-[10px] text-muted-foreground">{safeFormatDate(w.created_at, 'dd MMM yyyy')}</p></div>
               <StatusBadge status="pending" />
             </div>
           )} />
@@ -376,7 +449,7 @@ export default function AdminDashboard() {
                       <td className="py-3 px-3 text-foreground font-medium truncate max-w-[180px]">{getReleaseName(r)}</td>
                       <td className="py-3 px-3 text-muted-foreground capitalize text-xs">{r.content_type}</td>
                       <td className="py-3 px-3"><StatusBadge status={r.status} /></td>
-                      <td className="py-3 px-3 text-muted-foreground text-xs">{format(new Date(r.created_at), 'dd MMM yyyy')}</td>
+                      <td className="py-3 px-3 text-muted-foreground text-xs">{safeFormatDate(r.created_at, 'dd MMM yyyy')}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -389,7 +462,7 @@ export default function AdminDashboard() {
                     <div className="min-w-0 flex-1"><p className="text-xs font-medium text-foreground truncate">{getReleaseName(r)}</p><p className="text-[10px] text-muted-foreground capitalize">{r.content_type}</p></div>
                     <StatusBadge status={r.status} />
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-1.5">{format(new Date(r.created_at), 'dd MMM yyyy')}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1.5">{safeFormatDate(r.created_at, 'dd MMM yyyy')}</p>
                 </div>
               ))}
             </div>
