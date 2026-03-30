@@ -455,30 +455,20 @@ export default function UserDashboard() {
 
       {/* CMS Wallet (not for sub-label users) */}
       {!isSubLabelUser && cmsChannels > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-          {(() => {
-            const cmsCards = [
-              { key: 'revenue', label: 'CMS Revenue', value: cmsRevenue, icon: Youtube, color: 'hsl(0, 67%, 40%)', iconColor: 'text-red-400' },
-              { key: 'net', label: 'CMS Net Payable', value: cmsNetPayable, icon: Monitor, color: 'hsl(25, 80%, 45%)', iconColor: 'text-orange-400' },
-              { key: 'paid', label: 'CMS Paid', value: cmsPaid, icon: CheckCircle, color: 'hsl(140, 60%, 40%)', iconColor: 'text-emerald-400' },
-              { key: 'pending', label: 'CMS Pending', value: cmsPending, icon: Clock, color: 'hsl(45, 80%, 45%)', iconColor: 'text-amber-400' },
-              { key: 'balance', label: 'CMS Balance', value: cmsAvailable, icon: Zap, color: 'hsl(200, 70%, 50%)', iconColor: 'text-sky-400' },
-            ].filter((card) => {
-              if (card.key === 'revenue') return Math.abs(cmsRevenue - cmsAvailable) > 0.01;
-              if (card.key === 'net') return Math.abs(cmsNetPayable - cmsAvailable) > 0.01;
-              return true;
-            });
-
-            return cmsCards.map((stat) => (
+        <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          {[
+            { label: 'CMS Revenue', value: formatRevenue(cmsNetPayable), icon: Youtube, color: 'hsl(0, 67%, 40%)', iconColor: 'text-red-400' },
+            { label: 'CMS Paid', value: formatRevenue(cmsPaid), icon: CheckCircle, color: 'hsl(140, 60%, 40%)', iconColor: 'text-emerald-400' },
+            { label: 'CMS Balance', value: formatRevenue(cmsAvailable), icon: Zap, color: 'hsl(200, 70%, 50%)', iconColor: 'text-sky-400' },
+          ].map((stat) => (
             <GlassCard key={stat.label} className="!p-4 border-l-4 animate-fade-in" style={{ borderLeftColor: stat.color }}>
               <div className="flex items-center gap-2 mb-2">
                 <stat.icon className={`h-4 w-4 ${stat.iconColor}`} />
                 <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest font-medium">{stat.label}</span>
               </div>
-              <p className="text-xl font-bold text-foreground">{formatRevenue(stat.value)}</p>
+              <p className="text-xl font-bold text-foreground">{stat.value}</p>
             </GlassCard>
-            ));
-          })()}
+          ))}
         </div>
       )}
       {/* Sparkline Overview Cards */}
