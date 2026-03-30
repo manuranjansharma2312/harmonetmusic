@@ -156,7 +156,7 @@ export default function SmartLink() {
           </div>
         ) : (
           <div className="w-64 h-64 sm:w-72 sm:h-72 rounded-2xl bg-muted/30 border border-border flex items-center justify-center">
-            <span className="text-5xl">🎵</span>
+            <Music className="h-12 w-12 text-muted-foreground" />
           </div>
         )}
 
