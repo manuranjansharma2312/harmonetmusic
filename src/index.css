@@ -15,7 +15,8 @@
     --popover: 0 0% 18%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 0 72% 45%;
+    --primary: 0 67% 25%;
+    --primary-text: 0 72% 55%;
     --primary-foreground: 0 0% 98%;
 
     --secondary: 0 0% 12%;
@@ -32,27 +33,32 @@
 
     --border: 0 0% 16%;
     --input: 0 0% 16%;
-    --ring: 0 72% 45%;
+    --ring: 0 67% 25%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 7%;
     --sidebar-foreground: 0 0% 75%;
-    --sidebar-primary: 0 72% 45%;
+    --sidebar-primary: 0 67% 25%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 0 50% 15%;
     --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 0 0% 14%;
-    --sidebar-ring: 0 72% 45%;
+    --sidebar-ring: 0 67% 25%;
 
     /* Custom tokens */
     --glass-bg: 0 0% 100% / 0.05;
     --glass-border: 0 0% 100% / 0.1;
     --glass-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    --primary-glow: 0 72% 50%;
-    --gradient-primary: linear-gradient(135deg, hsl(0 72% 45%), hsl(0 60% 52%));
+    --primary-glow: 0 67% 30%;
+    --gradient-primary: linear-gradient(135deg, hsl(0 67% 25%), hsl(0 55% 34%));
     --gradient-bg: linear-gradient(135deg, #0f0f0f, #1a1a1a);
   }
+}
+
+/* Bright primary for text & icons — keeps bg-primary dark for buttons */
+.text-primary {
+  color: hsl(var(--primary-text)) !important;
 }
 
 @layer base {
