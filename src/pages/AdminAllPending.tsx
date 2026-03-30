@@ -11,6 +11,9 @@ const safeFormat = (dateStr: string, fmt: string = 'dd MMM yyyy') => {
   const d = new Date(dateStr);
   return isValid(d) ? format(d, fmt) : '—';
 };
+
+const formatLabel = (val: string) =>
+  val?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || '—';
 import {
   Users, ListMusic, Tag, Headset, Video, Wallet, Megaphone, UsersRound, Youtube,
   Sparkles, CheckCircle, XCircle, Eye, Loader2, Clock, Link2, FileSignature,
@@ -43,7 +46,7 @@ const categories: PendingCategory[] = [
       { key: 'display_id', label: '#ID', render: (r) => `#${r.display_id}` },
       { key: 'legal_name', label: 'Name' },
       { key: 'email', label: 'Email' },
-      { key: 'user_type', label: 'Type' },
+      { key: 'user_type', label: 'Type', render: (r: any) => formatLabel(r.user_type) },
       { key: 'created_at', label: 'Registered', render: (r) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject'],
@@ -54,7 +57,7 @@ const categories: PendingCategory[] = [
     table: 'releases', statusField: 'status', statusValue: 'pending',
     columns: [
       { key: 'album_name', label: 'Release', render: (r) => r.album_name || r.ep_name || '—' },
-      { key: 'content_type', label: 'Type' },
+      { key: 'content_type', label: 'Type', render: (r: any) => formatLabel(r.content_type) },
       { key: 'release_date', label: 'Date', render: (r) => safeFormat(r.release_date) },
       { key: 'created_at', label: 'Submitted', render: (r) => safeFormat(r.created_at) },
     ],
@@ -76,7 +79,7 @@ const categories: PendingCategory[] = [
     key: 'support', label: 'Support Requests', icon: Headset,
     table: 'content_requests', statusField: 'status', statusValue: 'pending',
     columns: [
-      { key: 'request_type', label: 'Type', render: (r) => r.request_type?.replace(/_/g, ' ') },
+      { key: 'request_type', label: 'Type', render: (r: any) => formatLabel(r.request_type) },
       { key: 'song_title', label: 'Song', render: (r) => r.song_title || r.artist_name || '—' },
       { key: 'created_at', label: 'Submitted', render: (r) => safeFormat(r.created_at) },
     ],
@@ -88,7 +91,7 @@ const categories: PendingCategory[] = [
     key: 'videos', label: 'Videos', icon: Video,
     table: 'video_submissions', statusField: 'status', statusValue: 'pending',
     columns: [
-      { key: 'submission_type', label: 'Type' },
+      { key: 'submission_type', label: 'Type', render: (r: any) => formatLabel(r.submission_type) },
       { key: 'created_at', label: 'Submitted', render: (r) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject', 'view'],
