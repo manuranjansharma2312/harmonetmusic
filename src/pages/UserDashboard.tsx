@@ -445,7 +445,7 @@ export default function UserDashboard() {
               { label: 'Artists', value: topArtists.length, icon: Headphones, accent: 'text-pink-400' },
             ]),
             { label: 'CMS Channels', value: cmsChannels, icon: Youtube, accent: 'text-red-400' },
-            { label: 'CMS Balance', value: formatRevenue(cmsAvailable), icon: Monitor, accent: 'text-emerald-400' },
+            { label: 'CMS Revenue', value: formatRevenue(cmsRevenue), icon: Monitor, accent: 'text-emerald-400' },
           ]),
         ].map((stat) => (
           <GlassCard key={stat.label} className="!p-3 group hover:scale-[1.02] transition-transform duration-300">
