@@ -672,7 +672,7 @@ export default function AdminEmailSettings() {
               )}
 
               {/* Account cards */}
-              <div className="grid gap-3">
+              <div className="grid gap-3 responsive-table-wrap">
                 {accounts.map(acc => (
                   <div key={acc.id} className="border border-border rounded-lg p-4 flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
