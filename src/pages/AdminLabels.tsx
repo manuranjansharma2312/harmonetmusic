@@ -10,6 +10,7 @@ import { RejectReasonModal } from '@/components/RejectReasonModal';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { toast } from 'sonner';
 import { useTeamPermissions } from '@/hooks/useTeamPermissions';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type Label = {
   id: string;
