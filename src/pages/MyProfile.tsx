@@ -182,7 +182,9 @@ export default function MyProfile() {
               <ProfileRow icon={Phone} label="WhatsApp" value={`${profile.whatsapp_country_code} ${profile.whatsapp_number}`} />
               <ProfileRow icon={MapPin} label="Address" value={profile.address} />
               <ProfileRow icon={Globe} label="Location" value={`${profile.state}, ${profile.country}`} />
-              <ProfileRow icon={Shield} label="Agreement Ratio" value={`${profile.agreement_ratio || 0}%`} />
+              {profile.user_type !== 'sub_label' && (
+                <ProfileRow icon={Shield} label="Agreement Ratio" value={`${profile.agreement_ratio || 0}%`} />
+              )}
               {parentCut && (
                 <ProfileRow icon={Shield} label="Parent Label Cut" value={`${parentCut.cut}% (by ${parentCut.parentName})`} />
               )}
