@@ -379,6 +379,16 @@ export default function UserDashboard() {
   const totalStoreStreams = useMemo(() => topStores.reduce((a, b) => a + b.value, 0), [topStores]);
   const totalStoreRevenue = useMemo(() => topStores.reduce((a, b) => a + b.revenue, 0), [topStores]);
   const topStoreNames = useMemo(() => topStores.slice(0, 4).map(s => s.name), [topStores]);
+  const cmsWalletCards = useMemo(() => {
+    const cards = [
+      { key: 'revenue', label: 'CMS Revenue', value: formatRevenue(cmsNetPayable), icon: Youtube, color: 'hsl(0, 67%, 40%)', iconColor: 'text-red-400' },
+      { key: 'paid', label: 'CMS Paid', value: formatRevenue(cmsPaid), icon: CheckCircle, color: 'hsl(140, 60%, 40%)', iconColor: 'text-emerald-400' },
+      { key: 'balance', label: 'CMS Balance', value: formatRevenue(cmsAvailable), icon: Zap, color: 'hsl(200, 70%, 50%)', iconColor: 'text-sky-400' },
+    ];
+
+    const hasDuplicateRevenueAndBalance = Math.abs(cmsNetPayable - cmsAvailable) <= 0.01;
+    return hasDuplicateRevenueAndBalance ? cards.filter((card) => card.key !== 'revenue') : cards;
+  }, [cmsAvailable, cmsNetPayable, cmsPaid]);
   
 
   const getReleaseName = (r: any) => {
@@ -455,12 +465,8 @@ export default function UserDashboard() {
 
       {/* CMS Wallet (not for sub-label users) */}
       {!isSubLabelUser && cmsChannels > 0 && (
-        <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
-          {[
-            { label: 'CMS Revenue', value: formatRevenue(cmsNetPayable), icon: Youtube, color: 'hsl(0, 67%, 40%)', iconColor: 'text-red-400' },
-            { label: 'CMS Paid', value: formatRevenue(cmsPaid), icon: CheckCircle, color: 'hsl(140, 60%, 40%)', iconColor: 'text-emerald-400' },
-            { label: 'CMS Balance', value: formatRevenue(cmsAvailable), icon: Zap, color: 'hsl(200, 70%, 50%)', iconColor: 'text-sky-400' },
-          ].map((stat) => (
+        <div className={`${cmsWalletCards.length === 2 ? 'grid grid-cols-2' : 'grid grid-cols-3'} gap-3 sm:gap-4 mb-6 sm:mb-8`}>
+          {cmsWalletCards.map((stat) => (
             <GlassCard key={stat.label} className="!p-4 border-l-4 animate-fade-in" style={{ borderLeftColor: stat.color }}>
               <div className="flex items-center gap-2 mb-2">
                 <stat.icon className={`h-4 w-4 ${stat.iconColor}`} />
