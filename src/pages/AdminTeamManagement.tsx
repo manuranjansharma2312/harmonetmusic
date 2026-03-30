@@ -345,8 +345,8 @@ export default function AdminTeamManagement() {
                       <TableHead className="whitespace-nowrap">Department</TableHead>
                       <TableHead className="whitespace-nowrap">Pages Access</TableHead>
                       <TableHead className="whitespace-nowrap">Govt IDs</TableHead>
+                      <TableHead className="whitespace-nowrap">Status</TableHead>
                       <TableHead className="whitespace-nowrap">Created</TableHead>
-                      <TableHead className="whitespace-nowrap text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
