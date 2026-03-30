@@ -41,12 +41,6 @@ export default function AdminPaymentSettings() {
     setLoading(false);
   };
 
-  const togglePromoEnabled = async (val: boolean) => {
-    const { error } = await supabase.from('promotion_settings').update({ is_enabled: val, updated_at: new Date().toISOString() }).eq('id', settingsId);
-    if (error) { toast.error('Failed to update'); return; }
-    setIsEnabled(val);
-    toast.success(val ? 'Promotion Services enabled for users' : 'Promotion Services disabled for users');
-  };
 
   const toggleTakedownPayment = async (val: boolean) => {
     const { error } = await supabase.from('promotion_settings').update({ takedown_payment_enabled: val, updated_at: new Date().toISOString() }).eq('id', settingsId);
