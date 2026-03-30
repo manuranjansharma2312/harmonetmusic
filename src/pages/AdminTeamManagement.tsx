@@ -347,11 +347,12 @@ export default function AdminTeamManagement() {
                       <TableHead className="whitespace-nowrap">Govt IDs</TableHead>
                       <TableHead className="whitespace-nowrap">Status</TableHead>
                       <TableHead className="whitespace-nowrap">Created</TableHead>
+                      <TableHead className="whitespace-nowrap text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {members.length === 0 ? (
-                      <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No team members yet</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">No team members yet</TableCell></TableRow>
                     ) : members.map(m => (
                       <TableRow key={m.id} className={selected.has(m.id) ? 'bg-primary/5' : ''}>
                         <TableCell>
