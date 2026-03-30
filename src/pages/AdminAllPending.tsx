@@ -262,9 +262,11 @@ export default function AdminAllPending() {
       setLoading(true);
       const from = page * effectivePageSize;
       const to = from + effectivePageSize - 1;
-      const { data: rows } = await (supabase.from(activeCategory.table as any) as any)
+      let query = (supabase.from(activeCategory.table as any) as any)
         .select('*')
-        .eq(activeCategory.statusField, activeCategory.statusValue)
+        .eq(activeCategory.statusField, activeCategory.statusValue);
+      if (activeCategory.extraFilter) query = query.eq(activeCategory.extraFilter.field, activeCategory.extraFilter.value);
+      const { data: rows } = await query
         .order('created_at', { ascending: false })
         .range(from, to);
       setData(rows || []);
