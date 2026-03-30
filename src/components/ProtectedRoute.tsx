@@ -66,7 +66,7 @@ export function ProtectedRoute({
   const [checkingProfile, setCheckingProfile] = useState(true);
 
   useEffect(() => {
-    if (!user || role === 'admin') {
+    if (!user || role === 'admin' || role === 'team') {
       setCheckingProfile(false);
       return;
     }
