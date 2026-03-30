@@ -280,7 +280,7 @@ export default function AdminAllPending() {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Clock className="h-6 w-6 text-primary" />
-              All Pending
+              All Pendings
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               {grandTotal} total pending items across all modules
@@ -297,7 +297,7 @@ export default function AdminAllPending() {
             return (
               <button
                 key={cat.key}
-                onClick={() => { setActiveTab(cat.key); setPage(1); }}
+                onClick={() => { setActiveTab(cat.key); setPage(0); }}
                 className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border transition-all text-center min-w-[100px] ${
                   activeTab === cat.key
                     ? 'border-primary bg-primary/10 text-foreground'
