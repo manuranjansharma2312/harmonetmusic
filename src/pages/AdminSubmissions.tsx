@@ -1143,9 +1143,12 @@ export default function AdminSubmissions() {
                                   <button onClick={() => handleSaveIsrc(track.id)} className="p-1 hover:bg-primary/20 rounded text-primary"><Save className="h-3.5 w-3.5" /></button>
                                 </>
                               ) : (
-                                <button onClick={() => setEditingIsrc((p) => ({ ...p, [track.id]: track.isrc || '' }))} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                                  {track.isrc || <span className="italic text-muted-foreground/50">Add ISRC</span>}
-                                </button>
+                                <div className="flex items-center gap-1">
+                                  <button onClick={() => setEditingIsrc((p) => ({ ...p, [track.id]: track.isrc || '' }))} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                                    {track.isrc || <span className="italic text-muted-foreground/50">Add ISRC</span>}
+                                  </button>
+                                  {track.isrc && <CopyButton value={track.isrc} />}
+                                </div>
                               )}
                             </div>
                           </td>
