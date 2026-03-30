@@ -2170,6 +2170,8 @@ export type Database = {
           govt_ids: Json
           id: string
           name: string
+          phone_country_code: string | null
+          phone_number: string | null
           status: string
           updated_at: string
           user_id: string
@@ -2182,6 +2184,8 @@ export type Database = {
           govt_ids?: Json
           id?: string
           name: string
+          phone_country_code?: string | null
+          phone_number?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -2194,6 +2198,8 @@ export type Database = {
           govt_ids?: Json
           id?: string
           name?: string
+          phone_country_code?: string | null
+          phone_number?: string | null
           status?: string
           updated_at?: string
           user_id?: string

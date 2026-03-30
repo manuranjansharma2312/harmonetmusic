@@ -8,15 +8,16 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import {
   Users, Plus, Trash2, Pencil, Loader2, Shield, FolderOpen, Eye, EyeOff,
-  Download, LogIn, CreditCard, KeyRound, Mail,
+  Download, LogIn, CreditCard, KeyRound, Mail, Search, Filter,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { countries as locationCountries } from '@/data/locations';
 
-// All admin page keys that can be assigned
 const ALL_ADMIN_PAGES = [
   { key: 'dashboard', label: 'Dashboard', path: '/admin' },
   { key: 'all-pending', label: 'All Pendings', path: '/admin/all-pending' },
@@ -57,6 +58,8 @@ interface TeamMember {
   category_id: string | null;
   name: string;
   email: string;
+  phone_country_code: string;
+  phone_number: string;
   allowed_pages: string[];
   govt_ids: GovtId[];
   status: string;
@@ -68,6 +71,15 @@ export default function AdminTeamManagement() {
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Filters
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterDept, setFilterDept] = useState<string>('all');
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
+
   // Category form
   const [catOpen, setCatOpen] = useState(false);
   const [catForm, setCatForm] = useState({ name: '', description: '' });
@@ -77,11 +89,13 @@ export default function AdminTeamManagement() {
   const [memberOpen, setMemberOpen] = useState(false);
   const [memberForm, setMemberForm] = useState({
     name: '', email: '', password: '', category_id: '',
+    phone_country_code: '+91', phone_number: '',
     allowed_pages: [] as string[],
     govt_ids: [{ name: '', number: '' }] as GovtId[],
   });
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [showPw, setShowPw] = useState(false);
+  const [phoneSearch, setPhoneSearch] = useState('');
 
   const [submitting, setSubmitting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'cat' | 'member'; id: string } | null>(null);
@@ -103,11 +117,33 @@ export default function AdminTeamManagement() {
       (supabase.from('team_members') as any).select('*').order('created_at', { ascending: false }),
     ]);
     setCategories(cats || []);
-    setMembers((mems || []).map((m: any) => ({ ...m, govt_ids: Array.isArray(m.govt_ids) ? m.govt_ids : [] })));
+    setMembers((mems || []).map((m: any) => ({
+      ...m,
+      govt_ids: Array.isArray(m.govt_ids) ? m.govt_ids : [],
+      phone_country_code: m.phone_country_code || '',
+      phone_number: m.phone_number || '',
+    })));
     setLoading(false);
   };
 
   useEffect(() => { fetchAll(); }, []);
+
+  // Filtered + paginated members
+  const filteredMembers = useMemo(() => {
+    let list = members;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(m => m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q));
+    }
+    if (filterStatus !== 'all') list = list.filter(m => (m.status || 'pending') === filterStatus);
+    if (filterDept !== 'all') list = list.filter(m => m.category_id === filterDept);
+    return list;
+  }, [members, searchQuery, filterStatus, filterDept]);
+
+  const paginatedMembers = useMemo(() => paginateItems(filteredMembers, currentPage, pageSize), [filteredMembers, currentPage, pageSize]);
+
+  // Reset page when filters change
+  useEffect(() => { setCurrentPage(0); }, [searchQuery, filterStatus, filterDept]);
 
   // ---- Status change ----
   const handleStatusChange = async (member: TeamMember, newStatus: string) => {
@@ -160,6 +196,8 @@ export default function AdminTeamManagement() {
       const { error } = await (supabase.from('team_members') as any).update({
         name: memberForm.name.trim(),
         category_id: memberForm.category_id || null,
+        phone_country_code: memberForm.phone_country_code,
+        phone_number: memberForm.phone_number.trim(),
         allowed_pages: memberForm.allowed_pages,
         govt_ids: cleanGovtIds,
         updated_at: new Date().toISOString(),
@@ -171,6 +209,8 @@ export default function AdminTeamManagement() {
         body: {
           email: memberForm.email.trim(), password: memberForm.password,
           name: memberForm.name.trim(), category_id: memberForm.category_id || null,
+          phone_country_code: memberForm.phone_country_code,
+          phone_number: memberForm.phone_number.trim(),
           allowed_pages: memberForm.allowed_pages, govt_ids: cleanGovtIds,
         },
       });
@@ -198,12 +238,14 @@ export default function AdminTeamManagement() {
     fetchAll();
   };
 
-  const resetMemberForm = () => setMemberForm({ name: '', email: '', password: '', category_id: '', allowed_pages: [], govt_ids: [{ name: '', number: '' }] });
+  const resetMemberForm = () => setMemberForm({ name: '', email: '', password: '', category_id: '', phone_country_code: '+91', phone_number: '', allowed_pages: [], govt_ids: [{ name: '', number: '' }] });
 
   const openEditMember = (m: TeamMember) => {
     setEditingMember(m);
     setMemberForm({
       name: m.name, email: m.email, password: '', category_id: m.category_id || '',
+      phone_country_code: m.phone_country_code || '+91',
+      phone_number: m.phone_number || '',
       allowed_pages: m.allowed_pages,
       govt_ids: m.govt_ids.length ? m.govt_ids : [{ name: '', number: '' }],
     });
@@ -237,7 +279,7 @@ export default function AdminTeamManagement() {
 
   // ---- Selection ----
   const toggleSelect = (id: string) => setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
-  const toggleSelectAll = () => setSelected(prev => prev.size === members.length ? new Set() : new Set(members.map(m => m.id)));
+  const toggleSelectAll = () => setSelected(prev => prev.size === filteredMembers.length ? new Set() : new Set(filteredMembers.map(m => m.id)));
 
   // ---- Login as team member ----
   const handleLoginAs = async (member: TeamMember) => {
@@ -247,7 +289,6 @@ export default function AdminTeamManagement() {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
       if (!token) { toast.error('Not authenticated'); return; }
-      
       const { data: fnData, error: fnError } = await supabase.functions.invoke('admin-reset-password', {
         body: { action: 'login_as_user', user_id: member.user_id },
         headers: { Authorization: `Bearer ${token}` },
@@ -256,7 +297,6 @@ export default function AdminTeamManagement() {
         toast.error(fnData?.error || fnError?.message || 'Failed to generate login');
         return;
       }
-      // Sign out admin, then verify OTP with the magic link token
       await supabase.auth.signOut();
       const { error: otpError } = await supabase.auth.verifyOtp({
         type: 'magiclink',
@@ -322,15 +362,17 @@ export default function AdminTeamManagement() {
 
   // ---- CSV Export ----
   const exportCSV = () => {
-    const rows = selected.size > 0 ? members.filter(m => selected.has(m.id)) : members;
+    const rows = selected.size > 0 ? filteredMembers.filter(m => selected.has(m.id)) : filteredMembers;
     if (!rows.length) { toast.error('No data to export'); return; }
-    const headers = ['Name', 'Email', 'Department', 'Pages Access', 'Govt IDs', 'Created'];
+    const headers = ['Name', 'Email', 'Phone', 'Department', 'Pages Access', 'Govt IDs', 'Status', 'Created'];
     const csvRows = [headers.join(',')];
     rows.forEach(m => {
       const govtStr = (m.govt_ids || []).map(g => `${g.name}: ${g.number}`).join(' | ');
+      const phone = m.phone_country_code && m.phone_number ? `${m.phone_country_code} ${m.phone_number}` : '';
       csvRows.push([
-        `"${m.name}"`, `"${m.email}"`, `"${getCategoryName(m.category_id)}"`,
+        `"${m.name}"`, `"${m.email}"`, `"${phone}"`, `"${getCategoryName(m.category_id)}"`,
         `"${m.allowed_pages.map(k => getPageLabel(k)).join(', ')}"`, `"${govtStr}"`,
+        `"${m.status || 'pending'}"`,
         `"${format(new Date(m.created_at), 'dd MMM yyyy')}"`,
       ].join(','));
     });
@@ -341,6 +383,13 @@ export default function AdminTeamManagement() {
     a.click(); URL.revokeObjectURL(url);
     toast.success(`Exported ${rows.length} members`);
   };
+
+  // Phone country search
+  const filteredPhoneCountries = useMemo(() => {
+    if (!phoneSearch.trim()) return locationCountries;
+    const q = phoneSearch.toLowerCase();
+    return locationCountries.filter((c: any) => c.name.toLowerCase().includes(q) || c.dialCode.includes(q));
+  }, [phoneSearch]);
 
   if (loading) {
     return <DashboardLayout><div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div></DashboardLayout>;
@@ -369,8 +418,36 @@ export default function AdminTeamManagement() {
 
           {/* ---- TEAM MEMBERS TAB ---- */}
           <TabsContent value="members" className="space-y-4 mt-4">
+            {/* Filters bar */}
             <div className="flex items-center justify-between flex-wrap gap-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Search name or email..."
+                    className="pl-9 h-9 w-[200px]"
+                  />
+                </div>
+                <select
+                  value={filterStatus}
+                  onChange={e => setFilterStatus(e.target.value)}
+                  className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="active">Active</option>
+                  <option value="suspended">Suspended</option>
+                </select>
+                <select
+                  value={filterDept}
+                  onChange={e => setFilterDept(e.target.value)}
+                  className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="all">All Departments</option>
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
                 {selected.size > 0 && (
                   <span className="text-sm text-muted-foreground">{selected.size} selected</span>
                 )}
@@ -384,19 +461,20 @@ export default function AdminTeamManagement() {
                 </Button>
               </div>
             </div>
-            <GlassCard>
+            <GlassCard className="p-0">
               <div className="responsive-table-wrap">
                 <Table className="min-w-max">
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-10">
                         <Checkbox
-                          checked={selected.size === members.length && members.length > 0}
+                          checked={selected.size === filteredMembers.length && filteredMembers.length > 0}
                           onCheckedChange={toggleSelectAll}
                         />
                       </TableHead>
                       <TableHead className="whitespace-nowrap">Name</TableHead>
                       <TableHead className="whitespace-nowrap">Email</TableHead>
+                      <TableHead className="whitespace-nowrap">Phone</TableHead>
                       <TableHead className="whitespace-nowrap">Department</TableHead>
                       <TableHead className="whitespace-nowrap">Pages Access</TableHead>
                       <TableHead className="whitespace-nowrap">Govt IDs</TableHead>
@@ -406,15 +484,18 @@ export default function AdminTeamManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {members.length === 0 ? (
-                      <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">No team members yet</TableCell></TableRow>
-                    ) : members.map(m => (
+                    {paginatedMembers.length === 0 ? (
+                      <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">No team members found</TableCell></TableRow>
+                    ) : paginatedMembers.map(m => (
                       <TableRow key={m.id} className={selected.has(m.id) ? 'bg-primary/5' : ''}>
                         <TableCell>
                           <Checkbox checked={selected.has(m.id)} onCheckedChange={() => toggleSelect(m.id)} />
                         </TableCell>
                         <TableCell className="font-medium whitespace-nowrap">{m.name}</TableCell>
                         <TableCell className="whitespace-nowrap">{m.email}</TableCell>
+                        <TableCell className="whitespace-nowrap text-sm">
+                          {m.phone_country_code && m.phone_number ? `${m.phone_country_code} ${m.phone_number}` : <span className="text-muted-foreground">—</span>}
+                        </TableCell>
                         <TableCell className="whitespace-nowrap">{getCategoryName(m.category_id)}</TableCell>
                         <TableCell>
                           <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded whitespace-nowrap">{m.allowed_pages.length} pages</span>
@@ -465,6 +546,14 @@ export default function AdminTeamManagement() {
                   </TableBody>
                 </Table>
               </div>
+              <TablePagination
+                totalItems={filteredMembers.length}
+                currentPage={currentPage}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={setPageSize}
+                itemLabel="members"
+              />
             </GlassCard>
           </TabsContent>
 
@@ -552,6 +641,33 @@ export default function AdminTeamManagement() {
                 </div>
               </div>
             )}
+
+            {/* Phone Number */}
+            <div>
+              <Label>Phone Number</Label>
+              <div className="flex gap-2">
+                <div className="relative w-[180px]">
+                  <select
+                    value={memberForm.phone_country_code}
+                    onChange={e => setMemberForm(p => ({ ...p, phone_country_code: e.target.value }))}
+                    className="w-full h-10 rounded-md border border-input bg-background px-2 text-sm appearance-none"
+                  >
+                    {locationCountries.map((c: any) => (
+                      <option key={c.code} value={c.dialCode}>
+                        {c.flag} {c.name} ({c.dialCode})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Input
+                  value={memberForm.phone_number}
+                  onChange={e => setMemberForm(p => ({ ...p, phone_number: e.target.value }))}
+                  placeholder="Phone number"
+                  className="flex-1"
+                />
+              </div>
+            </div>
+
             <div>
               <Label>Department</Label>
               <select value={memberForm.category_id} onChange={e => setMemberForm(p => ({ ...p, category_id: e.target.value }))} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
