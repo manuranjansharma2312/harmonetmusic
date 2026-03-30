@@ -212,60 +212,70 @@ export default function AdminSubLabels() {
           <p className="text-muted-foreground">No sub labels found.</p>
         </GlassCard>
       ) : (
-        <div className="space-y-3 responsive-table-wrap">
-          {paginateItems(filtered, page, pageSize).map((sl) => (
-            <GlassCard key={sl.id} className="animate-fade-in">
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
-                  <Users className="h-5 w-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-foreground">{sl.sub_label_name}</p>
-                  <div className="flex flex-wrap items-center gap-2 mt-1">
-                    <span className="text-xs text-muted-foreground">Parent: {sl.parent_label_name}</span>
-                    <span className="text-xs text-muted-foreground">•</span>
-                    <span className="text-xs text-muted-foreground">{sl.email}</span>
-                    <span className="text-xs text-muted-foreground">•</span>
-                    <span className="text-xs text-muted-foreground">Cut: {sl.percentage_cut}%</span>
-                  </div>
-                </div>
-                <StatusBadge status={sl.status === 'active' ? 'approved' : sl.status} />
-                <Select value={sl.status} onValueChange={(val) => {
-                  if (val === 'rejected') { setRejectSL(sl); }
-                  else { updateStatus(sl, val); }
-                }}>
-                  <SelectTrigger className="w-[130px] h-8 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="rejected">Rejected</SelectItem>
-                    <SelectItem value="suspended">Suspended</SelectItem>
-                  </SelectContent>
-                </Select>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!sl.sub_user_id} onClick={() => {
-                    if (sl.sub_user_id) {
-                      startImpersonating(sl.sub_user_id, sl.email);
-                      navigate('/dashboard');
-                    }
-                  }} title={sl.sub_user_id ? "Login as User" : "No account linked"}>
-                    <LogIn className={`h-4 w-4 ${sl.sub_user_id ? 'text-blue-500' : 'text-muted-foreground'}`} />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewSL(sl)} title="View">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditSL(sl); setEditSubLabelName(sl.sub_label_name); setEditParentLabelName(sl.parent_label_name); setEditEmail(sl.email); setEditPhone(sl.phone); setEditStart(sl.agreement_start_date); setEditEnd(sl.agreement_end_date); setEditCut(String(sl.percentage_cut)); setEditThreshold(String(sl.withdrawal_threshold || 1000)); setEditStatus(sl.status); }} title="Edit">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteSL(sl)} title="Delete">
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              </div>
-            </GlassCard>
-          ))}
+        <div className="space-y-3">
+          <div className="responsive-table-wrap rounded-lg border border-border bg-card/50">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/30">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Sub Label</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Parent</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Email</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Cut %</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Change Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginateItems(filtered, page, pageSize).map((sl) => (
+                  <tr key={sl.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
+                    <td className="px-4 py-3 whitespace-nowrap font-semibold text-foreground">{sl.sub_label_name}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">{sl.parent_label_name}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">{sl.email}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">{sl.percentage_cut}%</td>
+                    <td className="px-4 py-3 whitespace-nowrap"><StatusBadge status={sl.status === 'active' ? 'approved' : sl.status} /></td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <Select value={sl.status} onValueChange={(val) => {
+                        if (val === 'rejected') { setRejectSL(sl); }
+                        else { updateStatus(sl, val); }
+                      }}>
+                        <SelectTrigger className="w-[130px] h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="rejected">Rejected</SelectItem>
+                          <SelectItem value="suspended">Suspended</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!sl.sub_user_id} onClick={() => {
+                          if (sl.sub_user_id) {
+                            startImpersonating(sl.sub_user_id, sl.email);
+                            navigate('/dashboard');
+                          }
+                        }} title={sl.sub_user_id ? "Login as User" : "No account linked"}>
+                          <LogIn className={`h-4 w-4 ${sl.sub_user_id ? 'text-blue-500' : 'text-muted-foreground'}`} />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewSL(sl)} title="View">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditSL(sl); setEditSubLabelName(sl.sub_label_name); setEditParentLabelName(sl.parent_label_name); setEditEmail(sl.email); setEditPhone(sl.phone); setEditStart(sl.agreement_start_date); setEditEnd(sl.agreement_end_date); setEditCut(String(sl.percentage_cut)); setEditThreshold(String(sl.withdrawal_threshold || 1000)); setEditStatus(sl.status); }} title="Edit">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteSL(sl)} title="Delete">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <div className="rounded-lg bg-card/50 border border-border/50 overflow-hidden">
             <TablePagination totalItems={filtered.length} currentPage={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} itemLabel="sub labels" />
           </div>
