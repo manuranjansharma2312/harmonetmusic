@@ -72,7 +72,6 @@ const adminPromotionalLinks = [
 ];
 
 const adminBillingLinks = [
-  { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
   { to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt },
 ];
 
