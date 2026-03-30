@@ -1052,9 +1052,12 @@ export default function AdminSubmissions() {
                                 <button onClick={() => handleSaveUpc(release.id)} className="p-1 hover:bg-primary/20 rounded text-primary"><Save className="h-3.5 w-3.5" /></button>
                               </>
                             ) : (
-                              <button onClick={() => setEditingUpc((p) => ({ ...p, [release.id]: release.upc || '' }))} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                                {release.upc || <span className="italic text-muted-foreground/50">Add UPC</span>}
-                              </button>
+                              <div className="flex items-center gap-1">
+                                <button onClick={() => setEditingUpc((p) => ({ ...p, [release.id]: release.upc || '' }))} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                                  {release.upc || <span className="italic text-muted-foreground/50">Add UPC</span>}
+                                </button>
+                                {release.upc && <CopyButton value={release.upc} />}
+                              </div>
                             )}
                           </div>
                         </td>
@@ -1117,7 +1120,10 @@ export default function AdminSubmissions() {
                               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">{track.track_order}</div>
                               <div>
                                 <p className="text-sm text-foreground">{track.song_title}</p>
-                                <p className="text-xs text-muted-foreground">{track.primary_artist} • {track.genre} • {track.audio_type}</p>
+                                <div className="flex items-center gap-1">
+                                  <p className="text-xs text-muted-foreground">{track.primary_artist} • {track.genre} • {track.audio_type}</p>
+                                  {track.primary_artist && <CopyButton value={track.primary_artist} />}
+                                </div>
                                 {track.status === 'rejected' && track.rejection_reason && (
                                   <p className="text-xs text-destructive mt-0.5 max-w-[250px] truncate" title={track.rejection_reason}>{track.rejection_reason}</p>
                                 )}
