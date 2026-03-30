@@ -333,7 +333,7 @@ export default function SignDocument() {
             </div>
 
             <Button className="w-full py-6 text-lg" onClick={handleFinishSigning} disabled={signing || !consent}>
-              {signing ? 'Signing...' : '✍️ Finish Signing'}
+              {signing ? 'Signing...' : 'Finish Signing'}
             </Button>
           </div>
         )}

@@ -461,7 +461,7 @@ export default function AdminUsers() {
                         onClick={() => handleSaveHiddenCut(viewProfile.user_id, Number(editingCut.value) || 0)}
                         className="text-xs px-2 py-1 rounded bg-primary/20 text-primary hover:bg-primary/30"
                       >Save</button>
-                      <button onClick={() => setEditingCut(null)} className="text-xs text-muted-foreground hover:text-foreground">✕</button>
+                      <button onClick={() => setEditingCut(null)} className="text-xs text-muted-foreground hover:text-foreground"><X className="h-3 w-3" /></button>
                     </div>
                   ) : (
                     <button

@@ -1361,7 +1361,7 @@ export default function AdminEmailSettings() {
 
                 {/* Verification Tools */}
                 <div className="p-4 bg-muted/30 border border-border/30 rounded-lg space-y-2">
-                  <h3 className="font-semibold text-sm">🔍 Verify Your Setup</h3>
+                  <h3 className="font-semibold text-sm flex items-center gap-2"><Search className="h-4 w-4" /> Verify Your Setup</h3>
                   <p className="text-muted-foreground text-xs">Use these free tools to check your email deliverability:</p>
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground text-xs">
                     <li><strong>mail-tester.com</strong> — Send a test email and get a spam score (aim for 9+/10)</li>

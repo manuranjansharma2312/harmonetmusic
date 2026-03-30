@@ -197,7 +197,7 @@ export default function SmartLink() {
                   {platform.icon_url ? (
                     <img src={platform.icon_url} alt={platform.name} className="h-5 w-5 rounded object-contain" />
                   ) : (
-                    <span className="text-lg">🎵</span>
+                    <Music className="h-5 w-5 text-white/70" />
                   )}
                   <span className="text-white font-medium text-sm sm:text-base">{platform.name}</span>
                 </div>

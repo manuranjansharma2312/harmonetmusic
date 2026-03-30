@@ -148,8 +148,8 @@ export default function AdminPaymentSettings() {
                 <p className="font-medium text-foreground">Enable Taxes on Takedown</p>
                 <p className="text-sm text-muted-foreground">
                   {takedownTaxEnabled
-                    ? '✅ Taxes (defined below) will be applied to the takedown amount.'
-                    : '❌ No taxes applied on the takedown form.'}
+                    ? 'Taxes (defined below) will be applied to the takedown amount.'
+                    : 'No taxes applied on the takedown form.'}
                 </p>
               </div>
               <Switch checked={takedownTaxEnabled} onCheckedChange={async (val) => {
