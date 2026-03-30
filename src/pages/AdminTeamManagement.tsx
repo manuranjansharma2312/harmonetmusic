@@ -235,9 +235,8 @@ export default function AdminTeamManagement() {
       await supabase.auth.signOut();
       const { error: otpError } = await supabase.auth.verifyOtp({
         type: 'magiclink',
-        email: fnData.email,
         token_hash: fnData.token_hash,
-      });
+      } as any);
       if (otpError) {
         toast.error(otpError.message);
         window.location.href = '/auth';
