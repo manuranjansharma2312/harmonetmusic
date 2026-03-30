@@ -92,7 +92,10 @@ export function ProtectedRoute({
 
   if (!user) return <Navigate to="/auth" replace />;
 
-  if (requiredRole && role !== requiredRole) {
+  if (requiredRole === 'admin' && role !== 'admin' && role !== 'team') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  if (requiredRole && requiredRole !== 'admin' && role !== requiredRole) {
     return <Navigate to={role === 'admin' ? '/admin' : '/dashboard'} replace />;
   }
 
