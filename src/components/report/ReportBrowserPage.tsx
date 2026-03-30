@@ -140,7 +140,7 @@ export function ReportBrowserPage({
 
   const fetchFormat = useCallback(async () => {
     const { data } = await supabase.from(formatTable as any).select('*').order('sort_order', { ascending: true });
-    if (data) setFormatColumns(data as FormatColumn[]);
+    if (data) setFormatColumns(data as unknown as FormatColumn[]);
   }, [formatTable]);
 
   const fetchOwnedIsrcs = useCallback(async (parentUserId: string) => {
