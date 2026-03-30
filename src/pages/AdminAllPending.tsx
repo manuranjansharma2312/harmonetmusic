@@ -345,7 +345,7 @@ export default function AdminAllPending() {
                         </td>
                       ))}
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <StatusBadge status="pending" />
+                        <StatusBadge status={activeCategory.statusValue} />
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-1.5">
