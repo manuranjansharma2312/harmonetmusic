@@ -465,7 +465,7 @@ export default function UserDashboard() {
 
       {/* CMS Wallet (not for sub-label users) */}
       {!isSubLabelUser && cmsChannels > 0 && (
-        <div className={`${cmsWalletCards.length === 2 ? 'grid grid-cols-2' : 'grid grid-cols-3'} gap-3 sm:gap-4 mb-6 sm:mb-8`}>
+        <div className={`grid grid-cols-1 ${cmsWalletCards.length === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-3'} gap-3 sm:gap-4 mb-6 sm:mb-8`}>
           {cmsWalletCards.map((stat) => (
             <GlassCard key={stat.label} className="!p-4 border-l-4 animate-fade-in" style={{ borderLeftColor: stat.color }}>
               <div className="flex items-center gap-2 mb-2">
