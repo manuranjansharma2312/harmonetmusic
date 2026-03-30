@@ -240,9 +240,11 @@ export default function AdminAllPending() {
       const results: Record<string, number> = {};
       await Promise.all(
         visibleCategories.map(async (cat) => {
-          const { count } = await (supabase.from(cat.table as any) as any)
+          let query = (supabase.from(cat.table as any) as any)
             .select('id', { count: 'exact', head: true })
             .eq(cat.statusField, cat.statusValue);
+          if (cat.extraFilter) query = query.eq(cat.extraFilter.field, cat.extraFilter.value);
+          const { count } = await query;
           results[cat.key] = count || 0;
         })
       );
