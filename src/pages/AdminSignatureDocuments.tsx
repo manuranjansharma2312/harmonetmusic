@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,7 @@ interface Recipient {
 }
 
 export default function AdminSignatureDocuments() {
+  const { canDelete, canChangeSettings } = useTeamPermissions();
   const navigate = useNavigate();
   const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -186,9 +188,12 @@ export default function AdminSignatureDocuments() {
                 <SelectItem value="completed">Completed</SelectItem>
               </SelectContent>
             </Select>
+            {canChangeSettings && (
             <Button variant="outline" onClick={() => navigate('/admin/signature-settings')}>
               <Settings2 className="h-4 w-4 mr-2" /> Settings
             </Button>
+            )}
+            {canChangeSettings && (
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-2" /> New Document</Button>
@@ -265,6 +270,7 @@ export default function AdminSignatureDocuments() {
               </div>
             </DialogContent>
           </Dialog>
+          )}
           </div>
         </div>
 
@@ -319,9 +325,11 @@ export default function AdminSignatureDocuments() {
                           <Award className="h-4 w-4" />
                         </Button>
                       )}
+                      {canDelete && (
                       <Button variant="ghost" size="icon" onClick={() => setDeleteId(doc.id)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
@@ -107,6 +108,7 @@ interface MonthGroup {
 }
 
 export default function AdminVevoReports() {
+  const { canDelete, canChangeSettings } = useTeamPermissions();
   const fileRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
   const [preview, setPreview] = useState<Record<string, string>[] | null>(null);
@@ -605,13 +607,15 @@ export default function AdminVevoReports() {
             <h1 className="text-2xl font-bold">Vevo Reports</h1>
             <p className="text-muted-foreground text-sm">Import and manage Vevo revenue reports</p>
           </div>
+          {canChangeSettings && (
           <Button variant="outline" size="sm" onClick={openFormatConfig}>
             <Settings2 className="h-4 w-4 mr-1" /> Report Format
           </Button>
+          )}
         </div>
 
         {/* Format Configuration Panel */}
-        {showFormatConfig && (
+        {showFormatConfig && canChangeSettings && (
           <GlassCard className="p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -707,6 +711,7 @@ export default function AdminVevoReports() {
           </GlassCard>
         )}
 
+        {canChangeSettings && (
         <GlassCard className="p-5 space-y-4">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5" /> Import Vevo Report
@@ -762,7 +767,7 @@ export default function AdminVevoReports() {
             </div>
           )}
         </GlassCard>
-
+        )}
         <GlassCard className="p-0 overflow-hidden">
           {loading ? (
             <p className="p-6 text-center text-muted-foreground">Loading reports...</p>
@@ -803,9 +808,11 @@ export default function AdminVevoReports() {
                         <Button size="sm" variant="outline" onClick={() => handleViewMonth(g.month)}>
                           <Eye className="h-4 w-4 mr-1" /> View
                         </Button>
+                        {canDelete && (
                         <Button size="sm" variant="destructive" onClick={() => setDeleteMonth(g.month)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

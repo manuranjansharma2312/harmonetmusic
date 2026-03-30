@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
@@ -34,6 +35,7 @@ const STATUS_MAP: Record<string, string> = { pending: 'pending', paid: 'approved
 const STATUSES = ['pending', 'paid', 'rejected'];
 
 export default function AdminCmsWithdrawals() {
+  const { canChangeSettings } = useTeamPermissions();
   const [requests, setRequests] = useState<WithdrawalRequest[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [loading, setLoading] = useState(true);
@@ -128,7 +130,7 @@ export default function AdminCmsWithdrawals() {
           <p className="text-muted-foreground text-sm">Manage YouTube CMS withdrawal requests</p>
         </div>
 
-        {/* Threshold Settings */}
+        {canChangeSettings && (
         <GlassCard className="p-4">
           <h3 className="font-semibold mb-3">CMS Withdrawal Threshold</h3>
           <div className="flex gap-3 items-center">
@@ -137,6 +139,7 @@ export default function AdminCmsWithdrawals() {
             <Button size="sm" onClick={saveThreshold}>Save</Button>
           </div>
         </GlassCard>
+        )}
 
         <GlassCard className="p-0 overflow-hidden">
           <div className="p-4 border-b border-border/50 flex gap-3 flex-wrap">

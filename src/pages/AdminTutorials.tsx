@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -24,6 +25,7 @@ interface Tutorial {
 }
 
 export default function AdminTutorials() {
+  const { canDelete, canChangeSettings } = useTeamPermissions();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -129,7 +131,7 @@ export default function AdminTutorials() {
             <h1 className="text-2xl font-bold">Help Tutorials</h1>
             <p className="text-sm text-muted-foreground mt-1">Create and manage tutorials for artists</p>
           </div>
-          {!showForm && (
+          {!showForm && canChangeSettings && (
             <Button onClick={() => { resetForm(); setShowForm(true); }} className="gap-2">
               <Plus className="h-4 w-4" /> New Tutorial
             </Button>
@@ -190,9 +192,11 @@ export default function AdminTutorials() {
                           <Button size="icon" variant="ghost" onClick={() => handleEdit(tutorial)} title="Edit">
                             <Edit2 className="h-4 w-4" />
                           </Button>
+                          {canDelete && (
                           <Button size="icon" variant="ghost" className="text-destructive" onClick={() => setDeleteId(tutorial.id)} title="Delete">
                             <Trash2 className="h-4 w-4" />
                           </Button>
+                          )}
                         </div>
                       </div>
                     </GlassCard>

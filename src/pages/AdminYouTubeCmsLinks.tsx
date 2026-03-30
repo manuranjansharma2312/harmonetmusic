@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -71,6 +72,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default function AdminYouTubeCmsLinks() {
+  const { isTeam, canDelete } = useTeamPermissions();
   const [links, setLinks] = useState<CmsLink[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [subLabels, setSubLabels] = useState<SubLabel[]>([]);
@@ -349,9 +351,9 @@ export default function AdminYouTubeCmsLinks() {
                 </SelectContent>
               </Select>
               {bulkStatus && <Button size="sm" onClick={handleBulkStatusChange}>Apply</Button>}
-              <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ ids: [...selected] })} className="gap-1">
+              {canDelete && <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ ids: [...selected] })} className="gap-1">
                 <Trash2 className="h-3 w-3" /> Delete
-              </Button>
+              </Button>}
             </div>
           )}
 
@@ -511,9 +513,9 @@ export default function AdminYouTubeCmsLinks() {
                               <Button size="sm" variant="outline" onClick={() => openEdit(l)} className="gap-1">
                                 <Pencil className="h-3.5 w-3.5" /> Edit
                               </Button>
-                              <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ ids: [l.id] })} className="gap-1">
+                              {canDelete && <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ ids: [l.id] })} className="gap-1">
                                 <Trash2 className="h-3.5 w-3.5" /> Delete
-                              </Button>
+                              </Button>}
                             </div>
                           </TableCell>
                         </TableRow>

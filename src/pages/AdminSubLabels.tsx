@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,6 +38,7 @@ const inputClass =
   'w-full px-4 py-3 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
 
 export default function AdminSubLabels() {
+  const { isTeam, canDelete } = useTeamPermissions();
   const [subLabels, setSubLabels] = useState<SubLabel[]>([]);
   const { startImpersonating } = useImpersonate();
   const navigate = useNavigate();
@@ -252,6 +254,7 @@ export default function AdminSubLabels() {
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex gap-1">
+                        {!isTeam && (
                         <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!sl.sub_user_id} onClick={() => {
                           if (sl.sub_user_id) {
                             startImpersonating(sl.sub_user_id, sl.email);
@@ -260,15 +263,18 @@ export default function AdminSubLabels() {
                         }} title={sl.sub_user_id ? "Login as User" : "No account linked"}>
                           <LogIn className={`h-4 w-4 ${sl.sub_user_id ? 'text-blue-500' : 'text-muted-foreground'}`} />
                         </Button>
+                        )}
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewSL(sl)} title="View">
                           <Eye className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditSL(sl); setEditSubLabelName(sl.sub_label_name); setEditParentLabelName(sl.parent_label_name); setEditEmail(sl.email); setEditPhone(sl.phone); setEditStart(sl.agreement_start_date); setEditEnd(sl.agreement_end_date); setEditCut(String(sl.percentage_cut)); setEditThreshold(String(sl.withdrawal_threshold || 1000)); setEditStatus(sl.status); }} title="Edit">
                           <Pencil className="h-4 w-4" />
                         </Button>
+                        {canDelete && (
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteSL(sl)} title="Delete">
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
+                        )}
                       </div>
                     </td>
                   </tr>

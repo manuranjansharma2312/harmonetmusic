@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import DOMPurify from "dompurify";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -30,6 +31,7 @@ const SHORTCODES = [
 ];
 
 export default function AdminAgreements() {
+  const { canDelete, canChangeSettings } = useTeamPermissions();
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -119,12 +121,12 @@ export default function AdminAgreements() {
             <p className="text-muted-foreground text-sm">Create templates with shortcodes for PDF generation</p>
           </div>
           <div className="flex gap-2">
-            {!showForm && (
+            {!showForm && canChangeSettings && (
               <Button variant="outline" onClick={() => navigate("/admin/agreements/generate")}>
                 Generate PDF
               </Button>
             )}
-            {!showForm && (
+            {!showForm && canChangeSettings && (
               <Button onClick={() => { resetForm(); setShowForm(true); }}>
                 <Plus className="h-4 w-4 mr-2" /> New Template
               </Button>
@@ -198,12 +200,16 @@ export default function AdminAgreements() {
                       <Button size="sm" variant="outline" onClick={() => setPreviewTemplate(t)}>
                         <Eye className="h-4 w-4" />
                       </Button>
+                      {canChangeSettings && (
                       <Button size="sm" variant="outline" onClick={() => startEdit(t)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
+                      )}
+                      {canDelete && (
                       <Button size="sm" variant="destructive" onClick={() => setDeleteId(t.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
+                      )}
                     </div>
                   </div>
                 </GlassCard>

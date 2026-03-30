@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { Upload, Trash2, FileSpreadsheet, Eye, ArrowLeft, Filter, X, Download, Search, Settings2, Save, GripVertical, Plus } from 'lucide-react';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import { format } from 'date-fns';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
@@ -66,6 +67,7 @@ function parseMonthKey(m: string): number {
 }
 
 export default function AdminCmsReports() {
+  const { canDelete, canChangeSettings } = useTeamPermissions();
   const [entries, setEntries] = useState<ReportEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
@@ -362,7 +364,7 @@ export default function AdminCmsReports() {
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            {!selectedMonth && (
+            {!selectedMonth && canChangeSettings && (
               <>
                 <Button size="sm" variant="outline" onClick={() => setShowFormat(!showFormat)}>
                   <Settings2 className="h-4 w-4 mr-1" /> Format
@@ -470,7 +472,7 @@ export default function AdminCmsReports() {
                         <TableCell>{format(new Date(group.latestImport), 'dd MMM yyyy, hh:mm a')}</TableCell>
                         <TableCell className="text-right space-x-2">
                           <Button size="sm" variant="outline" onClick={() => setSelectedMonth(month)}><Eye className="h-4 w-4 mr-1" /> View</Button>
-                          <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ month })}><Trash2 className="h-4 w-4" /></Button>
+                          {canDelete && <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ month })}><Trash2 className="h-4 w-4" /></Button>}
                         </TableCell>
                       </TableRow>
                     ))}

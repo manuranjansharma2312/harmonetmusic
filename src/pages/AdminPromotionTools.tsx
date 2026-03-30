@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,6 +56,7 @@ interface Order {
 }
 
 export default function AdminPromotionTools() {
+  const { canDelete, canChangeSettings } = useTeamPermissions();
   const [isEnabled, setIsEnabled] = useState(true);
   const [settingsId, setSettingsId] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
@@ -238,7 +240,7 @@ export default function AdminPromotionTools() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Services</CardTitle>
-            <Button size="sm" onClick={() => openProductModal()}><Plus className="h-4 w-4 mr-1" /> Add Service</Button>
+            {canChangeSettings && <Button size="sm" onClick={() => openProductModal()}><Plus className="h-4 w-4 mr-1" /> Add Service</Button>}
           </CardHeader>
           <CardContent>
             <Table>
@@ -262,8 +264,8 @@ export default function AdminPromotionTools() {
                     <TableCell><StatusBadge status={p.is_active ? 'approved' : 'rejected'} /></TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openProductModal(p)}><Pencil className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ type: 'product', id: p.id })}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        {canChangeSettings && <Button variant="ghost" size="icon" onClick={() => openProductModal(p)}><Pencil className="h-4 w-4" /></Button>}
+                        {canDelete && <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ type: 'product', id: p.id })}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -324,7 +326,7 @@ export default function AdminPromotionTools() {
                     <TableCell>
                       <div className="flex gap-1">
                         <Button variant="ghost" size="icon" onClick={() => openOrderModal(o)}><Eye className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ type: 'order', id: o.id })}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        {canDelete && <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ type: 'order', id: o.id })}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
                       </div>
                     </TableCell>
                   </TableRow>

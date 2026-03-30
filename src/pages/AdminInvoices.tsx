@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
@@ -536,12 +537,16 @@ export default function AdminInvoices() {
             <p className="text-muted-foreground text-sm">Create and manage invoices</p>
           </div>
           <div className="flex items-center gap-2">
+            {canChangeSettings && (
             <Button variant="outline" onClick={openCompanySettings} className="gap-2">
               <Settings className="h-4 w-4" /> Company Details
             </Button>
+            )}
+            {canChangeSettings && (
             <Button onClick={openCreate} className="gap-2">
               <Plus className="h-4 w-4" /> New Invoice
             </Button>
+            )}
           </div>
         </div>
 
@@ -594,9 +599,11 @@ export default function AdminInvoices() {
                           <Button variant="ghost" size="icon" onClick={() => openEdit(inv)} title="Edit">
                             <Pencil className="h-4 w-4" />
                           </Button>
+                          {canDelete && (
                           <Button variant="ghost" size="icon" onClick={() => setDeleteId(inv.id)} title="Delete" className="text-destructive">
                             <Trash2 className="h-4 w-4" />
                           </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

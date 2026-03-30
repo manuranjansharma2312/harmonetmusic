@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { CopyButton } from '@/components/CopyButton';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,6 +30,7 @@ interface Props {
 }
 
 export default function AdminVideoSubmissionsTable({ submissionType, title }: Props) {
+  const { canDelete } = useTeamPermissions();
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -447,9 +449,11 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
                   <Download className="h-4 w-4 mr-2" /> Export Selected
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                {canDelete && (
                 <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteConfirm(true)}>
                   <Trash2 className="h-4 w-4 mr-2" /> Delete Selected
                 </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
