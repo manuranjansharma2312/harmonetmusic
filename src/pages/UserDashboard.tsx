@@ -439,10 +439,8 @@ export default function UserDashboard() {
           { label: 'Downloads', value: formatStreams(totalDownloads), icon: Download, accent: 'text-violet-400' },
           { label: 'Platforms', value: topStores.length, icon: Music, accent: 'text-amber-400' },
           ...(isSubLabelUser ? [] : [
-            ...(hasVevoData ? [
-              { label: 'Vevo Streams', value: formatStreams(vevoStreams), icon: Play, accent: 'text-pink-400' },
-              { label: 'Vevo Revenue', value: formatRevenue(vevoRevenue), icon: Film, accent: 'text-rose-400' },
-            ] : []),
+            { label: 'Vevo Streams', value: formatStreams(vevoStreams), icon: Play, accent: 'text-pink-400' },
+            { label: 'Vevo Revenue', value: formatRevenue(vevoRevenue), icon: Film, accent: 'text-rose-400' },
           ]),
           { label: 'Countries', value: countryData.length, icon: Globe, accent: 'text-emerald-400' },
           { label: 'Artists', value: topArtists.length, icon: Headphones, accent: 'text-pink-400' },
