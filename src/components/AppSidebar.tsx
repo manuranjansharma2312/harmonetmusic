@@ -104,7 +104,9 @@ export function AppSidebar() {
   const collapsed = state === 'collapsed';
   const { logoSrc, branding } = useBranding();
   const { settings } = useSiteSettings();
-  const showUserView = isImpersonating || role !== 'admin';
+  const isTeam = role === 'team';
+  const showUserView = isImpersonating || (role !== 'admin' && role !== 'team');
+  const [teamAllowedPages, setTeamAllowedPages] = useState<string[]>([]);
 
 
   const [toolsOpen, setToolsOpen] = useState(false);
