@@ -312,7 +312,7 @@ export function AppSidebar() {
       <SidebarMenuButton asChild tooltip={link.label}>
         <NavLink
           to={link.to}
-          end={link.to === '/admin'}
+          end={link.to === '/dashboard'}
           onClick={handleNavClick}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
           activeClassName="bg-primary/10 text-foreground font-semibold"
