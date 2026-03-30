@@ -326,6 +326,7 @@ export function AppSidebar() {
                   {settings.enable_youtube_cms && renderCollapsibleGroup('YouTube CMS', Youtube, adminCmsLinks, adminCmsOpen, setAdminCmsOpen)}
                   {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, adminVideoLinks, adminVideoOpen, setAdminVideoOpen)}
                   {renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
+                  {renderCollapsibleGroup('Billing & Revenue', Wallet, adminBillingLinks, adminBillingOpen, setAdminBillingOpen)}
                   {renderCollapsibleGroup('Poster Generator', ImageIcon, adminPosterLinks, adminPosterOpen, setAdminPosterOpen)}
                   {renderCollapsibleGroup('Promotional Tools', Megaphone, adminPromotionalLinks, adminPromotionalOpen, setAdminPromotionalOpen)}
                   {renderCollapsibleGroup('General Settings', Settings, adminGeneralSettingsLinks, adminGeneralSettingsOpen, setAdminGeneralSettingsOpen)}
