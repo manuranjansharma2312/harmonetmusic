@@ -327,7 +327,7 @@ export default function AdminAllPending() {
                       <td className="px-4 py-3 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           {activeCategory.actions.includes('approve') && (
-                            <Button size="sm" variant="ghost" className="h-8 text-green-500 hover:text-green-400 hover:bg-green-500/10"
+                            <Button size="sm" variant="ghost" className="h-8 text-emerald-500 hover:text-emerald-400 hover:bg-accent"
                               onClick={() => setApproveId(row.id)}>
                               <CheckCircle className="h-4 w-4 mr-1" /> Approve
                             </Button>
