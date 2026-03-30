@@ -309,6 +309,15 @@ export default function AdminLabels() {
         />
       )}
 
+      {bulkDeleteConfirm && (
+        <ConfirmDialog
+          title="Bulk Delete Labels"
+          message={`Are you sure you want to delete ${selected.size} label(s) and their B2B documents?`}
+          onConfirm={handleBulkDelete}
+          onCancel={() => setBulkDeleteConfirm(false)}
+        />
+      )}
+
       <RejectReasonModal
         open={!!rejectTarget}
         title="Reject Label"
