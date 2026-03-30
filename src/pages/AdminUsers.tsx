@@ -708,6 +708,53 @@ export default function AdminUsers() {
         />
       )}
 
+      {/* Approval Popup */}
+      {approvalPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between p-5 border-b border-border">
+              <h2 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-400" /> Approve User
+              </h2>
+              <button onClick={() => { setApprovalPopup(null); setApprovalRatio(''); }} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+                <X className="h-5 w-5 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Set the agreement ratio for <span className="font-semibold text-foreground">{approvalPopup.name}</span> before approving.
+              </p>
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Agreement Ratio % (display only, no deduction)</label>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={approvalRatio}
+                  onChange={(e) => setApprovalRatio(e.target.value.replace(/[^0-9.]/g, ''))}
+                  className="w-full px-3 py-2 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
+                  placeholder="e.g. 80"
+                  autoFocus
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => { setApprovalPopup(null); setApprovalRatio(''); }}
+                  className="flex-1 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-muted transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleApproveWithRatio}
+                  className="flex-1 py-2.5 rounded-lg btn-primary-gradient text-primary-foreground font-semibold text-sm shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2"
+                >
+                  <CheckCircle className="h-4 w-4" /> Approve
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Create User Modal */}
       <CreateUserModal
         open={showCreateUser}
