@@ -599,9 +599,11 @@ export default function AdminInvoices() {
                           <Button variant="ghost" size="icon" onClick={() => openEdit(inv)} title="Edit">
                             <Pencil className="h-4 w-4" />
                           </Button>
+                          {canDelete && (
                           <Button variant="ghost" size="icon" onClick={() => setDeleteId(inv.id)} title="Delete" className="text-destructive">
                             <Trash2 className="h-4 w-4" />
                           </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

@@ -200,12 +200,16 @@ export default function AdminAgreements() {
                       <Button size="sm" variant="outline" onClick={() => setPreviewTemplate(t)}>
                         <Eye className="h-4 w-4" />
                       </Button>
+                      {canChangeSettings && (
                       <Button size="sm" variant="outline" onClick={() => startEdit(t)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
+                      )}
+                      {canDelete && (
                       <Button size="sm" variant="destructive" onClick={() => setDeleteId(t.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
+                      )}
                     </div>
                   </div>
                 </GlassCard>

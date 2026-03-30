@@ -449,9 +449,11 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
                   <Download className="h-4 w-4 mr-2" /> Export Selected
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                {canDelete && (
                 <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteConfirm(true)}>
                   <Trash2 className="h-4 w-4 mr-2" /> Delete Selected
                 </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}

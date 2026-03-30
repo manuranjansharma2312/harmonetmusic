@@ -326,7 +326,7 @@ export default function AdminPromotionTools() {
                     <TableCell>
                       <div className="flex gap-1">
                         <Button variant="ghost" size="icon" onClick={() => openOrderModal(o)}><Eye className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ type: 'order', id: o.id })}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        {canDelete && <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ type: 'order', id: o.id })}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
                       </div>
                     </TableCell>
                   </TableRow>

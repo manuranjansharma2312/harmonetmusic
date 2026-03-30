@@ -192,9 +192,11 @@ export default function AdminTutorials() {
                           <Button size="icon" variant="ghost" onClick={() => handleEdit(tutorial)} title="Edit">
                             <Edit2 className="h-4 w-4" />
                           </Button>
+                          {canDelete && (
                           <Button size="icon" variant="ghost" className="text-destructive" onClick={() => setDeleteId(tutorial.id)} title="Delete">
                             <Trash2 className="h-4 w-4" />
                           </Button>
+                          )}
                         </div>
                       </div>
                     </GlassCard>
