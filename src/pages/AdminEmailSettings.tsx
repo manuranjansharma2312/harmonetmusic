@@ -1152,7 +1152,7 @@ export default function AdminEmailSettings() {
                       <div className="text-center text-muted-foreground py-8">No email logs found</div>
                     ) : (
                       <div className="responsive-table-wrap rounded-lg border border-border">
-                        <table className="w-full text-sm">
+                        <table className="w-full text-sm min-w-max">
                           <thead>
                             <tr className="border-b border-border bg-muted/30">
                               <th className="px-3 py-3 text-left w-10">

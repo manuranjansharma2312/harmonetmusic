@@ -304,7 +304,7 @@ export default function AdminContentRequests() {
             <p className="text-muted-foreground text-center py-8">No requests found.</p>
           ) : (
             <div className="responsive-table-wrap">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm min-w-max">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
                     <th className="px-3 py-3 text-left">

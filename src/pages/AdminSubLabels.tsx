@@ -216,7 +216,7 @@ export default function AdminSubLabels() {
       ) : (
         <div className="space-y-3">
           <div className="responsive-table-wrap rounded-lg border border-border bg-card/50">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-max">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Sub Label</th>
