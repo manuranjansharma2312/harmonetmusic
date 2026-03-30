@@ -245,13 +245,14 @@ export default function AdminContentRequests() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <h1 className="text-2xl font-bold text-foreground">Content Management Requests</h1>
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Content Management Requests</h1>
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" onClick={exportCSV}>
               <Download className="h-4 w-4 mr-1" />
-              {selectedIds.size > 0 ? `Export ${selectedIds.size} Selected` : 'Export All CSV'}
+              <span className="hidden sm:inline">{selectedIds.size > 0 ? `Export ${selectedIds.size} Selected` : 'Export All CSV'}</span>
+              <span className="sm:hidden">Export</span>
             </Button>
             {selectedIds.size > 0 && (
               <Button size="sm" variant="destructive" onClick={() => setShowDeleteConfirm(true)}>
@@ -262,22 +263,24 @@ export default function AdminContentRequests() {
           </div>
         </div>
 
-        <div className="flex gap-2 flex-wrap">
-          <button
-            onClick={() => setFilterType('all')}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filterType === 'all' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
-          >
-            All Types
-          </button>
-          {Object.entries(REQUEST_TYPES).map(([key, label]) => (
+        <div className="overflow-x-auto -mx-2 px-2 pb-1">
+          <div className="flex gap-2 w-max sm:w-auto sm:flex-wrap">
             <button
-              key={key}
-              onClick={() => setFilterType(key)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filterType === key ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+              onClick={() => setFilterType('all')}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${filterType === 'all' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
             >
-              {label}
+              All Types
             </button>
-          ))}
+            {Object.entries(REQUEST_TYPES).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => setFilterType(key)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${filterType === key ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="flex gap-2 flex-wrap">
@@ -292,116 +295,131 @@ export default function AdminContentRequests() {
           ))}
         </div>
 
-        <GlassCard>
-          <div className="p-6">
-            {loading ? (
-              <p className="text-muted-foreground text-center py-8">Loading...</p>
-            ) : requests.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No requests found.</p>
-            ) : (
-              <div className="space-y-4">
-                {/* Select All */}
-                <div className="flex items-center gap-2 pb-2 border-b border-border">
-                  <Checkbox
-                    checked={selectedIds.size === requests.length && requests.length > 0}
-                    onCheckedChange={toggleSelectAll}
-                  />
-                  <span className="text-sm text-muted-foreground">
-                    {selectedIds.size > 0 ? `${selectedIds.size} of ${requests.length} selected` : 'Select all'}
-                  </span>
-                </div>
-
-                {paginated.map((item) => (
-                  <div key={item.id} className={`border rounded-lg p-4 space-y-3 transition-colors ${selectedIds.has(item.id) ? 'border-primary bg-primary/5' : 'border-border'}`}>
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          checked={selectedIds.has(item.id)}
-                          onCheckedChange={() => toggleSelect(item.id)}
-                        />
-                        <span className="text-xs font-medium px-2 py-1 rounded bg-accent text-accent-foreground">
-                          {REQUEST_TYPES[item.request_type] || item.request_type}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
+        <GlassCard className="p-0 sm:p-0">
+          {loading ? (
+            <p className="text-muted-foreground text-center py-8">Loading...</p>
+          ) : requests.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">No requests found.</p>
+          ) : (
+            <div className="responsive-table-wrap">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="px-3 py-3 text-left">
+                      <Checkbox
+                        checked={selectedIds.size === requests.length && requests.length > 0}
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Type</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Submitted By</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Date</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Details</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Status</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginated.map((item) => {
+                    const fields = (TYPE_FIELDS[item.request_type] || DATA_FIELDS).filter(f => item[f]);
+                    const userInfo = userInfoMap[item.user_id];
+                    return (
+                      <tr key={item.id} className={`border-b border-border/50 hover:bg-muted/20 transition-colors ${selectedIds.has(item.id) ? 'bg-primary/5' : ''}`}>
+                        <td className="px-3 py-3">
+                          <Checkbox
+                            checked={selectedIds.has(item.id)}
+                            onCheckedChange={() => toggleSelect(item.id)}
+                          />
+                        </td>
+                        <td className="px-3 py-3">
+                          <span className="text-xs font-medium px-2 py-1 rounded bg-accent text-accent-foreground whitespace-nowrap">
+                            {REQUEST_TYPES[item.request_type] || item.request_type}
+                          </span>
+                        </td>
+                        <td className="px-3 py-3 min-w-[150px]">
+                          {userInfo ? (
+                            <div className="text-xs">
+                              <span className="text-foreground font-medium">{userInfo.name}</span>
+                              {userInfo.displayId && (
+                                <span className="font-mono font-bold text-primary ml-1">(#{userInfo.displayId})</span>
+                              )}
+                              {userInfo.userType === 'sub_label' && userInfo.subLabelName && (
+                                <div className="mt-0.5">
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary text-xs">
+                                    {userInfo.subLabelName}
+                                  </span>
+                                  <span className="text-muted-foreground ml-1">↳ {userInfo.parentLabelName}</span>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-xs text-muted-foreground">
                           {new Date(item.created_at).toLocaleDateString()}
-                        </span>
-                        {userInfoMap[item.user_id] && (
-                          <div className="text-xs text-muted-foreground">
-                            <span>By: <span className="text-foreground font-medium">{userInfoMap[item.user_id].name}</span></span>
-                            {userInfoMap[item.user_id].displayId && (
-                              <span className="font-mono font-bold text-primary ml-1">(#{userInfoMap[item.user_id].displayId})</span>
-                            )}
-                            {userInfoMap[item.user_id].userType === 'sub_label' && userInfoMap[item.user_id].subLabelName && (
-                              <span className="block mt-0.5">
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary text-xs">
-                                  {userInfoMap[item.user_id].subLabelName}
-                                </span>
-                                <span className="text-muted-foreground ml-1">↳ Under: {userInfoMap[item.user_id].parentLabelName}</span>
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <select
-                          value={item.status}
-                          onChange={(e) => handleStatusChange(item, e.target.value)}
-                          className="text-sm bg-background border border-border rounded px-2 py-1"
-                        >
-                          <option value="pending">Pending</option>
-                          <option value="applied">Applied</option>
-                          <option value="rejected">Rejected</option>
-                        </select>
-                        <StatusBadge status={item.status} />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                      {(TYPE_FIELDS[item.request_type] || DATA_FIELDS).map((field) =>
-                        item[field] ? (
-                          <div key={field}>
-                            <span className="text-xs text-muted-foreground">{FIELD_LABELS[field]}:</span>
-                            {field === 'payment_screenshot_url' ? (
-                              <div className="relative inline-block mt-1">
-                                <img src={item[field]} alt="Payment" className="max-h-32 rounded-lg border object-contain" />
-                                <button
-                                  onClick={() => handleDeleteScreenshot(item.id, item[field])}
-                                  className="absolute -top-2 -right-2 p-1 rounded-full bg-destructive text-destructive-foreground hover:opacity-90 transition-all"
-                                  title="Delete screenshot"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </button>
+                        </td>
+                        <td className="px-3 py-3 min-w-[250px]">
+                          <div className="space-y-1">
+                            {fields.map((field) => (
+                              <div key={field} className="text-xs">
+                                <span className="text-muted-foreground">{FIELD_LABELS[field]}: </span>
+                                {field === 'payment_screenshot_url' ? (
+                                  <div className="relative inline-block mt-1">
+                                    <img src={item[field]} alt="Payment" className="max-h-20 rounded border object-contain" />
+                                    <button
+                                      onClick={() => handleDeleteScreenshot(item.id, item[field])}
+                                      className="absolute -top-1 -right-1 p-0.5 rounded-full bg-destructive text-destructive-foreground hover:opacity-90"
+                                      title="Delete screenshot"
+                                    >
+                                      <Trash2 className="h-2.5 w-2.5" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <span className="text-foreground break-all inline-flex items-center gap-1">
+                                    {item[field]}
+                                    <CopyButton value={item[field]} />
+                                  </span>
+                                )}
                               </div>
-                            ) : (
-                              <div className="flex items-center gap-1">
-                                <p className="text-sm text-foreground break-all">{item[field]}</p>
-                                <CopyButton value={item[field]} />
+                            ))}
+                            {item.status === 'rejected' && item.rejection_reason && (
+                              <div className="mt-1 p-1.5 rounded bg-destructive/10 border border-destructive/20">
+                                <span className="text-xs font-medium text-destructive">Reason: </span>
+                                <span className="text-xs text-destructive">{item.rejection_reason}</span>
                               </div>
                             )}
                           </div>
-                        ) : null
-                      )}
-                    </div>
-
-                    {item.status === 'rejected' && item.rejection_reason && (
-                      <div className="p-2 rounded bg-destructive/10 border border-destructive/20">
-                        <span className="text-xs font-medium text-destructive">Rejection Reason:</span>
-                        <p className="text-sm text-destructive">{item.rejection_reason}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-            <TablePagination
-              totalItems={requests.length}
-              currentPage={page}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
-              itemLabel="requests"
-            />
-          </div>
+                        </td>
+                        <td className="px-3 py-3">
+                          <StatusBadge status={item.status} />
+                        </td>
+                        <td className="px-3 py-3">
+                          <select
+                            value={item.status}
+                            onChange={(e) => handleStatusChange(item, e.target.value)}
+                            className="text-xs bg-background border border-border rounded px-2 py-1"
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="applied">Applied</option>
+                            <option value="rejected">Rejected</option>
+                          </select>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <TablePagination
+            totalItems={requests.length}
+            currentPage={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="requests"
+          />
         </GlassCard>
       </div>
 
