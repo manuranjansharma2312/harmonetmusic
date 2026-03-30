@@ -711,6 +711,7 @@ export default function AdminVevoReports() {
           </GlassCard>
         )}
 
+        {canChangeSettings && (
         <GlassCard className="p-5 space-y-4">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5" /> Import Vevo Report
