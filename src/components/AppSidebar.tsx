@@ -58,6 +58,7 @@ const adminPosterLinks = [
 const adminContactPoliciesLinks = [
   { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
   { to: '/admin/contact-support', label: 'Contact Details', icon: Headset },
+  { to: '/admin/tutorials', label: 'Manage Tutorials', icon: BookOpen },
 ];
 
 const adminContractsLinks = [
