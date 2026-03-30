@@ -95,13 +95,24 @@ const categories: PendingCategory[] = [
   {
     key: 'videos', label: 'Videos', icon: Video,
     table: 'video_submissions', statusField: 'status', statusValue: 'pending',
+    extraFilter: { field: 'submission_type', value: 'upload_video' },
     columns: [
-      { key: 'submission_type', label: 'Type', render: (r: any) => formatLabel(r.submission_type) },
       { key: 'created_at', label: 'Submitted', render: (r) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject', 'view'],
     approveStatus: 'approved', rejectStatus: 'rejected',
     viewLink: () => '/admin/video-submissions',
+  },
+  {
+    key: 'vevo_channels', label: 'Vevo Channels', icon: Video,
+    table: 'video_submissions', statusField: 'status', statusValue: 'pending',
+    extraFilter: { field: 'submission_type', value: 'vevo_channel' },
+    columns: [
+      { key: 'created_at', label: 'Submitted', render: (r) => safeFormat(r.created_at) },
+    ],
+    actions: ['approve', 'reject', 'view'],
+    approveStatus: 'approved', rejectStatus: 'rejected',
+    viewLink: () => '/admin/vevo-channels',
   },
   {
     key: 'withdrawals', label: 'Withdrawals', icon: Wallet,
