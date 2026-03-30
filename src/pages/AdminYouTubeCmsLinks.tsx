@@ -351,9 +351,9 @@ export default function AdminYouTubeCmsLinks() {
                 </SelectContent>
               </Select>
               {bulkStatus && <Button size="sm" onClick={handleBulkStatusChange}>Apply</Button>}
-              <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ ids: [...selected] })} className="gap-1">
+              {canDelete && <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ ids: [...selected] })} className="gap-1">
                 <Trash2 className="h-3 w-3" /> Delete
-              </Button>
+              </Button>}
             </div>
           )}
 
