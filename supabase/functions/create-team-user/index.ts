@@ -50,6 +50,8 @@ Deno.serve(async (req) => {
       category_id: category_id || null,
       allowed_pages: allowed_pages || [],
       govt_ids: govt_ids || [],
+      phone_country_code: phone_country_code || '',
+      phone_number: phone_number || '',
     });
 
     return new Response(JSON.stringify({ success: true, user_id: userId }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
