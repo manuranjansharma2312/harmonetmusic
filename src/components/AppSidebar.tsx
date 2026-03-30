@@ -268,7 +268,7 @@ export function AppSidebar() {
     setOpen: (v: boolean) => void,
   ) => {
     const Icon = icon;
-    const groupHasDot = !showUserView && links.some(l => pendingDotRoutes[l.to]);
+    const groupHasDot = false;
     if (collapsed) {
       return links.map(renderNavLink);
     }
