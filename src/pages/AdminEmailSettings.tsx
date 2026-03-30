@@ -1341,7 +1341,7 @@ export default function AdminEmailSettings() {
 
                 {/* Built-in Anti-Spam Features */}
                 <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg space-y-2">
-                  <h3 className="font-semibold text-blue-400 text-base">✅ Built-in Anti-Spam Features (Already Active)</h3>
+                  <h3 className="font-semibold text-blue-400 text-base flex items-center gap-2"><CheckCircle className="h-4 w-4" /> Built-in Anti-Spam Features (Already Active)</h3>
                   <p className="text-muted-foreground text-sm mb-2">
                     The following anti-spam measures are automatically applied to all outgoing emails:
                   </p>
