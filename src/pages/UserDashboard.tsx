@@ -668,7 +668,11 @@ export default function UserDashboard() {
 
         <GlassCard className="animate-fade-in">
           <SectionHeader icon={Globe} iconBg="bg-emerald-500/15" iconColor="text-emerald-400" title="Streams by Country" />
-          {countryData.length > 0 ? <WorldMapChart data={countryData} /> : <EmptyChart icon={Globe} text="No country data yet" />}
+          {countryData.length > 0 ? (
+            <Suspense fallback={<EmptyChart icon={Globe} text="Loading country map" />}>
+              <LazyWorldMapChart data={countryData} />
+            </Suspense>
+          ) : <EmptyChart icon={Globe} text="No country data yet" />}
         </GlassCard>
       </div>
 
