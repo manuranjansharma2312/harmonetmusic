@@ -131,13 +131,12 @@ const queryClient = new QueryClient({
   },
 });
 
-function PageLoader() {
-  return (
-    <div className="flex min-h-[100dvh] w-full items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-    </div>
-  );
-}
+const PageLoader = forwardRef<HTMLDivElement>((_props, ref) => (
+  <div ref={ref} className="flex min-h-[100dvh] w-full items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+));
+PageLoader.displayName = 'PageLoader';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(() => {
