@@ -498,7 +498,7 @@ export default function UserDashboard() {
             <div className={`absolute -top-8 -right-8 h-24 w-24 rounded-full ${stat.glow} blur-3xl`} />
             <stat.icon className={`h-5 w-5 ${stat.iconColor} mb-2`} />
             <p className={`text-[10px] sm:text-xs ${stat.labelColor} uppercase tracking-widest font-medium`}>{stat.label}</p>
-            <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1 whitespace-nowrap">{stat.value}</p>
+            <p className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground mt-1 truncate">{stat.value}</p>
           </div>
         ))}
       </div>
@@ -530,7 +530,7 @@ export default function UserDashboard() {
           <GlassCard key={stat.label} className="!p-3 group hover:scale-[1.02] transition-transform duration-300">
             <stat.icon className={`h-3.5 w-3.5 ${stat.accent} mb-1`} />
             <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wider leading-tight">{stat.label}</p>
-            <p className="text-sm sm:text-base font-bold text-foreground mt-0.5 whitespace-nowrap">{stat.value}</p>
+            <p className="text-sm sm:text-base font-bold text-foreground mt-0.5 truncate">{stat.value}</p>
           </GlassCard>
         ))}
       </div>
@@ -740,7 +740,7 @@ export default function UserDashboard() {
         <SectionHeader icon={Disc3} iconBg="bg-amber-500/15" iconColor="text-amber-400" title="Recent Releases" />
         {recentReleases.length > 0 ? (
           <>
-            <div className="responsive-table-wrap">
+            <div className="responsive-table-wrap hidden sm:block">
               <table className="w-full text-sm min-w-max">
                 <thead>
                   <tr className="border-b border-border/40">
