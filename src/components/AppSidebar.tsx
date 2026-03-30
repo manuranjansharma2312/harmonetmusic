@@ -92,7 +92,7 @@ const adminBillingLinks = [
 ];
 
 const adminLinksTop = [
-  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/all-pending', label: 'All Pendings', icon: Clock },
   { to: '/admin/users', label: 'All Users', icon: Users },
   { to: '/admin/submissions', label: 'All Releases', icon: ListMusic },
