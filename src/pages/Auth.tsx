@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { BackgroundBlobs } from '@/components/BackgroundBlobs';
-import { Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Loader2, Eye, EyeOff, Upload, FileCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useBranding } from '@/hooks/useBranding';
 import { supabase } from '@/integrations/supabase/client';
