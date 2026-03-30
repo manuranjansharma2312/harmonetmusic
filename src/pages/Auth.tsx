@@ -526,7 +526,7 @@ export default function Auth() {
                     id="id-front"
                   />
                   <label htmlFor="id-front" className={`${inputClass} cursor-pointer flex items-center justify-center gap-2 text-center break-all`}>
-                    📄 {idFront ? `${idFront.name.slice(0, 15)}...` : 'Front Side'}
+                    {idFront ? <FileCheck className="h-4 w-4 text-green-500 shrink-0" /> : <Upload className="h-4 w-4 shrink-0" />} {idFront ? `${idFront.name.slice(0, 15)}...` : 'Front Side'}
                   </label>
                 </div>
                 <div>
