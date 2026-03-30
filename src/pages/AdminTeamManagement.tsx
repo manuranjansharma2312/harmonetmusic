@@ -375,6 +375,18 @@ export default function AdminTeamManagement() {
                             </div>
                           ) : <span className="text-muted-foreground text-xs">—</span>}
                         </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          <select
+                            value={m.status || 'pending'}
+                            onChange={(e) => handleStatusChange(m, e.target.value)}
+                            className="bg-transparent border border-border rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="active">Active</option>
+                            <option value="suspended">Suspended</option>
+                          </select>
+                          <span className={`ml-2 ${statusBadge(m.status || 'pending')}`}>{m.status || 'pending'}</span>
+                        </TableCell>
                         <TableCell className="whitespace-nowrap">{format(new Date(m.created_at), 'dd MMM yyyy')}</TableCell>
                         <TableCell className="text-right whitespace-nowrap space-x-1">
                           <Button variant="outline" size="sm" title="Login as this member" onClick={() => handleLoginAs(m)}>
