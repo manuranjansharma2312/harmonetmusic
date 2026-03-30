@@ -14,6 +14,7 @@ import { EditBankDetailsModal } from '@/components/EditBankDetailsModal';
 import { ResetPasswordModal } from '@/components/ResetPasswordModal';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { useNavigate } from 'react-router-dom';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 
 import {
   DropdownMenu,
@@ -58,6 +59,7 @@ const VerificationBadge = React.forwardRef<HTMLSpanElement, { status: string }>(
 );
 
 export default function AdminUsers() {
+  const { isTeam, canDelete, canChangeSettings } = useTeamPermissions();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -268,7 +270,7 @@ export default function AdminUsers() {
           <Download className="h-4 w-4" />
           Export {selectedIds.size > 0 ? `(${selectedIds.size})` : 'All'}
         </button>
-        {selectedIds.size > 0 && (
+        {selectedIds.size > 0 && canDelete && (
           <button
             onClick={() => setDeleteConfirm({ type: 'bulk' })}
             className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 rounded-lg bg-destructive/20 border border-destructive/30 text-sm font-medium text-destructive hover:bg-destructive/30 transition-all"
@@ -351,12 +353,16 @@ export default function AdminUsers() {
                             <DropdownMenuItem onClick={() => setEditProfile(profile)}>
                               <Pencil className="h-4 w-4 mr-2" /> Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleLoginAs(profile)}>
-                              <LogIn className="h-4 w-4 mr-2" /> Login as User
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setResetPasswordProfile(profile)}>
-                              <KeyRound className="h-4 w-4 mr-2" /> Reset Password
-                            </DropdownMenuItem>
+                            {!isTeam && (
+                              <DropdownMenuItem onClick={() => handleLoginAs(profile)}>
+                                <LogIn className="h-4 w-4 mr-2" /> Login as User
+                              </DropdownMenuItem>
+                            )}
+                            {!isTeam && (
+                              <DropdownMenuItem onClick={() => setResetPasswordProfile(profile)}>
+                                <KeyRound className="h-4 w-4 mr-2" /> Reset Password
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuSeparator />
                             {profile.verification_status !== 'verified' && (
                               <DropdownMenuItem onClick={() => handleVerification(profile.user_id, 'verified')} className="text-green-400 focus:text-green-400">
@@ -373,13 +379,17 @@ export default function AdminUsers() {
                                 <Ban className="h-4 w-4 mr-2" /> Suspend
                               </DropdownMenuItem>
                             )}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() => setDeleteConfirm({ type: 'single', userId: profile.user_id, name: profile.legal_name })}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" /> Delete
-                            </DropdownMenuItem>
+                            {canDelete && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => setDeleteConfirm({ type: 'single', userId: profile.user_id, name: profile.legal_name })}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" /> Delete
+                                </DropdownMenuItem>
+                              </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
@@ -432,7 +442,8 @@ export default function AdminUsers() {
               </div>
               <Row label="Joined" value={new Date(viewProfile.created_at).toLocaleDateString()} />
 
-              {/* Hidden Cut */}
+              {/* Hidden Cut - only for admins */}
+              {!isTeam && (
               <div className="pt-3 border-t border-border/50">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground font-medium">Hidden Cut %</span>
@@ -462,6 +473,7 @@ export default function AdminUsers() {
                   )}
                 </div>
               </div>
+              )}
 
               {/* ID Proof section with delete buttons */}
               {(viewProfile.id_proof_front_url || viewProfile.id_proof_back_url) && (

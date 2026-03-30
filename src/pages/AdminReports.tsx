@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { normalizeIsrc } from '@/lib/isrc';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 
 interface FormatColumn {
   id: string;
@@ -108,6 +109,7 @@ interface MonthGroup {
 }
 
 export default function AdminReports() {
+  const { isTeam, canDelete, canChangeSettings } = useTeamPermissions();
   const fileRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
   const [preview, setPreview] = useState<Record<string, string>[] | null>(null);
@@ -584,9 +586,11 @@ export default function AdminReports() {
             <h1 className="text-2xl font-bold">Reports & Analytics</h1>
             <p className="text-muted-foreground text-sm">Import and manage user revenue reports</p>
           </div>
-          <Button variant="outline" size="sm" onClick={openFormatConfig}>
-            <Settings2 className="h-4 w-4 mr-1" /> Report Format
-          </Button>
+          {canChangeSettings && (
+            <Button variant="outline" size="sm" onClick={openFormatConfig}>
+              <Settings2 className="h-4 w-4 mr-1" /> Report Format
+            </Button>
+          )}
         </div>
 
         {showFormatConfig && (
@@ -684,6 +688,7 @@ export default function AdminReports() {
           </GlassCard>
         )}
 
+        {canChangeSettings && (
         <GlassCard className="p-5 space-y-4">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5" /> Import Report
@@ -733,6 +738,7 @@ export default function AdminReports() {
             </div>
           )}
         </GlassCard>
+        )}
 
         <GlassCard className="p-0 overflow-hidden">
           <div className="p-4 border-b border-border/50 flex items-center justify-between gap-3 flex-wrap">
@@ -773,9 +779,11 @@ export default function AdminReports() {
                           <Button size="sm" variant="outline" onClick={() => handleViewMonth(g.month)}>
                             <Eye className="h-4 w-4 mr-1" /> View
                           </Button>
+                          {canDelete && (
                           <Button size="sm" variant="destructive" onClick={() => setDeleteMonth(g.month)}>
                             <Trash2 className="h-4 w-4 mr-1" /> Delete
                           </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

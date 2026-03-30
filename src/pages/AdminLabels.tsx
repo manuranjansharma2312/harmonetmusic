@@ -9,6 +9,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { toast } from 'sonner';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 
 type Label = {
   id: string;
@@ -23,6 +24,7 @@ type Label = {
 const STATUS_OPTIONS = ['pending', 'approved', 'rejected', 'suspended'];
 
 export default function AdminLabels() {
+  const { isTeam, canDelete } = useTeamPermissions();
   const [labels, setLabels] = useState<Label[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -205,9 +207,11 @@ export default function AdminLabels() {
                       <button onClick={() => handleDownloadB2b(label.b2b_url!)} className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors">
                         <FileText className="h-3 w-3" /> View B2B
                       </button>
-                      <button onClick={() => setDeleteTarget({ type: 'b2b', label })} className="text-xs text-destructive hover:text-destructive/80 transition-colors">
-                        Delete B2B
-                      </button>
+                      {canDelete && (
+                        <button onClick={() => setDeleteTarget({ type: 'b2b', label })} className="text-xs text-destructive hover:text-destructive/80 transition-colors">
+                          Delete B2B
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -220,9 +224,11 @@ export default function AdminLabels() {
                   >
                     {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
                   </select>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteTarget({ type: 'label', label })}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  {canDelete && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteTarget({ type: 'label', label })}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </GlassCard>

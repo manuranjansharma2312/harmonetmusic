@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Settings, CheckCircle2, IndianRupee, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 
 interface WithdrawalRow {
   id: string;
@@ -24,6 +25,7 @@ interface WithdrawalRow {
 }
 
 export default function AdminRevenue() {
+  const { isTeam, canChangeSettings } = useTeamPermissions();
   const [threshold, setThreshold] = useState('');
   const [savedThreshold, setSavedThreshold] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -157,7 +159,8 @@ export default function AdminRevenue() {
           </p>
         </div>
 
-        {/* Threshold Settings */}
+        {/* Threshold Settings - hidden from team */}
+        {canChangeSettings && (
         <GlassCard className="p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2.5 rounded-xl bg-primary/10">
@@ -187,6 +190,7 @@ export default function AdminRevenue() {
             </Button>
           </div>
         </GlassCard>
+        )}
 
         {/* Withdrawal Requests */}
         <GlassCard className="p-0 overflow-hidden">

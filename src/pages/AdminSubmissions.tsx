@@ -14,6 +14,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { CopyButton } from '@/components/CopyButton';
 import { useNavigate } from 'react-router-dom';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
@@ -109,6 +110,7 @@ type ParsedImportRelease = {
 
 export default function AdminSubmissions() {
   const navigate = useNavigate();
+  const { isTeam, canDelete, canChangeSettings } = useTeamPermissions();
   const [releases, setReleases] = useState<Release[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -926,9 +928,11 @@ export default function AdminSubmissions() {
             <p className="text-muted-foreground mt-1 text-sm sm:text-base">Manage all music releases and tracks.</p>
           </div>
           <div className="flex gap-2 shrink-0 self-start sm:self-auto">
-            <Button variant="outline" size="sm" onClick={() => setShowImportModal(true)}>
-              <Upload className="h-4 w-4" /> Import CSV
-            </Button>
+            {canChangeSettings && (
+              <Button variant="outline" size="sm" onClick={() => setShowImportModal(true)}>
+                <Upload className="h-4 w-4" /> Import CSV
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={exportCSV}>
               <Download className="h-4 w-4" /> Export CSV
             </Button>
@@ -944,18 +948,22 @@ export default function AdminSubmissions() {
             <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleBulkDownloadPoster}>
               <Download className="h-3.5 w-3.5" /> Posters
             </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setConfirmBulkAction('audio')} disabled={bulkDeletingAudio}>
-              {bulkDeletingAudio ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <VolumeX className="h-3.5 w-3.5" />}
-              Del Audio
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setConfirmBulkAction('poster')} disabled={bulkDeletingPoster}>
-              {bulkDeletingPoster ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageOff className="h-3.5 w-3.5" />}
-              Del Posters
-            </Button>
-            <Button variant="destructive" size="sm" className="h-8 text-xs" onClick={handleBulkDelete} disabled={bulkDeleting}>
-              {bulkDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-              Delete ({selected.size})
-            </Button>
+            {canDelete && (
+              <>
+                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setConfirmBulkAction('audio')} disabled={bulkDeletingAudio}>
+                  {bulkDeletingAudio ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <VolumeX className="h-3.5 w-3.5" />}
+                  Del Audio
+                </Button>
+                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setConfirmBulkAction('poster')} disabled={bulkDeletingPoster}>
+                  {bulkDeletingPoster ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageOff className="h-3.5 w-3.5" />}
+                  Del Posters
+                </Button>
+                <Button variant="destructive" size="sm" className="h-8 text-xs" onClick={handleBulkDelete} disabled={bulkDeleting}>
+                  {bulkDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                  Delete ({selected.size})
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -1091,10 +1099,10 @@ export default function AdminSubmissions() {
                         </td>
                         <td className="py-3 px-3">
                           <div className="flex items-center justify-end gap-0.5">
-                            <button onClick={() => setTransferRelease(release)} className="p-1.5 rounded-lg hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all" title="Transfer Ownership"><ArrowRightLeft className="h-4 w-4" /></button>
+                            {!isTeam && <button onClick={() => setTransferRelease(release)} className="p-1.5 rounded-lg hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all" title="Transfer Ownership"><ArrowRightLeft className="h-4 w-4" /></button>}
                             <button onClick={() => navigate(`/submit?edit=${release.id}`)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"><Pencil className="h-4 w-4" /></button>
                             <button onClick={() => setViewRelease(release)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"><Eye className="h-4 w-4" /></button>
-                            <button onClick={() => setDeleteRelease(release)} className="p-1.5 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all"><Trash2 className="h-4 w-4" /></button>
+                            {canDelete && <button onClick={() => setDeleteRelease(release)} className="p-1.5 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all"><Trash2 className="h-4 w-4" /></button>}
                           </div>
                         </td>
                       </tr>

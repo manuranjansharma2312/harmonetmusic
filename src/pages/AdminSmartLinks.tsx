@@ -18,6 +18,7 @@ import { Loader2, Link2, ExternalLink, Search, Music, Edit, Plus, Trash2, GripVe
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 
 // ─── Types ───
 
@@ -64,6 +65,7 @@ function autoCropImage(file: File, size: number): Promise<Blob> {
 }
 
 export default function AdminSmartLinks() {
+  const { isTeam, canDelete, canChangeSettings } = useTeamPermissions();
   const { user } = useAuth();
   // ─── Platforms state ───
   const [platforms, setPlatforms] = useState<Platform[]>([]);
@@ -356,27 +358,29 @@ export default function AdminSmartLinks() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Smart Links</h1>
             <p className="text-sm text-muted-foreground mt-1">Manage platform links for all approved releases</p>
           </div>
-          <div className="flex items-center gap-3">
-            <Label htmlFor="system-toggle" className="text-sm text-muted-foreground">{systemEnabled ? 'Enabled' : 'Disabled'}</Label>
-            <Switch
-              id="system-toggle"
-              checked={systemEnabled}
-              onCheckedChange={toggleSystem}
-              disabled={togglingSystem}
-            />
-          </div>
+          {canChangeSettings && (
+            <div className="flex items-center gap-3">
+              <Label htmlFor="system-toggle" className="text-sm text-muted-foreground">{systemEnabled ? 'Enabled' : 'Disabled'}</Label>
+              <Switch
+                id="system-toggle"
+                checked={systemEnabled}
+                onCheckedChange={toggleSystem}
+                disabled={togglingSystem}
+              />
+            </div>
+          )}
         </div>
 
         <Tabs defaultValue="custom" className="w-full responsive-tabs">
           <TabsList className="flex flex-wrap h-auto gap-1">
             <TabsTrigger value="custom"><Music className="h-3.5 w-3.5 mr-1.5" />Custom Links</TabsTrigger>
-            <TabsTrigger value="platforms"><Settings className="h-3.5 w-3.5 mr-1.5" />Platforms</TabsTrigger>
-            <TabsTrigger value="apis"><Key className="h-3.5 w-3.5 mr-1.5" />API Integrations</TabsTrigger>
+            {!isTeam && <TabsTrigger value="platforms"><Settings className="h-3.5 w-3.5 mr-1.5" />Platforms</TabsTrigger>}
+            {!isTeam && <TabsTrigger value="apis"><Key className="h-3.5 w-3.5 mr-1.5" />API Integrations</TabsTrigger>}
           </TabsList>
 
 
@@ -384,7 +388,7 @@ export default function AdminSmartLinks() {
           <TabsContent value="custom" className="space-y-4 mt-4">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Standalone smart links created by users or admin.</p>
-              <Button size="sm" onClick={() => setCreatingCustom(true)}><Plus className="h-3.5 w-3.5 mr-1" /> Create Smart Link</Button>
+              {!isTeam && <Button size="sm" onClick={() => setCreatingCustom(true)}><Plus className="h-3.5 w-3.5 mr-1" /> Create Smart Link</Button>}
             </div>
             <div className="flex items-center gap-3 flex-wrap">
               <div className="relative max-w-sm flex-1 min-w-[200px]">
@@ -439,7 +443,7 @@ export default function AdminSmartLinks() {
                         <CheckCircle className="h-3.5 w-3.5 mr-1" />Approve ({selectedPending})
                       </Button>
                     )}
-                    {hasSelection && selectedRejected > 0 && (
+                    {hasSelection && selectedRejected > 0 && canDelete && (
                       <Button size="sm" variant="destructive" className="text-xs" onClick={async () => {
                         const ids = customLinks.filter(c => selectedIds.has(c.id) && c.status === 'rejected').map(c => c.id);
                         const { error } = await supabase.from('smart_links').delete().in('id', ids);

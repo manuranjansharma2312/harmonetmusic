@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { Plus, Trash2, Edit2, Image as ImageIcon, X } from 'lucide-react';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { format } from 'date-fns';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 
 interface Notice {
   id: string;
@@ -24,6 +25,7 @@ interface Notice {
 }
 
 export default function AdminNotices() {
+  const { isTeam, canDelete, canChangeSettings } = useTeamPermissions();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -158,7 +160,7 @@ export default function AdminNotices() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-2xl font-bold">Notice Updates</h1>
-          {!showForm && (
+          {!showForm && !isTeam && (
             <Button onClick={() => { resetForm(); setShowForm(true); }} className="gap-2">
               <Plus className="h-4 w-4" /> New Notice
             </Button>
@@ -223,19 +225,23 @@ export default function AdminNotices() {
                       </p>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
-                      <div className="flex items-center gap-2">
-                        <Label className="text-xs text-muted-foreground">Active</Label>
-                        <Switch
-                          checked={notice.is_active}
-                          onCheckedChange={(checked) => toggleMutation.mutate({ id: notice.id, is_active: checked })}
-                        />
-                      </div>
+                      {!isTeam && (
+                        <div className="flex items-center gap-2">
+                          <Label className="text-xs text-muted-foreground">Active</Label>
+                          <Switch
+                            checked={notice.is_active}
+                            onCheckedChange={(checked) => toggleMutation.mutate({ id: notice.id, is_active: checked })}
+                          />
+                        </div>
+                      )}
                       <Button size="icon" variant="ghost" onClick={() => handleEdit(notice)}>
                         <Edit2 className="h-4 w-4" />
                       </Button>
-                      <Button size="icon" variant="ghost" className="text-destructive" onClick={() => setDeleteId(notice.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {canDelete && (
+                        <Button size="icon" variant="ghost" className="text-destructive" onClick={() => setDeleteId(notice.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                   {notice.content && (

@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Download, Trash2 } from 'lucide-react';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 
 const REQUEST_TYPES: Record<string, string> = {
   copyright_claim: 'Copyright Claim Removal',
@@ -56,6 +57,7 @@ const TYPE_FIELDS: Record<string, string[]> = {
 };
 
 export default function AdminContentRequests() {
+  const { isTeam, canDelete } = useTeamPermissions();
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('all');
@@ -254,7 +256,7 @@ export default function AdminContentRequests() {
               <span className="hidden sm:inline">{selectedIds.size > 0 ? `Export ${selectedIds.size} Selected` : 'Export All CSV'}</span>
               <span className="sm:hidden">Export</span>
             </Button>
-            {selectedIds.size > 0 && (
+            {selectedIds.size > 0 && canDelete && (
               <Button size="sm" variant="destructive" onClick={() => setShowDeleteConfirm(true)}>
                 <Trash2 className="h-4 w-4 mr-1" />
                 Delete {selectedIds.size}
