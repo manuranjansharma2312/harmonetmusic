@@ -358,27 +358,29 @@ export default function AdminSmartLinks() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Smart Links</h1>
             <p className="text-sm text-muted-foreground mt-1">Manage platform links for all approved releases</p>
           </div>
-          <div className="flex items-center gap-3">
-            <Label htmlFor="system-toggle" className="text-sm text-muted-foreground">{systemEnabled ? 'Enabled' : 'Disabled'}</Label>
-            <Switch
-              id="system-toggle"
-              checked={systemEnabled}
-              onCheckedChange={toggleSystem}
-              disabled={togglingSystem}
-            />
-          </div>
+          {canChangeSettings && (
+            <div className="flex items-center gap-3">
+              <Label htmlFor="system-toggle" className="text-sm text-muted-foreground">{systemEnabled ? 'Enabled' : 'Disabled'}</Label>
+              <Switch
+                id="system-toggle"
+                checked={systemEnabled}
+                onCheckedChange={toggleSystem}
+                disabled={togglingSystem}
+              />
+            </div>
+          )}
         </div>
 
         <Tabs defaultValue="custom" className="w-full responsive-tabs">
           <TabsList className="flex flex-wrap h-auto gap-1">
             <TabsTrigger value="custom"><Music className="h-3.5 w-3.5 mr-1.5" />Custom Links</TabsTrigger>
-            <TabsTrigger value="platforms"><Settings className="h-3.5 w-3.5 mr-1.5" />Platforms</TabsTrigger>
-            <TabsTrigger value="apis"><Key className="h-3.5 w-3.5 mr-1.5" />API Integrations</TabsTrigger>
+            {!isTeam && <TabsTrigger value="platforms"><Settings className="h-3.5 w-3.5 mr-1.5" />Platforms</TabsTrigger>}
+            {!isTeam && <TabsTrigger value="apis"><Key className="h-3.5 w-3.5 mr-1.5" />API Integrations</TabsTrigger>}
           </TabsList>
 
 
