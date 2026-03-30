@@ -365,15 +365,18 @@ export function AppSidebar() {
             <SidebarMenu>
               {showUserView ? (
                 <>
-                  {userLinksTop.map(renderNavLink)}
-                  {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, userVideoLinks, userVideoOpen, setUserVideoOpen)}
+                  {hasSubLabelAccess('dashboard') && renderNavLink(userLinksTop[0])}
+                  {hasSubLabelAccess('new-release') && renderNavLink(userLinksTop[1])}
+                  {hasSubLabelAccess('my-releases') && renderNavLink(userLinksTop[2])}
+                  {hasSubLabelAccess('my-labels') && renderNavLink(userLinksTop[3])}
+                  {hasSubLabelAccess('video-distribution') && settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, userVideoLinks, userVideoOpen, setUserVideoOpen)}
                   {showUserSubLabels && renderCollapsibleGroup('Sub Labels', UsersRound, userSubLabelLinks, userSubLabelsOpen, setUserSubLabelsOpen)}
                   {settings.enable_youtube_cms && !effectiveIsSubLabel && renderCollapsibleGroup('YouTube CMS', Youtube, userCmsLinks, userCmsOpen, setUserCmsOpen)}
-                  {renderCollapsibleGroup('Reports & Analytics', BarChart3, reportLinks, reportsOpen, setReportsOpen)}
-                  {userLinksMiddle.map(renderNavLink)}
-                  {renderCollapsibleGroup('Support', Headset, contentToolLinks, toolsOpen, setToolsOpen)}
+                  {hasSubLabelAccess('reports') && renderCollapsibleGroup('Reports & Analytics', BarChart3, reportLinks, reportsOpen, setReportsOpen)}
+                  {hasSubLabelAccess('revenue') && userLinksMiddle.map(renderNavLink)}
+                  {hasSubLabelAccess('support') && renderCollapsibleGroup('Support', Headset, contentToolLinks, toolsOpen, setToolsOpen)}
                   {!effectiveIsSubLabel && renderNavLink({ to: '/promotion-tools', label: 'Paid Promotions', icon: Megaphone })}
-                  {renderCollapsibleGroup('Poster Generator', ImageIcon, userPosterLinks, userPosterOpen, setUserPosterOpen)}
+                  {hasSubLabelAccess('poster') && renderCollapsibleGroup('Poster Generator', ImageIcon, userPosterLinks, userPosterOpen, setUserPosterOpen)}
                   {userLinksAfterGroups.map(renderNavLink)}
                   {renderCollapsibleGroup('Contact & Policies', FileText, userContactPoliciesLinks, userContactPoliciesOpen, setUserContactPoliciesOpen)}
                   {userLinksBottom.map(renderNavLink)}
