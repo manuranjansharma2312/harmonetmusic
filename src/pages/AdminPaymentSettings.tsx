@@ -16,7 +16,6 @@ interface Tax {
 
 export default function AdminPaymentSettings() {
   const [settingsId, setSettingsId] = useState('');
-  const [isEnabled, setIsEnabled] = useState(false);
   const [takedownPaymentEnabled, setTakedownPaymentEnabled] = useState(false);
   const [takedownAmount, setTakedownAmount] = useState<number>(0);
   const [takedownTaxEnabled, setTakedownTaxEnabled] = useState(false);
@@ -32,7 +31,6 @@ export default function AdminPaymentSettings() {
     const { data } = await supabase.from('promotion_settings').select('*').limit(1).single();
     if (data) {
       setSettingsId(data.id);
-      setIsEnabled(data.is_enabled);
       setTakedownPaymentEnabled(data.takedown_payment_enabled || false);
       setTakedownAmount((data as any).takedown_amount || 0);
       setTakedownTaxEnabled((data as any).takedown_tax_enabled || false);
@@ -43,12 +41,6 @@ export default function AdminPaymentSettings() {
     setLoading(false);
   };
 
-  const togglePromoEnabled = async (val: boolean) => {
-    const { error } = await supabase.from('promotion_settings').update({ is_enabled: val, updated_at: new Date().toISOString() }).eq('id', settingsId);
-    if (error) { toast.error('Failed to update'); return; }
-    setIsEnabled(val);
-    toast.success(val ? 'Promotion Services enabled for users' : 'Promotion Services disabled for users');
-  };
 
   const toggleTakedownPayment = async (val: boolean) => {
     const { error } = await supabase.from('promotion_settings').update({ takedown_payment_enabled: val, updated_at: new Date().toISOString() }).eq('id', settingsId);
@@ -112,13 +104,6 @@ export default function AdminPaymentSettings() {
             <CardTitle className="flex items-center gap-2"><CreditCard className="h-5 w-5" /> Service Toggles</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
-            <div className="flex items-center justify-between p-4 rounded-lg border border-border">
-              <div>
-                <p className="font-medium text-foreground">Promotion Services</p>
-                <p className="text-sm text-muted-foreground">Enable or disable promotion services for all users</p>
-              </div>
-              <Switch checked={isEnabled} onCheckedChange={togglePromoEnabled} />
-            </div>
             <div className="flex items-center justify-between p-4 rounded-lg border border-border">
               <div>
                 <p className="font-medium text-foreground">Takedown Payment</p>
