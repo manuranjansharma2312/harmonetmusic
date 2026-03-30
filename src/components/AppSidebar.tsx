@@ -76,16 +76,18 @@ const adminLinksTop = [
   { to: '/admin/users', label: 'All Users', icon: Users },
   { to: '/admin/submissions', label: 'All Releases', icon: ListMusic },
   { to: '/admin/transfer-history', label: 'Transfer History', icon: ArrowRightLeft },
-  { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
   { to: '/admin/labels', label: 'Manage Labels', icon: Tag },
   { to: '/admin/content-requests', label: 'Support Requests', icon: Headset },
   { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
   { to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt },
   
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
-  { to: '/admin/payment-settings', label: 'Tax Settings', icon: CreditCard },
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
-  
+];
+
+const adminGeneralSettingsLinks = [
+  { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
+  { to: '/admin/payment-settings', label: 'Tax Settings', icon: CreditCard },
   { to: '/admin/email-settings', label: 'Manage Emails', icon: Mail },
 ];
 
@@ -112,6 +114,7 @@ export function AppSidebar() {
   const [adminPosterOpen, setAdminPosterOpen] = useState(false);
   const [adminContractsOpen, setAdminContractsOpen] = useState(false);
   const [adminPromotionalOpen, setAdminPromotionalOpen] = useState(false);
+  const [adminGeneralSettingsOpen, setAdminGeneralSettingsOpen] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
 
   // Fetch impersonated user's profile when impersonating
@@ -321,6 +324,7 @@ export function AppSidebar() {
                   {renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
                   {renderCollapsibleGroup('Poster Generator', ImageIcon, adminPosterLinks, adminPosterOpen, setAdminPosterOpen)}
                   {renderCollapsibleGroup('Promotional Tools', Megaphone, adminPromotionalLinks, adminPromotionalOpen, setAdminPromotionalOpen)}
+                  {renderCollapsibleGroup('General Settings', Settings, adminGeneralSettingsLinks, adminGeneralSettingsOpen, setAdminGeneralSettingsOpen)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}
                   {renderCollapsibleGroup('Contracts & E-Sign', FileSignature, adminContractsLinks, adminContractsOpen, setAdminContractsOpen)}
                   {renderCollapsibleGroup('Contact & Policies', FileText, adminContactPoliciesLinks, adminContactPoliciesOpen, setAdminContactPoliciesOpen)}
