@@ -120,6 +120,7 @@ export default function SubLabels() {
       email: '', password: '', phone: '', percentage_cut: '', withdrawal_threshold: '1000',
     });
     setB2bFile(null);
+    setFormAllowedPages([]);
     setShowForm(false);
   };
 
