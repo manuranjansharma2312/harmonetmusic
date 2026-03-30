@@ -61,34 +61,63 @@ export default function UserDashboard() {
   const { user, role } = useAuth();
   const { isImpersonating, impersonatedUserId, impersonatedEmail, stopImpersonating } = useImpersonate();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [displayId, setDisplayId] = useState<number | null>(null);
-  const [releaseStats, setReleaseStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
-  const [totalRevenue, setTotalRevenue] = useState(0);
-  const [totalStreams, setTotalStreams] = useState(0);
-  const [totalDownloads, setTotalDownloads] = useState(0);
-  const [monthlyRevenue, setMonthlyRevenue] = useState<{ month: string; revenue: number; streams: number; downloads: number }[]>([]);
-  const [topTracks, setTopTracks] = useState<{ name: string; streams: number; revenue: number }[]>([]);
-  const [topStores, setTopStores] = useState<{ name: string; value: number; revenue: number; color: string }[]>([]);
-  const [countryData, setCountryData] = useState<{ name: string; streams: number }[]>([]);
-  const [recentReleases, setRecentReleases] = useState<any[]>([]);
-  const [withdrawalBalance, setWithdrawalBalance] = useState({ pending: 0, paid: 0 });
-  const [hiddenCut, setHiddenCut] = useState(0);
-  const [subLabelCut, setSubLabelCut] = useState(0);
-  const [isSubLabelUser, setIsSubLabelUser] = useState(false);
-  const [cmsRevenue, setCmsRevenue] = useState(0);
-  const [cmsNetPayable, setCmsNetPayable] = useState(0);
-  const [cmsChannels, setCmsChannels] = useState(0);
-  const [cmsPaid, setCmsPaid] = useState(0);
-  const [cmsPending, setCmsPending] = useState(0);
-  const [monthlyStoreData, setMonthlyStoreData] = useState<any[]>([]);
-  const [topArtists, setTopArtists] = useState<{ name: string; streams: number }[]>([]);
-  const [monthlyStreamsData, setMonthlyStreamsData] = useState<{ month: string; count: number }[]>([]);
-  const [monthlyReleasesData, setMonthlyReleasesData] = useState<{ month: string; count: number }[]>([]);
-  const [monthlyRevenueSparkline, setMonthlyRevenueSparkline] = useState<{ month: string; count: number }[]>([]);
-  const [monthlyDownloadsData, setMonthlyDownloadsData] = useState<{ month: string; count: number }[]>([]);
-  const [vevoStreams, setVevoStreams] = useState(0);
-  const [vevoRevenue, setVevoRevenue] = useState(0);
+
+  interface DashboardState {
+    loading: boolean;
+    displayId: number | null;
+    releaseStats: { total: number; pending: number; approved: number; rejected: number };
+    totalRevenue: number;
+    totalStreams: number;
+    totalDownloads: number;
+    monthlyRevenue: { month: string; revenue: number; streams: number; downloads: number }[];
+    topTracks: { name: string; streams: number; revenue: number }[];
+    topStores: { name: string; value: number; revenue: number; color: string }[];
+    countryData: { name: string; streams: number }[];
+    recentReleases: any[];
+    withdrawalBalance: { pending: number; paid: number };
+    hiddenCut: number;
+    subLabelCut: number;
+    isSubLabelUser: boolean;
+    cmsRevenue: number;
+    cmsNetPayable: number;
+    cmsChannels: number;
+    cmsPaid: number;
+    cmsPending: number;
+    monthlyStoreData: any[];
+    topArtists: { name: string; streams: number }[];
+    monthlyStreamsData: { month: string; count: number }[];
+    monthlyReleasesData: { month: string; count: number }[];
+    monthlyRevenueSparkline: { month: string; count: number }[];
+    monthlyDownloadsData: { month: string; count: number }[];
+    vevoStreams: number;
+    vevoRevenue: number;
+  }
+
+  const [state, setState] = useState<DashboardState>({
+    loading: true,
+    displayId: null,
+    releaseStats: { total: 0, pending: 0, approved: 0, rejected: 0 },
+    totalRevenue: 0, totalStreams: 0, totalDownloads: 0,
+    monthlyRevenue: [], topTracks: [], topStores: [], countryData: [],
+    recentReleases: [],
+    withdrawalBalance: { pending: 0, paid: 0 },
+    hiddenCut: 0, subLabelCut: 0, isSubLabelUser: false,
+    cmsRevenue: 0, cmsNetPayable: 0, cmsChannels: 0, cmsPaid: 0, cmsPending: 0,
+    monthlyStoreData: [], topArtists: [],
+    monthlyStreamsData: [], monthlyReleasesData: [],
+    monthlyRevenueSparkline: [], monthlyDownloadsData: [],
+    vevoStreams: 0, vevoRevenue: 0,
+  });
+
+  const {
+    loading, displayId, releaseStats, totalRevenue, totalStreams, totalDownloads,
+    monthlyRevenue, topTracks, topStores, countryData, recentReleases,
+    withdrawalBalance, hiddenCut, subLabelCut, isSubLabelUser,
+    cmsRevenue, cmsNetPayable, cmsChannels, cmsPaid, cmsPending,
+    monthlyStoreData, topArtists, monthlyStreamsData, monthlyReleasesData,
+    monthlyRevenueSparkline, monthlyDownloadsData, vevoStreams, vevoRevenue,
+  } = state;
+
   const refreshTimeoutRef = useRef<number | null>(null);
   const isFetchingRef = useRef(false);
   const shouldRefetchRef = useRef(false);
@@ -117,13 +146,13 @@ export default function UserDashboard() {
         supabase.from('releases').select('id, album_name, ep_name, content_type, status, created_at, poster_url').eq('user_id', effectiveUserId).order('created_at', { ascending: false }).limit(5),
       ]);
 
-      setReleaseStats({
+      const newReleaseStats = {
         total: releaseRows.length,
         pending: releaseRows.filter((s: any) => s.status === 'pending').length,
         approved: releaseRows.filter((s: any) => s.status === 'approved').length,
         rejected: releaseRows.filter((s: any) => s.status === 'rejected').length,
-      });
-      setDisplayId(profileRes.data ? (profileRes.data as any).display_id : null);
+      };
+      const newDisplayId = profileRes.data ? (profileRes.data as any).display_id : null;
 
       // Build monthly releases sparkline (last 6 months)
       const now = new Date();
@@ -137,7 +166,7 @@ export default function UserDashboard() {
           if (monthlyRelMap[m] !== undefined) monthlyRelMap[m]++;
         }
       });
-      setMonthlyReleasesData(Object.entries(monthlyRelMap).map(([month, count]) => ({ month, count })));
+      const newMonthlyReleasesData = Object.entries(monthlyRelMap).map(([month, count]) => ({ month, count }));
 
       const hasSubLabel = Boolean(subLabelRes.data);
       const subLabelCutPercent = Number(subLabelRes.data?.percentage_cut || 0);
@@ -150,9 +179,6 @@ export default function UserDashboard() {
 
       const effectiveCutPercent = getEffectiveRevenueCutPercent({ hiddenCut: hiddenCutPercent, subLabelCut: subLabelCutPercent, isSubLabel: hasSubLabel });
       const shouldCut = shouldApplyRevenueCut({ role, currentUserId: user?.id, activeUserId: effectiveUserId });
-      setHiddenCut(hiddenCutPercent);
-      setSubLabelCut(subLabelCutPercent);
-      setIsSubLabelUser(hasSubLabel);
 
       let reportData: any[] = [];
       let ytReportData: any[] = [];
@@ -184,6 +210,8 @@ export default function UserDashboard() {
         ]);
       }
 
+      // CMS data
+      let newCmsChannels = 0, newCmsRevenue = 0, newCmsNetPayable = 0, newCmsPaid = 0, newCmsPending = 0;
       if (!hasSubLabel) {
         const [cmsLinks, cmsWithdrawals] = await Promise.all([
           fetchAllRows('youtube_cms_links', 'channel_name, cut_percent', (query) => query.eq('user_id', effectiveUserId).eq('status', 'linked')),
@@ -192,7 +220,7 @@ export default function UserDashboard() {
 
         const linkedChannels = (cmsLinks as any[]) || [];
         const linkedNamesArr = linkedChannels.map((link) => link.channel_name).filter(Boolean);
-        setCmsChannels(linkedChannels.length);
+        newCmsChannels = linkedChannels.length;
 
         const cmsEntries = linkedNamesArr.length > 0
           ? await fetchAllRows('cms_report_entries', 'net_generated_revenue, channel_name', (query) => query.in('channel_name', linkedNamesArr))
@@ -202,23 +230,17 @@ export default function UserDashboard() {
         let cmsNet = 0;
         (cmsEntries as any[]).forEach((entry) => {
           const rev = Number(entry.net_generated_revenue) || 0;
-          const cut = Number(linkedChannels.find((link) => link.channel_name === entry.channel_name)?.cut_percent || 0);
+          const cutVal = Number(linkedChannels.find((link) => link.channel_name === entry.channel_name)?.cut_percent || 0);
           cmsGross += rev;
-          cmsNet += rev - (rev * cut / 100);
+          cmsNet += rev - (rev * cutVal / 100);
         });
 
-        setCmsRevenue(Math.round(cmsGross * 100) / 100);
-        setCmsNetPayable(Math.round(cmsNet * 100) / 100);
+        newCmsRevenue = Math.round(cmsGross * 100) / 100;
+        newCmsNetPayable = Math.round(cmsNet * 100) / 100;
 
         const cmsWithdrawalRows = (cmsWithdrawals as any[]) || [];
-        setCmsPaid(cmsWithdrawalRows.filter((w) => w.status === 'paid').reduce((sum, w) => sum + Number(w.amount), 0));
-        setCmsPending(cmsWithdrawalRows.filter((w) => w.status === 'pending').reduce((sum, w) => sum + Number(w.amount), 0));
-      } else {
-        setCmsChannels(0);
-        setCmsRevenue(0);
-        setCmsNetPayable(0);
-        setCmsPaid(0);
-        setCmsPending(0);
+        newCmsPaid = cmsWithdrawalRows.filter((w) => w.status === 'paid').reduce((sum, w) => sum + Number(w.amount), 0);
+        newCmsPending = cmsWithdrawalRows.filter((w) => w.status === 'pending').reduce((sum, w) => sum + Number(w.amount), 0);
       }
 
       // Compute Vevo stats
@@ -230,21 +252,27 @@ export default function UserDashboard() {
         vevoRev += isFrozen ? 0 : applySnapshotCut(grossRevenue, r.cut_percent_snapshot, effectiveCutPercent, shouldCut);
         vevoStr += Number(r.streams || 0);
       });
-      setVevoStreams(vevoStr);
-      setVevoRevenue(Math.round(vevoRev * 100) / 100);
 
+      // Build all computed data
       const allReports = [...reportData, ...ytReportData, ...vevoReportData];
+      let newTotalRevenue = 0, newTotalStreams = 0, newTotalDownloads = 0;
+      let newMonthlyRevenue: any[] = [];
+      let newTopStores: any[] = [];
+      let newTopTracks: any[] = [];
+      let newCountryData: any[] = [];
+      let newTopArtists: any[] = [];
+      let newMonthlyStoreData: any[] = [];
+      let newMonthlyStreamsData: any[] = [];
+      let newMonthlyRevenueSparkline: any[] = [];
+      let newMonthlyDownloadsData: any[] = [];
+
       if (allReports.length > 0) {
-        let totalRev = 0;
-        let totalStr = 0;
-        let totalDl = 0;
         const monthMap: Record<string, { revenue: number; streams: number; downloads: number }> = {};
         const storeMap: Record<string, { streams: number; revenue: number }> = {};
         const trackMap: Record<string, { streams: number; revenue: number }> = {};
         const countryMap: Record<string, number> = {};
         const artistMap: Record<string, number> = {};
         const monthStoreMap: Record<string, Record<string, number>> = {};
-        // Sparkline maps for last 6 months
         const sparkStreamsMap: Record<string, number> = {};
         const sparkRevMap: Record<string, number> = {};
         const sparkDlMap: Record<string, number> = {};
@@ -261,9 +289,9 @@ export default function UserDashboard() {
           const rev = isFrozen ? 0 : applySnapshotCut(grossRevenue, r.cut_percent_snapshot, effectiveCutPercent, shouldCut);
           const str = Number(r.streams || 0);
           const dl = Number(r.downloads || 0);
-          totalRev += rev;
-          totalStr += str;
-          totalDl += dl;
+          newTotalRevenue += rev;
+          newTotalStreams += str;
+          newTotalDownloads += dl;
           const month = r.reporting_month?.length > 7 ? r.reporting_month.substring(0, 7) : r.reporting_month;
           if (!monthMap[month]) monthMap[month] = { revenue: 0, streams: 0, downloads: 0 };
           monthMap[month].revenue += rev;
@@ -283,7 +311,6 @@ export default function UserDashboard() {
           if (!monthStoreMap[month]) monthStoreMap[month] = {};
           monthStoreMap[month][store] = (monthStoreMap[month][store] || 0) + str;
 
-          // Sparkline aggregation
           if (r.reporting_month) {
             try {
               const sparkMonth = format(new Date(r.reporting_month + '-01'), 'MMM');
@@ -296,45 +323,59 @@ export default function UserDashboard() {
           }
         });
 
-        setTotalRevenue(Math.round(totalRev * 100) / 100);
-        setTotalStreams(totalStr);
-        setTotalDownloads(totalDl);
-        setMonthlyRevenue(Object.entries(monthMap).sort(([a], [b]) => a.localeCompare(b)).slice(-8).map(([month, data]) => ({ month, revenue: Math.round(data.revenue * 100) / 100, streams: data.streams, downloads: data.downloads })));
-        setTopStores(Object.entries(storeMap).sort(([, a], [, b]) => b.streams - a.streams).slice(0, 8).map(([name, data]) => ({ name, value: data.streams, revenue: data.revenue, color: STORE_COLORS[name] || CHART_COLORS[0] })));
-        setTopTracks(Object.entries(trackMap).sort(([, a], [, b]) => b.streams - a.streams).slice(0, 6).map(([name, data]) => ({ name: name.length > 22 ? `${name.substring(0, 22)}…` : name, streams: data.streams, revenue: data.revenue })));
-        setCountryData(Object.entries(countryMap).sort(([, a], [, b]) => b - a).slice(0, 10).map(([name, streams]) => ({ name, streams })));
-        setTopArtists(Object.entries(artistMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, streams]) => ({ name: name.length > 20 ? `${name.substring(0, 20)}…` : name, streams })));
+        newTotalRevenue = Math.round(newTotalRevenue * 100) / 100;
+        newMonthlyRevenue = Object.entries(monthMap).sort(([a], [b]) => a.localeCompare(b)).slice(-8).map(([month, data]) => ({ month, revenue: Math.round(data.revenue * 100) / 100, streams: data.streams, downloads: data.downloads }));
+        newTopStores = Object.entries(storeMap).sort(([, a], [, b]) => b.streams - a.streams).slice(0, 8).map(([name, data]) => ({ name, value: data.streams, revenue: data.revenue, color: STORE_COLORS[name] || CHART_COLORS[0] }));
+        newTopTracks = Object.entries(trackMap).sort(([, a], [, b]) => b.streams - a.streams).slice(0, 6).map(([name, data]) => ({ name: name.length > 22 ? `${name.substring(0, 22)}…` : name, streams: data.streams, revenue: data.revenue }));
+        newCountryData = Object.entries(countryMap).sort(([, a], [, b]) => b - a).slice(0, 10).map(([name, streams]) => ({ name, streams }));
+        newTopArtists = Object.entries(artistMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, streams]) => ({ name: name.length > 20 ? `${name.substring(0, 20)}…` : name, streams }));
         const topStoreNamesArr = Object.entries(storeMap).sort(([, a], [, b]) => b.streams - a.streams).slice(0, 4).map(([name]) => name);
-        setMonthlyStoreData(Object.entries(monthStoreMap).sort(([a], [b]) => a.localeCompare(b)).slice(-6).map(([month, stores]) => {
+        newMonthlyStoreData = Object.entries(monthStoreMap).sort(([a], [b]) => a.localeCompare(b)).slice(-6).map(([month, stores]) => {
           const row: any = { month };
           topStoreNamesArr.forEach((storeName) => { row[storeName] = stores[storeName] || 0; });
           return row;
-        }));
-        setMonthlyStreamsData(Object.entries(sparkStreamsMap).map(([month, count]) => ({ month, count })));
-        setMonthlyRevenueSparkline(Object.entries(sparkRevMap).map(([month, count]) => ({ month, count: Math.round(count) })));
-        setMonthlyDownloadsData(Object.entries(sparkDlMap).map(([month, count]) => ({ month, count })));
-      } else {
-        setTotalRevenue(0);
-        setTotalStreams(0);
-        setTotalDownloads(0);
-        setMonthlyRevenue([]);
-        setTopStores([]);
-        setTopTracks([]);
-        setCountryData([]);
-        setTopArtists([]);
-        setMonthlyStoreData([]);
-        setMonthlyStreamsData([]);
-        setMonthlyRevenueSparkline([]);
-        setMonthlyDownloadsData([]);
+        });
+        newMonthlyStreamsData = Object.entries(sparkStreamsMap).map(([month, count]) => ({ month, count }));
+        newMonthlyRevenueSparkline = Object.entries(sparkRevMap).map(([month, count]) => ({ month, count: Math.round(count) }));
+        newMonthlyDownloadsData = Object.entries(sparkDlMap).map(([month, count]) => ({ month, count }));
       }
 
-      setWithdrawalBalance(summarizeWithdrawals(withdrawalRows as any[]));
-      setRecentReleases(recentReleasesRes.data || []);
+      // Single batch state update — prevents 25+ cascading re-renders
+      setState({
+        loading: false,
+        displayId: newDisplayId,
+        releaseStats: newReleaseStats,
+        totalRevenue: newTotalRevenue,
+        totalStreams: newTotalStreams,
+        totalDownloads: newTotalDownloads,
+        monthlyRevenue: newMonthlyRevenue,
+        topTracks: newTopTracks,
+        topStores: newTopStores,
+        countryData: newCountryData,
+        recentReleases: recentReleasesRes.data || [],
+        withdrawalBalance: summarizeWithdrawals(withdrawalRows as any[]),
+        hiddenCut: hiddenCutPercent,
+        subLabelCut: subLabelCutPercent,
+        isSubLabelUser: hasSubLabel,
+        cmsRevenue: newCmsRevenue,
+        cmsNetPayable: newCmsNetPayable,
+        cmsChannels: newCmsChannels,
+        cmsPaid: newCmsPaid,
+        cmsPending: newCmsPending,
+        monthlyStoreData: newMonthlyStoreData,
+        topArtists: newTopArtists,
+        monthlyStreamsData: newMonthlyStreamsData,
+        monthlyReleasesData: newMonthlyReleasesData,
+        monthlyRevenueSparkline: newMonthlyRevenueSparkline,
+        monthlyDownloadsData: newMonthlyDownloadsData,
+        vevoStreams: vevoStr,
+        vevoRevenue: Math.round(vevoRev * 100) / 100,
+      });
     } catch (error) {
       console.error('Failed to load dashboard', error);
       toast.error('Failed to load dashboard data.');
+      setState(prev => ({ ...prev, loading: false }));
     } finally {
-      setLoading(false);
       isFetchingRef.current = false;
       if (shouldRefetchRef.current) {
         shouldRefetchRef.current = false;
@@ -353,7 +394,7 @@ export default function UserDashboard() {
 
   useEffect(() => {
     if (!effectiveUserId) return;
-    setLoading(true);
+    setState(prev => ({ ...prev, loading: true }));
     void fetchAll();
 
     const channel = supabase
