@@ -68,7 +68,6 @@ const adminLinksTop = [
   { to: '/admin/labels', label: 'Manage Labels', icon: Tag },
   { to: '/admin/content-requests', label: 'Support Requests', icon: Headset },
   { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
-  { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
   { to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt },
   
   { to: '/admin/tutorials', label: 'Manage Tutorials', icon: BookOpen },
