@@ -78,6 +78,7 @@ const adminBillingLinks = [
 
 const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/admin/all-pending', label: 'All Pending', icon: Shield },
   { to: '/admin/users', label: 'All Users', icon: Users },
   { to: '/admin/submissions', label: 'All Releases', icon: ListMusic },
   { to: '/admin/content-requests', label: 'Support Requests', icon: Headset },
