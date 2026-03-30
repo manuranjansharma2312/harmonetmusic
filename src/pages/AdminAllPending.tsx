@@ -167,7 +167,7 @@ const categories: PendingCategory[] = [
   },
   {
     key: 'signatures', label: 'E-Signatures', icon: FileSignature,
-    table: 'signature_documents', statusField: 'status', statusValue: 'pending',
+    table: 'signature_documents', statusField: 'status', statusValue: 'sent',
     columns: [
       { key: 'title', label: 'Document' },
       { key: 'description', label: 'Description', render: (r: any) => r.description || '—' },
