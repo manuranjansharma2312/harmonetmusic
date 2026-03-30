@@ -88,7 +88,7 @@ function SparklineCard({ title, data, color, icon: Icon, iconBg, iconColor, tota
                 <stop offset="100%" stopColor={color} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <Area type="monotone" dataKey="count" stroke={color} fill={`url(#spark-${title.replace(/\s/g, '')})`} strokeWidth={2} dot={false} />
+            <Area type="monotone" dataKey="count" stroke={color} fill={`url(#spark-${title.replace(/\s/g, '')})`} strokeWidth={2} dot={false} isAnimationActive={false} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
