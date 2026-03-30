@@ -185,10 +185,10 @@ export default function AdminDashboard() {
         safeRequest('pending content requests', supabase.from('content_requests').select('id, request_type, song_title, artist_name, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5), cachedData.pendingContentRequests),
         safeRequest('pending withdrawals', supabase.from('withdrawal_requests' as any).select('id, amount, created_at, user_id').eq('status', 'pending').order('created_at', { ascending: false }).limit(5), cachedData.pendingWithdrawals),
         safeRequest('recent releases', supabase.from('releases').select('id, album_name, ep_name, content_type, status, created_at').order('created_at', { ascending: false }).limit(5), cachedData.recentReleases),
-        safeRequest('release growth', supabase.from('releases').select('created_at').gte('created_at', sixMonthsAgo), [] as Array<{ created_at?: string | null }>),
-        safeRequest('user growth', supabase.from('profiles').select('created_at').gte('created_at', sixMonthsAgo), [] as Array<{ created_at?: string | null }>),
-        safeRequest('vevo growth', supabase.from('video_submissions' as any).select('created_at').eq('submission_type', 'vevo_channel').gte('created_at', sixMonthsAgo), [] as Array<{ created_at?: string | null }>),
-        safeRequest('cms growth', supabase.from('youtube_cms_links' as any).select('created_at').eq('status', 'linked').gte('created_at', sixMonthsAgo), [] as Array<{ created_at?: string | null }>),
+        safeRequest<Array<{ created_at?: string | null }>>('release growth', supabase.from('releases').select('created_at').gte('created_at', sixMonthsAgo) as any, []),
+        safeRequest<Array<{ created_at?: string | null }>>('user growth', supabase.from('profiles').select('created_at').gte('created_at', sixMonthsAgo) as any, []),
+        safeRequest<Array<{ created_at?: string | null }>>('vevo growth', supabase.from('video_submissions' as any).select('created_at').eq('submission_type', 'vevo_channel').gte('created_at', sixMonthsAgo) as any, []),
+        safeRequest<Array<{ created_at?: string | null }>>('cms growth', supabase.from('youtube_cms_links' as any).select('created_at').eq('status', 'linked').gte('created_at', sixMonthsAgo) as any, []),
       ]);
 
       if (requestId !== requestIdRef.current) {
