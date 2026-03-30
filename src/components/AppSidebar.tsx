@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   LayoutDashboard, Upload, ListMusic, LogOut, Shield, Users,
   UserCircle, Tags, Tag, Headset, ShieldAlert, Instagram,
@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { NavLink } from '@/components/NavLink';
+import { useAdminPendingCounts } from '@/hooks/useAdminPendingCounts';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
   SidebarGroupLabel, SidebarMenu, SidebarMenuItem,
