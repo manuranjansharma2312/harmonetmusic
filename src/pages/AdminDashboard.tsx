@@ -179,6 +179,16 @@ export default function AdminDashboard() {
       setSignatureDocCount(signatureDocRows.length);
       setTransferCount(transferRows.length);
 
+      // Compute Vevo-specific stats
+      let vevoRev = 0;
+      let vevoStr = 0;
+      (vevoReportRows as any[]).forEach((row: any) => {
+        vevoRev += Number(row.net_generated_revenue || 0);
+        vevoStr += Number(row.streams || 0);
+      });
+      setVevoTotalRevenue(vevoRev);
+      setVevoTotalStreams(vevoStr);
+
       const allReports = [...reportRows, ...ytReportRows, ...vevoReportRows];
       if (allReports.length > 0) {
         let totalRev = 0;
