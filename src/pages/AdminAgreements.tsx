@@ -121,12 +121,12 @@ export default function AdminAgreements() {
             <p className="text-muted-foreground text-sm">Create templates with shortcodes for PDF generation</p>
           </div>
           <div className="flex gap-2">
-            {!showForm && (
+            {!showForm && canChangeSettings && (
               <Button variant="outline" onClick={() => navigate("/admin/agreements/generate")}>
                 Generate PDF
               </Button>
             )}
-            {!showForm && (
+            {!showForm && canChangeSettings && (
               <Button onClick={() => { resetForm(); setShowForm(true); }}>
                 <Plus className="h-4 w-4 mr-2" /> New Template
               </Button>
