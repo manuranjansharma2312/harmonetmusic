@@ -49,6 +49,8 @@ export default function Auth() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [idFront, setIdFront] = useState<File | null>(null);
   const [idBack, setIdBack] = useState<File | null>(null);
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
 
   const { signIn, signUp } = useAuth();
   const { logoSrc, branding } = useBranding();
@@ -68,9 +70,6 @@ export default function Auth() {
   const selectedWhatsAppCountry = countries.find((item) => item.dialCode === whatsappCode);
   const availableStates = country ? getStatesForCountry(country) : [];
 
-  // Login rate limiting
-  const [loginAttempts, setLoginAttempts] = useState(0);
-  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
