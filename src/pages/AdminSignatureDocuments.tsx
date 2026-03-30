@@ -336,7 +336,8 @@ export default function AdminSignatureDocuments() {
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
+           </Table>
+           </div>
           {totalPages > 1 && (
             <div className="p-4 border-t flex justify-center gap-2">
               <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Previous</Button>

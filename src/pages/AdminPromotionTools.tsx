@@ -456,7 +456,7 @@ export default function AdminPromotionTools() {
       {deleteTarget && (
         <ConfirmDialog title="Delete" message="Are you sure you want to delete this item?" onConfirm={() => { deleteItem(); }} onCancel={() => setDeleteTarget(null)} />
       )}
-      </div>
+    </div>
     </DashboardLayout>
   );
 }
