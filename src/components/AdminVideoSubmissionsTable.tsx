@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { CopyButton } from '@/components/CopyButton';
 import { supabase } from '@/integrations/supabase/client';

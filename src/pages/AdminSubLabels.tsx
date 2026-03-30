@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';

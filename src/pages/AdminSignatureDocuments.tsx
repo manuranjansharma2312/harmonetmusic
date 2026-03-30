@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { Button } from '@/components/ui/button';
