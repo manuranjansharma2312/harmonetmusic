@@ -1086,7 +1086,7 @@ export default function AdminEmailSettings() {
                   </div>
                   <div>
                     <h2 className="text-lg font-semibold">Email Sending Logs</h2>
-                    <p className="text-xs text-muted-foreground">Track all sent emails · Logs auto-delete after 7 days</p>
+                    <p className="text-xs text-muted-foreground">Track all sent emails · Logs auto-delete after 14 days</p>
                   </div>
                 </div>
                 <div className="flex gap-2 flex-wrap">
