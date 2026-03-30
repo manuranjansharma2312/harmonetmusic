@@ -25,6 +25,7 @@ interface Tutorial {
 }
 
 export default function AdminTutorials() {
+  const { canDelete, canChangeSettings } = useTeamPermissions();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);

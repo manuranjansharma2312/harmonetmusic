@@ -56,6 +56,7 @@ interface Order {
 }
 
 export default function AdminPromotionTools() {
+  const { canDelete, canChangeSettings } = useTeamPermissions();
   const [isEnabled, setIsEnabled] = useState(true);
   const [settingsId, setSettingsId] = useState('');
   const [products, setProducts] = useState<Product[]>([]);

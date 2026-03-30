@@ -31,6 +31,7 @@ const SHORTCODES = [
 ];
 
 export default function AdminAgreements() {
+  const { canDelete, canChangeSettings } = useTeamPermissions();
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();

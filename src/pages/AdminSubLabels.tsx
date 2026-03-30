@@ -38,6 +38,7 @@ const inputClass =
   'w-full px-4 py-3 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
 
 export default function AdminSubLabels() {
+  const { isTeam, canDelete } = useTeamPermissions();
   const [subLabels, setSubLabels] = useState<SubLabel[]>([]);
   const { startImpersonating } = useImpersonate();
   const navigate = useNavigate();

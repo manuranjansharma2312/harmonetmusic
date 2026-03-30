@@ -108,6 +108,7 @@ interface MonthGroup {
 }
 
 export default function AdminVevoReports() {
+  const { canDelete, canChangeSettings } = useTeamPermissions();
   const fileRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
   const [preview, setPreview] = useState<Record<string, string>[] | null>(null);

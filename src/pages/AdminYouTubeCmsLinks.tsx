@@ -72,6 +72,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default function AdminYouTubeCmsLinks() {
+  const { isTeam, canDelete } = useTeamPermissions();
   const [links, setLinks] = useState<CmsLink[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [subLabels, setSubLabels] = useState<SubLabel[]>([]);

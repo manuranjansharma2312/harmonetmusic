@@ -25,6 +25,7 @@ interface Recipient {
 }
 
 export default function AdminSignatureDocuments() {
+  const { canDelete, canChangeSettings } = useTeamPermissions();
   const navigate = useNavigate();
   const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

@@ -30,6 +30,7 @@ interface Props {
 }
 
 export default function AdminVideoSubmissionsTable({ submissionType, title }: Props) {
+  const { canDelete } = useTeamPermissions();
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
