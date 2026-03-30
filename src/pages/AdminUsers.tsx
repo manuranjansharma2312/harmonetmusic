@@ -415,7 +415,7 @@ export default function AdminUsers() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setViewProfile(null)}>
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
           <div className="glass-strong rounded-2xl p-6 max-w-lg w-full relative animate-scale-in max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setViewProfile(null)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors">✕</button>
+            <button onClick={() => setViewProfile(null)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"><X className="h-4 w-4" /></button>
 
             <div className="flex items-center gap-3 mb-1">
               <span className="text-xs font-mono font-bold bg-primary/20 text-primary px-2 py-0.5 rounded">#{viewProfile.display_id}</span>
