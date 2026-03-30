@@ -343,7 +343,7 @@ export default function AdminPosterGenerator() {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">Poster Generator</h1>
+          <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">Out Now Poster Generator</h1>
           <p className="mt-1 text-muted-foreground">Create professional release posters</p>
         </div>
 
