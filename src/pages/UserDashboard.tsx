@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { WorldMapChart } from '@/components/WorldMapChart';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { NoticePopup } from '@/components/NoticePopup';
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -27,6 +26,10 @@ import {
   ComposedChart, Line
 } from 'recharts';
 import { format, subMonths } from 'date-fns';
+
+const LazyWorldMapChart = lazy(() =>
+  import('@/components/WorldMapChart').then((module) => ({ default: module.WorldMapChart }))
+);
 
 const CHART_COLORS = [
   'hsl(0, 67%, 35%)', 'hsl(45, 80%, 45%)', 'hsl(140, 60%, 40%)',
