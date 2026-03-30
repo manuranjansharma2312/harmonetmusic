@@ -347,8 +347,8 @@ export function AppSidebar() {
                   {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, adminVideoLinks, adminVideoOpen, setAdminVideoOpen)}
                   {renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
                   {settings.enable_youtube_cms && renderCollapsibleGroup('YouTube CMS', Youtube, adminCmsLinks, adminCmsOpen, setAdminCmsOpen)}
-                  {renderCollapsibleGroup('Billing & Revenue', Wallet, adminBillingLinks, adminBillingOpen, setAdminBillingOpen)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}
+                  {renderCollapsibleGroup('Billing & Revenue', Wallet, adminBillingLinks, adminBillingOpen, setAdminBillingOpen)}
                   {renderCollapsibleGroup('Contracts & E-Sign', FileSignature, adminContractsLinks, adminContractsOpen, setAdminContractsOpen)}
                   {renderCollapsibleGroup('Promotional Tools', Megaphone, adminPromotionalLinks, adminPromotionalOpen, setAdminPromotionalOpen)}
                   {renderCollapsibleGroup('Poster Generator', ImageIcon, adminPosterLinks, adminPosterOpen, setAdminPosterOpen)}
