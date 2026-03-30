@@ -50,6 +50,11 @@ const adminSubLabelLinks = [
   { to: '/admin/sub-label-withdrawals', label: 'Withdraw Requests', icon: Wallet },
 ];
 
+const adminPosterLinks = [
+  { to: '/admin/ai-image-system', label: 'AI Poster Generate', icon: Sparkles },
+  { to: '/admin/poster-generator', label: 'Out Now Poster Generator', icon: ImageIcon },
+];
+
 const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'All Users', icon: Users },
@@ -61,13 +66,13 @@ const adminLinksTop = [
   { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
   { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
   { to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt },
-  { to: '/admin/poster-generator', label: 'Out Now Poster Generator', icon: ImageIcon },
+  
   { to: '/admin/tutorials', label: 'Manage Tutorials', icon: BookOpen },
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
   { to: '/admin/agreements', label: 'Agreements', icon: FileSignature },
   { to: '/admin/promotion-tools', label: 'Promotional Tools', icon: Megaphone },
   { to: '/admin/payment-settings', label: 'Payment Settings', icon: CreditCard },
-  { to: '/admin/ai-image-system', label: 'AI Poster Generate', icon: Sparkles },
+  
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
   { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
   { to: '/admin/email-settings', label: 'Manage Emails', icon: Mail },
@@ -93,6 +98,7 @@ export function AppSidebar() {
   const [userCmsOpen, setUserCmsOpen] = useState(false);
   const [adminCmsOpen, setAdminCmsOpen] = useState(false);
   const [adminSettingsOpen, setAdminSettingsOpen] = useState(false);
+  const [adminPosterOpen, setAdminPosterOpen] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
 
   // Fetch impersonated user's profile when impersonating
@@ -300,6 +306,7 @@ export function AppSidebar() {
                   {settings.enable_youtube_cms && renderCollapsibleGroup('YouTube CMS', Youtube, adminCmsLinks, adminCmsOpen, setAdminCmsOpen)}
                   {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, adminVideoLinks, adminVideoOpen, setAdminVideoOpen)}
                   {renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
+                  {renderCollapsibleGroup('Poster Generator', ImageIcon, adminPosterLinks, adminPosterOpen, setAdminPosterOpen)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}
                   {renderCollapsibleGroup('Settings', Settings, adminSettingsLinks, adminSettingsOpen, setAdminSettingsOpen)}
                 </>
