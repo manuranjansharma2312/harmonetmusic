@@ -141,7 +141,7 @@ function App() {
                   <BrandingHead />
                   <Suspense fallback={<PageLoader />}>
                     <Routes>
-                      <Route path="/" element={<Navigate to="/auth" replace />} />
+                      <Route path="/" element={<Navigate to="/dashboard" replace />} />
                       <Route path="/auth" element={<Auth />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
