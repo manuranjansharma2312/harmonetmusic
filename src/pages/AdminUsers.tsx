@@ -265,6 +265,15 @@ export default function AdminUsers() {
 
       {/* Bulk action bar */}
       <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 mb-4">
+        {!isTeam && (
+          <button
+            onClick={() => setShowCreateUser(true)}
+            className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 rounded-lg btn-primary-gradient text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
+          >
+            <UserPlus className="h-4 w-4" />
+            Create User
+          </button>
+        )}
         <button
           onClick={handleExport}
           className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 rounded-lg bg-muted/50 border border-border text-sm font-medium text-foreground hover:bg-muted transition-all"
