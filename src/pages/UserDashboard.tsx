@@ -172,9 +172,10 @@ export default function UserDashboard() {
           ]);
         }
       } else {
-        [reportData, ytReportData] = await Promise.all([
+        [reportData, ytReportData, vevoReportData] = await Promise.all([
           fetchAllRows('report_entries', reportSelect, (query) => query.eq('user_id', effectiveUserId)),
           fetchAllRows('youtube_report_entries', reportSelect, (query) => query.eq('user_id', effectiveUserId)),
+          fetchAllRows('vevo_report_entries', reportSelect, (query) => query.eq('user_id', effectiveUserId)),
         ]);
       }
 
