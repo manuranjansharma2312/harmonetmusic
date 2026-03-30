@@ -113,6 +113,8 @@ export function AppSidebar() {
   const [userVideoOpen, setUserVideoOpen] = useState(false);
   const [adminVideoOpen, setAdminVideoOpen] = useState(false);
   const [userCmsOpen, setUserCmsOpen] = useState(false);
+  const [userPosterOpen, setUserPosterOpen] = useState(false);
+  const [userContactPoliciesOpen, setUserContactPoliciesOpen] = useState(false);
   const [adminCmsOpen, setAdminCmsOpen] = useState(false);
   const [adminSettingsOpen, setAdminSettingsOpen] = useState(false);
   const [adminContactPoliciesOpen, setAdminContactPoliciesOpen] = useState(false);
