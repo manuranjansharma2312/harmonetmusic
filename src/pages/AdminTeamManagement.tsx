@@ -273,6 +273,53 @@ export default function AdminTeamManagement() {
     }
   };
 
+  // ---- Set Password ----
+  const handleSetPassword = async () => {
+    if (!pwTarget || !newPassword || newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    setPwSubmitting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke('admin-reset-password', {
+        body: { action: 'set_password', user_id: pwTarget.user_id, new_password: newPassword },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || error?.message || 'Failed to set password');
+      } else {
+        toast.success(`Password updated for ${pwTarget.name}`);
+        setPwModalOpen(false);
+        setPwTarget(null);
+        setNewPassword('');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed');
+    }
+    setPwSubmitting(false);
+  };
+
+  // ---- Send Forgot Password ----
+  const handleSendResetLink = async (member: TeamMember) => {
+    const confirm = window.confirm(`Send password reset email to ${member.email}?`);
+    if (!confirm) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke('admin-reset-password', {
+        body: { action: 'send_reset_link', email: member.email },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || error?.message || 'Failed to send reset link');
+      } else {
+        toast.success(`Password reset link sent to ${member.email}`);
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed');
+    }
+  };
+
   // ---- CSV Export ----
   const exportCSV = () => {
     const rows = selected.size > 0 ? members.filter(m => selected.has(m.id)) : members;
