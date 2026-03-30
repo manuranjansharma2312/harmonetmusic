@@ -221,12 +221,13 @@ export default function AdminAllPending() {
 
   const activeCategory = visibleCategories.find(c => c.key === activeTab) || visibleCategories[0];
 
-  // Fetch counts for all categories
+  // Fetch counts for visible categories only
   useEffect(() => {
+    if (!visibleCategories.length) return;
     const fetchCounts = async () => {
       const results: Record<string, number> = {};
       await Promise.all(
-        categories.map(async (cat) => {
+        visibleCategories.map(async (cat) => {
           const { count } = await (supabase.from(cat.table as any) as any)
             .select('id', { count: 'exact', head: true })
             .eq(cat.statusField, cat.statusValue);
@@ -236,7 +237,7 @@ export default function AdminAllPending() {
       setCounts(results);
     };
     fetchCounts();
-  }, []);
+  }, [visibleCategories]);
 
   const effectivePageSize = pageSize === 'all' ? 1000 : pageSize;
 
