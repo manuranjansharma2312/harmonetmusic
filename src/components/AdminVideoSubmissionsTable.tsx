@@ -142,6 +142,29 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
 
   const handleBulkDelete = async () => {
     const ids = [...selected];
+    // Fetch file URLs from submission values before deleting
+    const { data: fileValues } = await supabase
+      .from('video_submission_values')
+      .select('file_url')
+      .in('submission_id', ids)
+      .not('file_url', 'is', null);
+    
+    // Delete files from storage
+    if (fileValues && fileValues.length > 0) {
+      const filePaths = fileValues
+        .map((v: any) => {
+          try {
+            const url = new URL(v.file_url);
+            const match = url.pathname.match(/\/object\/public\/video-uploads\/(.+)/);
+            return match ? match[1] : null;
+          } catch { return null; }
+        })
+        .filter(Boolean) as string[];
+      if (filePaths.length > 0) {
+        await supabase.storage.from('video-uploads').remove(filePaths);
+      }
+    }
+    
     await supabase.from('video_submission_values').delete().in('submission_id', ids);
     const { error } = await supabase.from('video_submissions').delete().in('id', ids);
     if (error) toast.error(error.message);
