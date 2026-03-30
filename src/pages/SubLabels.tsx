@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { StatusBadge } from '@/components/StatusBadge';
-import { Loader2, Plus, Users, Upload, Eye, FileText } from 'lucide-react';
+import { Loader2, Plus, Users, Upload, Eye, EyeOff, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -61,6 +61,7 @@ export default function SubLabels() {
     withdrawal_threshold: '1000',
   });
   const [b2bFile, setB2bFile] = useState<File | null>(null);
+  const [showPw, setShowPw] = useState(false);
 
   const fetchSubLabels = async () => {
     if (!effectiveUserId) return;
@@ -234,7 +235,12 @@ export default function SubLabels() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">Password *</label>
-                <input className={inputClass} type="password" value={formData.password} onChange={(e) => setFormData(p => ({ ...p, password: e.target.value }))} required placeholder="Min 6 characters" />
+                <div className="relative">
+                  <input className={inputClass} type={showPw ? 'text' : 'password'} value={formData.password} onChange={(e) => setFormData(p => ({ ...p, password: e.target.value }))} required placeholder="Min 6 characters" />
+                  <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
             </div>
 
