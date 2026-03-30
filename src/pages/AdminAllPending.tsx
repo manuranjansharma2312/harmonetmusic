@@ -189,12 +189,14 @@ export default function AdminAllPending() {
     fetchCounts();
   }, []);
 
+  const effectivePageSize = pageSize === 'all' ? 1000 : pageSize;
+
   // Fetch data for active tab
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const from = (page - 1) * pageSize;
-      const to = from + pageSize - 1;
+      const from = page * effectivePageSize;
+      const to = from + effectivePageSize - 1;
       const { data: rows } = await (supabase.from(activeCategory.table as any) as any)
         .select('*')
         .eq(activeCategory.statusField, activeCategory.statusValue)
@@ -204,10 +206,9 @@ export default function AdminAllPending() {
       setLoading(false);
     };
     fetchData();
-  }, [activeTab, page]);
+  }, [activeTab, page, effectivePageSize]);
 
   const totalCount = counts[activeTab] || 0;
-  const totalPages = Math.ceil(totalCount / pageSize);
 
   const handleApprove = async () => {
     if (!approveId) return;
