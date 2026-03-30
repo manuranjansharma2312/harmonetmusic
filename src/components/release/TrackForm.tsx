@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Upload, Music2, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Spotify & Apple Music SVG logos inline
 const SpotifyIcon = () => (

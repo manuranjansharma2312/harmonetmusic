@@ -142,7 +142,15 @@ export default function MyLabels() {
                 B2B Document (PDF) *
               </label>
               <div className="relative">
-                <input type="file" accept=".pdf,application/pdf" onChange={(e) => setB2bFile(e.target.files?.[0] || null)} className="hidden" id="b2b-upload" />
+                <input type="file" accept=".pdf,application/pdf" onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  if (file && file.size > 150 * 1024 * 1024) {
+                    toast.error('B2B file size must be under 150 MB');
+                    e.target.value = '';
+                    return;
+                  }
+                  setB2bFile(file);
+                }} className="hidden" id="b2b-upload" />
                 <label htmlFor="b2b-upload" className={`${inputClass} flex min-w-0 cursor-pointer items-center gap-2`}>
                   <Upload className="h-4 w-4 shrink-0" />
                   <span className="truncate">{b2bFile?.name || 'Choose PDF file'}</span>

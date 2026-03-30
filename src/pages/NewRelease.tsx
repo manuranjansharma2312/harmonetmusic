@@ -171,6 +171,11 @@ export default function NewRelease() {
   const handlePosterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error('Image file size must be under 100 MB');
+      e.target.value = '';
+      return;
+    }
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file.');
       return;
