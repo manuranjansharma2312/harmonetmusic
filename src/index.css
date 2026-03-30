@@ -56,6 +56,11 @@
   }
 }
 
+/* Bright primary for text & icons — keeps bg-primary dark for buttons */
+.text-primary {
+  color: hsl(var(--primary-text)) !important;
+}
+
 @layer base {
   * {
     @apply border-border;
