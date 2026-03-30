@@ -258,7 +258,7 @@ export default function AdminSubLabels() {
                         <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!sl.sub_user_id} onClick={() => {
                           if (sl.sub_user_id) {
                             startImpersonating(sl.sub_user_id, sl.email);
-                            navigate('/dashboard');
+                            navigate('/user-dashboard');
                           }
                         }} title={sl.sub_user_id ? "Login as User" : "No account linked"}>
                           <LogIn className={`h-4 w-4 ${sl.sub_user_id ? 'text-blue-500' : 'text-muted-foreground'}`} />

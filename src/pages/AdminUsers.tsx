@@ -130,7 +130,7 @@ export default function AdminUsers() {
   const handleLoginAs = (profile: Profile) => {
     startImpersonating(profile.user_id, profile.email);
     toast.success(`Now viewing as ${profile.email}`);
-    navigate('/dashboard');
+    navigate('/user-dashboard');
   };
 
   const handleSaveHiddenCut = async (userId: string, percent: number) => {

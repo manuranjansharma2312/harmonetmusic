@@ -72,10 +72,10 @@ export function ProtectedRoute({
   if (!user) return <Navigate to="/auth" replace />;
 
   if (requiredRole === 'admin' && role !== 'admin' && role !== 'team') {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/user-dashboard" replace />;
   }
   if (requiredRole && requiredRole !== 'admin' && role !== requiredRole) {
-    return <Navigate to={role === 'admin' ? '/admin' : '/dashboard'} replace />;
+    return <Navigate to={role === 'admin' ? '/admin' : '/user-dashboard'} replace />;
   }
 
   // Block non-admin users who aren't verified

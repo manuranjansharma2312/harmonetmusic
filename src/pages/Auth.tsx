@@ -64,7 +64,7 @@ export default function Auth() {
   }
 
   if (user && role) {
-    return <Navigate to={(role === 'admin' || role === 'team') ? '/admin' : '/dashboard'} replace />;
+    return <Navigate to={(role === 'admin' || role === 'team') ? '/admin' : '/user-dashboard'} replace />;
   }
 
   const selectedWhatsAppCountry = countries.find((item) => item.dialCode === whatsappCode);
@@ -183,7 +183,7 @@ export default function Auth() {
       if (profileError) throw profileError;
 
       toast.success('Account created successfully!');
-      navigate('/dashboard');
+      navigate('/user-dashboard');
     } catch (err: any) {
       toast.error(err.message || 'Signup failed');
     } finally {
