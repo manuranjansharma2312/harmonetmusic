@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import {
   Users, Plus, Trash2, Pencil, Loader2, Shield, FolderOpen, Eye, EyeOff,
-  Download, LogIn, CreditCard,
+  Download, LogIn, CreditCard, KeyRound, Mail,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
