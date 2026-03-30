@@ -77,7 +77,7 @@ const adminLinksTop = [
   { to: '/admin/payment-settings', label: 'Payment Settings', icon: CreditCard },
   
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
-  { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
+  
   { to: '/admin/email-settings', label: 'Manage Emails', icon: Mail },
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
 ];
