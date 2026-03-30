@@ -114,13 +114,6 @@ export default function AdminPaymentSettings() {
           <CardContent className="space-y-5">
             <div className="flex items-center justify-between p-4 rounded-lg border border-border">
               <div>
-                <p className="font-medium text-foreground">Promotion Services</p>
-                <p className="text-sm text-muted-foreground">Enable or disable promotion services for all users</p>
-              </div>
-              <Switch checked={isEnabled} onCheckedChange={togglePromoEnabled} />
-            </div>
-            <div className="flex items-center justify-between p-4 rounded-lg border border-border">
-              <div>
                 <p className="font-medium text-foreground">Takedown Payment</p>
                 <p className="text-sm text-muted-foreground">
                   {takedownPaymentEnabled
