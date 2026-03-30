@@ -163,7 +163,7 @@ function App() {
                       <Route path="/auth" element={<Auth />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/dashboard" element={<ProtectedRoute><DashboardRouter /></ProtectedRoute>} />
-                      <Route path="/user-dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+                      <Route path="/user-dashboard" element={<Navigate to="/dashboard" replace />} />
                       <Route path="/submit" element={<ProtectedRoute><NewRelease /></ProtectedRoute>} />
                       <Route path="/admin/genres-languages" element={<ProtectedRoute requiredRole="admin"><AdminGenresLanguages /></ProtectedRoute>} />
                       <Route path="/my-releases" element={<ProtectedRoute><MyReleases /></ProtectedRoute>} />
@@ -173,7 +173,7 @@ function App() {
                       <Route path="/my-songs" element={<Navigate to="/my-releases" replace />} />
                       <Route path="/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
                       <Route path="/bank-details" element={<ProtectedRoute><BankDetails /></ProtectedRoute>} />
-                      <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+                      <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
                       <Route path="/admin/all-pending" element={<ProtectedRoute requiredRole="admin"><AdminAllPending /></ProtectedRoute>} />
                       <Route path="/admin/submissions" element={<ProtectedRoute requiredRole="admin"><AdminSubmissions /></ProtectedRoute>} />
                       <Route path="/admin/transfer-history" element={<ProtectedRoute requiredRole="admin"><AdminTransferHistory /></ProtectedRoute>} />

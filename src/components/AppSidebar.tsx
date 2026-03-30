@@ -92,7 +92,7 @@ const adminBillingLinks = [
 ];
 
 const adminLinksTop = [
-  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/all-pending', label: 'All Pendings', icon: Clock },
   { to: '/admin/users', label: 'All Users', icon: Users },
   { to: '/admin/submissions', label: 'All Releases', icon: ListMusic },
@@ -219,7 +219,7 @@ export function AppSidebar() {
 
   // Build user links dynamically based on user type
   const userLinksTop = [
-    { to: '/user-dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/submit', label: 'New Release', icon: Upload },
     { to: '/my-releases', label: 'My Releases', icon: ListMusic },
     { to: '/my-labels', label: 'My Labels', icon: Tag },
@@ -312,7 +312,7 @@ export function AppSidebar() {
       <SidebarMenuButton asChild tooltip={link.label}>
         <NavLink
           to={link.to}
-          end={link.to === '/admin'}
+          end={link.to === '/dashboard'}
           onClick={handleNavClick}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
           activeClassName="bg-primary/10 text-foreground font-semibold"

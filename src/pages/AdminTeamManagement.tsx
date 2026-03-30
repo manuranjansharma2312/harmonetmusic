@@ -19,7 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { countries as locationCountries } from '@/data/locations';
 
 const ALL_ADMIN_PAGES = [
-  { key: 'dashboard', label: 'Dashboard', path: '/admin' },
+  { key: 'dashboard', label: 'Dashboard', path: '/dashboard' },
   { key: 'all-pending', label: 'All Pendings', path: '/admin/all-pending' },
   { key: 'users', label: 'All Users', path: '/admin/users' },
   { key: 'submissions', label: 'All Releases', path: '/admin/submissions' },
