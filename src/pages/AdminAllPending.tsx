@@ -333,7 +333,7 @@ export default function AdminAllPending() {
                             </Button>
                           )}
                           {activeCategory.actions.includes('reject') && (
-                            <Button size="sm" variant="ghost" className="h-8 text-red-500 hover:text-red-400 hover:bg-red-500/10"
+                            <Button size="sm" variant="ghost" className="h-8 text-destructive hover:text-destructive hover:bg-accent"
                               onClick={() => setRejectId(row.id)}>
                               <XCircle className="h-4 w-4 mr-1" /> Reject
                             </Button>
