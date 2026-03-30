@@ -83,7 +83,8 @@ export default function UserDashboard() {
   const [monthlyReleasesData, setMonthlyReleasesData] = useState<{ month: string; count: number }[]>([]);
   const [monthlyRevenueSparkline, setMonthlyRevenueSparkline] = useState<{ month: string; count: number }[]>([]);
   const [monthlyDownloadsData, setMonthlyDownloadsData] = useState<{ month: string; count: number }[]>([]);
-
+  const [vevoStreams, setVevoStreams] = useState(0);
+  const [vevoRevenue, setVevoRevenue] = useState(0);
   const refreshTimeoutRef = useRef<number | null>(null);
   const isFetchingRef = useRef(false);
   const shouldRefetchRef = useRef(false);
@@ -151,6 +152,7 @@ export default function UserDashboard() {
 
       let reportData: any[] = [];
       let ytReportData: any[] = [];
+      let vevoReportData: any[] = [];
 
       if (role === 'admin' && isImpersonating && impersonatedUserId) {
         const { data: subLabels } = await supabase.from('sub_labels').select('sub_user_id').eq('parent_user_id', effectiveUserId).eq('status', 'active');
@@ -164,15 +166,17 @@ export default function UserDashboard() {
         const ownedIsrcs = [...new Set([...(trackRows ?? []), ...(songRows ?? [])].map((row) => (row.isrc || '').trim().toUpperCase()).filter(Boolean))];
 
         if (ownedIsrcs.length > 0) {
-          [reportData, ytReportData] = await Promise.all([
+          [reportData, ytReportData, vevoReportData] = await Promise.all([
             fetchAllRows('report_entries', reportSelect, (query) => query.in('isrc', ownedIsrcs)),
             fetchAllRows('youtube_report_entries', reportSelect, (query) => query.in('isrc', ownedIsrcs)),
+            fetchAllRows('vevo_report_entries', reportSelect, (query) => query.in('isrc', ownedIsrcs)),
           ]);
         }
       } else {
-        [reportData, ytReportData] = await Promise.all([
+        [reportData, ytReportData, vevoReportData] = await Promise.all([
           fetchAllRows('report_entries', reportSelect, (query) => query.eq('user_id', effectiveUserId)),
           fetchAllRows('youtube_report_entries', reportSelect, (query) => query.eq('user_id', effectiveUserId)),
+          fetchAllRows('vevo_report_entries', reportSelect, (query) => query.eq('user_id', effectiveUserId)),
         ]);
       }
 
@@ -207,7 +211,19 @@ export default function UserDashboard() {
         setCmsPending(0);
       }
 
-      const allReports = [...reportData, ...ytReportData];
+      // Compute Vevo stats
+      let vevoStr = 0;
+      let vevoRev = 0;
+      vevoReportData.forEach((r: any) => {
+        const isFrozen = r.revenue_frozen === true;
+        const grossRevenue = Number(r.net_generated_revenue || 0);
+        vevoRev += isFrozen ? 0 : applySnapshotCut(grossRevenue, r.cut_percent_snapshot, effectiveCutPercent, shouldCut);
+        vevoStr += Number(r.streams || 0);
+      });
+      setVevoStreams(vevoStr);
+      setVevoRevenue(Math.round(vevoRev * 100) / 100);
+
+      const allReports = [...reportData, ...ytReportData, ...vevoReportData];
       if (allReports.length > 0) {
         let totalRev = 0;
         let totalStr = 0;
@@ -410,12 +426,14 @@ export default function UserDashboard() {
       </div>
 
       {/* Secondary Compact Stats */}
-      <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-6 sm:mb-8">
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3 mb-6 sm:mb-8">
         {[
           { label: 'Releases', value: releaseStats.total, icon: Disc3, accent: 'text-primary' },
           { label: 'Streams', value: formatStreams(totalStreams), icon: Headphones, accent: 'text-sky-400' },
           { label: 'Downloads', value: formatStreams(totalDownloads), icon: Download, accent: 'text-violet-400' },
           { label: 'Platforms', value: topStores.length, icon: Music, accent: 'text-amber-400' },
+          { label: 'Vevo Streams', value: formatStreams(vevoStreams), icon: Play, accent: 'text-pink-400' },
+          { label: 'Vevo Revenue', value: formatRevenue(vevoRevenue), icon: Film, accent: 'text-rose-400' },
           ...(isSubLabelUser ? [
             { label: 'Countries', value: countryData.length, icon: Globe, accent: 'text-emerald-400' },
             { label: 'Artists', value: topArtists.length, icon: Headphones, accent: 'text-pink-400' },
@@ -436,7 +454,7 @@ export default function UserDashboard() {
       {!isSubLabelUser && cmsChannels > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {[
-            { label: 'CMS Net Payable', value: formatRevenue(cmsRevenue), icon: Youtube, color: 'hsl(0, 67%, 40%)', iconColor: 'text-red-400' },
+            { label: 'CMS Revenue', value: formatRevenue(cmsRevenue), icon: Youtube, color: 'hsl(0, 67%, 40%)', iconColor: 'text-red-400' },
             { label: 'CMS Paid', value: formatRevenue(cmsPaid), icon: CheckCircle, color: 'hsl(140, 60%, 40%)', iconColor: 'text-emerald-400' },
             { label: 'CMS Pending', value: formatRevenue(cmsPending), icon: Clock, color: 'hsl(45, 80%, 45%)', iconColor: 'text-amber-400' },
             { label: 'CMS Balance', value: formatRevenue(cmsAvailable), icon: Zap, color: 'hsl(200, 70%, 50%)', iconColor: 'text-sky-400' },

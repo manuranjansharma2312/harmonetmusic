@@ -78,6 +78,8 @@ export default function AdminDashboard() {
   const [pendingVideoCount, setPendingVideoCount] = useState(0);
   const [pendingVevoCount, setPendingVevoCount] = useState(0);
   const [monthlyVevo, setMonthlyVevo] = useState<{ month: string; count: number }[]>([]);
+  const [vevoTotalRevenue, setVevoTotalRevenue] = useState(0);
+  const [vevoTotalStreams, setVevoTotalStreams] = useState(0);
   const [monthlyCmsLinked, setMonthlyCmsLinked] = useState<{ month: string; count: number }[]>([]);
   const [signatureDocCount, setSignatureDocCount] = useState(0);
   const [transferCount, setTransferCount] = useState(0);
@@ -176,6 +178,16 @@ export default function AdminDashboard() {
       setPendingVevoCount(vevoSubs.filter((row) => row.status === 'pending').length);
       setSignatureDocCount(signatureDocRows.length);
       setTransferCount(transferRows.length);
+
+      // Compute Vevo-specific stats
+      let vevoRev = 0;
+      let vevoStr = 0;
+      (vevoReportRows as any[]).forEach((row: any) => {
+        vevoRev += Number(row.net_generated_revenue || 0);
+        vevoStr += Number(row.streams || 0);
+      });
+      setVevoTotalRevenue(vevoRev);
+      setVevoTotalStreams(vevoStr);
 
       const allReports = [...reportRows, ...ytReportRows, ...vevoReportRows];
       if (allReports.length > 0) {
@@ -341,7 +353,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Secondary Compact Stats */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3 mb-6 sm:mb-8">
+      <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-10 gap-2 sm:gap-3 mb-6 sm:mb-8">
         {[
           { label: 'Labels', value: labelCount, icon: Tag, accent: 'text-amber-400' },
           { label: 'Sub Labels', value: subLabelCount, icon: UsersRound, accent: 'text-sky-400' },
@@ -349,7 +361,9 @@ export default function AdminDashboard() {
           { label: 'CMS Links', value: cmsLinkCount, icon: Link2, accent: 'text-red-400' },
           { label: 'CMS Revenue', value: formatRevenue(cmsTotalRevenue), icon: Monitor, accent: 'text-emerald-400' },
           { label: 'Videos', value: videoSubmissionCount, icon: Film, accent: 'text-violet-400' },
-          { label: 'Vevo', value: vevoChannelCount, icon: Play, accent: 'text-pink-400' },
+          { label: 'Vevo Channels', value: vevoChannelCount, icon: Play, accent: 'text-pink-400' },
+          { label: 'Vevo Revenue', value: formatRevenue(vevoTotalRevenue), icon: Zap, accent: 'text-rose-400' },
+          { label: 'Vevo Streams', value: formatStreams(vevoTotalStreams), icon: Headphones, accent: 'text-pink-300' },
           { label: 'Transfers', value: transferCount, icon: TrendingUp, accent: 'text-sky-400' },
         ].map((stat) => (
           <GlassCard key={stat.label} className="!p-3 group hover:scale-[1.02] transition-transform duration-300">
