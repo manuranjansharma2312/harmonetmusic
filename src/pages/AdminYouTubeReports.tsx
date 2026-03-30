@@ -593,7 +593,7 @@ export default function AdminYouTubeReports() {
           )}
         </div>
 
-        {showFormatConfig && (
+        {showFormatConfig && canChangeSettings && (
           <GlassCard className="p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold flex items-center gap-2">
