@@ -443,7 +443,7 @@ export default function AdminSmartLinks() {
                         <CheckCircle className="h-3.5 w-3.5 mr-1" />Approve ({selectedPending})
                       </Button>
                     )}
-                    {hasSelection && selectedRejected > 0 && (
+                    {hasSelection && selectedRejected > 0 && canDelete && (
                       <Button size="sm" variant="destructive" className="text-xs" onClick={async () => {
                         const ids = customLinks.filter(c => selectedIds.has(c.id) && c.status === 'rejected').map(c => c.id);
                         const { error } = await supabase.from('smart_links').delete().in('id', ids);
