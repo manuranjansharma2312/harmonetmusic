@@ -74,6 +74,7 @@ export default function UserDashboard() {
   const [subLabelCut, setSubLabelCut] = useState(0);
   const [isSubLabelUser, setIsSubLabelUser] = useState(false);
   const [cmsRevenue, setCmsRevenue] = useState(0);
+  const [cmsNetPayable, setCmsNetPayable] = useState(0);
   const [cmsChannels, setCmsChannels] = useState(0);
   const [cmsPaid, setCmsPaid] = useState(0);
   const [cmsPending, setCmsPending] = useState(0);
@@ -93,7 +94,7 @@ export default function UserDashboard() {
   const effectiveCut = getEffectiveRevenueCutPercent({ hiddenCut, subLabelCut, isSubLabel: isSubLabelUser });
   const netRevenue = totalRevenue;
   const availableRevenue = Math.max(calculateAvailableBalance(netRevenue, withdrawalBalance.paid, withdrawalBalance.pending), 0);
-  const cmsAvailable = Math.max(0, cmsRevenue - cmsPaid - cmsPending);
+  const cmsAvailable = Math.max(0, cmsNetPayable - cmsPaid - cmsPending);
 
   const fetchAll = useCallback(async () => {
     if (!effectiveUserId) return;
@@ -192,14 +193,17 @@ export default function UserDashboard() {
         const linkedNames = new Set(linkedChannels.map((link) => link.channel_name));
         const userCmsEntries = ((cmsEntries as any[]) || []).filter((entry) => linkedNames.has(entry.channel_name));
 
-        let cmsTotal = 0;
+        let cmsGross = 0;
+        let cmsNet = 0;
         userCmsEntries.forEach((entry) => {
           const rev = Number(entry.net_generated_revenue) || 0;
           const cut = Number(linkedChannels.find((link) => link.channel_name === entry.channel_name)?.cut_percent || 0);
-          cmsTotal += rev - (rev * cut / 100);
+          cmsGross += rev;
+          cmsNet += rev - (rev * cut / 100);
         });
 
-        setCmsRevenue(Math.round(cmsTotal * 100) / 100);
+        setCmsRevenue(Math.round(cmsGross * 100) / 100);
+        setCmsNetPayable(Math.round(cmsNet * 100) / 100);
 
         const cmsWithdrawalRows = (cmsWithdrawals as any[]) || [];
         setCmsPaid(cmsWithdrawalRows.filter((w) => w.status === 'paid').reduce((sum, w) => sum + Number(w.amount), 0));
@@ -207,6 +211,7 @@ export default function UserDashboard() {
       } else {
         setCmsChannels(0);
         setCmsRevenue(0);
+        setCmsNetPayable(0);
         setCmsPaid(0);
         setCmsPending(0);
       }
@@ -374,7 +379,7 @@ export default function UserDashboard() {
   const totalStoreStreams = useMemo(() => topStores.reduce((a, b) => a + b.value, 0), [topStores]);
   const totalStoreRevenue = useMemo(() => topStores.reduce((a, b) => a + b.revenue, 0), [topStores]);
   const topStoreNames = useMemo(() => topStores.slice(0, 4).map(s => s.name), [topStores]);
-  const hasVevoData = vevoStreams > 0 || vevoRevenue > 0;
+  
 
   const getReleaseName = (r: any) => {
     if (r.content_type === 'album') return r.album_name || 'Untitled Album';
@@ -434,10 +439,8 @@ export default function UserDashboard() {
           { label: 'Downloads', value: formatStreams(totalDownloads), icon: Download, accent: 'text-violet-400' },
           { label: 'Platforms', value: topStores.length, icon: Music, accent: 'text-amber-400' },
           ...(isSubLabelUser ? [] : [
-            ...(hasVevoData ? [
-              { label: 'Vevo Streams', value: formatStreams(vevoStreams), icon: Play, accent: 'text-pink-400' },
-              { label: 'Vevo Revenue', value: formatRevenue(vevoRevenue), icon: Film, accent: 'text-rose-400' },
-            ] : []),
+            { label: 'Vevo Streams', value: formatStreams(vevoStreams), icon: Play, accent: 'text-pink-400' },
+            { label: 'Vevo Revenue', value: formatRevenue(vevoRevenue), icon: Film, accent: 'text-rose-400' },
           ]),
           { label: 'Countries', value: countryData.length, icon: Globe, accent: 'text-emerald-400' },
           { label: 'Artists', value: topArtists.length, icon: Headphones, accent: 'text-pink-400' },
@@ -455,8 +458,8 @@ export default function UserDashboard() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {[
             { label: 'CMS Revenue', value: formatRevenue(cmsRevenue), icon: Youtube, color: 'hsl(0, 67%, 40%)', iconColor: 'text-red-400' },
+            { label: 'CMS Net Payable', value: formatRevenue(cmsNetPayable), icon: Monitor, color: 'hsl(25, 80%, 45%)', iconColor: 'text-orange-400' },
             { label: 'CMS Paid', value: formatRevenue(cmsPaid), icon: CheckCircle, color: 'hsl(140, 60%, 40%)', iconColor: 'text-emerald-400' },
-            { label: 'CMS Pending', value: formatRevenue(cmsPending), icon: Clock, color: 'hsl(45, 80%, 45%)', iconColor: 'text-amber-400' },
             { label: 'CMS Balance', value: formatRevenue(cmsAvailable), icon: Zap, color: 'hsl(200, 70%, 50%)', iconColor: 'text-sky-400' },
           ].map((stat) => (
             <GlassCard key={stat.label} className="!p-4 border-l-4 animate-fade-in" style={{ borderLeftColor: stat.color }}>
