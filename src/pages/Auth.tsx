@@ -538,7 +538,7 @@ export default function Auth() {
                     id="id-back"
                   />
                   <label htmlFor="id-back" className={`${inputClass} cursor-pointer flex items-center justify-center gap-2 text-center break-all`}>
-                    📄 {idBack ? `${idBack.name.slice(0, 15)}...` : 'Back Side'}
+                    {idBack ? <FileCheck className="h-4 w-4 text-green-500 shrink-0" /> : <Upload className="h-4 w-4 shrink-0" />} {idBack ? `${idBack.name.slice(0, 15)}...` : 'Back Side'}
                   </label>
                 </div>
               </div>
