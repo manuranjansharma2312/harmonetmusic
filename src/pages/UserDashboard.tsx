@@ -374,6 +374,7 @@ export default function UserDashboard() {
   const totalStoreStreams = useMemo(() => topStores.reduce((a, b) => a + b.value, 0), [topStores]);
   const totalStoreRevenue = useMemo(() => topStores.reduce((a, b) => a + b.revenue, 0), [topStores]);
   const topStoreNames = useMemo(() => topStores.slice(0, 4).map(s => s.name), [topStores]);
+  const hasVevoData = vevoStreams > 0 || vevoRevenue > 0;
 
   const getReleaseName = (r: any) => {
     if (r.content_type === 'album') return r.album_name || 'Untitled Album';
@@ -436,8 +437,13 @@ export default function UserDashboard() {
             { label: 'Countries', value: countryData.length, icon: Globe, accent: 'text-emerald-400' },
             { label: 'Artists', value: topArtists.length, icon: Headphones, accent: 'text-pink-400' },
           ] : [
-            { label: 'Vevo Streams', value: formatStreams(vevoStreams), icon: Play, accent: 'text-pink-400' },
-            { label: 'Vevo Revenue', value: formatRevenue(vevoRevenue), icon: Film, accent: 'text-rose-400' },
+            ...(hasVevoData ? [
+              { label: 'Vevo Streams', value: formatStreams(vevoStreams), icon: Play, accent: 'text-pink-400' },
+              { label: 'Vevo Revenue', value: formatRevenue(vevoRevenue), icon: Film, accent: 'text-rose-400' },
+            ] : [
+              { label: 'Countries', value: countryData.length, icon: Globe, accent: 'text-emerald-400' },
+              { label: 'Artists', value: topArtists.length, icon: Headphones, accent: 'text-pink-400' },
+            ]),
             { label: 'CMS Channels', value: cmsChannels, icon: Youtube, accent: 'text-red-400' },
             { label: 'CMS Balance', value: formatRevenue(cmsAvailable), icon: Monitor, accent: 'text-emerald-400' },
           ]),
@@ -450,11 +456,10 @@ export default function UserDashboard() {
         ))}
       </div>
 
-      {/* CMS Balance (not for sub-label users) */}
+      {/* CMS Wallet (not for sub-label users) */}
       {!isSubLabelUser && cmsChannels > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {[
-            { label: 'CMS Revenue', value: formatRevenue(cmsRevenue), icon: Youtube, color: 'hsl(0, 67%, 40%)', iconColor: 'text-red-400' },
             { label: 'CMS Paid', value: formatRevenue(cmsPaid), icon: CheckCircle, color: 'hsl(140, 60%, 40%)', iconColor: 'text-emerald-400' },
             { label: 'CMS Pending', value: formatRevenue(cmsPending), icon: Clock, color: 'hsl(45, 80%, 45%)', iconColor: 'text-amber-400' },
             { label: 'CMS Balance', value: formatRevenue(cmsAvailable), icon: Zap, color: 'hsl(200, 70%, 50%)', iconColor: 'text-sky-400' },
@@ -469,7 +474,6 @@ export default function UserDashboard() {
           ))}
         </div>
       )}
-
       {/* Sparkline Overview Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <SparklineCard title="Monthly Streams" data={monthlyStreamsData} color="hsl(200, 70%, 50%)" icon={Headphones} iconBg="bg-sky-500/15" iconColor="text-sky-400" total={formatStreams(totalStreams)} />
