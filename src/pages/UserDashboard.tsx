@@ -355,13 +355,21 @@ export default function UserDashboard() {
     if (!effectiveUserId) return;
     setLoading(true);
     void fetchAll();
+
     const channel = supabase
       .channel(`dashboard-realtime-${effectiveUserId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'report_entries' }, scheduleFetchAll)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'youtube_report_entries' }, scheduleFetchAll)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawal_requests' }, scheduleFetchAll)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'releases' }, scheduleFetchAll)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'withdrawal_requests', filter: `user_id=eq.${effectiveUserId}` },
+        scheduleFetchAll,
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'releases', filter: `user_id=eq.${effectiveUserId}` },
+        scheduleFetchAll,
+      )
       .subscribe();
+
     return () => {
       if (refreshTimeoutRef.current !== null) {
         window.clearTimeout(refreshTimeoutRef.current);
