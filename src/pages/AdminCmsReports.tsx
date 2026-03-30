@@ -472,7 +472,7 @@ export default function AdminCmsReports() {
                         <TableCell>{format(new Date(group.latestImport), 'dd MMM yyyy, hh:mm a')}</TableCell>
                         <TableCell className="text-right space-x-2">
                           <Button size="sm" variant="outline" onClick={() => setSelectedMonth(month)}><Eye className="h-4 w-4 mr-1" /> View</Button>
-                          <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ month })}><Trash2 className="h-4 w-4" /></Button>
+                          {canDelete && <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ month })}><Trash2 className="h-4 w-4" /></Button>}
                         </TableCell>
                       </TableRow>
                     ))}
