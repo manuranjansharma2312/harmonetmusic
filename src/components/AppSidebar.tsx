@@ -83,12 +83,12 @@ const adminLinksTop = [
   
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
+  { to: '/admin/email-settings', label: 'Manage Emails', icon: Mail },
 ];
 
 const adminGeneralSettingsLinks = [
   { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
   { to: '/admin/payment-settings', label: 'Tax Settings', icon: CreditCard },
-  { to: '/admin/email-settings', label: 'Manage Emails', icon: Mail },
 ];
 
 export function AppSidebar() {
