@@ -31,6 +31,7 @@ type Profile = {
   address: string;
   verification_status: string;
   created_at: string;
+  agreement_ratio?: number;
 };
 
 type BankDetail = {
