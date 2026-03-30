@@ -309,7 +309,7 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
             <div>
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <ArrowRightLeft className="h-5 w-5 text-primary" />
-                Transfer History
+                Release Transfers
               </h2>
               <p className="text-xs text-muted-foreground mt-1">Log of all release ownership transfers</p>
             </div>
