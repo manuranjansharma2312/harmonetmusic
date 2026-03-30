@@ -366,14 +366,14 @@ export function AppSidebar() {
                   {hasTeamAccess('submissions') && renderNavLink(adminLinksTop[3])}
                   {hasTeamAccess('content-requests') && renderNavLink(adminLinksTop[4])}
                   {hasTeamAccess('labels') && renderNavLink(adminLinksTop[5])}
-                  {hasTeamAccess('video-distribution') && settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, adminVideoLinks, adminVideoOpen, setAdminVideoOpen)}
+                  {hasTeamAccess('video-distribution') && settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, isTeam ? adminVideoLinks.filter(l => !l.to.includes('settings') && !l.to.includes('guidelines')) : adminVideoLinks, adminVideoOpen, setAdminVideoOpen)}
                   {hasTeamAccess('sub-labels') && renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
-                  {hasTeamAccess('youtube-cms') && settings.enable_youtube_cms && renderCollapsibleGroup('YouTube CMS', Youtube, adminCmsLinks, adminCmsOpen, setAdminCmsOpen)}
+                  {hasTeamAccess('youtube-cms') && settings.enable_youtube_cms && renderCollapsibleGroup('YouTube CMS', Youtube, isTeam ? adminCmsLinks.filter(l => !l.to.includes('settings')) : adminCmsLinks, adminCmsOpen, setAdminCmsOpen)}
                   {hasTeamAccess('revenue') && renderNavLink({ to: '/admin/revenue', label: 'Revenue & Withdrawals', icon: Wallet })}
                   {hasTeamAccess('reports') && renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}
                   {hasTeamAccess('invoices') && renderNavLink({ to: '/admin/invoices', label: 'Billing & Invoices', icon: Receipt })}
                   {hasTeamAccess('contracts') && renderCollapsibleGroup('Contracts & E-Sign', FileSignature, adminContractsLinks, adminContractsOpen, setAdminContractsOpen)}
-                  {hasTeamAccess('promotions') && renderCollapsibleGroup('Promotional Tools', Megaphone, adminPromotionalLinks, adminPromotionalOpen, setAdminPromotionalOpen)}
+                  {hasTeamAccess('promotions') && renderCollapsibleGroup('Promotional Tools', Megaphone, isTeam ? adminPromotionalLinks.filter(l => !l.to.includes('settings')) : adminPromotionalLinks, adminPromotionalOpen, setAdminPromotionalOpen)}
                   {hasTeamAccess('poster') && renderCollapsibleGroup('Poster Generator', ImageIcon, adminPosterLinks, adminPosterOpen, setAdminPosterOpen)}
                   {hasTeamAccess('transfer-history') && adminLinksMiddle.filter(l => l.to === '/admin/transfer-history').map(renderNavLink)}
                   {hasTeamAccess('notices') && adminLinksMiddle.filter(l => l.to === '/admin/notices').map(renderNavLink)}
