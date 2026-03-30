@@ -276,7 +276,7 @@ export default function AdminTeamManagement() {
       const govtStr = (m.govt_ids || []).map(g => `${g.name}: ${g.number}`).join(' | ');
       csvRows.push([
         `"${m.name}"`, `"${m.email}"`, `"${getCategoryName(m.category_id)}"`,
-        `"${m.allowed_pages.join(', ')}"`, `"${govtStr}"`,
+        `"${m.allowed_pages.map(k => getPageLabel(k)).join(', ')}"`, `"${govtStr}"`,
         `"${format(new Date(m.created_at), 'dd MMM yyyy')}"`,
       ].join(','));
     });
