@@ -151,6 +151,7 @@ export default function UserDashboard() {
 
       let reportData: any[] = [];
       let ytReportData: any[] = [];
+      let vevoReportData: any[] = [];
 
       if (role === 'admin' && isImpersonating && impersonatedUserId) {
         const { data: subLabels } = await supabase.from('sub_labels').select('sub_user_id').eq('parent_user_id', effectiveUserId).eq('status', 'active');
