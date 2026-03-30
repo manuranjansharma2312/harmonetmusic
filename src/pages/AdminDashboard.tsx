@@ -356,7 +356,7 @@ export default function AdminDashboard() {
           <GlassCard key={stat.label} className="!p-3 group hover:scale-[1.02] transition-transform duration-300">
             <stat.icon className={`h-3.5 w-3.5 ${stat.accent} mb-1`} />
             <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wider leading-tight">{stat.label}</p>
-            <p className="text-sm sm:text-base font-bold text-foreground mt-0.5 whitespace-nowrap">{stat.value}</p>
+            <p className="text-sm sm:text-base font-bold text-foreground mt-0.5 truncate">{stat.value}</p>
           </GlassCard>
         ))}
       </div>
