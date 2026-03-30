@@ -748,7 +748,7 @@ export default function AdminInvoices() {
 
                 <div>
                   <p className="text-sm font-semibold mb-2">Items</p>
-                  <Table>
+                  <Table className="min-w-max">
                     <TableHeader><TableRow><TableHead>#</TableHead><TableHead>Description</TableHead><TableHead className="text-right">Amount</TableHead></TableRow></TableHeader>
                     <TableBody>
                       {previewInvoice.items.map((item, i) => (

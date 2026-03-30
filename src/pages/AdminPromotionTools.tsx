@@ -243,7 +243,7 @@ export default function AdminPromotionTools() {
             {canChangeSettings && <Button size="sm" onClick={() => openProductModal()}><Plus className="h-4 w-4 mr-1" /> Add Service</Button>}
           </CardHeader>
           <CardContent>
-            <Table>
+            <Table className="min-w-max">
               <TableHeader>
                 <TableRow>
                   <TableHead>Platform</TableHead>
@@ -282,7 +282,7 @@ export default function AdminPromotionTools() {
         <Card>
           <CardHeader><CardTitle>Order History</CardTitle></CardHeader>
           <CardContent>
-            <Table>
+            <Table className="min-w-max">
               <TableHeader>
                 <TableRow>
                   <TableHead>User</TableHead>

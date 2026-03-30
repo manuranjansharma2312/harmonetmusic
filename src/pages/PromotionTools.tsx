@@ -193,7 +193,7 @@ export default function PromotionTools() {
         <Card>
           <CardHeader><CardTitle>My Orders</CardTitle></CardHeader>
           <CardContent>
-            <Table>
+            <Table className="min-w-max">
               <TableHeader>
                 <TableRow>
                   <TableHead>Service</TableHead>

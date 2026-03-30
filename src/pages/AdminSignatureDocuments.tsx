@@ -275,7 +275,7 @@ export default function AdminSignatureDocuments() {
         </div>
 
         <GlassCard>
-          <Table>
+          <Table className="min-w-max">
             <TableHeader>
               <TableRow>
                 <TableHead>Title</TableHead>

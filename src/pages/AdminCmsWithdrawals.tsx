@@ -160,7 +160,7 @@ export default function AdminCmsWithdrawals() {
             <div className="p-8 text-center text-muted-foreground">Loading...</div>
           ) : (
             <>
-              <Table>
+              <Table className="min-w-max">
                 <TableHeader>
                   <TableRow>
                     <TableHead>User</TableHead>

@@ -315,7 +315,7 @@ export default function AdminAIImageSystem() {
               </CardHeader>
               <CardContent>
                 <div className="overflow-auto">
-                  <Table>
+                  <Table className="min-w-max">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Name</TableHead>
@@ -356,7 +356,7 @@ export default function AdminAIImageSystem() {
               <CardHeader><CardTitle>Plan Orders</CardTitle></CardHeader>
               <CardContent>
                 <div className="overflow-auto">
-                  <Table>
+                  <Table className="min-w-max">
                     <TableHeader>
                       <TableRow>
                         <TableHead>User</TableHead>
@@ -411,7 +411,7 @@ export default function AdminAIImageSystem() {
               </CardHeader>
               <CardContent>
                 <div className="overflow-auto">
-                  <Table>
+                  <Table className="min-w-max">
                     <TableHeader>
                       <TableRow>
                         <TableHead>User</TableHead>
@@ -443,7 +443,7 @@ export default function AdminAIImageSystem() {
               <CardHeader><CardTitle>Credit Transaction History</CardTitle></CardHeader>
               <CardContent>
                 <div className="overflow-auto">
-                  <Table>
+                  <Table className="min-w-max">
                     <TableHeader>
                       <TableRow>
                         <TableHead>User</TableHead>
