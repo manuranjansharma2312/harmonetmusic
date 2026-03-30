@@ -66,6 +66,12 @@ const adminContractsLinks = [
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
 ];
 
+const adminPromotionalLinks = [
+  { to: '/admin/promotion-tools', label: 'Paid Promotions', icon: Megaphone },
+  { to: '/admin/payment-settings', label: 'Tax Settings', icon: CreditCard },
+  { to: '/admin/promotional-settings', label: 'Promotional Settings', icon: Settings },
+];
+
 const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'All Users', icon: Users },
@@ -78,8 +84,8 @@ const adminLinksTop = [
   { to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt },
   
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
-  { to: '/admin/promotion-tools', label: 'Promotional Tools', icon: Megaphone },
-  { to: '/admin/payment-settings', label: 'Tax Settings', icon: CreditCard },
+  
+  { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
   
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
   
@@ -108,6 +114,7 @@ export function AppSidebar() {
   const [adminContactPoliciesOpen, setAdminContactPoliciesOpen] = useState(false);
   const [adminPosterOpen, setAdminPosterOpen] = useState(false);
   const [adminContractsOpen, setAdminContractsOpen] = useState(false);
+  const [adminPromotionalOpen, setAdminPromotionalOpen] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
 
   // Fetch impersonated user's profile when impersonating
@@ -316,6 +323,7 @@ export function AppSidebar() {
                   {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, adminVideoLinks, adminVideoOpen, setAdminVideoOpen)}
                   {renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
                   {renderCollapsibleGroup('Poster Generator', ImageIcon, adminPosterLinks, adminPosterOpen, setAdminPosterOpen)}
+                  {renderCollapsibleGroup('Promotional Tools', Megaphone, adminPromotionalLinks, adminPromotionalOpen, setAdminPromotionalOpen)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}
                   {renderCollapsibleGroup('Contracts & E-Sign', FileSignature, adminContractsLinks, adminContractsOpen, setAdminContractsOpen)}
                   {renderCollapsibleGroup('Contact & Policies', FileText, adminContactPoliciesLinks, adminContactPoliciesOpen, setAdminContactPoliciesOpen)}

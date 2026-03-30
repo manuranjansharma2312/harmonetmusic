@@ -57,6 +57,7 @@ const AdminAgreements = lazy(() => import("./pages/AdminAgreements"));
 const AdminAgreementGenerator = lazy(() => import("./pages/AdminAgreementGenerator"));
 const AdminPromotionTools = lazy(() => import("./pages/AdminPromotionTools"));
 const AdminPaymentSettings = lazy(() => import("./pages/AdminPaymentSettings"));
+const AdminPromotionalSettings = lazy(() => import("./pages/AdminPromotionalSettings"));
 const PromotionTools = lazy(() => import("./pages/PromotionTools"));
 const BankDetails = lazy(() => import("./pages/BankDetails"));
 const ContactSupport = lazy(() => import("./pages/ContactSupport"));
@@ -178,6 +179,7 @@ function App() {
                       <Route path="/admin/agreements/generate" element={<ProtectedRoute requiredRole="admin"><AdminAgreementGenerator /></ProtectedRoute>} />
                       <Route path="/admin/promotion-tools" element={<ProtectedRoute requiredRole="admin"><AdminPromotionTools /></ProtectedRoute>} />
                       <Route path="/admin/payment-settings" element={<ProtectedRoute requiredRole="admin"><AdminPaymentSettings /></ProtectedRoute>} />
+                      <Route path="/admin/promotional-settings" element={<ProtectedRoute requiredRole="admin"><AdminPromotionalSettings /></ProtectedRoute>} />
                       <Route path="/admin/contact-support" element={<ProtectedRoute requiredRole="admin"><AdminContactSupport /></ProtectedRoute>} />
                       <Route path="/admin/email-settings" element={<ProtectedRoute requiredRole="admin"><AdminEmailSettings /></ProtectedRoute>} />
                       <Route path="/admin/ai-image-system" element={<ProtectedRoute requiredRole="admin"><AdminAIImageSystem /></ProtectedRoute>} />
