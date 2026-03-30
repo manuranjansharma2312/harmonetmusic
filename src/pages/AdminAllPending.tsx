@@ -297,7 +297,7 @@ export default function AdminAllPending() {
             return (
               <button
                 key={cat.key}
-                onClick={() => { setActiveTab(cat.key); setPage(1); }}
+                onClick={() => { setActiveTab(cat.key); setPage(0); }}
                 className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border transition-all text-center min-w-[100px] ${
                   activeTab === cat.key
                     ? 'border-primary bg-primary/10 text-foreground'
