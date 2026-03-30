@@ -295,7 +295,7 @@ export default function AdminEmailSettings() {
   const [logSearch, setLogSearch] = useState('');
   const [logStatusFilter, setLogStatusFilter] = useState('all');
   const [logPage, setLogPage] = useState(0);
-  const [logPageSize, setLogPageSize] = useState<number | 'all'>(20);
+  const [logPageSize, setLogPageSize] = useState<number | 'all'>(10);
   const [selectedLogs, setSelectedLogs] = useState<Set<string>>(new Set());
   const [deletingLogs, setDeletingLogs] = useState(false);
 
@@ -1086,7 +1086,7 @@ export default function AdminEmailSettings() {
                   </div>
                   <div>
                     <h2 className="text-lg font-semibold">Email Sending Logs</h2>
-                    <p className="text-xs text-muted-foreground">Track all sent emails · Logs auto-delete after 7 days</p>
+                    <p className="text-xs text-muted-foreground">Track all sent emails · Logs auto-delete after 14 days</p>
                   </div>
                 </div>
                 <div className="flex gap-2 flex-wrap">
