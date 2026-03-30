@@ -110,7 +110,7 @@ type ParsedImportRelease = {
 
 export default function AdminSubmissions() {
   const navigate = useNavigate();
-  const { isTeam, canDelete } = useTeamPermissions();
+  const { isTeam, canDelete, canChangeSettings } = useTeamPermissions();
   const [releases, setReleases] = useState<Release[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
