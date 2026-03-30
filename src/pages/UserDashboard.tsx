@@ -426,12 +426,14 @@ export default function UserDashboard() {
       </div>
 
       {/* Secondary Compact Stats */}
-      <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-6 sm:mb-8">
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3 mb-6 sm:mb-8">
         {[
           { label: 'Releases', value: releaseStats.total, icon: Disc3, accent: 'text-primary' },
           { label: 'Streams', value: formatStreams(totalStreams), icon: Headphones, accent: 'text-sky-400' },
           { label: 'Downloads', value: formatStreams(totalDownloads), icon: Download, accent: 'text-violet-400' },
           { label: 'Platforms', value: topStores.length, icon: Music, accent: 'text-amber-400' },
+          { label: 'Vevo Streams', value: formatStreams(vevoStreams), icon: Play, accent: 'text-pink-400' },
+          { label: 'Vevo Revenue', value: formatRevenue(vevoRevenue), icon: Film, accent: 'text-rose-400' },
           ...(isSubLabelUser ? [
             { label: 'Countries', value: countryData.length, icon: Globe, accent: 'text-emerald-400' },
             { label: 'Artists', value: topArtists.length, icon: Headphones, accent: 'text-pink-400' },
