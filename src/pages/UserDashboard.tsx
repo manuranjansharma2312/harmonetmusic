@@ -61,34 +61,63 @@ export default function UserDashboard() {
   const { user, role } = useAuth();
   const { isImpersonating, impersonatedUserId, impersonatedEmail, stopImpersonating } = useImpersonate();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [displayId, setDisplayId] = useState<number | null>(null);
-  const [releaseStats, setReleaseStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
-  const [totalRevenue, setTotalRevenue] = useState(0);
-  const [totalStreams, setTotalStreams] = useState(0);
-  const [totalDownloads, setTotalDownloads] = useState(0);
-  const [monthlyRevenue, setMonthlyRevenue] = useState<{ month: string; revenue: number; streams: number; downloads: number }[]>([]);
-  const [topTracks, setTopTracks] = useState<{ name: string; streams: number; revenue: number }[]>([]);
-  const [topStores, setTopStores] = useState<{ name: string; value: number; revenue: number; color: string }[]>([]);
-  const [countryData, setCountryData] = useState<{ name: string; streams: number }[]>([]);
-  const [recentReleases, setRecentReleases] = useState<any[]>([]);
-  const [withdrawalBalance, setWithdrawalBalance] = useState({ pending: 0, paid: 0 });
-  const [hiddenCut, setHiddenCut] = useState(0);
-  const [subLabelCut, setSubLabelCut] = useState(0);
-  const [isSubLabelUser, setIsSubLabelUser] = useState(false);
-  const [cmsRevenue, setCmsRevenue] = useState(0);
-  const [cmsNetPayable, setCmsNetPayable] = useState(0);
-  const [cmsChannels, setCmsChannels] = useState(0);
-  const [cmsPaid, setCmsPaid] = useState(0);
-  const [cmsPending, setCmsPending] = useState(0);
-  const [monthlyStoreData, setMonthlyStoreData] = useState<any[]>([]);
-  const [topArtists, setTopArtists] = useState<{ name: string; streams: number }[]>([]);
-  const [monthlyStreamsData, setMonthlyStreamsData] = useState<{ month: string; count: number }[]>([]);
-  const [monthlyReleasesData, setMonthlyReleasesData] = useState<{ month: string; count: number }[]>([]);
-  const [monthlyRevenueSparkline, setMonthlyRevenueSparkline] = useState<{ month: string; count: number }[]>([]);
-  const [monthlyDownloadsData, setMonthlyDownloadsData] = useState<{ month: string; count: number }[]>([]);
-  const [vevoStreams, setVevoStreams] = useState(0);
-  const [vevoRevenue, setVevoRevenue] = useState(0);
+
+  interface DashboardState {
+    loading: boolean;
+    displayId: number | null;
+    releaseStats: { total: number; pending: number; approved: number; rejected: number };
+    totalRevenue: number;
+    totalStreams: number;
+    totalDownloads: number;
+    monthlyRevenue: { month: string; revenue: number; streams: number; downloads: number }[];
+    topTracks: { name: string; streams: number; revenue: number }[];
+    topStores: { name: string; value: number; revenue: number; color: string }[];
+    countryData: { name: string; streams: number }[];
+    recentReleases: any[];
+    withdrawalBalance: { pending: number; paid: number };
+    hiddenCut: number;
+    subLabelCut: number;
+    isSubLabelUser: boolean;
+    cmsRevenue: number;
+    cmsNetPayable: number;
+    cmsChannels: number;
+    cmsPaid: number;
+    cmsPending: number;
+    monthlyStoreData: any[];
+    topArtists: { name: string; streams: number }[];
+    monthlyStreamsData: { month: string; count: number }[];
+    monthlyReleasesData: { month: string; count: number }[];
+    monthlyRevenueSparkline: { month: string; count: number }[];
+    monthlyDownloadsData: { month: string; count: number }[];
+    vevoStreams: number;
+    vevoRevenue: number;
+  }
+
+  const [state, setState] = useState<DashboardState>({
+    loading: true,
+    displayId: null,
+    releaseStats: { total: 0, pending: 0, approved: 0, rejected: 0 },
+    totalRevenue: 0, totalStreams: 0, totalDownloads: 0,
+    monthlyRevenue: [], topTracks: [], topStores: [], countryData: [],
+    recentReleases: [],
+    withdrawalBalance: { pending: 0, paid: 0 },
+    hiddenCut: 0, subLabelCut: 0, isSubLabelUser: false,
+    cmsRevenue: 0, cmsNetPayable: 0, cmsChannels: 0, cmsPaid: 0, cmsPending: 0,
+    monthlyStoreData: [], topArtists: [],
+    monthlyStreamsData: [], monthlyReleasesData: [],
+    monthlyRevenueSparkline: [], monthlyDownloadsData: [],
+    vevoStreams: 0, vevoRevenue: 0,
+  });
+
+  const {
+    loading, displayId, releaseStats, totalRevenue, totalStreams, totalDownloads,
+    monthlyRevenue, topTracks, topStores, countryData, recentReleases,
+    withdrawalBalance, hiddenCut, subLabelCut, isSubLabelUser,
+    cmsRevenue, cmsNetPayable, cmsChannels, cmsPaid, cmsPending,
+    monthlyStoreData, topArtists, monthlyStreamsData, monthlyReleasesData,
+    monthlyRevenueSparkline, monthlyDownloadsData, vevoStreams, vevoRevenue,
+  } = state;
+
   const refreshTimeoutRef = useRef<number | null>(null);
   const isFetchingRef = useRef(false);
   const shouldRefetchRef = useRef(false);
