@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { StatusBadge } from '@/components/StatusBadge';
-import { TablePagination } from '@/components/TablePagination';
-import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { RejectReasonModal } from '@/components/RejectReasonModal';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import {
