@@ -8,6 +8,7 @@ const statusStyles: Record<string, string> = {
   rejected: 'bg-red-500/20 text-red-400',
   takedown: 'bg-orange-500/20 text-orange-400',
   paid: 'bg-emerald-500/20 text-emerald-400',
+  sent: 'bg-blue-500/20 text-blue-400',
 };
 
 export const StatusBadge = forwardRef<HTMLSpanElement, { status: string }>(
