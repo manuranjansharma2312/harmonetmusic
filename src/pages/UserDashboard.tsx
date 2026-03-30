@@ -433,20 +433,14 @@ export default function UserDashboard() {
           { label: 'Streams', value: formatStreams(totalStreams), icon: Headphones, accent: 'text-sky-400' },
           { label: 'Downloads', value: formatStreams(totalDownloads), icon: Download, accent: 'text-violet-400' },
           { label: 'Platforms', value: topStores.length, icon: Music, accent: 'text-amber-400' },
-          ...(isSubLabelUser ? [
-            { label: 'Countries', value: countryData.length, icon: Globe, accent: 'text-emerald-400' },
-            { label: 'Artists', value: topArtists.length, icon: Headphones, accent: 'text-pink-400' },
-          ] : [
+          ...(isSubLabelUser ? [] : [
             ...(hasVevoData ? [
               { label: 'Vevo Streams', value: formatStreams(vevoStreams), icon: Play, accent: 'text-pink-400' },
               { label: 'Vevo Revenue', value: formatRevenue(vevoRevenue), icon: Film, accent: 'text-rose-400' },
-            ] : [
-              { label: 'Countries', value: countryData.length, icon: Globe, accent: 'text-emerald-400' },
-              { label: 'Artists', value: topArtists.length, icon: Headphones, accent: 'text-pink-400' },
-            ]),
-            { label: 'CMS Channels', value: cmsChannels, icon: Youtube, accent: 'text-red-400' },
-            { label: 'CMS Revenue', value: formatRevenue(cmsRevenue), icon: Monitor, accent: 'text-emerald-400' },
+            ] : []),
           ]),
+          { label: 'Countries', value: countryData.length, icon: Globe, accent: 'text-emerald-400' },
+          { label: 'Artists', value: topArtists.length, icon: Headphones, accent: 'text-pink-400' },
         ].map((stat) => (
           <GlassCard key={stat.label} className="!p-3 group hover:scale-[1.02] transition-transform duration-300">
             <stat.icon className={`h-3.5 w-3.5 ${stat.accent} mb-1`} />
@@ -458,8 +452,9 @@ export default function UserDashboard() {
 
       {/* CMS Wallet (not for sub-label users) */}
       {!isSubLabelUser && cmsChannels > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {[
+            { label: 'CMS Revenue', value: formatRevenue(cmsRevenue), icon: Youtube, color: 'hsl(0, 67%, 40%)', iconColor: 'text-red-400' },
             { label: 'CMS Paid', value: formatRevenue(cmsPaid), icon: CheckCircle, color: 'hsl(140, 60%, 40%)', iconColor: 'text-emerald-400' },
             { label: 'CMS Pending', value: formatRevenue(cmsPending), icon: Clock, color: 'hsl(45, 80%, 45%)', iconColor: 'text-amber-400' },
             { label: 'CMS Balance', value: formatRevenue(cmsAvailable), icon: Zap, color: 'hsl(200, 70%, 50%)', iconColor: 'text-sky-400' },
