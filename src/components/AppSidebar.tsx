@@ -59,6 +59,12 @@ const adminContactPoliciesLinks = [
   { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
   { to: '/admin/contact-support', label: 'Contact Details', icon: Headset },
 ];
+
+const adminContractsLinks = [
+  { to: '/admin/agreements', label: 'Agreements', icon: FileSignature },
+  { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
+];
+
 const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'All Users', icon: Users },
