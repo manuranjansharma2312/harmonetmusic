@@ -296,7 +296,7 @@ export default function AdminAllPending() {
     setActionLoading(true);
     const updatePayload: any = { [activeCategory.statusField]: activeCategory.rejectStatus };
     // Add rejection reason if table supports it
-    if (['releases', 'labels', 'content_requests', 'promotion_orders', 'sub_labels', 'ai_plan_orders', 'youtube_cms_links'].includes(activeCategory.table)) {
+    if (['releases', 'labels', 'content_requests', 'promotion_orders', 'sub_labels', 'ai_plan_orders', 'youtube_cms_links', 'video_submissions', 'smart_links', 'cms_withdrawal_requests'].includes(activeCategory.table)) {
       updatePayload.rejection_reason = reason;
     }
     const { error } = await (supabase.from(activeCategory.table as any) as any)
