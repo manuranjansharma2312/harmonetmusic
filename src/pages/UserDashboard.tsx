@@ -74,6 +74,7 @@ export default function UserDashboard() {
   const [subLabelCut, setSubLabelCut] = useState(0);
   const [isSubLabelUser, setIsSubLabelUser] = useState(false);
   const [cmsRevenue, setCmsRevenue] = useState(0);
+  const [cmsNetPayable, setCmsNetPayable] = useState(0);
   const [cmsChannels, setCmsChannels] = useState(0);
   const [cmsPaid, setCmsPaid] = useState(0);
   const [cmsPending, setCmsPending] = useState(0);
@@ -93,7 +94,7 @@ export default function UserDashboard() {
   const effectiveCut = getEffectiveRevenueCutPercent({ hiddenCut, subLabelCut, isSubLabel: isSubLabelUser });
   const netRevenue = totalRevenue;
   const availableRevenue = Math.max(calculateAvailableBalance(netRevenue, withdrawalBalance.paid, withdrawalBalance.pending), 0);
-  const cmsAvailable = Math.max(0, cmsRevenue - cmsPaid - cmsPending);
+  const cmsAvailable = Math.max(0, cmsNetPayable - cmsPaid - cmsPending);
 
   const fetchAll = useCallback(async () => {
     if (!effectiveUserId) return;
