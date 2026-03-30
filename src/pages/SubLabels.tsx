@@ -177,6 +177,28 @@ export default function SubLabels() {
     }
   };
 
+  const openPermissions = (sl: SubLabel) => {
+    setPermSubLabel(sl);
+    setPermPages(sl.allowed_pages || []);
+  };
+
+  const togglePermPage = (key: string) => {
+    setPermPages(prev => prev.includes(key) ? prev.filter(p => p !== key) : [...prev, key]);
+  };
+
+  const savePermissions = async () => {
+    if (!permSubLabel) return;
+    setSavingPerms(true);
+    const { error } = await (supabase.from('sub_labels') as any)
+      .update({ allowed_pages: permPages })
+      .eq('id', permSubLabel.id);
+    setSavingPerms(false);
+    if (error) { toast.error('Failed to save permissions'); return; }
+    toast.success('Permissions updated');
+    setPermSubLabel(null);
+    fetchSubLabels();
+  };
+
   const handleDownloadB2b = async (b2bPath: string) => {
     const { data, error } = await supabase.storage.from('b2b-documents').createSignedUrl(b2bPath, 300);
     if (error || !data?.signedUrl) {
