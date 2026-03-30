@@ -65,7 +65,9 @@ export default function SubLabels() {
   const [viewSubLabel, setViewSubLabel] = useState<SubLabel | null>(null);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
-
+  const [permSubLabel, setPermSubLabel] = useState<SubLabel | null>(null);
+  const [permPages, setPermPages] = useState<string[]>([]);
+  const [savingPerms, setSavingPerms] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
