@@ -193,14 +193,17 @@ export default function UserDashboard() {
         const linkedNames = new Set(linkedChannels.map((link) => link.channel_name));
         const userCmsEntries = ((cmsEntries as any[]) || []).filter((entry) => linkedNames.has(entry.channel_name));
 
-        let cmsTotal = 0;
+        let cmsGross = 0;
+        let cmsNet = 0;
         userCmsEntries.forEach((entry) => {
           const rev = Number(entry.net_generated_revenue) || 0;
           const cut = Number(linkedChannels.find((link) => link.channel_name === entry.channel_name)?.cut_percent || 0);
-          cmsTotal += rev - (rev * cut / 100);
+          cmsGross += rev;
+          cmsNet += rev - (rev * cut / 100);
         });
 
-        setCmsRevenue(Math.round(cmsTotal * 100) / 100);
+        setCmsRevenue(Math.round(cmsGross * 100) / 100);
+        setCmsNetPayable(Math.round(cmsNet * 100) / 100);
 
         const cmsWithdrawalRows = (cmsWithdrawals as any[]) || [];
         setCmsPaid(cmsWithdrawalRows.filter((w) => w.status === 'paid').reduce((sum, w) => sum + Number(w.amount), 0));
