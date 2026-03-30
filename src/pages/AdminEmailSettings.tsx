@@ -1102,7 +1102,7 @@ export default function AdminEmailSettings() {
                 return (
                   <>
                     <div className="text-xs text-muted-foreground">{filteredLogs.length} log{filteredLogs.length !== 1 ? 's' : ''} found</div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 responsive-table-wrap">
                       {paginatedLogs.length === 0 ? (
                         <div className="text-center text-muted-foreground py-8">No email logs found</div>
                       ) : paginatedLogs.map((log: EmailLog) => (
