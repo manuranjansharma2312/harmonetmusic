@@ -104,20 +104,8 @@ export function AppSidebar() {
   const { logoSrc, branding } = useBranding();
   const { settings } = useSiteSettings();
   const showUserView = isImpersonating || role !== 'admin';
-  const pending = useAdminPendingCounts(role === 'admin' && !isImpersonating);
 
-  // Map routes to pending counts for dot indicators
-  const pendingDotRoutes = useMemo<Record<string, boolean>>(() => ({
-    '/admin/submissions': pending.releases > 0,
-    '/admin/content-requests': pending.contentRequests > 0,
-    '/admin/labels': pending.labels > 0,
-    '/admin/promotion-tools': pending.promotionOrders > 0,
-    '/admin/cms-withdrawals': pending.cmsWithdrawals > 0,
-    '/admin/sub-label-withdrawals': pending.subLabelWithdrawals > 0,
-    '/admin/video-submissions': pending.videoSubmissions > 0,
-    '/admin/vevo-channels': pending.vevoChannels > 0,
-    '/admin/youtube-cms-links': pending.ytCmsLinks > 0,
-  }), [pending]);
+
   const [toolsOpen, setToolsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
   const [adminSubLabelsOpen, setAdminSubLabelsOpen] = useState(false);
