@@ -421,7 +421,7 @@ export default function UserDashboard() {
             { label: 'Artists', value: topArtists.length, icon: Headphones, accent: 'text-pink-400' },
           ] : [
             { label: 'CMS Channels', value: cmsChannels, icon: Youtube, accent: 'text-red-400' },
-            { label: 'CMS Available', value: formatRevenue(cmsAvailable), icon: Monitor, accent: 'text-emerald-400' },
+            { label: 'CMS Balance', value: formatRevenue(cmsAvailable), icon: Monitor, accent: 'text-emerald-400' },
           ]),
         ].map((stat) => (
           <GlassCard key={stat.label} className="!p-3 group hover:scale-[1.02] transition-transform duration-300">
@@ -439,7 +439,7 @@ export default function UserDashboard() {
             { label: 'CMS Net Payable', value: formatRevenue(cmsRevenue), icon: Youtube, color: 'hsl(0, 67%, 40%)', iconColor: 'text-red-400' },
             { label: 'CMS Paid', value: formatRevenue(cmsPaid), icon: CheckCircle, color: 'hsl(140, 60%, 40%)', iconColor: 'text-emerald-400' },
             { label: 'CMS Pending', value: formatRevenue(cmsPending), icon: Clock, color: 'hsl(45, 80%, 45%)', iconColor: 'text-amber-400' },
-            { label: 'CMS Available', value: formatRevenue(cmsAvailable), icon: Zap, color: 'hsl(200, 70%, 50%)', iconColor: 'text-sky-400' },
+            { label: 'CMS Balance', value: formatRevenue(cmsAvailable), icon: Zap, color: 'hsl(200, 70%, 50%)', iconColor: 'text-sky-400' },
           ].map((stat) => (
             <GlassCard key={stat.label} className="!p-4 border-l-4 animate-fade-in" style={{ borderLeftColor: stat.color }}>
               <div className="flex items-center gap-2 mb-2">
