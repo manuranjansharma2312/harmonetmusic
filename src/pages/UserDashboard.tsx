@@ -379,7 +379,7 @@ export default function UserDashboard() {
   const totalStoreStreams = useMemo(() => topStores.reduce((a, b) => a + b.value, 0), [topStores]);
   const totalStoreRevenue = useMemo(() => topStores.reduce((a, b) => a + b.revenue, 0), [topStores]);
   const topStoreNames = useMemo(() => topStores.slice(0, 4).map(s => s.name), [topStores]);
-  const hasVevoData = vevoStreams > 0 || vevoRevenue > 0;
+  
 
   const getReleaseName = (r: any) => {
     if (r.content_type === 'album') return r.album_name || 'Untitled Album';
