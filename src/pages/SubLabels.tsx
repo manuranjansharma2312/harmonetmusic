@@ -47,6 +47,7 @@ type SubLabel = {
   rejection_reason: string | null;
   created_at: string;
   sub_user_id: string | null;
+  allowed_pages: string[];
 };
 
 const inputClass =
