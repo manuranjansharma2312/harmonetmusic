@@ -51,6 +51,8 @@ interface SafeRequestResult<T> {
   failed: boolean;
 }
 
+type RequestLike<T> = PromiseLike<{ data: T | null; error: any }>;
+
 const EMPTY_DASHBOARD_DATA: DashboardData = {
   counts: {},
   reportStats: {},
@@ -80,7 +82,7 @@ function getInitialDashboardState(): DashboardState {
     : { loading: true, ...EMPTY_DASHBOARD_DATA };
 }
 
-async function safeRequest<T>(label: string, request: Promise<{ data: T | null; error: any }>, fallback: T): Promise<SafeRequestResult<T>> {
+async function safeRequest<T>(label: string, request: RequestLike<T>, fallback: T): Promise<SafeRequestResult<T>> {
   try {
     const { data, error } = await request;
 
