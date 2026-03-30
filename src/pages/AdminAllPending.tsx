@@ -243,6 +243,7 @@ export default function AdminAllPending() {
 
   // Fetch data for active tab
   useEffect(() => {
+    if (!activeCategory) return;
     const fetchData = async () => {
       setLoading(true);
       const from = page * effectivePageSize;
@@ -256,7 +257,7 @@ export default function AdminAllPending() {
       setLoading(false);
     };
     fetchData();
-  }, [activeTab, page, effectivePageSize]);
+  }, [activeTab, page, effectivePageSize, activeCategory]);
 
   const totalCount = counts[activeTab] || 0;
 
