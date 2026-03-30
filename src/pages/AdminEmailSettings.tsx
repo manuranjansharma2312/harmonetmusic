@@ -1294,7 +1294,7 @@ export default function AdminEmailSettings() {
 
                 {/* Anti-Spam / Deliverability Checklist */}
                 <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg space-y-3">
-                  <h3 className="font-semibold text-green-400 text-base">🛡️ Anti-Spam & Deliverability Checklist</h3>
+                  <h3 className="font-semibold text-green-400 text-base flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Anti-Spam & Deliverability Checklist</h3>
                   <p className="text-muted-foreground text-sm">
                     Follow these DNS configurations at your domain registrar to ensure emails don't land in spam:
                   </p>
