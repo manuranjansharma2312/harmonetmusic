@@ -235,7 +235,12 @@ export default function SubLabels() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">Password *</label>
-                <input className={inputClass} type="password" value={formData.password} onChange={(e) => setFormData(p => ({ ...p, password: e.target.value }))} required placeholder="Min 6 characters" />
+                <div className="relative">
+                  <input className={inputClass} type={showPw ? 'text' : 'password'} value={formData.password} onChange={(e) => setFormData(p => ({ ...p, password: e.target.value }))} required placeholder="Min 6 characters" />
+                  <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
             </div>
 
