@@ -16,6 +16,9 @@ window.addEventListener('error', (event) => {
 function applyAntiInspection() {
   if (!import.meta.env.PROD) return;
   
+  // Skip in Lovable preview environment
+  if (window.location.hostname.includes('lovable.app') || window.location.search.includes('__lovable_token')) return;
+  
   // Check cached setting (updated by useSiteSettings hook)
   const cached = localStorage.getItem('site_anti_inspection');
   if (cached === 'false') return;
