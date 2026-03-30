@@ -137,10 +137,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setRole(null);
     setUserType(null);
+    setVerificationStatus(null);
+    fetchedRef.current = null;
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, role, loading, userType, isSubLabel, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, role, loading, userType, isSubLabel, verificationStatus, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
