@@ -84,7 +84,6 @@ const adminLinksTop = [
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
   
   { to: '/admin/email-settings', label: 'Manage Emails', icon: Mail },
-  { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
 ];
 
 export function AppSidebar() {
