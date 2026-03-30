@@ -159,10 +159,10 @@ function AdminDashboardCharts({
                 <YAxis tick={axisTickStyle} width={30} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip contentStyle={tooltipStyle} />
                 <Legend wrapperStyle={{ fontSize: '11px', color: 'hsl(0 0% 50%)', paddingTop: '12px' }} />
-                <Bar dataKey="artists" name="New Artists" fill="hsl(200, 70%, 50%)" radius={[4, 4, 0, 0]} maxBarSize={28} />
-                <Bar dataKey="releases" name="New Releases" fill="hsl(45, 80%, 45%)" radius={[4, 4, 0, 0]} maxBarSize={28} />
-                <Bar dataKey="vevo" name="Vevo Submissions" fill="hsl(330, 60%, 50%)" radius={[4, 4, 0, 0]} maxBarSize={28} />
-                <Bar dataKey="cms" name="CMS Linked" fill="hsl(0, 67%, 40%)" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                <Bar dataKey="artists" name="New Artists" fill="hsl(200, 70%, 50%)" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
+                <Bar dataKey="releases" name="New Releases" fill="hsl(45, 80%, 45%)" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
+                <Bar dataKey="vevo" name="Vevo Submissions" fill="hsl(330, 60%, 50%)" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
+                <Bar dataKey="cms" name="CMS Linked" fill="hsl(0, 67%, 40%)" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
