@@ -161,8 +161,29 @@ export function AppSidebar() {
     }
   }, [isTeam, user]);
 
+  // Fetch sub-label allowed pages
+  useEffect(() => {
+    const uid = isImpersonating ? impersonatedUserId : user?.id;
+    const isSub = isImpersonating ? impIsSubLabel : isSubLabel;
+    if (isSub && uid) {
+      (supabase.from('sub_labels') as any).select('allowed_pages').eq('sub_user_id', uid).maybeSingle()
+        .then(({ data }: any) => {
+          const pages = data?.allowed_pages || [];
+          setSubLabelAllowedPages(pages.length > 0 ? pages : null);
+        });
+    } else {
+      setSubLabelAllowedPages(null);
+    }
+  }, [isImpersonating, impersonatedUserId, impIsSubLabel, isSubLabel, user]);
+
   // Helper to check if a team user has access to a page key
   const hasTeamAccess = (key: string) => !isTeam || teamAllowedPages.includes(key);
+
+  // Helper to check if a sub-label user has access to a page key
+  const hasSubLabelAccess = (key: string) => {
+    if (!effectiveIsSubLabel || subLabelAllowedPages === null) return true; // no restrictions
+    return subLabelAllowedPages.includes(key);
+  };
 
   const effectiveUserType = isImpersonating ? impUserType : userType;
   const effectiveIsSubLabel = isImpersonating ? impIsSubLabel : isSubLabel;
