@@ -205,13 +205,18 @@ export function EditProfileModal({
         {showPasswordChange && (
           <div className="mb-4 p-3 rounded-lg border border-primary/30 bg-primary/5 space-y-2">
             <label className="block text-xs font-medium text-foreground">New Password</label>
-            <input
-              type="password"
-              className={inputClass}
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Min 6 characters"
-            />
+            <div className="relative">
+              <input
+                type={showPw ? 'text' : 'password'}
+                className={inputClass}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Min 6 characters"
+              />
+              <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
             <button
               type="button"
               onClick={handleChangePassword}
