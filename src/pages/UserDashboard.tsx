@@ -498,7 +498,7 @@ export default function UserDashboard() {
             <div className={`absolute -top-8 -right-8 h-24 w-24 rounded-full ${stat.glow} blur-3xl`} />
             <stat.icon className={`h-5 w-5 ${stat.iconColor} mb-2`} />
             <p className={`text-[10px] sm:text-xs ${stat.labelColor} uppercase tracking-widest font-medium`}>{stat.label}</p>
-            <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1 whitespace-nowrap">{stat.value}</p>
+            <p className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground mt-1 truncate">{stat.value}</p>
           </div>
         ))}
       </div>
