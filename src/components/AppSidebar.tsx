@@ -80,7 +80,7 @@ const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'All Users', icon: Users },
   { to: '/admin/submissions', label: 'All Releases', icon: ListMusic },
-  { to: '/admin/transfer-history', label: 'Transfer History', icon: ArrowRightLeft },
+  { to: '/admin/transfer-history', label: 'Release Transfers', icon: ArrowRightLeft },
   { to: '/admin/labels', label: 'Manage Labels', icon: Tag },
   { to: '/admin/content-requests', label: 'Support Requests', icon: Headset },
   
