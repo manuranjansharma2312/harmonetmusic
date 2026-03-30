@@ -275,6 +275,7 @@ export default function AdminSignatureDocuments() {
         </div>
 
         <GlassCard>
+          <div className="responsive-table-wrap">
           <Table className="min-w-max">
             <TableHeader>
               <TableRow>

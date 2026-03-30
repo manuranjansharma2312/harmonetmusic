@@ -175,6 +175,7 @@ export default function CmsBalance() {
               <div className="p-4 border-b border-border/50">
                 <h3 className="font-semibold">Withdrawal History</h3>
               </div>
+              <div className="responsive-table-wrap">
               <Table className="min-w-max">
                 <TableHeader>
                   <TableRow>
