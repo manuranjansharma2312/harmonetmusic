@@ -38,23 +38,19 @@ function applyAntiInspection() {
   // Block drag
   document.addEventListener('dragstart', (e) => e.preventDefault());
 
-  // DevTools detection — console.log trick
-  const devtoolsCheck = /./;
-  let devtoolsOpen = false;
-  devtoolsCheck.toString = function() {
-    devtoolsOpen = true;
-    return '';
-  };
-  
-  setInterval(() => {
-    devtoolsOpen = false;
-    console.log('%c', devtoolsCheck);
-    if (devtoolsOpen) {
+  // DevTools detection — size-based check (no console.log spam)
+  let devtoolsBlocked = false;
+  const threshold = 160;
+  const checkDevTools = () => {
+    if (devtoolsBlocked) return;
+    const widthDiff = window.outerWidth - window.innerWidth > threshold;
+    const heightDiff = window.outerHeight - window.innerHeight > threshold;
+    if (widthDiff || heightDiff) {
+      devtoolsBlocked = true;
       document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;color:#fff;font-family:system-ui;text-align:center;padding:2rem"><div><h1 style="font-size:2rem;margin-bottom:1rem">⚠️ Access Denied</h1><p style="opacity:0.7">Developer tools are not allowed on this site.<br/>Source code is protected and hidden.</p></div></div>';
-      // Clear all intervals
-      for (let i = 1; i < 99999; i++) window.clearInterval(i);
     }
-  }, 1000);
+  };
+  setInterval(checkDevTools, 2000);
 
   // Block view-source protocol
   if (window.location.protocol === 'view-source:') {
