@@ -255,7 +255,8 @@ export default function AdminSignatureDetail() {
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
+           </Table>
+           </div>
         </GlassCard>
 
         {/* Audit Trail */}
