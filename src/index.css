@@ -50,8 +50,8 @@
     --glass-bg: 0 0% 100% / 0.05;
     --glass-border: 0 0% 100% / 0.1;
     --glass-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    --primary-glow: 0 72% 50%;
-    --gradient-primary: linear-gradient(135deg, hsl(0 72% 45%), hsl(0 60% 52%));
+    --primary-glow: 0 67% 30%;
+    --gradient-primary: linear-gradient(135deg, hsl(0 67% 25%), hsl(0 55% 34%));
     --gradient-bg: linear-gradient(135deg, #0f0f0f, #1a1a1a);
   }
 }
