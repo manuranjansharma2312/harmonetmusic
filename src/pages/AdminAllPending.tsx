@@ -306,7 +306,7 @@ export default function AdminAllPending() {
                 </Badge>
               </button>
             );
-          })}
+        </div>
         </div>
 
         {/* Data Table */}
