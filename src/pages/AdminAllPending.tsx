@@ -162,8 +162,7 @@ export default function AdminAllPending() {
   const [activeTab, setActiveTab] = useState('users');
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const pageSize = 15;
+  const [page, setPage] = useState(0);
 
   const [approveId, setApproveId] = useState<string | null>(null);
   const [rejectId, setRejectId] = useState<string | null>(null);
