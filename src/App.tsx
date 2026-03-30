@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, lazy, Suspense, forwardRef } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -13,10 +13,26 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SiteSettingsRuntime } from "@/components/SiteSettingsRuntime";
 import { BrandingHead } from "@/components/BrandingHead";
 
-// Lazy load all pages for code splitting
-const Auth = lazy(() => import("./pages/Auth"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword"));
-const UserDashboard = lazy(() => import("./pages/UserDashboard"));
+// Retry wrapper for lazy imports — auto-retries on network failures
+function lazyRetry(fn: () => Promise<any>, retries = 2): ReturnType<typeof lazy> {
+  return lazy(() =>
+    fn().catch((err) => {
+      if (retries > 0) {
+        return new Promise<any>((resolve) => setTimeout(resolve, 1000)).then(() =>
+          lazyRetry(fn, retries - 1) as any
+        );
+      }
+      // Force reload on persistent failure (stale chunk)
+      window.location.reload();
+      throw err;
+    })
+  );
+}
+
+// Lazy load all pages with retry
+const Auth = lazyRetry(() => import("./pages/Auth"));
+const ResetPassword = lazyRetry(() => import("./pages/ResetPassword"));
+const UserDashboard = lazyRetry(() => import("./pages/UserDashboard"));
 const NewRelease = lazy(() => import("./pages/NewRelease"));
 const AdminGenresLanguages = lazy(() => import("./pages/AdminGenresLanguages"));
 const MyReleases = lazy(() => import("./pages/MyReleases"));
