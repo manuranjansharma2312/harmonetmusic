@@ -360,7 +360,8 @@ export function AppSidebar() {
               ) : (
                 <>
                   {hasTeamAccess('dashboard') && renderNavLink(adminLinksTop[0])}
-                  {hasTeamAccess('all-pending') && renderNavLink(adminLinksTop[1])}
+                  {/* All Pendings is always visible for team — filtered inside the page */}
+                  {renderNavLink(adminLinksTop[1])}
                   {hasTeamAccess('users') && renderNavLink(adminLinksTop[2])}
                   {hasTeamAccess('submissions') && renderNavLink(adminLinksTop[3])}
                   {hasTeamAccess('content-requests') && renderNavLink(adminLinksTop[4])}
@@ -378,9 +379,9 @@ export function AppSidebar() {
                   {hasTeamAccess('notices') && adminLinksMiddle.filter(l => l.to === '/admin/notices').map(renderNavLink)}
                   {hasTeamAccess('smart-links') && adminLinksMiddle.filter(l => l.to === '/admin/smart-links').map(renderNavLink)}
                   {hasTeamAccess('email-settings') && adminLinksMiddle.filter(l => l.to === '/admin/email-settings').map(renderNavLink)}
-                  {hasTeamAccess('general-settings') && renderCollapsibleGroup('General Settings', Settings, adminGeneralSettingsLinks, adminGeneralSettingsOpen, setAdminGeneralSettingsOpen)}
-                  {hasTeamAccess('contact-policies') && renderCollapsibleGroup('Contact & Policies', FileText, adminContactPoliciesLinks, adminContactPoliciesOpen, setAdminContactPoliciesOpen)}
-                  {hasTeamAccess('settings') && renderCollapsibleGroup('Settings', Settings, adminSettingsLinks, adminSettingsOpen, setAdminSettingsOpen)}
+                  {!isTeam && hasTeamAccess('general-settings') && renderCollapsibleGroup('General Settings', Settings, adminGeneralSettingsLinks, adminGeneralSettingsOpen, setAdminGeneralSettingsOpen)}
+                  {!isTeam && hasTeamAccess('contact-policies') && renderCollapsibleGroup('Contact & Policies', FileText, adminContactPoliciesLinks, adminContactPoliciesOpen, setAdminContactPoliciesOpen)}
+                  {!isTeam && hasTeamAccess('settings') && renderCollapsibleGroup('Settings', Settings, adminSettingsLinks, adminSettingsOpen, setAdminSettingsOpen)}
                   {!isTeam && renderNavLink({ to: '/admin/team-management', label: 'Team Management', icon: ShieldCheck })}
                 </>
               )}

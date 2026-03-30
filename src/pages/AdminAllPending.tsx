@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { StatusBadge } from '@/components/StatusBadge';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import { toast } from 'sonner';
 import { format, isValid } from 'date-fns';
 
@@ -192,8 +193,9 @@ const categories: PendingCategory[] = [
 
 export default function AdminAllPending() {
   const navigate = useNavigate();
+  const { isTeam, canDelete, canViewPendingCategory, loaded: permLoaded } = useTeamPermissions();
   const [counts, setCounts] = useState<Record<string, number>>({});
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState('');
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
@@ -204,14 +206,28 @@ export default function AdminAllPending() {
   const [actionLoading, setActionLoading] = useState(false);
   const [pageSize, setPageSize] = useState<number | 'all'>(15);
 
-  const activeCategory = categories.find(c => c.key === activeTab)!;
+  // Filter categories based on team permissions
+  const visibleCategories = useMemo(() => {
+    if (!permLoaded) return [];
+    return categories.filter(c => canViewPendingCategory(c.key));
+  }, [permLoaded, canViewPendingCategory]);
 
-  // Fetch counts for all categories
+  // Set default active tab when visible categories load
   useEffect(() => {
+    if (visibleCategories.length > 0 && !activeTab) {
+      setActiveTab(visibleCategories[0].key);
+    }
+  }, [visibleCategories, activeTab]);
+
+  const activeCategory = visibleCategories.find(c => c.key === activeTab) || visibleCategories[0];
+
+  // Fetch counts for visible categories only
+  useEffect(() => {
+    if (!visibleCategories.length) return;
     const fetchCounts = async () => {
       const results: Record<string, number> = {};
       await Promise.all(
-        categories.map(async (cat) => {
+        visibleCategories.map(async (cat) => {
           const { count } = await (supabase.from(cat.table as any) as any)
             .select('id', { count: 'exact', head: true })
             .eq(cat.statusField, cat.statusValue);
@@ -221,12 +237,13 @@ export default function AdminAllPending() {
       setCounts(results);
     };
     fetchCounts();
-  }, []);
+  }, [visibleCategories]);
 
   const effectivePageSize = pageSize === 'all' ? 1000 : pageSize;
 
   // Fetch data for active tab
   useEffect(() => {
+    if (!activeCategory) return;
     const fetchData = async () => {
       setLoading(true);
       const from = page * effectivePageSize;
@@ -240,7 +257,7 @@ export default function AdminAllPending() {
       setLoading(false);
     };
     fetchData();
-  }, [activeTab, page, effectivePageSize]);
+  }, [activeTab, page, effectivePageSize, activeCategory]);
 
   const totalCount = counts[activeTab] || 0;
 
@@ -297,7 +314,7 @@ export default function AdminAllPending() {
         {/* Summary Cards - horizontal sliding */}
         <div className="responsive-table-wrap pb-2">
         <div className="flex gap-3 min-w-max">
-          {categories.map(cat => {
+          {visibleCategories.map(cat => {
             const Icon = cat.icon;
             const count = counts[cat.key] || 0;
             return (
@@ -321,81 +338,84 @@ export default function AdminAllPending() {
           </div>
         </div>
 
-        {/* Data Table */}
-        <div className="rounded-lg border border-border bg-card/50">
-          <div className="responsive-table-wrap">
-            <table className="w-full text-sm min-w-max">
-              <thead>
-                <tr className="border-b border-border bg-muted/30">
-                  {activeCategory.columns.map(col => (
-                    <th key={col.key} className="px-4 py-3 text-left whitespace-nowrap font-medium text-muted-foreground">
-                      {col.label}
-                    </th>
-                  ))}
-                  <th className="px-4 py-3 text-left whitespace-nowrap font-medium text-muted-foreground">Status</th>
-                  <th className="px-4 py-3 text-right whitespace-nowrap font-medium text-muted-foreground">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={activeCategory.columns.length + 2} className="text-center py-12">
-                      <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
-                    </td>
+        {!activeCategory ? (
+          <div className="text-center py-12 text-muted-foreground">No sections available</div>
+        ) : (
+          <div className="rounded-lg border border-border bg-card/50">
+            <div className="responsive-table-wrap">
+              <table className="w-full text-sm min-w-max">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    {activeCategory.columns.map(col => (
+                      <th key={col.key} className="px-4 py-3 text-left whitespace-nowrap font-medium text-muted-foreground">
+                        {col.label}
+                      </th>
+                    ))}
+                    <th className="px-4 py-3 text-left whitespace-nowrap font-medium text-muted-foreground">Status</th>
+                    <th className="px-4 py-3 text-right whitespace-nowrap font-medium text-muted-foreground">Actions</th>
                   </tr>
-                ) : data.length === 0 ? (
-                  <tr>
-                    <td colSpan={activeCategory.columns.length + 2} className="text-center py-12 text-muted-foreground">
-                      No pending {activeCategory.label.toLowerCase()} found
-                    </td>
-                  </tr>
-                ) : (
-                  data.map(row => (
-                    <tr key={row.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                      {activeCategory.columns.map(col => (
-                        <td key={col.key} className="px-4 py-3 whitespace-nowrap">
-                          {col.render ? col.render(row) : (row[col.key] ?? '—')}
-                        </td>
-                      ))}
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <StatusBadge status={activeCategory.statusValue} />
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {activeCategory.actions.includes('approve') && (
-                            <Button size="sm" variant="ghost" className="h-8 text-emerald-500 hover:text-emerald-400 hover:bg-accent"
-                              onClick={() => setApproveId(row.id)}>
-                              <CheckCircle className="h-4 w-4 mr-1" /> Approve
-                            </Button>
-                          )}
-                          {activeCategory.actions.includes('reject') && (
-                            <Button size="sm" variant="ghost" className="h-8 text-destructive hover:text-destructive hover:bg-accent"
-                              onClick={() => setRejectId(row.id)}>
-                              <XCircle className="h-4 w-4 mr-1" /> Reject
-                            </Button>
-                          )}
-                          {activeCategory.actions.includes('view') && activeCategory.viewLink && (
-                            <Button size="sm" variant="ghost" className="h-8"
-                              onClick={() => navigate(activeCategory.viewLink!(row))}>
-                              <Eye className="h-4 w-4 mr-1" /> View
-                            </Button>
-                          )}
-                        </div>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={activeCategory.columns.length + 2} className="text-center py-12">
+                        <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : data.length === 0 ? (
+                    <tr>
+                      <td colSpan={activeCategory.columns.length + 2} className="text-center py-12 text-muted-foreground">
+                        No pending {activeCategory.label.toLowerCase()} found
+                      </td>
+                    </tr>
+                  ) : (
+                    data.map(row => (
+                      <tr key={row.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                        {activeCategory.columns.map(col => (
+                          <td key={col.key} className="px-4 py-3 whitespace-nowrap">
+                            {col.render ? col.render(row) : (row[col.key] ?? '—')}
+                          </td>
+                        ))}
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <StatusBadge status={activeCategory.statusValue} />
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {activeCategory.actions.includes('approve') && (
+                              <Button size="sm" variant="ghost" className="h-8 text-emerald-500 hover:text-emerald-400 hover:bg-accent"
+                                onClick={() => setApproveId(row.id)}>
+                                <CheckCircle className="h-4 w-4 mr-1" /> Approve
+                              </Button>
+                            )}
+                            {activeCategory.actions.includes('reject') && (
+                              <Button size="sm" variant="ghost" className="h-8 text-destructive hover:text-destructive hover:bg-accent"
+                                onClick={() => setRejectId(row.id)}>
+                                <XCircle className="h-4 w-4 mr-1" /> Reject
+                              </Button>
+                            )}
+                            {activeCategory.actions.includes('view') && activeCategory.viewLink && (
+                              <Button size="sm" variant="ghost" className="h-8"
+                                onClick={() => navigate(activeCategory.viewLink!(row))}>
+                                <Eye className="h-4 w-4 mr-1" /> View
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <TablePagination
+              totalItems={totalCount}
+              currentPage={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(0); }}
+            />
           </div>
-          <TablePagination
-            totalItems={totalCount}
-            currentPage={page}
-            pageSize={pageSize}
-            onPageChange={setPage}
-            onPageSizeChange={(s) => { setPageSize(s); setPage(0); }}
-          />
-        </div>
+        )}
       </div>
 
       {/* Approve Confirm Dialog */}
