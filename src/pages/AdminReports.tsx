@@ -779,9 +779,11 @@ export default function AdminReports() {
                           <Button size="sm" variant="outline" onClick={() => handleViewMonth(g.month)}>
                             <Eye className="h-4 w-4 mr-1" /> View
                           </Button>
+                          {canDelete && (
                           <Button size="sm" variant="destructive" onClick={() => setDeleteMonth(g.month)}>
                             <Trash2 className="h-4 w-4 mr-1" /> Delete
                           </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
