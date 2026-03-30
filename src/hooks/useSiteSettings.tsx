@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+const SITE_SETTINGS_CACHE_KEY = 'site-settings-cache-v1';
+
 export interface SiteSettings {
   id: string;
   enable_background_animations: boolean;
@@ -71,9 +73,26 @@ const DEFAULTS: SiteSettings = {
 
 export { DEFAULTS as SITE_SETTINGS_DEFAULTS };
 
+function readCachedSiteSettings(): SiteSettings | null {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const cached = localStorage.getItem(SITE_SETTINGS_CACHE_KEY);
+    if (!cached) return null;
+
+    return {
+      ...DEFAULTS,
+      ...JSON.parse(cached),
+    } as SiteSettings;
+  } catch {
+    return null;
+  }
+}
+
 export function useSiteSettings() {
   const { data, isLoading } = useQuery({
     queryKey: ['site-settings'],
+    initialData: () => readCachedSiteSettings() ?? DEFAULTS,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('site_settings')
@@ -81,8 +100,12 @@ export function useSiteSettings() {
         .limit(1)
         .maybeSingle();
       if (error) throw error;
-      const settings = (data as unknown as SiteSettings) ?? DEFAULTS;
+      const settings = {
+        ...DEFAULTS,
+        ...((data as unknown as SiteSettings) ?? {}),
+      } as SiteSettings;
       try {
+        localStorage.setItem(SITE_SETTINGS_CACHE_KEY, JSON.stringify(settings));
         localStorage.setItem('site_anti_inspection', String(settings.enable_anti_inspection));
         localStorage.setItem('site_maintenance', JSON.stringify({
           enabled: settings.maintenance_mode,
