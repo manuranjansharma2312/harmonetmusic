@@ -57,6 +57,7 @@ const AdminAgreements = lazy(() => import("./pages/AdminAgreements"));
 const AdminAgreementGenerator = lazy(() => import("./pages/AdminAgreementGenerator"));
 const AdminPromotionTools = lazy(() => import("./pages/AdminPromotionTools"));
 const AdminPaymentSettings = lazy(() => import("./pages/AdminPaymentSettings"));
+const AdminPromotionalSettings = lazy(() => import("./pages/AdminPromotionalSettings"));
 const PromotionTools = lazy(() => import("./pages/PromotionTools"));
 const BankDetails = lazy(() => import("./pages/BankDetails"));
 const ContactSupport = lazy(() => import("./pages/ContactSupport"));
