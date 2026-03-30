@@ -193,8 +193,9 @@ const categories: PendingCategory[] = [
 
 export default function AdminAllPending() {
   const navigate = useNavigate();
+  const { isTeam, canDelete, canViewPendingCategory, loaded: permLoaded } = useTeamPermissions();
   const [counts, setCounts] = useState<Record<string, number>>({});
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState('');
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
@@ -205,7 +206,20 @@ export default function AdminAllPending() {
   const [actionLoading, setActionLoading] = useState(false);
   const [pageSize, setPageSize] = useState<number | 'all'>(15);
 
-  const activeCategory = categories.find(c => c.key === activeTab)!;
+  // Filter categories based on team permissions
+  const visibleCategories = useMemo(() => {
+    if (!permLoaded) return [];
+    return categories.filter(c => canViewPendingCategory(c.key));
+  }, [permLoaded, canViewPendingCategory]);
+
+  // Set default active tab when visible categories load
+  useEffect(() => {
+    if (visibleCategories.length > 0 && !activeTab) {
+      setActiveTab(visibleCategories[0].key);
+    }
+  }, [visibleCategories, activeTab]);
+
+  const activeCategory = visibleCategories.find(c => c.key === activeTab) || visibleCategories[0];
 
   // Fetch counts for all categories
   useEffect(() => {
