@@ -602,7 +602,7 @@ export default function AdminUsers() {
             </div>
             <div className="flex gap-3 mt-3">
               {viewProfile.verification_status !== 'verified' && (
-                <button onClick={() => handleVerification(viewProfile.user_id, 'verified')} className="flex-1 py-2.5 rounded-lg bg-green-500/20 text-green-400 font-medium hover:bg-green-500/30 transition-all flex items-center justify-center gap-2">
+                <button onClick={() => { setViewProfile(null); setApprovalPopup({ userId: viewProfile.user_id, name: viewProfile.legal_name }); }} className="flex-1 py-2.5 rounded-lg bg-green-500/20 text-green-400 font-medium hover:bg-green-500/30 transition-all flex items-center justify-center gap-2">
                   <CheckCircle className="h-4 w-4" /> Verify
                 </button>
               )}
