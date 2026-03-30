@@ -458,8 +458,8 @@ export default function UserDashboard() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {[
             { label: 'CMS Revenue', value: formatRevenue(cmsRevenue), icon: Youtube, color: 'hsl(0, 67%, 40%)', iconColor: 'text-red-400' },
+            { label: 'CMS Net Payable', value: formatRevenue(cmsNetPayable), icon: Monitor, color: 'hsl(25, 80%, 45%)', iconColor: 'text-orange-400' },
             { label: 'CMS Paid', value: formatRevenue(cmsPaid), icon: CheckCircle, color: 'hsl(140, 60%, 40%)', iconColor: 'text-emerald-400' },
-            { label: 'CMS Pending', value: formatRevenue(cmsPending), icon: Clock, color: 'hsl(45, 80%, 45%)', iconColor: 'text-amber-400' },
             { label: 'CMS Balance', value: formatRevenue(cmsAvailable), icon: Zap, color: 'hsl(200, 70%, 50%)', iconColor: 'text-sky-400' },
           ].map((stat) => (
             <GlassCard key={stat.label} className="!p-4 border-l-4 animate-fade-in" style={{ borderLeftColor: stat.color }}>
