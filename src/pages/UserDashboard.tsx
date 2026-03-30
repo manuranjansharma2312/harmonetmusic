@@ -211,6 +211,18 @@ export default function UserDashboard() {
         setCmsPending(0);
       }
 
+      // Compute Vevo stats
+      let vevoStr = 0;
+      let vevoRev = 0;
+      vevoReportData.forEach((r: any) => {
+        const isFrozen = r.revenue_frozen === true;
+        const grossRevenue = Number(r.net_generated_revenue || 0);
+        vevoRev += isFrozen ? 0 : applySnapshotCut(grossRevenue, r.cut_percent_snapshot, effectiveCutPercent, shouldCut);
+        vevoStr += Number(r.streams || 0);
+      });
+      setVevoStreams(vevoStr);
+      setVevoRevenue(Math.round(vevoRev * 100) / 100);
+
       const allReports = [...reportData, ...ytReportData, ...vevoReportData];
       if (allReports.length > 0) {
         let totalRev = 0;
