@@ -283,8 +283,9 @@ export default function AdminAllPending() {
           </div>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        {/* Summary Cards - horizontal sliding */}
+        <div className="responsive-table-wrap pb-2">
+        <div className="flex gap-3 min-w-max">
           {categories.map(cat => {
             const Icon = cat.icon;
             const count = counts[cat.key] || 0;
