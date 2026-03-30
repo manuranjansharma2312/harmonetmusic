@@ -243,9 +243,6 @@ export function AppSidebar() {
     }
   };
 
-  const hasDot = (to: string) => !showUserView && pendingDotRoutes[to];
-  const dotEl = <span className="h-2 w-2 rounded-full bg-destructive flex-shrink-0 animate-pulse" />;
-
   const renderNavLink = (link: { to: string; label: string; icon: any }) => (
     <SidebarMenuItem key={link.to}>
       <SidebarMenuButton asChild tooltip={link.label}>
@@ -257,8 +254,7 @@ export function AppSidebar() {
           activeClassName="bg-primary/10 text-foreground font-semibold"
         >
           <link.icon className="h-5 w-5 flex-shrink-0" />
-          {!collapsed && <span className="flex-1">{link.label}</span>}
-          {hasDot(link.to) && dotEl}
+          {!collapsed && <span>{link.label}</span>}
         </NavLink>
       </SidebarMenuButton>
     </SidebarMenuItem>
