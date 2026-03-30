@@ -329,11 +329,16 @@ export function AppSidebar() {
               {showUserView ? (
                 <>
                   {userLinksTop.map(renderNavLink)}
-                  {settings.enable_youtube_cms && !effectiveIsSubLabel && renderCollapsibleGroup('YouTube CMS', Youtube, userCmsLinks, userCmsOpen, setUserCmsOpen)}
                   {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, userVideoLinks, userVideoOpen, setUserVideoOpen)}
                   {showUserSubLabels && renderCollapsibleGroup('Sub Labels', UsersRound, userSubLabelLinks, userSubLabelsOpen, setUserSubLabelsOpen)}
-                  {renderCollapsibleGroup('Support', Headset, contentToolLinks, toolsOpen, setToolsOpen)}
+                  {settings.enable_youtube_cms && !effectiveIsSubLabel && renderCollapsibleGroup('YouTube CMS', Youtube, userCmsLinks, userCmsOpen, setUserCmsOpen)}
+                  {userLinksMiddle.map(renderNavLink)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, reportLinks, reportsOpen, setReportsOpen)}
+                  {renderCollapsibleGroup('Support', Headset, contentToolLinks, toolsOpen, setToolsOpen)}
+                  {!effectiveIsSubLabel && renderNavLink({ to: '/promotion-tools', label: 'Paid Promotions', icon: Megaphone })}
+                  {renderCollapsibleGroup('Poster Generator', ImageIcon, userPosterLinks, userPosterOpen, setUserPosterOpen)}
+                  {userLinksAfterGroups.map(renderNavLink)}
+                  {renderCollapsibleGroup('Contact & Policies', FileText, userContactPoliciesLinks, userContactPoliciesOpen, setUserContactPoliciesOpen)}
                   {userLinksBottom.map(renderNavLink)}
                 </>
               ) : (
