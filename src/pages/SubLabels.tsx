@@ -301,6 +301,22 @@ export default function SubLabels() {
             </div>
 
             <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Menu Access Permissions</label>
+              <p className="text-xs text-muted-foreground mb-2">Select which pages the sub-label can access. Leave empty to allow all pages.</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {ALL_SUB_LABEL_PAGES.map(pg => (
+                  <label key={pg.key} className="flex items-center gap-2 text-sm cursor-pointer p-1.5 rounded hover:bg-muted/50">
+                    <Checkbox
+                      checked={formAllowedPages.includes(pg.key)}
+                      onCheckedChange={() => setFormAllowedPages(prev => prev.includes(pg.key) ? prev.filter(p => p !== pg.key) : [...prev, pg.key])}
+                    />
+                    <span className="text-foreground">{pg.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">
                 B2B Agreement (PDF) *
               </label>
