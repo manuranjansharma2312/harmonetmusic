@@ -801,6 +801,9 @@ function RecentTutorialsWidget() {
       if (error) throw error;
       return (data || []) as TutorialPreview[];
     },
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   if (isLoading || tutorials.length === 0) return null;
