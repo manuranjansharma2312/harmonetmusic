@@ -57,7 +57,7 @@ const categories: PendingCategory[] = [
     table: 'releases', statusField: 'status', statusValue: 'pending',
     columns: [
       { key: 'album_name', label: 'Release', render: (r) => r.album_name || r.ep_name || '—' },
-      { key: 'content_type', label: 'Type' },
+      { key: 'content_type', label: 'Type', render: (r: any) => formatLabel(r.content_type) },
       { key: 'release_date', label: 'Date', render: (r) => safeFormat(r.release_date) },
       { key: 'created_at', label: 'Submitted', render: (r) => safeFormat(r.created_at) },
     ],
