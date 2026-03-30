@@ -187,7 +187,7 @@ function AdminDashboardCharts({
               <div className="h-48 sm:h-56 relative">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={releaseStatusData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} dataKey="value" strokeWidth={0} paddingAngle={4}>
+                    <Pie data={releaseStatusData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} dataKey="value" strokeWidth={0} paddingAngle={4} isAnimationActive={false}>
                       {releaseStatusData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                     </Pie>
                     <Tooltip contentStyle={tooltipStyle} />
