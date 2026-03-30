@@ -218,9 +218,35 @@ export default function AdminTeamManagement() {
   const handleLoginAs = async (member: TeamMember) => {
     const confirmLogin = window.confirm(`Login as ${member.name} (${member.email})? You will be signed out of your current session.`);
     if (!confirmLogin) return;
-    await supabase.auth.signOut();
-    // We can't log in as them without their password, so redirect to auth with prefilled email
-    window.location.href = `/auth?email=${encodeURIComponent(member.email)}`;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) { toast.error('Not authenticated'); return; }
+      
+      const { data: fnData, error: fnError } = await supabase.functions.invoke('admin-reset-password', {
+        body: { action: 'login_as_user', user_id: member.user_id },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (fnError || !fnData?.success) {
+        toast.error(fnData?.error || fnError?.message || 'Failed to generate login');
+        return;
+      }
+      // Sign out admin, then verify OTP with the magic link token
+      await supabase.auth.signOut();
+      const { error: otpError } = await supabase.auth.verifyOtp({
+        type: 'magiclink',
+        email: fnData.email,
+        token_hash: fnData.token_hash,
+      });
+      if (otpError) {
+        toast.error(otpError.message);
+        window.location.href = '/auth';
+        return;
+      }
+      window.location.href = '/admin';
+    } catch (err: any) {
+      toast.error(err.message || 'Login failed');
+    }
   };
 
   // ---- CSV Export ----

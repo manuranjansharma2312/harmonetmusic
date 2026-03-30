@@ -124,7 +124,6 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      // Also send the reset email via the standard flow
       const { error: resetError } = await supabaseAdmin.auth.resetPasswordForEmail(email);
       if (resetError) {
         return new Response(JSON.stringify({ error: resetError.message }), {
@@ -137,7 +136,41 @@ Deno.serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ error: "Invalid action. Use 'set_password', 'send_reset_link', or 'change_email'" }), {
+    if (action === "login_as_user") {
+      if (!user_id) {
+        return new Response(JSON.stringify({ error: "user_id required" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      // Generate a magic link for the target user
+      const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(user_id);
+      if (userError || !userData?.user) {
+        return new Response(JSON.stringify({ error: userError?.message || "User not found" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+        type: "magiclink",
+        email: userData.user.email!,
+      });
+      if (linkError) {
+        return new Response(JSON.stringify({ error: linkError.message }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ 
+        success: true, 
+        token_hash: linkData.properties?.hashed_token,
+        email: userData.user.email,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: "Invalid action" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
