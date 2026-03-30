@@ -165,9 +165,10 @@ export default function UserDashboard() {
         const ownedIsrcs = [...new Set([...(trackRows ?? []), ...(songRows ?? [])].map((row) => (row.isrc || '').trim().toUpperCase()).filter(Boolean))];
 
         if (ownedIsrcs.length > 0) {
-          [reportData, ytReportData] = await Promise.all([
+          [reportData, ytReportData, vevoReportData] = await Promise.all([
             fetchAllRows('report_entries', reportSelect, (query) => query.in('isrc', ownedIsrcs)),
             fetchAllRows('youtube_report_entries', reportSelect, (query) => query.in('isrc', ownedIsrcs)),
+            fetchAllRows('vevo_report_entries', reportSelect, (query) => query.in('isrc', ownedIsrcs)),
           ]);
         }
       } else {
