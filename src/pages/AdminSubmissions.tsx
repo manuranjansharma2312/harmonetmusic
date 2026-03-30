@@ -928,9 +928,11 @@ export default function AdminSubmissions() {
             <p className="text-muted-foreground mt-1 text-sm sm:text-base">Manage all music releases and tracks.</p>
           </div>
           <div className="flex gap-2 shrink-0 self-start sm:self-auto">
-            <Button variant="outline" size="sm" onClick={() => setShowImportModal(true)}>
-              <Upload className="h-4 w-4" /> Import CSV
-            </Button>
+            {canChangeSettings && (
+              <Button variant="outline" size="sm" onClick={() => setShowImportModal(true)}>
+                <Upload className="h-4 w-4" /> Import CSV
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={exportCSV}>
               <Download className="h-4 w-4" /> Export CSV
             </Button>
