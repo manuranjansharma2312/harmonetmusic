@@ -296,6 +296,8 @@ export default function AdminEmailSettings() {
   const [logStatusFilter, setLogStatusFilter] = useState('all');
   const [logPage, setLogPage] = useState(0);
   const [logPageSize, setLogPageSize] = useState<number | 'all'>(20);
+  const [selectedLogs, setSelectedLogs] = useState<Set<string>>(new Set());
+  const [deletingLogs, setDeletingLogs] = useState(false);
 
   // Test email
   const [showTestDialog, setShowTestDialog] = useState(false);
@@ -1077,18 +1079,43 @@ export default function AdminEmailSettings() {
           {/* =============== Email Logs Tab =============== */}
           <TabsContent value="logs">
             <GlassCard className="p-6 space-y-4">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2.5 rounded-xl bg-primary/10">
-                  <History className="h-5 w-5 text-primary" />
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-primary/10">
+                    <History className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold">Email Sending Logs</h2>
+                    <p className="text-xs text-muted-foreground">Track all sent emails · Logs auto-delete after 7 days</p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-lg font-semibold">Email Sending Logs</h2>
-                  <p className="text-xs text-muted-foreground">Track all sent emails with status, recipient, and timestamps</p>
+                <div className="flex gap-2 flex-wrap">
+                  {selectedLogs.size > 0 && (
+                    <Button variant="destructive" size="sm" className="gap-2" disabled={deletingLogs}
+                      onClick={async () => {
+                        if (!confirm(`Delete ${selectedLogs.size} selected log(s)?`)) return;
+                        setDeletingLogs(true);
+                        try {
+                          const ids = Array.from(selectedLogs);
+                          const { error } = await supabase.from('email_send_logs').delete().in('id', ids);
+                          if (error) throw error;
+                          setEmailLogs(prev => prev.filter(l => !selectedLogs.has(l.id)));
+                          setSelectedLogs(new Set());
+                          toast.success(`${ids.length} log(s) deleted`);
+                        } catch (err: any) {
+                          toast.error(err.message || 'Failed to delete logs');
+                        } finally {
+                          setDeletingLogs(false);
+                        }
+                      }}>
+                      <Trash2 className="h-4 w-4" /> Delete ({selectedLogs.size})
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm" className="gap-2" onClick={exportLogsCSV}>
+                    <Download className="h-4 w-4" /> Export CSV
+                  </Button>
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="gap-2 ml-auto" onClick={exportLogsCSV}>
-                <Download className="h-4 w-4" /> Export CSV
-              </Button>
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
@@ -1117,6 +1144,7 @@ export default function AdminEmailSettings() {
                   return matchesSearch && matchesStatus;
                 });
                 const paginatedLogs = paginateItems(filteredLogs, logPage, logPageSize);
+                const allPageSelected = paginatedLogs.length > 0 && paginatedLogs.every((l: EmailLog) => selectedLogs.has(l.id));
                 return (
                   <>
                     <div className="text-xs text-muted-foreground">{filteredLogs.length} log{filteredLogs.length !== 1 ? 's' : ''} found</div>
@@ -1127,6 +1155,17 @@ export default function AdminEmailSettings() {
                         <table className="w-full text-sm">
                           <thead>
                             <tr className="border-b border-border bg-muted/30">
+                              <th className="px-3 py-3 text-left w-10">
+                                <input type="checkbox" checked={allPageSelected}
+                                  className="rounded border-border"
+                                  onChange={(e) => {
+                                    const next = new Set(selectedLogs);
+                                    paginatedLogs.forEach((l: EmailLog) => {
+                                      if (e.target.checked) next.add(l.id); else next.delete(l.id);
+                                    });
+                                    setSelectedLogs(next);
+                                  }} />
+                              </th>
                               <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Template</th>
                               <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Recipient</th>
                               <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Subject</th>
@@ -1137,7 +1176,16 @@ export default function AdminEmailSettings() {
                           </thead>
                           <tbody>
                             {paginatedLogs.map((log: EmailLog) => (
-                              <tr key={log.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
+                              <tr key={log.id} className={`border-b border-border/50 hover:bg-muted/20 transition-colors ${selectedLogs.has(log.id) ? 'bg-primary/5' : ''}`}>
+                                <td className="px-3 py-3">
+                                  <input type="checkbox" checked={selectedLogs.has(log.id)}
+                                    className="rounded border-border"
+                                    onChange={(e) => {
+                                      const next = new Set(selectedLogs);
+                                      if (e.target.checked) next.add(log.id); else next.delete(log.id);
+                                      setSelectedLogs(next);
+                                    }} />
+                                </td>
                                 <td className="px-4 py-3 whitespace-nowrap font-medium">{log.template_label || log.template_key}</td>
                                 <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">{log.recipient_email}</td>
                                 <td className="px-4 py-3 whitespace-nowrap text-muted-foreground max-w-[200px] truncate">{log.subject || '—'}</td>

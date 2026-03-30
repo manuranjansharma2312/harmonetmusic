@@ -2789,6 +2789,7 @@ export type Database = {
     }
     Functions: {
       cleanup_old_ai_images: { Args: never; Returns: undefined }
+      cleanup_old_email_logs: { Args: never; Returns: undefined }
       cleanup_rejected_smart_links: { Args: never; Returns: undefined }
       deduct_ai_credit: {
         Args: { _amount: number; _user_id: string }
