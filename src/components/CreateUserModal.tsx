@@ -219,7 +219,14 @@ export function CreateUserModal({ open, onClose, onCreated }: CreateUserModalPro
           {/* Revenue Cut */}
           <div>
             <label className={labelClass}>Hidden Cut % (Revenue deduction)</label>
-            <input type="number" min="0" max="100" step="0.1" className={`${inputClass} w-full sm:w-40`} value={cutPercent} onChange={e => setCutPercent(e.target.value)} />
+            <input
+              type="text"
+              inputMode="decimal"
+              className={`${inputClass} w-full sm:w-40`}
+              value={cutPercent}
+              onChange={e => setCutPercent(e.target.value.replace(/[^0-9.]/g, ''))}
+              placeholder="0"
+            />
           </div>
 
           {/* Social Links - collapsible */}
