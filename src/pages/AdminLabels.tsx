@@ -137,6 +137,41 @@ export default function AdminLabels() {
     fetchLabels();
   };
 
+  const handleBulkDelete = async () => {
+    const ids = [...selected];
+    const toDelete = labels.filter(l => ids.includes(l.id));
+    // Delete B2B files from storage
+    const b2bPaths = toDelete.map(l => l.b2b_url).filter(Boolean) as string[];
+    if (b2bPaths.length > 0) {
+      await supabase.storage.from('b2b-documents').remove(b2bPaths);
+    }
+    const { error } = await supabase.from('labels').delete().in('id', ids);
+    if (error) toast.error(error.message);
+    else { toast.success(`${ids.length} label(s) deleted`); setSelected(new Set()); fetchLabels(); }
+    setBulkDeleteConfirm(false);
+  };
+
+  const paginatedLabels = paginateItems(labels, page, pageSize);
+  const allPageSelected = paginatedLabels.length > 0 && paginatedLabels.every(l => selected.has(l.id));
+
+  const toggleSelectAll = () => {
+    if (allPageSelected) {
+      const next = new Set(selected);
+      paginatedLabels.forEach(l => next.delete(l.id));
+      setSelected(next);
+    } else {
+      const next = new Set(selected);
+      paginatedLabels.forEach(l => next.add(l.id));
+      setSelected(next);
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    const next = new Set(selected);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    setSelected(next);
+  };
+
   const handleDownloadB2b = async (b2bPath: string) => {
     const { data, error } = await supabase.storage.from('b2b-documents').createSignedUrl(b2bPath, 300);
     if (error || !data?.signedUrl) { toast.error('Failed to get download link'); return; }
