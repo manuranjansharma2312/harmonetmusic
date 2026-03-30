@@ -11,6 +11,9 @@ const safeFormat = (dateStr: string, fmt: string = 'dd MMM yyyy') => {
   const d = new Date(dateStr);
   return isValid(d) ? format(d, fmt) : '—';
 };
+
+const formatLabel = (val: string) =>
+  val?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || '—';
 import {
   Users, ListMusic, Tag, Headset, Video, Wallet, Megaphone, UsersRound, Youtube,
   Sparkles, CheckCircle, XCircle, Eye, Loader2, Clock, Link2, FileSignature,
