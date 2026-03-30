@@ -314,7 +314,7 @@ export default function AdminAllPending() {
         {/* Summary Cards - horizontal sliding */}
         <div className="responsive-table-wrap pb-2">
         <div className="flex gap-3 min-w-max">
-          {categories.map(cat => {
+          {visibleCategories.map(cat => {
             const Icon = cat.icon;
             const count = counts[cat.key] || 0;
             return (
@@ -337,6 +337,10 @@ export default function AdminAllPending() {
           })}
           </div>
         </div>
+
+        {!activeCategory ? (
+          <div className="text-center py-12 text-muted-foreground">No sections available</div>
+        ) : (
 
         {/* Data Table */}
         <div className="rounded-lg border border-border bg-card/50">
