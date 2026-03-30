@@ -197,6 +197,17 @@ export default function AdminLabels() {
         </p>
       </div>
 
+      {selected.size > 0 && canDelete && (
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border mb-3">
+          <CheckSquare className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium">{selected.size} selected</span>
+          <Button size="sm" variant="destructive" onClick={() => setBulkDeleteConfirm(true)}>
+            <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete Selected
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setSelected(new Set())}>Clear</Button>
+        </div>
+      )}
+
       {labels.length === 0 ? (
         <GlassCard className="animate-fade-in text-center py-12">
           <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -204,9 +215,18 @@ export default function AdminLabels() {
         </GlassCard>
       ) : (
         <div className="space-y-3">
-          {paginateItems(labels, page, pageSize).map((label) => (
+          {canDelete && (
+            <div className="flex items-center gap-2 px-1">
+              <Checkbox checked={allPageSelected} onCheckedChange={toggleSelectAll} />
+              <span className="text-xs text-muted-foreground">Select All</span>
+            </div>
+          )}
+          {paginatedLabels.map((label) => (
             <GlassCard key={label.id} className="animate-fade-in">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                {canDelete && (
+                  <Checkbox checked={selected.has(label.id)} onCheckedChange={() => toggleSelect(label.id)} className="shrink-0" />
+                )}
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
                   <Tag className="h-5 w-5" />
                 </div>
