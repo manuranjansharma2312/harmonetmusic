@@ -675,7 +675,7 @@ export default function AdminEmailSettings() {
 
               {/* Account cards */}
               <div className="responsive-table-wrap rounded-lg border border-border">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm min-w-max">
                   <thead>
                     <tr className="border-b border-border bg-muted/30">
                       <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Account</th>
