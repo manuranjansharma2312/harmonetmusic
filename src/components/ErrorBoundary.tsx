@@ -1,5 +1,4 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
-import { BackgroundBlobs } from '@/components/BackgroundBlobs';
 
 interface Props {
   children: ReactNode;
@@ -41,7 +40,10 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="relative flex min-h-[100dvh] w-full items-center justify-center p-6">
-          <BackgroundBlobs />
+          <div className="fixed inset-0 -z-10 overflow-hidden opacity-30">
+            <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-primary/20 blur-3xl" />
+            <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
+          </div>
           <div className="glass-card-glow relative z-10 mx-auto w-full max-w-lg animate-scale-in space-y-6 p-6 text-center sm:p-8">
             <div className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10 text-destructive">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

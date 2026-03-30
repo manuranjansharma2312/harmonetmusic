@@ -5,7 +5,12 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { StatusBadge } from '@/components/StatusBadge';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
+
+const safeFormat = (dateStr: string, fmt: string = 'dd MMM yyyy') => {
+  const d = new Date(dateStr);
+  return isValid(d) ? format(d, fmt) : '—';
+};
 import {
   Users, ListMusic, Tag, Headset, Video, Wallet, Megaphone, UsersRound, Youtube,
   Sparkles, CheckCircle, XCircle, Eye, Loader2, Clock, Link2, FileSignature,
@@ -39,7 +44,7 @@ const categories: PendingCategory[] = [
       { key: 'legal_name', label: 'Name' },
       { key: 'email', label: 'Email' },
       { key: 'user_type', label: 'Type' },
-      { key: 'created_at', label: 'Registered', render: (r) => format(new Date(r.created_at), 'dd MMM yyyy') },
+      { key: 'created_at', label: 'Registered', render: (r) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject'],
     approveStatus: 'verified', rejectStatus: 'rejected',
@@ -50,8 +55,8 @@ const categories: PendingCategory[] = [
     columns: [
       { key: 'album_name', label: 'Release', render: (r) => r.album_name || r.ep_name || '—' },
       { key: 'content_type', label: 'Type' },
-      { key: 'release_date', label: 'Date', render: (r) => format(new Date(r.release_date), 'dd MMM yyyy') },
-      { key: 'created_at', label: 'Submitted', render: (r) => format(new Date(r.created_at), 'dd MMM yyyy') },
+      { key: 'release_date', label: 'Date', render: (r) => safeFormat(r.release_date) },
+      { key: 'created_at', label: 'Submitted', render: (r) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject', 'view'],
     approveStatus: 'approved', rejectStatus: 'rejected',
@@ -62,7 +67,7 @@ const categories: PendingCategory[] = [
     table: 'labels', statusField: 'status', statusValue: 'pending',
     columns: [
       { key: 'label_name', label: 'Label Name' },
-      { key: 'created_at', label: 'Submitted', render: (r) => format(new Date(r.created_at), 'dd MMM yyyy') },
+      { key: 'created_at', label: 'Submitted', render: (r) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject'],
     approveStatus: 'approved', rejectStatus: 'rejected',
@@ -73,7 +78,7 @@ const categories: PendingCategory[] = [
     columns: [
       { key: 'request_type', label: 'Type', render: (r) => r.request_type?.replace(/_/g, ' ') },
       { key: 'song_title', label: 'Song', render: (r) => r.song_title || r.artist_name || '—' },
-      { key: 'created_at', label: 'Submitted', render: (r) => format(new Date(r.created_at), 'dd MMM yyyy') },
+      { key: 'created_at', label: 'Submitted', render: (r) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject', 'view'],
     approveStatus: 'approved', rejectStatus: 'rejected',
@@ -84,7 +89,7 @@ const categories: PendingCategory[] = [
     table: 'video_submissions', statusField: 'status', statusValue: 'pending',
     columns: [
       { key: 'submission_type', label: 'Type' },
-      { key: 'created_at', label: 'Submitted', render: (r) => format(new Date(r.created_at), 'dd MMM yyyy') },
+      { key: 'created_at', label: 'Submitted', render: (r) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject', 'view'],
     approveStatus: 'approved', rejectStatus: 'rejected',
@@ -95,7 +100,7 @@ const categories: PendingCategory[] = [
     table: 'withdrawal_requests', statusField: 'status', statusValue: 'pending',
     columns: [
       { key: 'amount', label: 'Amount', render: (r) => `₹${Number(r.amount).toLocaleString()}` },
-      { key: 'created_at', label: 'Requested', render: (r) => format(new Date(r.created_at), 'dd MMM yyyy') },
+      { key: 'created_at', label: 'Requested', render: (r) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject'],
     approveStatus: 'approved', rejectStatus: 'rejected',
@@ -105,7 +110,7 @@ const categories: PendingCategory[] = [
     table: 'cms_withdrawal_requests', statusField: 'status', statusValue: 'pending',
     columns: [
       { key: 'amount', label: 'Amount', render: (r) => `₹${Number(r.amount).toLocaleString()}` },
-      { key: 'created_at', label: 'Requested', render: (r) => format(new Date(r.created_at), 'dd MMM yyyy') },
+      { key: 'created_at', label: 'Requested', render: (r) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject'],
     approveStatus: 'approved', rejectStatus: 'rejected',
@@ -116,7 +121,7 @@ const categories: PendingCategory[] = [
     columns: [
       { key: 'total_amount', label: 'Amount', render: (r) => `₹${Number(r.total_amount).toLocaleString()}` },
       { key: 'transaction_id', label: 'Txn ID', render: (r) => r.transaction_id || '—' },
-      { key: 'created_at', label: 'Ordered', render: (r) => format(new Date(r.created_at), 'dd MMM yyyy') },
+      { key: 'created_at', label: 'Ordered', render: (r) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject'],
     approveStatus: 'approved', rejectStatus: 'rejected',
@@ -128,7 +133,7 @@ const categories: PendingCategory[] = [
       { key: 'sub_label_name', label: 'Sub Label' },
       { key: 'email', label: 'Email' },
       { key: 'parent_label_name', label: 'Parent' },
-      { key: 'created_at', label: 'Created', render: (r) => format(new Date(r.created_at), 'dd MMM yyyy') },
+      { key: 'created_at', label: 'Created', render: (r) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject'],
     approveStatus: 'active', rejectStatus: 'rejected',
@@ -139,7 +144,7 @@ const categories: PendingCategory[] = [
     columns: [
       { key: 'channel_name', label: 'Channel' },
       { key: 'channel_url', label: 'URL' },
-      { key: 'created_at', label: 'Submitted', render: (r) => format(new Date(r.created_at), 'dd MMM yyyy') },
+      { key: 'created_at', label: 'Submitted', render: (r) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject'],
     approveStatus: 'linked', rejectStatus: 'rejected',
@@ -149,7 +154,7 @@ const categories: PendingCategory[] = [
     table: 'ai_plan_orders', statusField: 'status', statusValue: 'pending',
     columns: [
       { key: 'transaction_id', label: 'Txn ID' },
-      { key: 'created_at', label: 'Ordered', render: (r) => format(new Date(r.created_at), 'dd MMM yyyy') },
+      { key: 'created_at', label: 'Ordered', render: (r) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject'],
     approveStatus: 'approved', rejectStatus: 'rejected',
@@ -160,7 +165,7 @@ const categories: PendingCategory[] = [
     columns: [
       { key: 'title', label: 'Title' },
       { key: 'artist_name', label: 'Artist' },
-      { key: 'created_at', label: 'Created', render: (r: any) => format(new Date(r.created_at), 'dd MMM yyyy') },
+      { key: 'created_at', label: 'Created', render: (r: any) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject'],
     approveStatus: 'approved', rejectStatus: 'rejected',
@@ -171,7 +176,7 @@ const categories: PendingCategory[] = [
     columns: [
       { key: 'title', label: 'Document' },
       { key: 'description', label: 'Description', render: (r: any) => r.description || '—' },
-      { key: 'created_at', label: 'Created', render: (r: any) => format(new Date(r.created_at), 'dd MMM yyyy') },
+      { key: 'created_at', label: 'Created', render: (r: any) => safeFormat(r.created_at) },
     ],
     actions: ['view'],
     approveStatus: 'completed', rejectStatus: 'voided',
