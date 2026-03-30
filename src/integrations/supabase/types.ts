@@ -2084,6 +2084,7 @@ export type Database = {
         Row: {
           agreement_end_date: string
           agreement_start_date: string
+          allowed_pages: string[]
           b2b_url: string | null
           created_at: string
           email: string
@@ -2102,6 +2103,7 @@ export type Database = {
         Insert: {
           agreement_end_date: string
           agreement_start_date: string
+          allowed_pages?: string[]
           b2b_url?: string | null
           created_at?: string
           email: string
@@ -2120,6 +2122,7 @@ export type Database = {
         Update: {
           agreement_end_date?: string
           agreement_start_date?: string
+          allowed_pages?: string[]
           b2b_url?: string | null
           created_at?: string
           email?: string

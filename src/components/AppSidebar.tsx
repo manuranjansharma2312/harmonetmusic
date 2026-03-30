@@ -107,7 +107,7 @@ export function AppSidebar() {
   const isTeam = role === 'team';
   const showUserView = isImpersonating || (role !== 'admin' && role !== 'team');
   const [teamAllowedPages, setTeamAllowedPages] = useState<string[]>([]);
-
+  const [subLabelAllowedPages, setSubLabelAllowedPages] = useState<string[] | null>(null);
 
   const [toolsOpen, setToolsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
@@ -161,8 +161,29 @@ export function AppSidebar() {
     }
   }, [isTeam, user]);
 
+  // Fetch sub-label allowed pages
+  useEffect(() => {
+    const uid = isImpersonating ? impersonatedUserId : user?.id;
+    const isSub = isImpersonating ? impIsSubLabel : isSubLabel;
+    if (isSub && uid) {
+      (supabase.from('sub_labels') as any).select('allowed_pages').eq('sub_user_id', uid).maybeSingle()
+        .then(({ data }: any) => {
+          const pages = data?.allowed_pages || [];
+          setSubLabelAllowedPages(pages.length > 0 ? pages : null);
+        });
+    } else {
+      setSubLabelAllowedPages(null);
+    }
+  }, [isImpersonating, impersonatedUserId, impIsSubLabel, isSubLabel, user]);
+
   // Helper to check if a team user has access to a page key
   const hasTeamAccess = (key: string) => !isTeam || teamAllowedPages.includes(key);
+
+  // Helper to check if a sub-label user has access to a page key
+  const hasSubLabelAccess = (key: string) => {
+    if (!effectiveIsSubLabel || subLabelAllowedPages === null) return true; // no restrictions
+    return subLabelAllowedPages.includes(key);
+  };
 
   const effectiveUserType = isImpersonating ? impUserType : userType;
   const effectiveIsSubLabel = isImpersonating ? impIsSubLabel : isSubLabel;
@@ -344,18 +365,21 @@ export function AppSidebar() {
             <SidebarMenu>
               {showUserView ? (
                 <>
-                  {userLinksTop.map(renderNavLink)}
-                  {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, userVideoLinks, userVideoOpen, setUserVideoOpen)}
+                  {hasSubLabelAccess('dashboard') && renderNavLink(userLinksTop[0])}
+                  {hasSubLabelAccess('new-release') && renderNavLink(userLinksTop[1])}
+                  {hasSubLabelAccess('my-releases') && renderNavLink(userLinksTop[2])}
+                  {hasSubLabelAccess('my-labels') && renderNavLink(userLinksTop[3])}
+                  {hasSubLabelAccess('video-distribution') && settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, userVideoLinks, userVideoOpen, setUserVideoOpen)}
                   {showUserSubLabels && renderCollapsibleGroup('Sub Labels', UsersRound, userSubLabelLinks, userSubLabelsOpen, setUserSubLabelsOpen)}
                   {settings.enable_youtube_cms && !effectiveIsSubLabel && renderCollapsibleGroup('YouTube CMS', Youtube, userCmsLinks, userCmsOpen, setUserCmsOpen)}
-                  {renderCollapsibleGroup('Reports & Analytics', BarChart3, reportLinks, reportsOpen, setReportsOpen)}
-                  {userLinksMiddle.map(renderNavLink)}
-                  {renderCollapsibleGroup('Support', Headset, contentToolLinks, toolsOpen, setToolsOpen)}
+                  {hasSubLabelAccess('reports') && renderCollapsibleGroup('Reports & Analytics', BarChart3, reportLinks, reportsOpen, setReportsOpen)}
+                  {hasSubLabelAccess('revenue') && userLinksMiddle.map(renderNavLink)}
+                  {hasSubLabelAccess('support') && renderCollapsibleGroup('Support', Headset, contentToolLinks, toolsOpen, setToolsOpen)}
                   {!effectiveIsSubLabel && renderNavLink({ to: '/promotion-tools', label: 'Paid Promotions', icon: Megaphone })}
-                  {renderCollapsibleGroup('Poster Generator', ImageIcon, userPosterLinks, userPosterOpen, setUserPosterOpen)}
-                  {userLinksAfterGroups.map(renderNavLink)}
+                  {hasSubLabelAccess('poster') && renderCollapsibleGroup('Poster Generator', ImageIcon, userPosterLinks, userPosterOpen, setUserPosterOpen)}
+                  {hasSubLabelAccess('smart-links') && userLinksAfterGroups.map(renderNavLink)}
                   {renderCollapsibleGroup('Contact & Policies', FileText, userContactPoliciesLinks, userContactPoliciesOpen, setUserContactPoliciesOpen)}
-                  {userLinksBottom.map(renderNavLink)}
+                  {hasSubLabelAccess('profile') && userLinksBottom.map(renderNavLink)}
                 </>
               ) : (
                 <>

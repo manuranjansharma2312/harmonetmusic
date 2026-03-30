@@ -5,9 +5,26 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { StatusBadge } from '@/components/StatusBadge';
-import { Loader2, Plus, Users, Upload, Eye, EyeOff, FileText } from 'lucide-react';
+import { Loader2, Plus, Users, Upload, Eye, EyeOff, FileText, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+
+const ALL_SUB_LABEL_PAGES = [
+  { key: 'dashboard', label: 'Dashboard' },
+  { key: 'new-release', label: 'New Release' },
+  { key: 'my-releases', label: 'My Releases' },
+  { key: 'my-labels', label: 'My Labels' },
+  { key: 'video-distribution', label: 'Video Distribution' },
+  { key: 'reports', label: 'Reports & Analytics' },
+  { key: 'revenue', label: 'Revenue' },
+  { key: 'support', label: 'Support Tools' },
+  { key: 'poster', label: 'Poster Generator' },
+  { key: 'smart-links', label: 'Smart Links' },
+  { key: 'profile', label: 'My Profile' },
+  { key: 'help-tutorials', label: 'Help Tutorials' },
+  { key: 'terms', label: 'Terms & Conditions' },
+];
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -30,6 +47,7 @@ type SubLabel = {
   rejection_reason: string | null;
   created_at: string;
   sub_user_id: string | null;
+  allowed_pages: string[];
 };
 
 const inputClass =
@@ -47,7 +65,9 @@ export default function SubLabels() {
   const [viewSubLabel, setViewSubLabel] = useState<SubLabel | null>(null);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
-
+  const [permSubLabel, setPermSubLabel] = useState<SubLabel | null>(null);
+  const [permPages, setPermPages] = useState<string[]>([]);
+  const [savingPerms, setSavingPerms] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -155,6 +175,28 @@ export default function SubLabels() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const openPermissions = (sl: SubLabel) => {
+    setPermSubLabel(sl);
+    setPermPages(sl.allowed_pages || []);
+  };
+
+  const togglePermPage = (key: string) => {
+    setPermPages(prev => prev.includes(key) ? prev.filter(p => p !== key) : [...prev, key]);
+  };
+
+  const savePermissions = async () => {
+    if (!permSubLabel) return;
+    setSavingPerms(true);
+    const { error } = await (supabase.from('sub_labels') as any)
+      .update({ allowed_pages: permPages })
+      .eq('id', permSubLabel.id);
+    setSavingPerms(false);
+    if (error) { toast.error('Failed to save permissions'); return; }
+    toast.success('Permissions updated');
+    setPermSubLabel(null);
+    fetchSubLabels();
   };
 
   const handleDownloadB2b = async (b2bPath: string) => {
@@ -319,10 +361,15 @@ export default function SubLabels() {
                         </p>
                       )}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap flex items-center gap-1">
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewSubLabel(sl)}>
                         <Eye className="h-4 w-4" />
                       </Button>
+                      {sl.status === 'active' && (
+                        <Button variant="ghost" size="icon" className="h-8 w-8" title="Manage Permissions" onClick={() => openPermissions(sl)}>
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -366,6 +413,42 @@ export default function SubLabels() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setViewSubLabel(null)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Permissions Modal */}
+      {permSubLabel && (
+        <Dialog open={!!permSubLabel} onOpenChange={() => setPermSubLabel(null)}>
+          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Page Permissions — {permSubLabel.sub_label_name}</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground mb-3">
+              Select which pages this sub-label can access. If none are selected, all pages will be visible by default.
+            </p>
+            <div className="flex gap-2 mb-3">
+              <Button size="sm" variant="outline" onClick={() => setPermPages(ALL_SUB_LABEL_PAGES.map(p => p.key))}>Select All</Button>
+              <Button size="sm" variant="outline" onClick={() => setPermPages([])}>Deselect All</Button>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              {ALL_SUB_LABEL_PAGES.map(pg => (
+                <label key={pg.key} className="flex items-center gap-2 text-sm cursor-pointer hover:text-foreground text-muted-foreground">
+                  <Checkbox
+                    checked={permPages.includes(pg.key)}
+                    onCheckedChange={() => togglePermPage(pg.key)}
+                  />
+                  {pg.label}
+                </label>
+              ))}
+            </div>
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => setPermSubLabel(null)}>Cancel</Button>
+              <Button onClick={savePermissions} disabled={savingPerms} className="btn-primary-gradient text-primary-foreground font-semibold">
+                {savingPerms && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                Save Permissions
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
