@@ -71,6 +71,11 @@ const adminPromotionalLinks = [
   { to: '/admin/promotional-settings', label: 'Promotional Settings', icon: Settings },
 ];
 
+const adminBillingLinks = [
+  { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
+  { to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt },
+];
+
 const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'All Users', icon: Users },
@@ -78,8 +83,6 @@ const adminLinksTop = [
   { to: '/admin/transfer-history', label: 'Transfer History', icon: ArrowRightLeft },
   { to: '/admin/labels', label: 'Manage Labels', icon: Tag },
   { to: '/admin/content-requests', label: 'Support Requests', icon: Headset },
-  { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
-  { to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt },
   
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
@@ -115,6 +118,7 @@ export function AppSidebar() {
   const [adminContractsOpen, setAdminContractsOpen] = useState(false);
   const [adminPromotionalOpen, setAdminPromotionalOpen] = useState(false);
   const [adminGeneralSettingsOpen, setAdminGeneralSettingsOpen] = useState(false);
+  const [adminBillingOpen, setAdminBillingOpen] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
 
   // Fetch impersonated user's profile when impersonating
@@ -322,6 +326,7 @@ export function AppSidebar() {
                   {settings.enable_youtube_cms && renderCollapsibleGroup('YouTube CMS', Youtube, adminCmsLinks, adminCmsOpen, setAdminCmsOpen)}
                   {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, adminVideoLinks, adminVideoOpen, setAdminVideoOpen)}
                   {renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
+                  {renderCollapsibleGroup('Billing & Revenue', Wallet, adminBillingLinks, adminBillingOpen, setAdminBillingOpen)}
                   {renderCollapsibleGroup('Poster Generator', ImageIcon, adminPosterLinks, adminPosterOpen, setAdminPosterOpen)}
                   {renderCollapsibleGroup('Promotional Tools', Megaphone, adminPromotionalLinks, adminPromotionalOpen, setAdminPromotionalOpen)}
                   {renderCollapsibleGroup('General Settings', Settings, adminGeneralSettingsLinks, adminGeneralSettingsOpen, setAdminGeneralSettingsOpen)}
