@@ -82,6 +82,7 @@ export default function SubLabels() {
   });
   const [b2bFile, setB2bFile] = useState<File | null>(null);
   const [showPw, setShowPw] = useState(false);
+  const [formAllowedPages, setFormAllowedPages] = useState<string[]>([]);
 
   const fetchSubLabels = async () => {
     if (!effectiveUserId) return;
@@ -119,6 +120,7 @@ export default function SubLabels() {
       email: '', password: '', phone: '', percentage_cut: '', withdrawal_threshold: '1000',
     });
     setB2bFile(null);
+    setFormAllowedPages([]);
     setShowForm(false);
   };
 
@@ -166,6 +168,13 @@ export default function SubLabels() {
 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+
+      // Save allowed_pages if any selected
+      if (data?.user_id && formAllowedPages.length > 0) {
+        await (supabase.from('sub_labels') as any)
+          .update({ allowed_pages: formAllowedPages })
+          .eq('sub_user_id', data.user_id);
+      }
 
       toast.success('Sub label created successfully! Awaiting admin approval.');
       resetForm();
@@ -289,6 +298,22 @@ export default function SubLabels() {
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Phone Number</label>
               <input className={inputClass} type="tel" value={formData.phone} onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))} placeholder="Phone number" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Menu Access Permissions</label>
+              <p className="text-xs text-muted-foreground mb-2">Select which pages the sub-label can access. Leave empty to allow all pages.</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {ALL_SUB_LABEL_PAGES.map(pg => (
+                  <label key={pg.key} className="flex items-center gap-2 text-sm cursor-pointer p-1.5 rounded hover:bg-muted/50">
+                    <Checkbox
+                      checked={formAllowedPages.includes(pg.key)}
+                      onCheckedChange={() => setFormAllowedPages(prev => prev.includes(pg.key) ? prev.filter(p => p !== pg.key) : [...prev, pg.key])}
+                    />
+                    <span className="text-foreground">{pg.label}</span>
+                  </label>
+                ))}
+              </div>
             </div>
 
             <div>
