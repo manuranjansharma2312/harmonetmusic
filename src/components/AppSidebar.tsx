@@ -113,6 +113,8 @@ export function AppSidebar() {
   const [userVideoOpen, setUserVideoOpen] = useState(false);
   const [adminVideoOpen, setAdminVideoOpen] = useState(false);
   const [userCmsOpen, setUserCmsOpen] = useState(false);
+  const [userPosterOpen, setUserPosterOpen] = useState(false);
+  const [userContactPoliciesOpen, setUserContactPoliciesOpen] = useState(false);
   const [adminCmsOpen, setAdminCmsOpen] = useState(false);
   const [adminSettingsOpen, setAdminSettingsOpen] = useState(false);
   const [adminContactPoliciesOpen, setAdminContactPoliciesOpen] = useState(false);
@@ -154,7 +156,6 @@ export function AppSidebar() {
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/submit', label: 'New Release', icon: Upload },
     { to: '/my-releases', label: 'My Releases', icon: ListMusic },
-    { to: '/smart-links', label: 'Smart Links', icon: Link2 },
     { to: '/my-labels', label: 'My Labels', icon: Tag },
   ];
 
@@ -209,15 +210,28 @@ export function AppSidebar() {
   const reportLinks = reportLinksBase.filter(l => !l.vevoOnly || settings.enable_vevo);
   const adminReportLinks = adminReportLinksBase.filter(l => !l.vevoOnly || settings.enable_vevo);
 
-  const userLinksBottom = [
+  // User Poster Generator collapsible links
+  const userPosterLinks = [
     ...(aiEnabled ? [{ to: '/ai-images', label: 'AI Poster Generate', icon: Sparkles }] : []),
     { to: '/poster-generator', label: 'Out Now Poster', icon: ImageIcon },
-    { to: '/help-tutorials', label: 'Help Tutorials', icon: BookOpen },
-    // Hide Promotion Tools for sub-labels
-    ...(!effectiveIsSubLabel ? [{ to: '/promotion-tools', label: 'Promotion Tools', icon: Megaphone }] : []),
-    { to: '/revenue', label: 'Revenue', icon: Wallet },
+  ];
+
+  // User Contact & Policies collapsible links
+  const userContactPoliciesLinks = [
     { to: '/terms', label: 'Terms & Conditions', icon: FileText },
     { to: '/contact-support', label: 'Contact Support', icon: Headset },
+    { to: '/help-tutorials', label: 'Help Tutorials', icon: BookOpen },
+  ];
+
+  const userLinksMiddle = [
+    { to: '/revenue', label: 'Revenue', icon: Wallet },
+  ];
+
+  const userLinksAfterGroups = [
+    { to: '/smart-links', label: 'Smart Links', icon: Link2 },
+  ];
+
+  const userLinksBottom = [
     { to: '/profile', label: 'My Profile', icon: UserCircle },
   ];
 
@@ -315,11 +329,16 @@ export function AppSidebar() {
               {showUserView ? (
                 <>
                   {userLinksTop.map(renderNavLink)}
-                  {settings.enable_youtube_cms && !effectiveIsSubLabel && renderCollapsibleGroup('YouTube CMS', Youtube, userCmsLinks, userCmsOpen, setUserCmsOpen)}
                   {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, userVideoLinks, userVideoOpen, setUserVideoOpen)}
                   {showUserSubLabels && renderCollapsibleGroup('Sub Labels', UsersRound, userSubLabelLinks, userSubLabelsOpen, setUserSubLabelsOpen)}
-                  {renderCollapsibleGroup('Support', Headset, contentToolLinks, toolsOpen, setToolsOpen)}
+                  {settings.enable_youtube_cms && !effectiveIsSubLabel && renderCollapsibleGroup('YouTube CMS', Youtube, userCmsLinks, userCmsOpen, setUserCmsOpen)}
+                  {userLinksMiddle.map(renderNavLink)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, reportLinks, reportsOpen, setReportsOpen)}
+                  {renderCollapsibleGroup('Support', Headset, contentToolLinks, toolsOpen, setToolsOpen)}
+                  {!effectiveIsSubLabel && renderNavLink({ to: '/promotion-tools', label: 'Paid Promotions', icon: Megaphone })}
+                  {renderCollapsibleGroup('Poster Generator', ImageIcon, userPosterLinks, userPosterOpen, setUserPosterOpen)}
+                  {userLinksAfterGroups.map(renderNavLink)}
+                  {renderCollapsibleGroup('Contact & Policies', FileText, userContactPoliciesLinks, userContactPoliciesOpen, setUserContactPoliciesOpen)}
                   {userLinksBottom.map(renderNavLink)}
                 </>
               ) : (
