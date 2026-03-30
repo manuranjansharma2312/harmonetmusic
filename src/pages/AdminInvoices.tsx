@@ -632,7 +632,7 @@ export default function AdminInvoices() {
             <DialogTitle>{editingId ? 'Edit Invoice' : 'Create Invoice'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <Label>Billing Name *</Label>
                 <Input value={form.billing_name} onChange={e => setForm(f => ({ ...f, billing_name: e.target.value }))} placeholder="Client name" />
