@@ -68,7 +68,6 @@ const adminContractsLinks = [
 
 const adminPromotionalLinks = [
   { to: '/admin/promotion-tools', label: 'Paid Promotions', icon: Megaphone },
-  { to: '/admin/payment-settings', label: 'Tax Settings', icon: CreditCard },
   { to: '/admin/promotional-settings', label: 'Promotional Settings', icon: Settings },
 ];
 
