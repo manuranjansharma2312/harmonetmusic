@@ -508,6 +508,39 @@ export default function AdminUsers() {
               </div>
               )}
 
+              {/* Agreement Ratio - visible to all */}
+              <div className="pt-3 border-t border-border/50">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground font-medium">Agreement Ratio %</span>
+                  {!isTeam && editingRatio?.userId === viewProfile.user_id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={editingRatio.value}
+                        onChange={(e) => setEditingRatio({ ...editingRatio, value: e.target.value.replace(/[^0-9.]/g, '') })}
+                        className="w-20 px-2 py-1 rounded bg-muted/50 border border-border text-foreground text-sm text-right"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => handleSaveAgreementRatio(viewProfile.user_id, Number(editingRatio.value) || 0)}
+                        className="text-xs px-2 py-1 rounded bg-primary/20 text-primary hover:bg-primary/30"
+                      >Save</button>
+                      <button onClick={() => setEditingRatio(null)} className="text-xs text-muted-foreground hover:text-foreground"><X className="h-3 w-3" /></button>
+                    </div>
+                  ) : !isTeam ? (
+                    <button
+                      onClick={() => setEditingRatio({ userId: viewProfile.user_id, value: String(viewProfile.agreement_ratio || 0) })}
+                      className="text-foreground font-medium hover:text-primary transition-colors"
+                    >
+                      {viewProfile.agreement_ratio || 0}% <Pencil className="inline h-3 w-3 ml-1 opacity-50" />
+                    </button>
+                  ) : (
+                    <span className="text-foreground font-medium">{viewProfile.agreement_ratio || 0}%</span>
+                  )}
+                </div>
+              </div>
+
               {/* ID Proof section with delete buttons */}
               {(viewProfile.id_proof_front_url || viewProfile.id_proof_back_url) && (
                 <div className="pt-3 border-t border-border/50">
