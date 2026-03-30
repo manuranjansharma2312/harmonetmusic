@@ -652,6 +652,13 @@ export default function AdminUsers() {
           onClose={() => setResetPasswordProfile(null)}
         />
       )}
+
+      {/* Create User Modal */}
+      <CreateUserModal
+        open={showCreateUser}
+        onClose={() => setShowCreateUser(false)}
+        onCreated={fetchProfiles}
+      />
     </DashboardLayout>
   );
 }
