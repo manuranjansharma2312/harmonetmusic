@@ -109,8 +109,8 @@ export default function AdminPaymentSettings() {
                 <p className="font-medium text-foreground">Takedown Payment</p>
                 <p className="text-sm text-muted-foreground">
                   {takedownPaymentEnabled
-                    ? '✅ Users will see QR Code, Transaction ID, and Payment Screenshot fields on the Takedown form.'
-                    : '❌ Payment fields are hidden on the Takedown form.'}
+                    ? 'Users will see QR Code, Transaction ID, and Payment Screenshot fields on the Takedown form.'
+                    : 'Payment fields are hidden on the Takedown form.'}
                 </p>
               </div>
               <Switch checked={takedownPaymentEnabled} onCheckedChange={toggleTakedownPayment} />
