@@ -59,6 +59,7 @@ interface TeamMember {
   email: string;
   allowed_pages: string[];
   govt_ids: GovtId[];
+  status: string;
   created_at: string;
 }
 
