@@ -35,6 +35,7 @@ const STATUS_MAP: Record<string, string> = { pending: 'pending', paid: 'approved
 const STATUSES = ['pending', 'paid', 'rejected'];
 
 export default function AdminCmsWithdrawals() {
+  const { canChangeSettings } = useTeamPermissions();
   const [requests, setRequests] = useState<WithdrawalRequest[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [loading, setLoading] = useState(true);
