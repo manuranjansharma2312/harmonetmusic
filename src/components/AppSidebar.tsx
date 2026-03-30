@@ -268,7 +268,6 @@ export function AppSidebar() {
     setOpen: (v: boolean) => void,
   ) => {
     const Icon = icon;
-    const groupHasDot = false;
     if (collapsed) {
       return links.map(renderNavLink);
     }
@@ -279,7 +278,6 @@ export function AppSidebar() {
             <span className="flex items-center gap-3">
               <Icon className="h-5 w-5 flex-shrink-0" />
               {label}
-              {groupHasDot && !open && dotEl}
             </span>
             <ChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
@@ -295,8 +293,7 @@ export function AppSidebar() {
                       activeClassName="bg-primary/10 text-foreground font-semibold"
                     >
                       <link.icon className="h-4 w-4 flex-shrink-0" />
-                      <span className="flex-1">{link.label}</span>
-                      {hasDot(link.to) && dotEl}
+                      <span>{link.label}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
