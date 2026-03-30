@@ -159,7 +159,8 @@ export default function AdminRevenue() {
           </p>
         </div>
 
-        {/* Threshold Settings */}
+        {/* Threshold Settings - hidden from team */}
+        {canChangeSettings && (
         <GlassCard className="p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2.5 rounded-xl bg-primary/10">
@@ -189,6 +190,7 @@ export default function AdminRevenue() {
             </Button>
           </div>
         </GlassCard>
+        )}
 
         {/* Withdrawal Requests */}
         <GlassCard className="p-0 overflow-hidden">

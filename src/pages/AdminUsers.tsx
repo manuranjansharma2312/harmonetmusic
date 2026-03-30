@@ -353,12 +353,16 @@ export default function AdminUsers() {
                             <DropdownMenuItem onClick={() => setEditProfile(profile)}>
                               <Pencil className="h-4 w-4 mr-2" /> Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleLoginAs(profile)}>
-                              <LogIn className="h-4 w-4 mr-2" /> Login as User
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setResetPasswordProfile(profile)}>
-                              <KeyRound className="h-4 w-4 mr-2" /> Reset Password
-                            </DropdownMenuItem>
+                            {!isTeam && (
+                              <DropdownMenuItem onClick={() => handleLoginAs(profile)}>
+                                <LogIn className="h-4 w-4 mr-2" /> Login as User
+                              </DropdownMenuItem>
+                            )}
+                            {!isTeam && (
+                              <DropdownMenuItem onClick={() => setResetPasswordProfile(profile)}>
+                                <KeyRound className="h-4 w-4 mr-2" /> Reset Password
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuSeparator />
                             {profile.verification_status !== 'verified' && (
                               <DropdownMenuItem onClick={() => handleVerification(profile.user_id, 'verified')} className="text-green-400 focus:text-green-400">
@@ -375,13 +379,17 @@ export default function AdminUsers() {
                                 <Ban className="h-4 w-4 mr-2" /> Suspend
                               </DropdownMenuItem>
                             )}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() => setDeleteConfirm({ type: 'single', userId: profile.user_id, name: profile.legal_name })}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" /> Delete
-                            </DropdownMenuItem>
+                            {canDelete && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => setDeleteConfirm({ type: 'single', userId: profile.user_id, name: profile.legal_name })}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" /> Delete
+                                </DropdownMenuItem>
+                              </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
