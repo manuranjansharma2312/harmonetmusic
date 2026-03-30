@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import {
   Users, ListMusic, Tag, Headset, Video, Wallet, Megaphone, UsersRound, Youtube,
-  Sparkles, CheckCircle, XCircle, Eye, Loader2, Clock,
+  Sparkles, CheckCircle, XCircle, Eye, Loader2, Clock, Link2, FileSignature,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -153,6 +153,29 @@ const categories: PendingCategory[] = [
     ],
     actions: ['approve', 'reject'],
     approveStatus: 'approved', rejectStatus: 'rejected',
+  },
+  {
+    key: 'smart_links', label: 'Smart Links', icon: Link2,
+    table: 'smart_links', statusField: 'status', statusValue: 'pending',
+    columns: [
+      { key: 'title', label: 'Title' },
+      { key: 'artist_name', label: 'Artist' },
+      { key: 'created_at', label: 'Created', render: (r: any) => format(new Date(r.created_at), 'dd MMM yyyy') },
+    ],
+    actions: ['approve', 'reject'],
+    approveStatus: 'approved', rejectStatus: 'rejected',
+  },
+  {
+    key: 'signatures', label: 'E-Signatures', icon: FileSignature,
+    table: 'signature_documents', statusField: 'status', statusValue: 'pending',
+    columns: [
+      { key: 'title', label: 'Document' },
+      { key: 'description', label: 'Description', render: (r: any) => r.description || '—' },
+      { key: 'created_at', label: 'Created', render: (r: any) => format(new Date(r.created_at), 'dd MMM yyyy') },
+    ],
+    actions: ['view'],
+    approveStatus: 'completed', rejectStatus: 'voided',
+    viewLink: () => '/admin/signatures',
   },
 ];
 
