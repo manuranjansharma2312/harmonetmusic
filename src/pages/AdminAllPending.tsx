@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import {
   Users, ListMusic, Tag, Headset, Video, Wallet, Megaphone, UsersRound, Youtube,
-  Sparkles, CheckCircle, XCircle, Eye, Loader2, Clock,
+  Sparkles, CheckCircle, XCircle, Eye, Loader2, Clock, Link2, FileSignature,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
