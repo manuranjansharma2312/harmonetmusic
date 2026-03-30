@@ -219,7 +219,7 @@ export function AppSidebar() {
   // User Contact & Policies collapsible links
   const userContactPoliciesLinks = [
     { to: '/terms', label: 'Terms & Conditions', icon: FileText },
-    { to: '/contact-support', label: 'Contact Support', icon: Headset },
+    ...(!effectiveIsSubLabel ? [{ to: '/contact-support', label: 'Contact Support', icon: Headset }] : []),
     { to: '/help-tutorials', label: 'Help Tutorials', icon: BookOpen },
   ];
 
