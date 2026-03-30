@@ -3,13 +3,14 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { StatusBadge } from '@/components/StatusBadge';
-import { Loader2, Tag, FileText, Trash2, Pencil, Check, X } from 'lucide-react';
+import { Loader2, Tag, FileText, Trash2, Pencil, Check, X, CheckSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { toast } from 'sonner';
 import { useTeamPermissions } from '@/hooks/useTeamPermissions';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type Label = {
   id: string;
@@ -37,6 +38,8 @@ export default function AdminLabels() {
   const [rejectTarget, setRejectTarget] = useState<Label | null>(null);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
 
   const inputClass =
     'w-full px-3 py-2 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
@@ -134,6 +137,41 @@ export default function AdminLabels() {
     fetchLabels();
   };
 
+  const handleBulkDelete = async () => {
+    const ids = [...selected];
+    const toDelete = labels.filter(l => ids.includes(l.id));
+    // Delete B2B files from storage
+    const b2bPaths = toDelete.map(l => l.b2b_url).filter(Boolean) as string[];
+    if (b2bPaths.length > 0) {
+      await supabase.storage.from('b2b-documents').remove(b2bPaths);
+    }
+    const { error } = await supabase.from('labels').delete().in('id', ids);
+    if (error) toast.error(error.message);
+    else { toast.success(`${ids.length} label(s) deleted`); setSelected(new Set()); fetchLabels(); }
+    setBulkDeleteConfirm(false);
+  };
+
+  const paginatedLabels = paginateItems(labels, page, pageSize);
+  const allPageSelected = paginatedLabels.length > 0 && paginatedLabels.every(l => selected.has(l.id));
+
+  const toggleSelectAll = () => {
+    if (allPageSelected) {
+      const next = new Set(selected);
+      paginatedLabels.forEach(l => next.delete(l.id));
+      setSelected(next);
+    } else {
+      const next = new Set(selected);
+      paginatedLabels.forEach(l => next.add(l.id));
+      setSelected(next);
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    const next = new Set(selected);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    setSelected(next);
+  };
+
   const handleDownloadB2b = async (b2bPath: string) => {
     const { data, error } = await supabase.storage.from('b2b-documents').createSignedUrl(b2bPath, 300);
     if (error || !data?.signedUrl) { toast.error('Failed to get download link'); return; }
@@ -159,6 +197,17 @@ export default function AdminLabels() {
         </p>
       </div>
 
+      {selected.size > 0 && canDelete && (
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border mb-3">
+          <CheckSquare className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium">{selected.size} selected</span>
+          <Button size="sm" variant="destructive" onClick={() => setBulkDeleteConfirm(true)}>
+            <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete Selected
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setSelected(new Set())}>Clear</Button>
+        </div>
+      )}
+
       {labels.length === 0 ? (
         <GlassCard className="animate-fade-in text-center py-12">
           <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -166,9 +215,18 @@ export default function AdminLabels() {
         </GlassCard>
       ) : (
         <div className="space-y-3">
-          {paginateItems(labels, page, pageSize).map((label) => (
+          {canDelete && (
+            <div className="flex items-center gap-2 px-1">
+              <Checkbox checked={allPageSelected} onCheckedChange={toggleSelectAll} />
+              <span className="text-xs text-muted-foreground">Select All</span>
+            </div>
+          )}
+          {paginatedLabels.map((label) => (
             <GlassCard key={label.id} className="animate-fade-in">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                {canDelete && (
+                  <Checkbox checked={selected.has(label.id)} onCheckedChange={() => toggleSelect(label.id)} className="shrink-0" />
+                )}
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
                   <Tag className="h-5 w-5" />
                 </div>
@@ -248,6 +306,15 @@ export default function AdminLabels() {
           }
           onConfirm={handleDeleteConfirm}
           onCancel={() => setDeleteTarget(null)}
+        />
+      )}
+
+      {bulkDeleteConfirm && (
+        <ConfirmDialog
+          title="Bulk Delete Labels"
+          message={`Are you sure you want to delete ${selected.size} label(s) and their B2B documents?`}
+          onConfirm={handleBulkDelete}
+          onCancel={() => setBulkDeleteConfirm(false)}
         />
       )}
 

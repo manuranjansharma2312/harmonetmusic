@@ -199,7 +199,8 @@ export default function AdminCmsWithdrawals() {
                     );
                   })}
                 </TableBody>
-              </Table>
+               </Table>
+               </div>
               <TablePagination totalItems={filtered.length} currentPage={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} />
             </>
           )}
