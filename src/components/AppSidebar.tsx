@@ -334,10 +334,10 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          {role === 'admin' && !isImpersonating && !collapsed && (
+          {(role === 'admin' || isTeam) && !isImpersonating && !collapsed && (
             <SidebarGroupLabel className="flex items-center gap-2 text-primary">
               <Shield className="h-3.5 w-3.5" />
-              Admin Panel
+              {isTeam ? 'Team Panel' : 'Admin Panel'}
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
@@ -359,20 +359,29 @@ export function AppSidebar() {
                 </>
               ) : (
                 <>
-                  {adminLinksTop.map(renderNavLink)}
-                  {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, adminVideoLinks, adminVideoOpen, setAdminVideoOpen)}
-                  {renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
-                  {settings.enable_youtube_cms && renderCollapsibleGroup('YouTube CMS', Youtube, adminCmsLinks, adminCmsOpen, setAdminCmsOpen)}
-                  {renderNavLink({ to: '/admin/revenue', label: 'Revenue & Withdrawals', icon: Wallet })}
-                  {renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}
-                  {renderNavLink({ to: '/admin/invoices', label: 'Billing & Invoices', icon: Receipt })}
-                  {renderCollapsibleGroup('Contracts & E-Sign', FileSignature, adminContractsLinks, adminContractsOpen, setAdminContractsOpen)}
-                  {renderCollapsibleGroup('Promotional Tools', Megaphone, adminPromotionalLinks, adminPromotionalOpen, setAdminPromotionalOpen)}
-                  {renderCollapsibleGroup('Poster Generator', ImageIcon, adminPosterLinks, adminPosterOpen, setAdminPosterOpen)}
-                  {adminLinksMiddle.map(renderNavLink)}
-                  {renderCollapsibleGroup('General Settings', Settings, adminGeneralSettingsLinks, adminGeneralSettingsOpen, setAdminGeneralSettingsOpen)}
-                  {renderCollapsibleGroup('Contact & Policies', FileText, adminContactPoliciesLinks, adminContactPoliciesOpen, setAdminContactPoliciesOpen)}
-                  {renderCollapsibleGroup('Settings', Settings, adminSettingsLinks, adminSettingsOpen, setAdminSettingsOpen)}
+                  {hasTeamAccess('dashboard') && renderNavLink(adminLinksTop[0])}
+                  {hasTeamAccess('all-pending') && renderNavLink(adminLinksTop[1])}
+                  {hasTeamAccess('users') && renderNavLink(adminLinksTop[2])}
+                  {hasTeamAccess('submissions') && renderNavLink(adminLinksTop[3])}
+                  {hasTeamAccess('content-requests') && renderNavLink(adminLinksTop[4])}
+                  {hasTeamAccess('labels') && renderNavLink(adminLinksTop[5])}
+                  {hasTeamAccess('video-distribution') && settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, adminVideoLinks, adminVideoOpen, setAdminVideoOpen)}
+                  {hasTeamAccess('sub-labels') && renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
+                  {hasTeamAccess('youtube-cms') && settings.enable_youtube_cms && renderCollapsibleGroup('YouTube CMS', Youtube, adminCmsLinks, adminCmsOpen, setAdminCmsOpen)}
+                  {hasTeamAccess('revenue') && renderNavLink({ to: '/admin/revenue', label: 'Revenue & Withdrawals', icon: Wallet })}
+                  {hasTeamAccess('reports') && renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}
+                  {hasTeamAccess('invoices') && renderNavLink({ to: '/admin/invoices', label: 'Billing & Invoices', icon: Receipt })}
+                  {hasTeamAccess('contracts') && renderCollapsibleGroup('Contracts & E-Sign', FileSignature, adminContractsLinks, adminContractsOpen, setAdminContractsOpen)}
+                  {hasTeamAccess('promotions') && renderCollapsibleGroup('Promotional Tools', Megaphone, adminPromotionalLinks, adminPromotionalOpen, setAdminPromotionalOpen)}
+                  {hasTeamAccess('poster') && renderCollapsibleGroup('Poster Generator', ImageIcon, adminPosterLinks, adminPosterOpen, setAdminPosterOpen)}
+                  {hasTeamAccess('transfer-history') && adminLinksMiddle.filter(l => l.to === '/admin/transfer-history').map(renderNavLink)}
+                  {hasTeamAccess('notices') && adminLinksMiddle.filter(l => l.to === '/admin/notices').map(renderNavLink)}
+                  {hasTeamAccess('smart-links') && adminLinksMiddle.filter(l => l.to === '/admin/smart-links').map(renderNavLink)}
+                  {hasTeamAccess('email-settings') && adminLinksMiddle.filter(l => l.to === '/admin/email-settings').map(renderNavLink)}
+                  {hasTeamAccess('general-settings') && renderCollapsibleGroup('General Settings', Settings, adminGeneralSettingsLinks, adminGeneralSettingsOpen, setAdminGeneralSettingsOpen)}
+                  {hasTeamAccess('contact-policies') && renderCollapsibleGroup('Contact & Policies', FileText, adminContactPoliciesLinks, adminContactPoliciesOpen, setAdminContactPoliciesOpen)}
+                  {hasTeamAccess('settings') && renderCollapsibleGroup('Settings', Settings, adminSettingsLinks, adminSettingsOpen, setAdminSettingsOpen)}
+                  {!isTeam && renderNavLink({ to: '/admin/team-management', label: 'Team Management', icon: ShieldCheck })}
                 </>
               )}
             </SidebarMenu>
