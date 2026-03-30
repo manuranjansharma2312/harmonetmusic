@@ -167,7 +167,9 @@ export default function AdminAllPending() {
 
   const [approveId, setApproveId] = useState<string | null>(null);
   const [rejectId, setRejectId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [pageSize, setPageSize] = useState<number | 'all'>(15);
 
   const activeCategory = categories.find(c => c.key === activeTab)!;
 
