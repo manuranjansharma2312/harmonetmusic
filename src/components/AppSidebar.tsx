@@ -80,10 +80,12 @@ const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'All Users', icon: Users },
   { to: '/admin/submissions', label: 'All Releases', icon: ListMusic },
-  { to: '/admin/transfer-history', label: 'Release Transfers', icon: ArrowRightLeft },
-  { to: '/admin/labels', label: 'Manage Labels', icon: Tag },
   { to: '/admin/content-requests', label: 'Support Requests', icon: Headset },
-  
+  { to: '/admin/labels', label: 'Manage Labels', icon: Tag },
+];
+
+const adminLinksMiddle = [
+  { to: '/admin/transfer-history', label: 'Release Transfers', icon: ArrowRightLeft },
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
   { to: '/admin/email-settings', label: 'Manage Emails', icon: Mail },
