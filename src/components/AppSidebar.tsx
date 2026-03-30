@@ -55,6 +55,10 @@ const adminPosterLinks = [
   { to: '/admin/poster-generator', label: 'Out Now Poster Generator', icon: ImageIcon },
 ];
 
+const adminContactPoliciesLinks = [
+  { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
+  { to: '/admin/contact-support', label: 'Contact Details', icon: Headset },
+];
 const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'All Users', icon: Users },
@@ -64,7 +68,6 @@ const adminLinksTop = [
   { to: '/admin/labels', label: 'Manage Labels', icon: Tag },
   { to: '/admin/content-requests', label: 'Support Requests', icon: Headset },
   { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
-  { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
   { to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt },
   
   { to: '/admin/tutorials', label: 'Manage Tutorials', icon: BookOpen },
@@ -74,7 +77,7 @@ const adminLinksTop = [
   { to: '/admin/payment-settings', label: 'Payment Settings', icon: CreditCard },
   
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
-  { to: '/admin/contact-support', label: 'Contact Support', icon: Headset },
+  
   { to: '/admin/email-settings', label: 'Manage Emails', icon: Mail },
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
 ];
@@ -98,6 +101,7 @@ export function AppSidebar() {
   const [userCmsOpen, setUserCmsOpen] = useState(false);
   const [adminCmsOpen, setAdminCmsOpen] = useState(false);
   const [adminSettingsOpen, setAdminSettingsOpen] = useState(false);
+  const [adminContactPoliciesOpen, setAdminContactPoliciesOpen] = useState(false);
   const [adminPosterOpen, setAdminPosterOpen] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
 
@@ -308,6 +312,7 @@ export function AppSidebar() {
                   {renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
                   {renderCollapsibleGroup('Poster Generator', ImageIcon, adminPosterLinks, adminPosterOpen, setAdminPosterOpen)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}
+                  {renderCollapsibleGroup('Contact & Policies', FileText, adminContactPoliciesLinks, adminContactPoliciesOpen, setAdminContactPoliciesOpen)}
                   {renderCollapsibleGroup('Settings', Settings, adminSettingsLinks, adminSettingsOpen, setAdminSettingsOpen)}
                 </>
               )}
