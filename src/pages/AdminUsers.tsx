@@ -59,6 +59,7 @@ const VerificationBadge = React.forwardRef<HTMLSpanElement, { status: string }>(
 );
 
 export default function AdminUsers() {
+  const { isTeam, canDelete, canChangeSettings } = useTeamPermissions();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

@@ -25,6 +25,7 @@ interface Notice {
 }
 
 export default function AdminNotices() {
+  const { isTeam, canDelete, canChangeSettings } = useTeamPermissions();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);

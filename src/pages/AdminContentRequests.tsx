@@ -57,6 +57,7 @@ const TYPE_FIELDS: Record<string, string[]> = {
 };
 
 export default function AdminContentRequests() {
+  const { isTeam, canDelete } = useTeamPermissions();
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('all');

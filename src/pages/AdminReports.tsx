@@ -109,6 +109,7 @@ interface MonthGroup {
 }
 
 export default function AdminReports() {
+  const { isTeam, canDelete, canChangeSettings } = useTeamPermissions();
   const fileRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
   const [preview, setPreview] = useState<Record<string, string>[] | null>(null);

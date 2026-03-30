@@ -25,6 +25,7 @@ interface WithdrawalRow {
 }
 
 export default function AdminRevenue() {
+  const { isTeam, canChangeSettings } = useTeamPermissions();
   const [threshold, setThreshold] = useState('');
   const [savedThreshold, setSavedThreshold] = useState(0);
   const [saving, setSaving] = useState(false);

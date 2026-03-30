@@ -24,6 +24,7 @@ type Label = {
 const STATUS_OPTIONS = ['pending', 'approved', 'rejected', 'suspended'];
 
 export default function AdminLabels() {
+  const { isTeam, canDelete } = useTeamPermissions();
   const [labels, setLabels] = useState<Label[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);

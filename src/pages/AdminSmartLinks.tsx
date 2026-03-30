@@ -65,6 +65,7 @@ function autoCropImage(file: File, size: number): Promise<Blob> {
 }
 
 export default function AdminSmartLinks() {
+  const { isTeam, canDelete, canChangeSettings } = useTeamPermissions();
   const { user } = useAuth();
   // ─── Platforms state ───
   const [platforms, setPlatforms] = useState<Platform[]>([]);
