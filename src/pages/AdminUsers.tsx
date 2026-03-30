@@ -332,7 +332,7 @@ export default function AdminUsers() {
                     </td>
                     <td className="py-3 px-3 hidden sm:table-cell">
                       <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground capitalize whitespace-nowrap">
-                        {profile.user_type === 'record_label' ? 'Label' : 'Artist'}
+                        {profile.user_type === 'record_label' ? 'Record Label' : 'Artist'}
                       </span>
                     </td>
                     <td className="py-3 px-3 text-muted-foreground hidden md:table-cell">{profile.email}</td>
