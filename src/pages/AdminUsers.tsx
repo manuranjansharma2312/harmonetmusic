@@ -141,6 +141,24 @@ export default function AdminUsers() {
     fetchProfiles();
   };
 
+  const handleApproveWithRatio = async () => {
+    if (!approvalPopup) return;
+    const ratio = parseFloat(approvalRatio) || 0;
+    const { error: ratioErr } = await supabase.from('profiles').update({ agreement_ratio: ratio } as any).eq('user_id', approvalPopup.userId);
+    if (ratioErr) { toast.error(ratioErr.message); return; }
+    await handleVerification(approvalPopup.userId, 'verified');
+    setApprovalPopup(null);
+    setApprovalRatio('');
+  };
+
+  const handleSaveAgreementRatio = async (userId: string, ratio: number) => {
+    const { error } = await supabase.from('profiles').update({ agreement_ratio: ratio } as any).eq('user_id', userId);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`Agreement ratio set to ${ratio}%`);
+    setEditingRatio(null);
+    fetchProfiles();
+  };
+
   // Toggle selection
   const toggleSelect = (userId: string) => {
     setSelectedIds((prev) => {
