@@ -31,7 +31,6 @@ export default function AdminPaymentSettings() {
     const { data } = await supabase.from('promotion_settings').select('*').limit(1).single();
     if (data) {
       setSettingsId(data.id);
-      setIsEnabled(data.is_enabled);
       setTakedownPaymentEnabled(data.takedown_payment_enabled || false);
       setTakedownAmount((data as any).takedown_amount || 0);
       setTakedownTaxEnabled((data as any).takedown_tax_enabled || false);
