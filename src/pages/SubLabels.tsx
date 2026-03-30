@@ -417,6 +417,42 @@ export default function SubLabels() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Permissions Modal */}
+      {permSubLabel && (
+        <Dialog open={!!permSubLabel} onOpenChange={() => setPermSubLabel(null)}>
+          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Page Permissions — {permSubLabel.sub_label_name}</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground mb-3">
+              Select which pages this sub-label can access. If none are selected, all pages will be visible by default.
+            </p>
+            <div className="flex gap-2 mb-3">
+              <Button size="sm" variant="outline" onClick={() => setPermPages(ALL_SUB_LABEL_PAGES.map(p => p.key))}>Select All</Button>
+              <Button size="sm" variant="outline" onClick={() => setPermPages([])}>Deselect All</Button>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              {ALL_SUB_LABEL_PAGES.map(pg => (
+                <label key={pg.key} className="flex items-center gap-2 text-sm cursor-pointer hover:text-foreground text-muted-foreground">
+                  <Checkbox
+                    checked={permPages.includes(pg.key)}
+                    onCheckedChange={() => togglePermPage(pg.key)}
+                  />
+                  {pg.label}
+                </label>
+              ))}
+            </div>
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => setPermSubLabel(null)}>Cancel</Button>
+              <Button onClick={savePermissions} disabled={savingPerms} className="btn-primary-gradient text-primary-foreground font-semibold">
+                {savingPerms && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                Save Permissions
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </DashboardLayout>
   );
 }
