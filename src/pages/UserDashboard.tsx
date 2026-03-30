@@ -210,7 +210,7 @@ export default function UserDashboard() {
         setCmsPending(0);
       }
 
-      const allReports = [...reportData, ...ytReportData];
+      const allReports = [...reportData, ...ytReportData, ...vevoReportData];
       if (allReports.length > 0) {
         let totalRev = 0;
         let totalStr = 0;
