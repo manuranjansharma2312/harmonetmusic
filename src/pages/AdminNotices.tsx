@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { Plus, Trash2, Edit2, Image as ImageIcon, X } from 'lucide-react';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { format } from 'date-fns';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 
 interface Notice {
   id: string;

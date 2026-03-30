@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Settings, CheckCircle2, IndianRupee, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 
 interface WithdrawalRow {
   id: string;

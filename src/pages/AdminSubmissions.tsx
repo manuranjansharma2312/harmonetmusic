@@ -14,6 +14,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { CopyButton } from '@/components/CopyButton';
 import { useNavigate } from 'react-router-dom';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';

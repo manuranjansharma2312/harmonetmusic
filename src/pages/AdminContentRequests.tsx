@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Download, Trash2 } from 'lucide-react';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 
 const REQUEST_TYPES: Record<string, string> = {
   copyright_claim: 'Copyright Claim Removal',

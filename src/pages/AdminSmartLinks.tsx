@@ -18,6 +18,7 @@ import { Loader2, Link2, ExternalLink, Search, Music, Edit, Plus, Trash2, GripVe
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 
 // ─── Types ───
 

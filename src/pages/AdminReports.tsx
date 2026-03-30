@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { normalizeIsrc } from '@/lib/isrc';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 
 interface FormatColumn {
   id: string;

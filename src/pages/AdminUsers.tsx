@@ -14,6 +14,7 @@ import { EditBankDetailsModal } from '@/components/EditBankDetailsModal';
 import { ResetPasswordModal } from '@/components/ResetPasswordModal';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { useNavigate } from 'react-router-dom';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 
 import {
   DropdownMenu,
