@@ -5,9 +5,26 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { StatusBadge } from '@/components/StatusBadge';
-import { Loader2, Plus, Users, Upload, Eye, EyeOff, FileText } from 'lucide-react';
+import { Loader2, Plus, Users, Upload, Eye, EyeOff, FileText, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+
+const ALL_SUB_LABEL_PAGES = [
+  { key: 'dashboard', label: 'Dashboard' },
+  { key: 'new-release', label: 'New Release' },
+  { key: 'my-releases', label: 'My Releases' },
+  { key: 'my-labels', label: 'My Labels' },
+  { key: 'video-distribution', label: 'Video Distribution' },
+  { key: 'reports', label: 'Reports & Analytics' },
+  { key: 'revenue', label: 'Revenue' },
+  { key: 'support', label: 'Support Tools' },
+  { key: 'poster', label: 'Poster Generator' },
+  { key: 'smart-links', label: 'Smart Links' },
+  { key: 'profile', label: 'My Profile' },
+  { key: 'help-tutorials', label: 'Help Tutorials' },
+  { key: 'terms', label: 'Terms & Conditions' },
+];
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
