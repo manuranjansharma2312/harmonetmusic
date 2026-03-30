@@ -60,6 +60,7 @@ export function EditProfileModal({
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [passwordSaving, setPasswordSaving] = useState(false);
+  const [showPw, setShowPw] = useState(false);
 
   const update = (field: string, value: string) => setForm((p) => ({ ...p, [field]: value }));
 
