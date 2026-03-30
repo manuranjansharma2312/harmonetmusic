@@ -167,7 +167,7 @@ const categories: PendingCategory[] = [
   },
   {
     key: 'signatures', label: 'E-Signatures', icon: FileSignature,
-    table: 'signature_documents', statusField: 'status', statusValue: 'pending',
+    table: 'signature_documents', statusField: 'status', statusValue: 'sent',
     columns: [
       { key: 'title', label: 'Document' },
       { key: 'description', label: 'Description', render: (r: any) => r.description || '—' },
@@ -345,7 +345,7 @@ export default function AdminAllPending() {
                         </td>
                       ))}
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <StatusBadge status="pending" />
+                        <StatusBadge status={activeCategory.statusValue} />
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-1.5">
