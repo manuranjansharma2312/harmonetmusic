@@ -360,7 +360,8 @@ export function AppSidebar() {
               ) : (
                 <>
                   {hasTeamAccess('dashboard') && renderNavLink(adminLinksTop[0])}
-                  {hasTeamAccess('all-pending') && renderNavLink(adminLinksTop[1])}
+                  {/* All Pendings is always visible for team — filtered inside the page */}
+                  {renderNavLink(adminLinksTop[1])}
                   {hasTeamAccess('users') && renderNavLink(adminLinksTop[2])}
                   {hasTeamAccess('submissions') && renderNavLink(adminLinksTop[3])}
                   {hasTeamAccess('content-requests') && renderNavLink(adminLinksTop[4])}
