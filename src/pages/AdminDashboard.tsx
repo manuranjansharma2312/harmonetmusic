@@ -340,7 +340,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Secondary Compact Stats */}
-      <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-10 gap-2 sm:gap-3 mb-6 sm:mb-8">
+      <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-5 xl:grid-cols-10 gap-2 sm:gap-3 mb-6 sm:mb-8">
         {[
           { label: 'Labels', value: labelCount, icon: Tag, accent: 'text-amber-400' },
           { label: 'Sub Labels', value: subLabelCount, icon: UsersRound, accent: 'text-sky-400' },
@@ -353,8 +353,8 @@ export default function AdminDashboard() {
           { label: 'Vevo Streams', value: formatStreams(vevoTotalStreams), icon: Headphones, accent: 'text-pink-300' },
           { label: 'Transfers', value: transferCount, icon: TrendingUp, accent: 'text-sky-400' },
         ].map((stat) => (
-          <GlassCard key={stat.label} className="!p-3 group hover:scale-[1.02] transition-transform duration-300">
-            <stat.icon className={`h-3.5 w-3.5 ${stat.accent} mb-1`} />
+          <GlassCard key={stat.label} className="!p-3 group hover:scale-[1.02] transition-transform duration-300 overflow-hidden">
+            <stat.icon className={`h-3.5 w-3.5 ${stat.accent} mb-1 shrink-0`} />
             <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wider leading-tight">{stat.label}</p>
             <p className="text-xs sm:text-sm font-bold text-foreground mt-0.5 whitespace-nowrap">{stat.value}</p>
           </GlassCard>
