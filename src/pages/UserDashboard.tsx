@@ -394,7 +394,7 @@ export default function UserDashboard() {
 
   useEffect(() => {
     if (!effectiveUserId) return;
-    setLoading(true);
+    setState(prev => ({ ...prev, loading: true }));
     void fetchAll();
 
     const channel = supabase
