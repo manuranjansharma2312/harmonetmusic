@@ -2868,6 +2868,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_dashboard_counts: { Args: never; Returns: Json }
+      admin_dashboard_report_stats: { Args: never; Returns: Json }
       cleanup_old_ai_images: { Args: never; Returns: undefined }
       cleanup_old_email_logs: { Args: never; Returns: undefined }
       cleanup_rejected_smart_links: { Args: never; Returns: undefined }
