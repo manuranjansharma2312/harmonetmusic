@@ -131,7 +131,7 @@ export default function AdminTutorials() {
             <h1 className="text-2xl font-bold">Help Tutorials</h1>
             <p className="text-sm text-muted-foreground mt-1">Create and manage tutorials for artists</p>
           </div>
-          {!showForm && (
+          {!showForm && canChangeSettings && (
             <Button onClick={() => { resetForm(); setShowForm(true); }} className="gap-2">
               <Plus className="h-4 w-4" /> New Tutorial
             </Button>
