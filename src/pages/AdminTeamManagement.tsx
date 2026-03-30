@@ -102,6 +102,22 @@ export default function AdminTeamManagement() {
 
   useEffect(() => { fetchAll(); }, []);
 
+  // ---- Status change ----
+  const handleStatusChange = async (member: TeamMember, newStatus: string) => {
+    const { error } = await (supabase.from('team_members') as any).update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', member.id);
+    if (error) toast.error(error.message);
+    else { toast.success(`${member.name} status changed to ${newStatus}`); fetchAll(); }
+  };
+
+  const statusBadge = (status: string) => {
+    const map: Record<string, string> = {
+      pending: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
+      active: 'bg-green-500/15 text-green-400 border-green-500/30',
+      suspended: 'bg-red-500/15 text-red-400 border-red-500/30',
+    };
+    return `inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${map[status] || map.pending}`;
+  };
+
   // ---- Categories ----
   const handleSaveCategory = async () => {
     if (!catForm.name.trim()) { toast.error('Category name is required'); return; }
