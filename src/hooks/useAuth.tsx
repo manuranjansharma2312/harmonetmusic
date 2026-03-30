@@ -11,6 +11,7 @@ interface AuthContextType {
   loading: boolean;
   userType: string | null;
   isSubLabel: boolean;
+  verificationStatus: string | null;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
