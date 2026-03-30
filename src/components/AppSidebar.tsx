@@ -312,6 +312,7 @@ export function AppSidebar() {
                   {renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
                   {renderCollapsibleGroup('Poster Generator', ImageIcon, adminPosterLinks, adminPosterOpen, setAdminPosterOpen)}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}
+                  {renderCollapsibleGroup('Contact & Policies', FileText, adminContactPoliciesLinks, adminContactPoliciesOpen, setAdminContactPoliciesOpen)}
                   {renderCollapsibleGroup('Settings', Settings, adminSettingsLinks, adminSettingsOpen, setAdminSettingsOpen)}
                 </>
               )}
