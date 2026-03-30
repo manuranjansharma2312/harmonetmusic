@@ -224,9 +224,11 @@ export default function AdminLabels() {
                   >
                     {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
                   </select>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteTarget({ type: 'label', label })}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  {canDelete && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteTarget({ type: 'label', label })}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </GlassCard>

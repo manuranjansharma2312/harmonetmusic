@@ -225,19 +225,23 @@ export default function AdminNotices() {
                       </p>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
-                      <div className="flex items-center gap-2">
-                        <Label className="text-xs text-muted-foreground">Active</Label>
-                        <Switch
-                          checked={notice.is_active}
-                          onCheckedChange={(checked) => toggleMutation.mutate({ id: notice.id, is_active: checked })}
-                        />
-                      </div>
+                      {!isTeam && (
+                        <div className="flex items-center gap-2">
+                          <Label className="text-xs text-muted-foreground">Active</Label>
+                          <Switch
+                            checked={notice.is_active}
+                            onCheckedChange={(checked) => toggleMutation.mutate({ id: notice.id, is_active: checked })}
+                          />
+                        </div>
+                      )}
                       <Button size="icon" variant="ghost" onClick={() => handleEdit(notice)}>
                         <Edit2 className="h-4 w-4" />
                       </Button>
-                      <Button size="icon" variant="ghost" className="text-destructive" onClick={() => setDeleteId(notice.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {canDelete && (
+                        <Button size="icon" variant="ghost" className="text-destructive" onClick={() => setDeleteId(notice.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                   {notice.content && (
