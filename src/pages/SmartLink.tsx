@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, ExternalLink } from 'lucide-react';
+import { Loader2, ExternalLink, Music } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 
 type LinkData = {

@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import {
   Loader2, Eye, CheckCircle, XCircle, Search, Shield, ShieldCheck, ShieldX, KeyRound,
-  ShieldAlert, Pencil, LogIn, Ban, Trash2, Download, FileX, CheckSquare, MoreVertical, Landmark,
+  ShieldAlert, Pencil, LogIn, Ban, Trash2, Download, FileX, CheckSquare, MoreVertical, Landmark, X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { EditProfileModal } from '@/components/EditProfileModal';
