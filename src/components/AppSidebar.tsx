@@ -154,7 +154,6 @@ export function AppSidebar() {
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/submit', label: 'New Release', icon: Upload },
     { to: '/my-releases', label: 'My Releases', icon: ListMusic },
-    { to: '/smart-links', label: 'Smart Links', icon: Link2 },
     { to: '/my-labels', label: 'My Labels', icon: Tag },
   ];
 
@@ -209,15 +208,28 @@ export function AppSidebar() {
   const reportLinks = reportLinksBase.filter(l => !l.vevoOnly || settings.enable_vevo);
   const adminReportLinks = adminReportLinksBase.filter(l => !l.vevoOnly || settings.enable_vevo);
 
-  const userLinksBottom = [
+  // User Poster Generator collapsible links
+  const userPosterLinks = [
     ...(aiEnabled ? [{ to: '/ai-images', label: 'AI Poster Generate', icon: Sparkles }] : []),
     { to: '/poster-generator', label: 'Out Now Poster', icon: ImageIcon },
-    { to: '/help-tutorials', label: 'Help Tutorials', icon: BookOpen },
-    // Hide Promotion Tools for sub-labels
-    ...(!effectiveIsSubLabel ? [{ to: '/promotion-tools', label: 'Promotion Tools', icon: Megaphone }] : []),
-    { to: '/revenue', label: 'Revenue', icon: Wallet },
+  ];
+
+  // User Contact & Policies collapsible links
+  const userContactPoliciesLinks = [
     { to: '/terms', label: 'Terms & Conditions', icon: FileText },
     { to: '/contact-support', label: 'Contact Support', icon: Headset },
+    { to: '/help-tutorials', label: 'Help Tutorials', icon: BookOpen },
+  ];
+
+  const userLinksMiddle = [
+    { to: '/revenue', label: 'Revenue', icon: Wallet },
+  ];
+
+  const userLinksAfterGroups = [
+    { to: '/smart-links', label: 'Smart Links', icon: Link2 },
+  ];
+
+  const userLinksBottom = [
     { to: '/profile', label: 'My Profile', icon: UserCircle },
   ];
 
