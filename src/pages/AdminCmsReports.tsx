@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { Upload, Trash2, FileSpreadsheet, Eye, ArrowLeft, Filter, X, Download, Search, Settings2, Save, GripVertical, Plus } from 'lucide-react';
+import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 import { format } from 'date-fns';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
