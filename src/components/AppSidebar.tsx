@@ -66,6 +66,12 @@ const adminContractsLinks = [
   { to: '/admin/signatures', label: 'E-Signatures', icon: FileSignature },
 ];
 
+const adminPromotionalLinks = [
+  { to: '/admin/promotion-tools', label: 'Paid Promotions', icon: Megaphone },
+  { to: '/admin/payment-settings', label: 'Tax Settings', icon: CreditCard },
+  { to: '/admin/promotional-settings', label: 'Promotional Settings', icon: Settings },
+];
+
 const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'All Users', icon: Users },
