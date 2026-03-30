@@ -294,7 +294,7 @@ export default function AdminDashboard() {
           { label: 'E-Signatures', value: signatureDocCount, sub: 'documents total', icon: PenTool, color: 'hsl(280, 60%, 50%)', iconColor: 'text-violet-400' },
           { label: 'Action Required', value: totalActionItems, sub: 'pending items', icon: Activity, color: 'hsl(0, 67%, 35%)', iconColor: 'text-primary' },
         ].map((stat) => (
-          <GlassCard key={stat.label} className="!p-4 border-l-4 animate-fade-in" style={{ borderLeftColor: stat.color }}>
+          <GlassCard key={stat.label} className="!p-4 border-l-4 " style={{ borderLeftColor: stat.color }}>
             <div className="flex items-center gap-2 mb-2">
               <stat.icon className={`h-4 w-4 ${stat.iconColor}`} />
               <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest font-medium">{stat.label}</span>
@@ -359,7 +359,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Recent Releases */}
-      <GlassCard className="animate-fade-in">
+      <GlassCard className="">
         <SectionHeader icon={Disc3} iconBg="bg-amber-500/15" iconColor="text-amber-400" title="Recent Releases" />
         {state.recentReleases.length > 0 ? (
           <>
@@ -421,7 +421,7 @@ function PendingListCard({ title, icon: Icon, items, emptyText, onViewAll, rende
   title: string; icon: any; items: any[]; emptyText: string; onViewAll: () => void; renderItem: (item: any) => React.ReactNode;
 }) {
   return (
-    <GlassCard className="animate-fade-in">
+    <GlassCard className="">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-2">
           <div className="h-6 w-6 rounded-lg bg-primary/15 flex items-center justify-center"><Icon className="h-3 w-3 text-primary" /></div>

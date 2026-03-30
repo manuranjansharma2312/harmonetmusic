@@ -458,7 +458,7 @@ export default function UserDashboard() {
   return (
     <DashboardLayout>
       {isImpersonating && (
-        <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in backdrop-blur-sm">
+        <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3  backdrop-blur-sm">
           <div className="min-w-0"><p className="text-xs sm:text-sm font-medium text-blue-400">Viewing as user</p><p className="text-[10px] sm:text-xs text-blue-300/60 break-all">{impersonatedEmail}</p></div>
           <button onClick={handleStopImpersonating} className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 rounded-xl bg-blue-500/15 text-blue-400 text-xs font-medium hover:bg-blue-500/25 transition-all border border-blue-500/20"><X className="h-3.5 w-3.5" /> Back to Admin</button>
         </div>
@@ -521,7 +521,7 @@ export default function UserDashboard() {
       {!isSubLabelUser && cmsChannels > 0 && (
         <div className={`grid grid-cols-1 ${cmsWalletCards.length === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-3'} gap-3 sm:gap-4 mb-6 sm:mb-8`}>
           {cmsWalletCards.map((stat) => (
-            <GlassCard key={stat.label} className="!p-4 border-l-4 animate-fade-in" style={{ borderLeftColor: stat.color }}>
+            <GlassCard key={stat.label} className="!p-4 border-l-4 " style={{ borderLeftColor: stat.color }}>
               <div className="flex items-center gap-2 mb-2">
                 <stat.icon className={`h-4 w-4 ${stat.iconColor}`} />
                 <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest font-medium">{stat.label}</span>
@@ -541,7 +541,7 @@ export default function UserDashboard() {
 
       {/* Pending Releases */}
       {pendingReleases.length > 0 && (
-        <GlassCard className="mb-6 sm:mb-8 animate-fade-in">
+        <GlassCard className="mb-6 sm:mb-8 ">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
               <div className="h-7 w-7 rounded-lg bg-primary/15 flex items-center justify-center"><Disc3 className="h-3.5 w-3.5 text-primary" /></div>
@@ -562,7 +562,7 @@ export default function UserDashboard() {
       )}
 
       {/* Revenue & Streams Trend */}
-      <GlassCard className="mb-6 sm:mb-8 animate-fade-in overflow-hidden">
+      <GlassCard className="mb-6 sm:mb-8  overflow-hidden">
         <h3 className="text-sm sm:text-base font-semibold text-foreground mb-5 flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-xl bg-primary/15 flex items-center justify-center"><Activity className="h-4 w-4 text-primary" /></div>
           Revenue, Streams & Downloads Trend
@@ -600,7 +600,7 @@ export default function UserDashboard() {
       {/* 3-Column: Release Status + Platform Distribution + Monthly Store Breakdown */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 sm:mb-8">
         {/* Release Status Donut */}
-        <GlassCard className="animate-fade-in">
+        <GlassCard className="">
           <SectionHeader icon={Disc3} iconBg="bg-primary/15" iconColor="text-primary" title="Release Status" />
           {releaseStatusData.length > 0 ? (
             <>
@@ -633,7 +633,7 @@ export default function UserDashboard() {
         </GlassCard>
 
         {/* Platform Distribution */}
-        <GlassCard className="animate-fade-in">
+        <GlassCard className="">
           <SectionHeader icon={Play} iconBg="bg-sky-500/15" iconColor="text-sky-400" title="Platform Distribution" />
           {topStores.length > 0 ? (
             <div className="space-y-3">
@@ -663,7 +663,7 @@ export default function UserDashboard() {
         </GlassCard>
 
         {/* Monthly Store Stacked Bar */}
-        <GlassCard className="animate-fade-in">
+        <GlassCard className="">
           <SectionHeader icon={BarChart3} iconBg="bg-violet-500/15" iconColor="text-violet-400" title="Monthly Platform Streams" />
           {monthlyStoreData.length > 0 ? (
             <div className="h-48 sm:h-56">
@@ -685,7 +685,7 @@ export default function UserDashboard() {
 
       {/* Top Tracks + Top Artists + Country Map */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 sm:mb-8">
-        <GlassCard className="animate-fade-in">
+        <GlassCard className="">
           <SectionHeader icon={Music} iconBg="bg-rose-500/15" iconColor="text-rose-400" title="Top Tracks" />
           {topTracks.length > 0 ? (
             <div className="space-y-2">
@@ -696,7 +696,7 @@ export default function UserDashboard() {
           ) : <EmptyChart icon={Music} text="No track data yet" />}
         </GlassCard>
 
-        <GlassCard className="animate-fade-in">
+        <GlassCard className="">
           <SectionHeader icon={Headphones} iconBg="bg-amber-500/15" iconColor="text-amber-400" title="Top Artists" />
           {topArtists.length > 0 ? (
             <div className="space-y-2">
@@ -707,7 +707,7 @@ export default function UserDashboard() {
           ) : <EmptyChart icon={Headphones} text="No artist data yet" />}
         </GlassCard>
 
-        <GlassCard className="animate-fade-in">
+        <GlassCard className="">
           <SectionHeader icon={Globe} iconBg="bg-emerald-500/15" iconColor="text-emerald-400" title="Streams by Country" />
           {countryData.length > 0 ? (
             <Suspense fallback={<EmptyChart icon={Globe} text="Loading country map" />}>
@@ -718,7 +718,7 @@ export default function UserDashboard() {
       </div>
 
       {/* Recent Releases */}
-      <GlassCard className="mb-6 sm:mb-8 animate-fade-in">
+      <GlassCard className="mb-6 sm:mb-8 ">
         <SectionHeader icon={Disc3} iconBg="bg-amber-500/15" iconColor="text-amber-400" title="Recent Releases" />
         {recentReleases.length > 0 ? (
           <>
@@ -793,7 +793,7 @@ function SparklineCard({ title, data, color, icon: Icon, iconBg, iconColor, tota
   title: string; data: { month: string; count: number }[]; color: string; icon: any; iconBg: string; iconColor: string; total: string | number;
 }) {
   return (
-    <GlassCard className="animate-fade-in !p-4 overflow-hidden">
+    <GlassCard className=" !p-4 overflow-hidden">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className={`h-6 w-6 rounded-lg ${iconBg} flex items-center justify-center`}><Icon className={`h-3 w-3 ${iconColor}`} /></div>

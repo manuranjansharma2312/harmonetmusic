@@ -71,7 +71,7 @@ function SparklineCard({ title, data, color, icon: Icon, iconBg, iconColor, tota
   title: string; data: { month: string; count: number }[]; color: string; icon: any; iconBg: string; iconColor: string; total: number;
 }) {
   return (
-    <GlassCard className="animate-fade-in !p-4 overflow-hidden">
+    <GlassCard className=" !p-4 overflow-hidden">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className={`h-6 w-6 rounded-lg ${iconBg} flex items-center justify-center`}><Icon className={`h-3 w-3 ${iconColor}`} /></div>
@@ -88,7 +88,7 @@ function SparklineCard({ title, data, color, icon: Icon, iconBg, iconColor, tota
                 <stop offset="100%" stopColor={color} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <Area type="monotone" dataKey="count" stroke={color} fill={`url(#spark-${title.replace(/\s/g, '')})`} strokeWidth={2} dot={false} />
+            <Area type="monotone" dataKey="count" stroke={color} fill={`url(#spark-${title.replace(/\s/g, '')})`} strokeWidth={2} dot={false} isAnimationActive={false} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -109,7 +109,7 @@ function AdminDashboardCharts({
   return (
     <>
       {/* Revenue & Streams Trend */}
-      <GlassCard className="mb-6 sm:mb-8 animate-fade-in overflow-hidden">
+      <GlassCard className="mb-6 sm:mb-8  overflow-hidden">
         <h3 className="text-sm sm:text-base font-semibold text-foreground mb-5 flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-xl bg-primary/15 flex items-center justify-center"><Activity className="h-4 w-4 text-primary" /></div>
           Revenue, Streams & Downloads Trend
@@ -135,9 +135,9 @@ function AdminDashboardCharts({
                 <YAxis yAxisId="right" orientation="right" tick={axisTickStyle} width={50} axisLine={false} tickLine={false} tickFormatter={(v) => formatStreams(v)} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(value: number, name: string) => [name.includes('Revenue') ? formatRevenue(value) : formatStreams(value), name]} />
                 <Legend wrapperStyle={{ fontSize: '11px', color: 'hsl(0 0% 50%)', paddingTop: '12px' }} />
-                <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(0, 67%, 45%)" fill="url(#admRevGrad)" strokeWidth={2.5} name="Revenue (₹)" dot={{ r: 4, fill: 'hsl(0 0% 6%)', stroke: 'hsl(0, 67%, 45%)', strokeWidth: 2 }} activeDot={{ r: 6, strokeWidth: 2, stroke: 'hsl(0, 67%, 55%)', fill: 'hsl(0, 67%, 45%)' }} />
-                <Area yAxisId="right" type="monotone" dataKey="streams" stroke="hsl(200, 70%, 55%)" fill="url(#admStrGrad)" strokeWidth={2} name="Streams" dot={{ r: 3, fill: 'hsl(0 0% 6%)', stroke: 'hsl(200, 70%, 55%)', strokeWidth: 2 }} />
-                <Line yAxisId="right" type="monotone" dataKey="downloads" stroke="hsl(280, 60%, 55%)" strokeWidth={1.5} strokeDasharray="6 4" name="Downloads" dot={false} />
+                <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(0, 67%, 45%)" fill="url(#admRevGrad)" strokeWidth={2.5} name="Revenue (₹)" isAnimationActive={false} dot={{ r: 4, fill: 'hsl(0 0% 6%)', stroke: 'hsl(0, 67%, 45%)', strokeWidth: 2 }} activeDot={{ r: 6, strokeWidth: 2, stroke: 'hsl(0, 67%, 55%)', fill: 'hsl(0, 67%, 45%)' }} />
+                <Area yAxisId="right" type="monotone" dataKey="streams" stroke="hsl(200, 70%, 55%)" fill="url(#admStrGrad)" strokeWidth={2} name="Streams" isAnimationActive={false} dot={{ r: 3, fill: 'hsl(0 0% 6%)', stroke: 'hsl(200, 70%, 55%)', strokeWidth: 2 }} />
+                <Line yAxisId="right" type="monotone" dataKey="downloads" stroke="hsl(280, 60%, 55%)" strokeWidth={1.5} strokeDasharray="6 4" name="Downloads" dot={false} isAnimationActive={false} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -145,7 +145,7 @@ function AdminDashboardCharts({
       </GlassCard>
 
       {/* Platform Growth Overview */}
-      <GlassCard className="mb-6 sm:mb-8 animate-fade-in overflow-hidden">
+      <GlassCard className="mb-6 sm:mb-8  overflow-hidden">
         <h3 className="text-sm sm:text-base font-semibold text-foreground mb-5 flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-xl bg-sky-500/15 flex items-center justify-center"><TrendingUp className="h-4 w-4 text-sky-400" /></div>
           Platform Growth — Last 6 Months
@@ -159,10 +159,10 @@ function AdminDashboardCharts({
                 <YAxis tick={axisTickStyle} width={30} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip contentStyle={tooltipStyle} />
                 <Legend wrapperStyle={{ fontSize: '11px', color: 'hsl(0 0% 50%)', paddingTop: '12px' }} />
-                <Bar dataKey="artists" name="New Artists" fill="hsl(200, 70%, 50%)" radius={[4, 4, 0, 0]} maxBarSize={28} />
-                <Bar dataKey="releases" name="New Releases" fill="hsl(45, 80%, 45%)" radius={[4, 4, 0, 0]} maxBarSize={28} />
-                <Bar dataKey="vevo" name="Vevo Submissions" fill="hsl(330, 60%, 50%)" radius={[4, 4, 0, 0]} maxBarSize={28} />
-                <Bar dataKey="cms" name="CMS Linked" fill="hsl(0, 67%, 40%)" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                <Bar dataKey="artists" name="New Artists" fill="hsl(200, 70%, 50%)" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
+                <Bar dataKey="releases" name="New Releases" fill="hsl(45, 80%, 45%)" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
+                <Bar dataKey="vevo" name="Vevo Submissions" fill="hsl(330, 60%, 50%)" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
+                <Bar dataKey="cms" name="CMS Linked" fill="hsl(0, 67%, 40%)" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -180,14 +180,14 @@ function AdminDashboardCharts({
       {/* 3-Column: Release Status + Platform Distribution + Country Map */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 sm:mb-8">
         {/* Release Status Donut */}
-        <GlassCard className="animate-fade-in">
+        <GlassCard className="">
           <SectionHeader icon={Disc3} iconBg="bg-primary/15" iconColor="text-primary" title="Release Status" />
           {releaseStatusData.length > 0 ? (
             <>
               <div className="h-48 sm:h-56 relative">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={releaseStatusData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} dataKey="value" strokeWidth={0} paddingAngle={4}>
+                    <Pie data={releaseStatusData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} dataKey="value" strokeWidth={0} paddingAngle={4} isAnimationActive={false}>
                       {releaseStatusData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                     </Pie>
                     <Tooltip contentStyle={tooltipStyle} />
@@ -213,7 +213,7 @@ function AdminDashboardCharts({
         </GlassCard>
 
         {/* Platform Distribution */}
-        <GlassCard className="animate-fade-in">
+        <GlassCard className="">
           <SectionHeader icon={Music} iconBg="bg-sky-500/15" iconColor="text-sky-400" title="Platform Distribution" />
           {topStores.length > 0 ? (
             <div className="space-y-3">
@@ -242,7 +242,7 @@ function AdminDashboardCharts({
         </GlassCard>
 
         {/* Country Map */}
-        <GlassCard className="animate-fade-in">
+        <GlassCard className="">
           <SectionHeader icon={Globe} iconBg="bg-emerald-500/15" iconColor="text-emerald-400" title="Streams by Country" />
           {countryData.length > 0 ? <WorldMapChart data={countryData} /> : <EmptyChart icon={Globe} text="No country data" />}
         </GlassCard>
@@ -250,7 +250,7 @@ function AdminDashboardCharts({
 
       {/* Top Tracks + Top Artists */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 sm:mb-8">
-        <GlassCard className="animate-fade-in">
+        <GlassCard className="">
           <SectionHeader icon={Music} iconBg="bg-rose-500/15" iconColor="text-rose-400" title="Top Tracks" />
           {topTracks.length > 0 ? (
             <div className="space-y-2">
@@ -261,7 +261,7 @@ function AdminDashboardCharts({
           ) : <EmptyChart icon={Music} text="No track data" />}
         </GlassCard>
 
-        <GlassCard className="animate-fade-in">
+        <GlassCard className="">
           <SectionHeader icon={Headphones} iconBg="bg-amber-500/15" iconColor="text-amber-400" title="Top Artists" />
           {topArtists.length > 0 ? (
             <div className="space-y-2">
