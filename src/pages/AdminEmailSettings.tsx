@@ -672,47 +672,65 @@ export default function AdminEmailSettings() {
               )}
 
               {/* Account cards */}
-              <div className="grid gap-3 responsive-table-wrap">
-                {accounts.map(acc => (
-                  <div key={acc.id} className="border border-border rounded-lg p-4 flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-sm">{acc.account_name}</span>
-                        {acc.is_default && (
-                          <Badge className="bg-primary/20 text-primary text-[10px] gap-1">
-                            <Star className="h-3 w-3" /> Default
+              <div className="responsive-table-wrap rounded-lg border border-border">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/30">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Account</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">From</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Server</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Templates</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {accounts.map(acc => (
+                      <tr key={acc.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">{acc.account_name}</span>
+                            {acc.is_default && (
+                              <Badge className="bg-primary/20 text-primary text-[10px] gap-1">
+                                <Star className="h-3 w-3" /> Default
+                              </Badge>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-xs text-muted-foreground">
+                          {acc.from_name ? `${acc.from_name} <${acc.from_email || acc.smtp_username}>` : acc.from_email || acc.smtp_username}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-xs text-muted-foreground">
+                          {acc.smtp_host}:{acc.smtp_port} ({acc.smtp_encryption.toUpperCase()})
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-xs text-muted-foreground">
+                          {templates.filter(t => t.email_account_id === acc.id).length} assigned
+                          {acc.is_default && ` + ${templates.filter(t => !t.email_account_id).length} default`}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <Badge variant={acc.is_enabled ? 'default' : 'secondary'} className="text-[10px]">
+                            {acc.is_enabled ? 'Active' : 'Disabled'}
                           </Badge>
-                        )}
-                        <Badge variant={acc.is_enabled ? 'default' : 'secondary'} className="text-[10px]">
-                          {acc.is_enabled ? 'Active' : 'Disabled'}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {acc.from_name ? `${acc.from_name} <${acc.from_email || acc.smtp_username}>` : acc.from_email || acc.smtp_username}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {acc.smtp_host}:{acc.smtp_port} ({acc.smtp_encryption.toUpperCase()}) • {acc.provider !== 'smtp' ? acc.provider.charAt(0).toUpperCase() + acc.provider.slice(1) : 'Custom SMTP'}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Used by: {templates.filter(t => t.email_account_id === acc.id).length} template(s)
-                        {acc.is_default && ` + ${templates.filter(t => !t.email_account_id).length} unassigned`}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      {!acc.is_default && (
-                        <Button size="sm" variant="ghost" title="Set as default" onClick={() => setDefault(acc.id)}>
-                          <Star className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <Button size="sm" variant="ghost" onClick={() => openEditAccount(acc)}>
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => deleteAccount(acc.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="flex items-center gap-1">
+                            {!acc.is_default && (
+                              <Button size="sm" variant="ghost" title="Set as default" onClick={() => setDefault(acc.id)}>
+                                <Star className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button size="sm" variant="ghost" onClick={() => openEditAccount(acc)}>
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => deleteAccount(acc.id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
 
               <div className="flex gap-3 pt-2">
