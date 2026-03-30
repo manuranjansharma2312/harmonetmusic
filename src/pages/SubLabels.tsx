@@ -281,39 +281,48 @@ export default function SubLabels() {
           <p className="text-muted-foreground">No sub labels yet. Create your first sub label!</p>
         </GlassCard>
       ) : (
-        <div className="space-y-3 responsive-table-wrap">
-          {paginateItems(subLabels, page, pageSize).map((sl) => (
-            <GlassCard key={sl.id} className="animate-fade-in">
-              <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Users className="h-5 w-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-foreground">{sl.sub_label_name}</p>
-                  <div className="flex flex-wrap items-center gap-2 mt-1">
-                    <span className="text-xs text-muted-foreground">{sl.email}</span>
-                    <span className="text-xs text-muted-foreground">•</span>
-                     <span className="text-xs text-muted-foreground">Cut: {sl.percentage_cut}%</span>
-                    <span className="text-xs text-muted-foreground">•</span>
-                    <span className="text-xs text-muted-foreground">Threshold: ₹{sl.withdrawal_threshold?.toLocaleString() || '1,000'}</span>
-                    <span className="text-xs text-muted-foreground">•</span>
-                    <span className="text-xs text-muted-foreground">
+        <div className="space-y-3">
+          <div className="responsive-table-wrap rounded-lg border border-border bg-card/50">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/30">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Sub Label</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Email</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Cut %</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Threshold</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Agreement Period</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginateItems(subLabels, page, pageSize).map((sl) => (
+                  <tr key={sl.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
+                    <td className="px-4 py-3 whitespace-nowrap font-semibold text-foreground">{sl.sub_label_name}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">{sl.email}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">{sl.percentage_cut}%</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">₹{sl.withdrawal_threshold?.toLocaleString() || '1,000'}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-muted-foreground text-xs">
                       {new Date(sl.agreement_start_date).toLocaleDateString()} – {new Date(sl.agreement_end_date).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-                <StatusBadge status={sl.status === 'active' ? 'approved' : sl.status} />
-                {sl.status === 'rejected' && sl.rejection_reason && (
-                  <p className="text-xs text-destructive max-w-[200px] truncate" title={sl.rejection_reason}>
-                    Reason: {sl.rejection_reason}
-                  </p>
-                )}
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewSubLabel(sl)}>
-                  <Eye className="h-4 w-4" />
-                </Button>
-              </div>
-            </GlassCard>
-          ))}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <StatusBadge status={sl.status === 'active' ? 'approved' : sl.status} />
+                      {sl.status === 'rejected' && sl.rejection_reason && (
+                        <p className="text-xs text-destructive mt-1 max-w-[150px] truncate" title={sl.rejection_reason}>
+                          {sl.rejection_reason}
+                        </p>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewSubLabel(sl)}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <div className="rounded-lg bg-card/50 border border-border/50 overflow-hidden">
             <TablePagination totalItems={subLabels.length} currentPage={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} itemLabel="sub labels" />
           </div>

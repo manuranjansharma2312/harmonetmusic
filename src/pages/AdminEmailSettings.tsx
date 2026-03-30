@@ -672,47 +672,65 @@ export default function AdminEmailSettings() {
               )}
 
               {/* Account cards */}
-              <div className="grid gap-3 responsive-table-wrap">
-                {accounts.map(acc => (
-                  <div key={acc.id} className="border border-border rounded-lg p-4 flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-sm">{acc.account_name}</span>
-                        {acc.is_default && (
-                          <Badge className="bg-primary/20 text-primary text-[10px] gap-1">
-                            <Star className="h-3 w-3" /> Default
+              <div className="responsive-table-wrap rounded-lg border border-border">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/30">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Account</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">From</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Server</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Templates</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {accounts.map(acc => (
+                      <tr key={acc.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">{acc.account_name}</span>
+                            {acc.is_default && (
+                              <Badge className="bg-primary/20 text-primary text-[10px] gap-1">
+                                <Star className="h-3 w-3" /> Default
+                              </Badge>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-xs text-muted-foreground">
+                          {acc.from_name ? `${acc.from_name} <${acc.from_email || acc.smtp_username}>` : acc.from_email || acc.smtp_username}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-xs text-muted-foreground">
+                          {acc.smtp_host}:{acc.smtp_port} ({acc.smtp_encryption.toUpperCase()})
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-xs text-muted-foreground">
+                          {templates.filter(t => t.email_account_id === acc.id).length} assigned
+                          {acc.is_default && ` + ${templates.filter(t => !t.email_account_id).length} default`}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <Badge variant={acc.is_enabled ? 'default' : 'secondary'} className="text-[10px]">
+                            {acc.is_enabled ? 'Active' : 'Disabled'}
                           </Badge>
-                        )}
-                        <Badge variant={acc.is_enabled ? 'default' : 'secondary'} className="text-[10px]">
-                          {acc.is_enabled ? 'Active' : 'Disabled'}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {acc.from_name ? `${acc.from_name} <${acc.from_email || acc.smtp_username}>` : acc.from_email || acc.smtp_username}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {acc.smtp_host}:{acc.smtp_port} ({acc.smtp_encryption.toUpperCase()}) • {acc.provider !== 'smtp' ? acc.provider.charAt(0).toUpperCase() + acc.provider.slice(1) : 'Custom SMTP'}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Used by: {templates.filter(t => t.email_account_id === acc.id).length} template(s)
-                        {acc.is_default && ` + ${templates.filter(t => !t.email_account_id).length} unassigned`}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      {!acc.is_default && (
-                        <Button size="sm" variant="ghost" title="Set as default" onClick={() => setDefault(acc.id)}>
-                          <Star className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <Button size="sm" variant="ghost" onClick={() => openEditAccount(acc)}>
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => deleteAccount(acc.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="flex items-center gap-1">
+                            {!acc.is_default && (
+                              <Button size="sm" variant="ghost" title="Set as default" onClick={() => setDefault(acc.id)}>
+                                <Star className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button size="sm" variant="ghost" onClick={() => openEditAccount(acc)}>
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => deleteAccount(acc.id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
 
               <div className="flex gap-3 pt-2">
@@ -898,7 +916,7 @@ export default function AdminEmailSettings() {
                 )}
               </div>
 
-              <div className="space-y-3 responsive-table-wrap">
+              <div className="responsive-table-wrap"><div className="min-w-[700px] space-y-3">
                 {paginatedTemplates.map(template => {
                   const assignedName = getAccountName(template.email_account_id);
                   return (
@@ -1044,7 +1062,7 @@ export default function AdminEmailSettings() {
                 {filteredTemplates.length === 0 && (
                   <p className="text-center text-muted-foreground py-8 text-sm">No templates match your search</p>
                 )}
-              </div>
+              </div></div>
               <TablePagination
                 totalItems={filteredTemplates.length}
                 currentPage={templatePage}
@@ -1102,31 +1120,43 @@ export default function AdminEmailSettings() {
                 return (
                   <>
                     <div className="text-xs text-muted-foreground">{filteredLogs.length} log{filteredLogs.length !== 1 ? 's' : ''} found</div>
-                    <div className="space-y-2 responsive-table-wrap">
-                      {paginatedLogs.length === 0 ? (
-                        <div className="text-center text-muted-foreground py-8">No email logs found</div>
-                      ) : paginatedLogs.map((log: EmailLog) => (
-                        <div key={log.id} className="p-3 rounded-lg border border-border bg-card/50 space-y-2">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0 flex-1">
-                              <p className="font-medium text-sm truncate">{log.template_label || log.template_key}</p>
-                              <p className="text-xs text-muted-foreground truncate">{log.recipient_email}</p>
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              <StatusBadge status={log.status} />
-                              <Button size="sm" variant="ghost" onClick={() => setViewingLog(log)} title="View email" className="h-7 w-7 p-0">
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                          {log.subject && <p className="text-xs text-muted-foreground truncate">Subject: {log.subject}</p>}
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-xs text-muted-foreground">{new Date(log.sent_at).toLocaleString()}</span>
-                            {log.error_message && <span className="text-xs text-destructive truncate max-w-[50%]">{log.error_message}</span>}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    {paginatedLogs.length === 0 ? (
+                      <div className="text-center text-muted-foreground py-8">No email logs found</div>
+                    ) : (
+                      <div className="responsive-table-wrap rounded-lg border border-border">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-border bg-muted/30">
+                              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Template</th>
+                              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Recipient</th>
+                              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Subject</th>
+                              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Status</th>
+                              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Date</th>
+                              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {paginatedLogs.map((log: EmailLog) => (
+                              <tr key={log.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
+                                <td className="px-4 py-3 whitespace-nowrap font-medium">{log.template_label || log.template_key}</td>
+                                <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">{log.recipient_email}</td>
+                                <td className="px-4 py-3 whitespace-nowrap text-muted-foreground max-w-[200px] truncate">{log.subject || '—'}</td>
+                                <td className="px-4 py-3 whitespace-nowrap">
+                                  <StatusBadge status={log.status} />
+                                  {log.error_message && <p className="text-xs text-destructive mt-1 max-w-[150px] truncate">{log.error_message}</p>}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-xs text-muted-foreground">{new Date(log.sent_at).toLocaleString()}</td>
+                                <td className="px-4 py-3 whitespace-nowrap">
+                                  <Button size="sm" variant="ghost" onClick={() => setViewingLog(log)} title="View email" className="h-7 w-7 p-0">
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                     <TablePagination totalItems={filteredLogs.length} currentPage={logPage} pageSize={logPageSize}
                       onPageChange={setLogPage} onPageSizeChange={setLogPageSize} itemLabel="logs" />
                   </>
