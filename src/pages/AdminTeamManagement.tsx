@@ -38,9 +38,7 @@ const ALL_ADMIN_PAGES = [
   { key: 'notices', label: 'Notice Updates', path: '/admin/notices' },
   { key: 'smart-links', label: 'Smart Links', path: '/admin/smart-links' },
   { key: 'email-settings', label: 'Manage Emails', path: '/admin/email-settings' },
-  { key: 'general-settings', label: 'General Settings', path: '/admin/genres-languages' },
-  { key: 'contact-policies', label: 'Contact & Policies', path: '/admin/terms' },
-  { key: 'settings', label: 'Settings', path: '/admin/branding-settings' },
+  // Settings pages are admin-only, not assignable to team members
 ];
 
 interface GovtId { name: string; number: string; }
