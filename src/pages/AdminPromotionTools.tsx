@@ -335,7 +335,8 @@ export default function AdminPromotionTools() {
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
+             </Table>
+             </div>
             {orders.length > pageSize && (
               <TablePagination currentPage={orderPage} onPageChange={setOrderPage} pageSize={pageSize} onPageSizeChange={() => {}} totalItems={orders.length} />
             )}

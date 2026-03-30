@@ -100,7 +100,8 @@ export default function AdminVideoForms() {
                         </TableRow>
                       ))}
                     </TableBody>
-                  </Table>
+                   </Table>
+                   </div>
                 )}
               </CardContent>
             </Card>

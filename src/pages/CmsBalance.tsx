@@ -197,7 +197,8 @@ export default function CmsBalance() {
                     </TableRow>
                   ))}
                 </TableBody>
-              </Table>
+               </Table>
+               </div>
               <TablePagination totalItems={withdrawals.length} currentPage={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} />
             </GlassCard>
           </>

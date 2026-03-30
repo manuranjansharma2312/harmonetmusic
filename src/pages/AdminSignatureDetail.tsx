@@ -296,7 +296,8 @@ export default function AdminSignatureDetail() {
                 );
               })}
             </TableBody>
-          </Table>
+           </Table>
+           </div>
         </GlassCard>
       </div>
     </DashboardLayout>

@@ -228,7 +228,8 @@ export default function PromotionTools() {
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
+             </Table>
+             </div>
             <TablePagination
               totalItems={orders.length}
               currentPage={page}
