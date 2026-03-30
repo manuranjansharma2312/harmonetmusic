@@ -48,6 +48,7 @@ type Profile = {
   verification_status: string;
   created_at: string;
   hidden_cut_percent?: number;
+  agreement_ratio?: number;
 };
 
 const VerificationBadge = React.forwardRef<HTMLSpanElement, { status: string }>(
@@ -74,6 +75,9 @@ export default function AdminUsers() {
   const [viewBankDetails, setViewBankDetails] = useState<any>(null);
   const [deleting, setDeleting] = useState(false);
   const [editingCut, setEditingCut] = useState<{ userId: string; value: string } | null>(null);
+  const [approvalPopup, setApprovalPopup] = useState<{ userId: string; name: string } | null>(null);
+  const [approvalRatio, setApprovalRatio] = useState('');
+  const [editingRatio, setEditingRatio] = useState<{ userId: string; value: string } | null>(null);
   const { startImpersonating } = useImpersonate();
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
@@ -134,6 +138,24 @@ export default function AdminUsers() {
     if (error) { toast.error(error.message); return; }
     toast.success(`Hidden cut set to ${percent}%`);
     setEditingCut(null);
+    fetchProfiles();
+  };
+
+  const handleApproveWithRatio = async () => {
+    if (!approvalPopup) return;
+    const ratio = parseFloat(approvalRatio) || 0;
+    const { error: ratioErr } = await supabase.from('profiles').update({ agreement_ratio: ratio } as any).eq('user_id', approvalPopup.userId);
+    if (ratioErr) { toast.error(ratioErr.message); return; }
+    await handleVerification(approvalPopup.userId, 'verified');
+    setApprovalPopup(null);
+    setApprovalRatio('');
+  };
+
+  const handleSaveAgreementRatio = async (userId: string, ratio: number) => {
+    const { error } = await supabase.from('profiles').update({ agreement_ratio: ratio } as any).eq('user_id', userId);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`Agreement ratio set to ${ratio}%`);
+    setEditingRatio(null);
     fetchProfiles();
   };
 
@@ -376,7 +398,7 @@ export default function AdminUsers() {
                             )}
                             <DropdownMenuSeparator />
                             {profile.verification_status !== 'verified' && (
-                              <DropdownMenuItem onClick={() => handleVerification(profile.user_id, 'verified')} className="text-green-400 focus:text-green-400">
+                              <DropdownMenuItem onClick={() => setApprovalPopup({ userId: profile.user_id, name: profile.legal_name })} className="text-green-400 focus:text-green-400">
                                 <CheckCircle className="h-4 w-4 mr-2" /> Verify
                               </DropdownMenuItem>
                             )}
@@ -486,6 +508,39 @@ export default function AdminUsers() {
               </div>
               )}
 
+              {/* Agreement Ratio - visible to all */}
+              <div className="pt-3 border-t border-border/50">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground font-medium">Agreement Ratio %</span>
+                  {!isTeam && editingRatio?.userId === viewProfile.user_id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={editingRatio.value}
+                        onChange={(e) => setEditingRatio({ ...editingRatio, value: e.target.value.replace(/[^0-9.]/g, '') })}
+                        className="w-20 px-2 py-1 rounded bg-muted/50 border border-border text-foreground text-sm text-right"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => handleSaveAgreementRatio(viewProfile.user_id, Number(editingRatio.value) || 0)}
+                        className="text-xs px-2 py-1 rounded bg-primary/20 text-primary hover:bg-primary/30"
+                      >Save</button>
+                      <button onClick={() => setEditingRatio(null)} className="text-xs text-muted-foreground hover:text-foreground"><X className="h-3 w-3" /></button>
+                    </div>
+                  ) : !isTeam ? (
+                    <button
+                      onClick={() => setEditingRatio({ userId: viewProfile.user_id, value: String(viewProfile.agreement_ratio || 0) })}
+                      className="text-foreground font-medium hover:text-primary transition-colors"
+                    >
+                      {viewProfile.agreement_ratio || 0}% <Pencil className="inline h-3 w-3 ml-1 opacity-50" />
+                    </button>
+                  ) : (
+                    <span className="text-foreground font-medium">{viewProfile.agreement_ratio || 0}%</span>
+                  )}
+                </div>
+              </div>
+
               {/* ID Proof section with delete buttons */}
               {(viewProfile.id_proof_front_url || viewProfile.id_proof_back_url) && (
                 <div className="pt-3 border-t border-border/50">
@@ -580,7 +635,7 @@ export default function AdminUsers() {
             </div>
             <div className="flex gap-3 mt-3">
               {viewProfile.verification_status !== 'verified' && (
-                <button onClick={() => handleVerification(viewProfile.user_id, 'verified')} className="flex-1 py-2.5 rounded-lg bg-green-500/20 text-green-400 font-medium hover:bg-green-500/30 transition-all flex items-center justify-center gap-2">
+                <button onClick={() => { setViewProfile(null); setApprovalPopup({ userId: viewProfile.user_id, name: viewProfile.legal_name }); }} className="flex-1 py-2.5 rounded-lg bg-green-500/20 text-green-400 font-medium hover:bg-green-500/30 transition-all flex items-center justify-center gap-2">
                   <CheckCircle className="h-4 w-4" /> Verify
                 </button>
               )}
@@ -651,6 +706,53 @@ export default function AdminUsers() {
           name={resetPasswordProfile.legal_name}
           onClose={() => setResetPasswordProfile(null)}
         />
+      )}
+
+      {/* Approval Popup */}
+      {approvalPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between p-5 border-b border-border">
+              <h2 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-400" /> Approve User
+              </h2>
+              <button onClick={() => { setApprovalPopup(null); setApprovalRatio(''); }} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+                <X className="h-5 w-5 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Set the agreement ratio for <span className="font-semibold text-foreground">{approvalPopup.name}</span> before approving.
+              </p>
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Agreement Ratio % (display only, no deduction)</label>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={approvalRatio}
+                  onChange={(e) => setApprovalRatio(e.target.value.replace(/[^0-9.]/g, ''))}
+                  className="w-full px-3 py-2 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
+                  placeholder="e.g. 80"
+                  autoFocus
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => { setApprovalPopup(null); setApprovalRatio(''); }}
+                  className="flex-1 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-muted transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleApproveWithRatio}
+                  className="flex-1 py-2.5 rounded-lg btn-primary-gradient text-primary-foreground font-semibold text-sm shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2"
+                >
+                  <CheckCircle className="h-4 w-4" /> Approve
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Create User Modal */}

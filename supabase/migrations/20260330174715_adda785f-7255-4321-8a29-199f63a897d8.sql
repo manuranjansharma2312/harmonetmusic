@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN agreement_ratio numeric NOT NULL DEFAULT 0;
