@@ -672,7 +672,7 @@ export default function AdminEmailSettings() {
               )}
 
               {/* Account cards */}
-              <div className="grid gap-3">
+              <div className="grid gap-3 responsive-table-wrap">
                 {accounts.map(acc => (
                   <div key={acc.id} className="border border-border rounded-lg p-4 flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
@@ -898,7 +898,7 @@ export default function AdminEmailSettings() {
                 )}
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3 responsive-table-wrap">
                 {paginatedTemplates.map(template => {
                   const assignedName = getAccountName(template.email_account_id);
                   return (
@@ -1102,7 +1102,7 @@ export default function AdminEmailSettings() {
                 return (
                   <>
                     <div className="text-xs text-muted-foreground">{filteredLogs.length} log{filteredLogs.length !== 1 ? 's' : ''} found</div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 responsive-table-wrap">
                       {paginatedLogs.length === 0 ? (
                         <div className="text-center text-muted-foreground py-8">No email logs found</div>
                       ) : paginatedLogs.map((log: EmailLog) => (

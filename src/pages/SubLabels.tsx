@@ -281,7 +281,7 @@ export default function SubLabels() {
           <p className="text-muted-foreground">No sub labels yet. Create your first sub label!</p>
         </GlassCard>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 responsive-table-wrap">
           {paginateItems(subLabels, page, pageSize).map((sl) => (
             <GlassCard key={sl.id} className="animate-fade-in">
               <div className="flex items-center gap-4">
