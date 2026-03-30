@@ -306,6 +306,8 @@ export default function AdminAllPending() {
                 </Badge>
               </button>
             );
+          );
+          })}
         </div>
         </div>
 
