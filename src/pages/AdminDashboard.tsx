@@ -438,7 +438,7 @@ export default function AdminDashboard() {
         <SectionHeader icon={Disc3} iconBg="bg-amber-500/15" iconColor="text-amber-400" title="Recent Releases" />
         {state.recentReleases.length > 0 ? (
           <>
-            <div className="responsive-table-wrap">
+            <div className="responsive-table-wrap hidden sm:block">
               <table className="w-full text-sm min-w-max">
                 <thead>
                   <tr className="border-b border-border/40">
