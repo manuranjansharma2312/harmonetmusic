@@ -1,0 +1,1 @@
+ALTER TABLE public.team_members ADD COLUMN status text NOT NULL DEFAULT 'pending';

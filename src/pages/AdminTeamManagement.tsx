@@ -59,6 +59,7 @@ interface TeamMember {
   email: string;
   allowed_pages: string[];
   govt_ids: GovtId[];
+  status: string;
   created_at: string;
 }
 
@@ -100,6 +101,22 @@ export default function AdminTeamManagement() {
   };
 
   useEffect(() => { fetchAll(); }, []);
+
+  // ---- Status change ----
+  const handleStatusChange = async (member: TeamMember, newStatus: string) => {
+    const { error } = await (supabase.from('team_members') as any).update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', member.id);
+    if (error) toast.error(error.message);
+    else { toast.success(`${member.name} status changed to ${newStatus}`); fetchAll(); }
+  };
+
+  const statusBadge = (status: string) => {
+    const map: Record<string, string> = {
+      pending: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
+      active: 'bg-green-500/15 text-green-400 border-green-500/30',
+      suspended: 'bg-red-500/15 text-red-400 border-red-500/30',
+    };
+    return `inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${map[status] || map.pending}`;
+  };
 
   // ---- Categories ----
   const handleSaveCategory = async () => {
@@ -328,13 +345,14 @@ export default function AdminTeamManagement() {
                       <TableHead className="whitespace-nowrap">Department</TableHead>
                       <TableHead className="whitespace-nowrap">Pages Access</TableHead>
                       <TableHead className="whitespace-nowrap">Govt IDs</TableHead>
+                      <TableHead className="whitespace-nowrap">Status</TableHead>
                       <TableHead className="whitespace-nowrap">Created</TableHead>
                       <TableHead className="whitespace-nowrap text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {members.length === 0 ? (
-                      <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No team members yet</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">No team members yet</TableCell></TableRow>
                     ) : members.map(m => (
                       <TableRow key={m.id} className={selected.has(m.id) ? 'bg-primary/5' : ''}>
                         <TableCell>
@@ -356,6 +374,18 @@ export default function AdminTeamManagement() {
                               ))}
                             </div>
                           ) : <span className="text-muted-foreground text-xs">—</span>}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          <select
+                            value={m.status || 'pending'}
+                            onChange={(e) => handleStatusChange(m, e.target.value)}
+                            className="bg-transparent border border-border rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="active">Active</option>
+                            <option value="suspended">Suspended</option>
+                          </select>
+                          <span className={`ml-2 ${statusBadge(m.status || 'pending')}`}>{m.status || 'pending'}</span>
                         </TableCell>
                         <TableCell className="whitespace-nowrap">{format(new Date(m.created_at), 'dd MMM yyyy')}</TableCell>
                         <TableCell className="text-right whitespace-nowrap space-x-1">

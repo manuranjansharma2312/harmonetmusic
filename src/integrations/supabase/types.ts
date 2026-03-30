@@ -2170,6 +2170,7 @@ export type Database = {
           govt_ids: Json
           id: string
           name: string
+          status: string
           updated_at: string
           user_id: string
         }
@@ -2181,6 +2182,7 @@ export type Database = {
           govt_ids?: Json
           id?: string
           name: string
+          status?: string
           updated_at?: string
           user_id: string
         }
@@ -2192,6 +2194,7 @@ export type Database = {
           govt_ids?: Json
           id?: string
           name?: string
+          status?: string
           updated_at?: string
           user_id?: string
         }
