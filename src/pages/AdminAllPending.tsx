@@ -79,7 +79,7 @@ const categories: PendingCategory[] = [
     key: 'support', label: 'Support Requests', icon: Headset,
     table: 'content_requests', statusField: 'status', statusValue: 'pending',
     columns: [
-      { key: 'request_type', label: 'Type', render: (r) => r.request_type?.replace(/_/g, ' ') },
+      { key: 'request_type', label: 'Type', render: (r: any) => formatLabel(r.request_type) },
       { key: 'song_title', label: 'Song', render: (r) => r.song_title || r.artist_name || '—' },
       { key: 'created_at', label: 'Submitted', render: (r) => safeFormat(r.created_at) },
     ],
