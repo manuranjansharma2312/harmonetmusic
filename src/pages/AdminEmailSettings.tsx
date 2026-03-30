@@ -1062,7 +1062,7 @@ export default function AdminEmailSettings() {
                 {filteredTemplates.length === 0 && (
                   <p className="text-center text-muted-foreground py-8 text-sm">No templates match your search</p>
                 )}
-              </div>
+              </div></div>
               <TablePagination
                 totalItems={filteredTemplates.length}
                 currentPage={templatePage}
