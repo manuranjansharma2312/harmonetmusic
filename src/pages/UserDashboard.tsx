@@ -83,7 +83,8 @@ export default function UserDashboard() {
   const [monthlyReleasesData, setMonthlyReleasesData] = useState<{ month: string; count: number }[]>([]);
   const [monthlyRevenueSparkline, setMonthlyRevenueSparkline] = useState<{ month: string; count: number }[]>([]);
   const [monthlyDownloadsData, setMonthlyDownloadsData] = useState<{ month: string; count: number }[]>([]);
-
+  const [vevoStreams, setVevoStreams] = useState(0);
+  const [vevoRevenue, setVevoRevenue] = useState(0);
   const refreshTimeoutRef = useRef<number | null>(null);
   const isFetchingRef = useRef(false);
   const shouldRefetchRef = useRef(false);
