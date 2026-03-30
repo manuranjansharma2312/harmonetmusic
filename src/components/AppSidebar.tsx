@@ -219,7 +219,7 @@ export function AppSidebar() {
 
   // Build user links dynamically based on user type
   const userLinksTop = [
-    { to: '/user-dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/submit', label: 'New Release', icon: Upload },
     { to: '/my-releases', label: 'My Releases', icon: ListMusic },
     { to: '/my-labels', label: 'My Labels', icon: Tag },
