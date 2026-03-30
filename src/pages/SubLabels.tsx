@@ -361,10 +361,15 @@ export default function SubLabels() {
                         </p>
                       )}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap flex items-center gap-1">
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewSubLabel(sl)}>
                         <Eye className="h-4 w-4" />
                       </Button>
+                      {sl.status === 'active' && (
+                        <Button variant="ghost" size="icon" className="h-8 w-8" title="Manage Permissions" onClick={() => openPermissions(sl)}>
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}
