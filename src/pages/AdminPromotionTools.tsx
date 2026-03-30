@@ -264,8 +264,8 @@ export default function AdminPromotionTools() {
                     <TableCell><StatusBadge status={p.is_active ? 'approved' : 'rejected'} /></TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openProductModal(p)}><Pencil className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ type: 'product', id: p.id })}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        {canChangeSettings && <Button variant="ghost" size="icon" onClick={() => openProductModal(p)}><Pencil className="h-4 w-4" /></Button>}
+                        {canDelete && <Button variant="ghost" size="icon" onClick={() => setDeleteTarget({ type: 'product', id: p.id })}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
                       </div>
                     </TableCell>
                   </TableRow>
