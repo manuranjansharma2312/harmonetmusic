@@ -283,8 +283,9 @@ export default function AdminAllPending() {
           </div>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        {/* Summary Cards - horizontal sliding */}
+        <div className="responsive-table-wrap pb-2">
+        <div className="flex gap-3 min-w-max">
           {categories.map(cat => {
             const Icon = cat.icon;
             const count = counts[cat.key] || 0;
@@ -292,7 +293,7 @@ export default function AdminAllPending() {
               <button
                 key={cat.key}
                 onClick={() => { setActiveTab(cat.key); setPage(1); }}
-                className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border transition-all text-center ${
+                className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border transition-all text-center min-w-[100px] ${
                   activeTab === cat.key
                     ? 'border-primary bg-primary/10 text-foreground'
                     : 'border-border bg-card/50 text-muted-foreground hover:bg-muted/50'
@@ -306,6 +307,7 @@ export default function AdminAllPending() {
               </button>
             );
           })}
+          </div>
         </div>
 
         {/* Data Table */}
