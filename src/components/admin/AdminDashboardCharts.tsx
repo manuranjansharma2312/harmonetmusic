@@ -71,7 +71,7 @@ function SparklineCard({ title, data, color, icon: Icon, iconBg, iconColor, tota
   title: string; data: { month: string; count: number }[]; color: string; icon: any; iconBg: string; iconColor: string; total: number;
 }) {
   return (
-    <GlassCard className="animate-fade-in !p-4 overflow-hidden">
+    <GlassCard className=" !p-4 overflow-hidden">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className={`h-6 w-6 rounded-lg ${iconBg} flex items-center justify-center`}><Icon className={`h-3 w-3 ${iconColor}`} /></div>
@@ -109,7 +109,7 @@ function AdminDashboardCharts({
   return (
     <>
       {/* Revenue & Streams Trend */}
-      <GlassCard className="mb-6 sm:mb-8 animate-fade-in overflow-hidden">
+      <GlassCard className="mb-6 sm:mb-8  overflow-hidden">
         <h3 className="text-sm sm:text-base font-semibold text-foreground mb-5 flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-xl bg-primary/15 flex items-center justify-center"><Activity className="h-4 w-4 text-primary" /></div>
           Revenue, Streams & Downloads Trend
@@ -145,7 +145,7 @@ function AdminDashboardCharts({
       </GlassCard>
 
       {/* Platform Growth Overview */}
-      <GlassCard className="mb-6 sm:mb-8 animate-fade-in overflow-hidden">
+      <GlassCard className="mb-6 sm:mb-8  overflow-hidden">
         <h3 className="text-sm sm:text-base font-semibold text-foreground mb-5 flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-xl bg-sky-500/15 flex items-center justify-center"><TrendingUp className="h-4 w-4 text-sky-400" /></div>
           Platform Growth — Last 6 Months
@@ -180,7 +180,7 @@ function AdminDashboardCharts({
       {/* 3-Column: Release Status + Platform Distribution + Country Map */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 sm:mb-8">
         {/* Release Status Donut */}
-        <GlassCard className="animate-fade-in">
+        <GlassCard className="">
           <SectionHeader icon={Disc3} iconBg="bg-primary/15" iconColor="text-primary" title="Release Status" />
           {releaseStatusData.length > 0 ? (
             <>
@@ -213,7 +213,7 @@ function AdminDashboardCharts({
         </GlassCard>
 
         {/* Platform Distribution */}
-        <GlassCard className="animate-fade-in">
+        <GlassCard className="">
           <SectionHeader icon={Music} iconBg="bg-sky-500/15" iconColor="text-sky-400" title="Platform Distribution" />
           {topStores.length > 0 ? (
             <div className="space-y-3">
@@ -242,7 +242,7 @@ function AdminDashboardCharts({
         </GlassCard>
 
         {/* Country Map */}
-        <GlassCard className="animate-fade-in">
+        <GlassCard className="">
           <SectionHeader icon={Globe} iconBg="bg-emerald-500/15" iconColor="text-emerald-400" title="Streams by Country" />
           {countryData.length > 0 ? <WorldMapChart data={countryData} /> : <EmptyChart icon={Globe} text="No country data" />}
         </GlassCard>
@@ -250,7 +250,7 @@ function AdminDashboardCharts({
 
       {/* Top Tracks + Top Artists */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 sm:mb-8">
-        <GlassCard className="animate-fade-in">
+        <GlassCard className="">
           <SectionHeader icon={Music} iconBg="bg-rose-500/15" iconColor="text-rose-400" title="Top Tracks" />
           {topTracks.length > 0 ? (
             <div className="space-y-2">
@@ -261,7 +261,7 @@ function AdminDashboardCharts({
           ) : <EmptyChart icon={Music} text="No track data" />}
         </GlassCard>
 
-        <GlassCard className="animate-fade-in">
+        <GlassCard className="">
           <SectionHeader icon={Headphones} iconBg="bg-amber-500/15" iconColor="text-amber-400" title="Top Artists" />
           {topArtists.length > 0 ? (
             <div className="space-y-2">
