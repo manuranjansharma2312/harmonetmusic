@@ -364,7 +364,7 @@ export default function AdminCmsReports() {
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            {!selectedMonth && (
+            {!selectedMonth && canChangeSettings && (
               <>
                 <Button size="sm" variant="outline" onClick={() => setShowFormat(!showFormat)}>
                   <Settings2 className="h-4 w-4 mr-1" /> Format
