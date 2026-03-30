@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import {
   Loader2, Eye, CheckCircle, XCircle, Search, Shield, ShieldCheck, ShieldX, KeyRound,
-  ShieldAlert, Pencil, LogIn, Ban, Trash2, Download, FileX, CheckSquare, MoreVertical, Landmark, X,
+  ShieldAlert, Pencil, LogIn, Ban, Trash2, Download, FileX, CheckSquare, MoreVertical, Landmark, X, UserPlus,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { EditProfileModal } from '@/components/EditProfileModal';
@@ -15,6 +15,7 @@ import { ResetPasswordModal } from '@/components/ResetPasswordModal';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { useNavigate } from 'react-router-dom';
 import { useTeamPermissions } from '@/hooks/useTeamPermissions';
+import { CreateUserModal } from '@/components/CreateUserModal';
 
 import {
   DropdownMenu,
@@ -77,6 +78,7 @@ export default function AdminUsers() {
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
+  const [showCreateUser, setShowCreateUser] = useState(false);
 
   const fetchProfiles = async () => {
     const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
@@ -263,6 +265,15 @@ export default function AdminUsers() {
 
       {/* Bulk action bar */}
       <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 mb-4">
+        {!isTeam && (
+          <button
+            onClick={() => setShowCreateUser(true)}
+            className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 rounded-lg btn-primary-gradient text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
+          >
+            <UserPlus className="h-4 w-4" />
+            Create User
+          </button>
+        )}
         <button
           onClick={handleExport}
           className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 rounded-lg bg-muted/50 border border-border text-sm font-medium text-foreground hover:bg-muted transition-all"
@@ -641,6 +652,13 @@ export default function AdminUsers() {
           onClose={() => setResetPasswordProfile(null)}
         />
       )}
+
+      {/* Create User Modal */}
+      <CreateUserModal
+        open={showCreateUser}
+        onClose={() => setShowCreateUser(false)}
+        onCreated={fetchProfiles}
+      />
     </DashboardLayout>
   );
 }
