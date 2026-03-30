@@ -346,9 +346,9 @@ export function AppSidebar() {
                   {settings.enable_video_distribution && renderCollapsibleGroup('Video Distribution', Video, adminVideoLinks, adminVideoOpen, setAdminVideoOpen)}
                   {renderCollapsibleGroup('Sub Labels', UsersRound, adminSubLabelLinks, adminSubLabelsOpen, setAdminSubLabelsOpen)}
                   {settings.enable_youtube_cms && renderCollapsibleGroup('YouTube CMS', Youtube, adminCmsLinks, adminCmsOpen, setAdminCmsOpen)}
-                  {renderNavLink({ to: '/admin/revenue', label: 'Revenue', icon: Wallet })}
+                  {renderNavLink({ to: '/admin/revenue', label: 'Revenue & Withdrawals', icon: Wallet })}
                   {renderCollapsibleGroup('Reports & Analytics', BarChart3, adminReportLinks, reportsOpen, setReportsOpen)}
-                  {renderNavLink({ to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt })}
+                  {renderNavLink({ to: '/admin/invoices', label: 'Billing & Invoices', icon: Receipt })}
                   {renderCollapsibleGroup('Contracts & E-Sign', FileSignature, adminContractsLinks, adminContractsOpen, setAdminContractsOpen)}
                   {renderCollapsibleGroup('Promotional Tools', Megaphone, adminPromotionalLinks, adminPromotionalOpen, setAdminPromotionalOpen)}
                   {renderCollapsibleGroup('Poster Generator', ImageIcon, adminPosterLinks, adminPosterOpen, setAdminPosterOpen)}
