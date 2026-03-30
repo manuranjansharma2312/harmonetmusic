@@ -228,7 +228,6 @@ export function CreateUserModal({ open, onClose, onCreated }: CreateUserModalPro
               placeholder="0"
             />
           </div>
-          </div>
 
           {/* Social Links - collapsible */}
           <details className="group">
