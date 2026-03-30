@@ -280,7 +280,7 @@ export default function AdminAllPending() {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Clock className="h-6 w-6 text-primary" />
-              All Pending
+              All Pendings
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               {grandTotal} total pending items across all modules
