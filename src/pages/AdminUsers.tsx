@@ -48,6 +48,7 @@ type Profile = {
   verification_status: string;
   created_at: string;
   hidden_cut_percent?: number;
+  agreement_ratio?: number;
 };
 
 const VerificationBadge = React.forwardRef<HTMLSpanElement, { status: string }>(
