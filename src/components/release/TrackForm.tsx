@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Upload, Music2, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Spotify & Apple Music SVG logos inline
 const SpotifyIcon = () => (
@@ -120,7 +121,15 @@ export function TrackForm({ genres, languages, isTransfer, initialData, onSubmit
           </div>
         )}
         <div className="relative">
-          <input type="file" accept=".mp3,.wav,audio/mpeg,audio/wav" onChange={(e) => update('audioFile', e.target.files?.[0] || null)} className="hidden" id="track-audio-upload" />
+          <input type="file" accept=".mp3,.wav,audio/mpeg,audio/wav" onChange={(e) => {
+            const file = e.target.files?.[0] || null;
+            if (file && file.size > 500 * 1024 * 1024) {
+              toast.error('Audio file size must be under 500 MB');
+              e.target.value = '';
+              return;
+            }
+            update('audioFile', file);
+          }} className="hidden" id="track-audio-upload" />
           <label htmlFor="track-audio-upload" className={`${inputClass} flex min-w-0 cursor-pointer items-center gap-2`}>
             <Upload className="h-4 w-4 shrink-0" />
             <span className="truncate">{form.audioFile?.name || (form._existingAudioUrl ? 'Replace audio file (optional)' : 'Choose audio file')}</span>
