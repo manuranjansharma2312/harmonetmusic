@@ -66,7 +66,7 @@ export function ProtectedRoute({
   const [checkingProfile, setCheckingProfile] = useState(true);
 
   useEffect(() => {
-    if (!user || role === 'admin') {
+    if (!user || role === 'admin' || role === 'team') {
       setCheckingProfile(false);
       return;
     }
@@ -92,12 +92,15 @@ export function ProtectedRoute({
 
   if (!user) return <Navigate to="/auth" replace />;
 
-  if (requiredRole && role !== requiredRole) {
+  if (requiredRole === 'admin' && role !== 'admin' && role !== 'team') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  if (requiredRole && requiredRole !== 'admin' && role !== requiredRole) {
     return <Navigate to={role === 'admin' ? '/admin' : '/dashboard'} replace />;
   }
 
   // Block non-admin users who aren't verified
-  if (role !== 'admin' && verificationStatus && verificationStatus !== 'verified') {
+  if (role !== 'admin' && role !== 'team' && verificationStatus && verificationStatus !== 'verified') {
     return <AccountBlockedScreen status={verificationStatus} />;
   }
 

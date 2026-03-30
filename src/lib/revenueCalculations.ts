@@ -1,4 +1,4 @@
-type AppRole = 'user' | 'admin' | null;
+type AppRole = 'user' | 'admin' | 'team' | null;
 
 function normalizePercent(value: number): number {
   if (!Number.isFinite(value)) return 0;
