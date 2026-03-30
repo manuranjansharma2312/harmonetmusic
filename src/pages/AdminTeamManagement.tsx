@@ -444,6 +444,12 @@ export default function AdminTeamManagement() {
                         </TableCell>
                         <TableCell className="whitespace-nowrap">{format(new Date(m.created_at), 'dd MMM yyyy')}</TableCell>
                         <TableCell className="text-right whitespace-nowrap space-x-1">
+                          <Button variant="outline" size="sm" title="Set Password" onClick={() => { setPwTarget(m); setNewPassword(''); setPwModalOpen(true); }}>
+                            <KeyRound className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="outline" size="sm" title="Send Reset Password Email" onClick={() => handleSendResetLink(m)}>
+                            <Mail className="h-3.5 w-3.5" />
+                          </Button>
                           <Button variant="outline" size="sm" title="Login as this member" onClick={() => handleLoginAs(m)}>
                             <LogIn className="h-3.5 w-3.5" />
                           </Button>
