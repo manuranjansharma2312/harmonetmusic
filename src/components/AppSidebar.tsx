@@ -22,6 +22,21 @@ import {
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
+const AI_SETTINGS_CACHE_KEY = 'ai-settings-public-cache-v1';
+
+function readCachedAiEnabled() {
+  if (typeof window === 'undefined') return false;
+
+  try {
+    const cached = localStorage.getItem(AI_SETTINGS_CACHE_KEY);
+    if (!cached) return false;
+
+    return JSON.parse(cached)?.is_enabled === true;
+  } catch {
+    return false;
+  }
+}
+
 const contentToolLinks = [
   { to: '/tools/copyright-claim', label: 'Copyright Claim Removal', icon: ShieldAlert },
   { to: '/tools/instagram-link', label: 'Instagram Link To Song', icon: Instagram },
@@ -128,7 +143,7 @@ export function AppSidebar() {
   const [adminPromotionalOpen, setAdminPromotionalOpen] = useState(false);
   const [adminGeneralSettingsOpen, setAdminGeneralSettingsOpen] = useState(false);
   const [adminBillingOpen, setAdminBillingOpen] = useState(false);
-  const [aiEnabled, setAiEnabled] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(() => readCachedAiEnabled());
 
   // Fetch impersonated user's profile when impersonating
   useEffect(() => {
@@ -146,11 +161,25 @@ export function AppSidebar() {
 
   // Check if AI Image system is enabled
   useEffect(() => {
+    let active = true;
+
     supabase.rpc('get_ai_settings_public' as any)
       .then(({ data }: any) => { 
         const settings = Array.isArray(data) ? data[0] : data;
-        setAiEnabled(settings?.is_enabled ?? false); 
+        const nextAiEnabled = settings?.is_enabled ?? false;
+
+        try {
+          localStorage.setItem(AI_SETTINGS_CACHE_KEY, JSON.stringify({ is_enabled: nextAiEnabled }));
+        } catch {}
+
+        if (active) {
+          setAiEnabled((prev) => (prev === nextAiEnabled ? prev : nextAiEnabled));
+        }
       });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Fetch team member's allowed pages

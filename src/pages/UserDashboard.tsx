@@ -121,6 +121,7 @@ export default function UserDashboard() {
   const refreshTimeoutRef = useRef<number | null>(null);
   const isFetchingRef = useRef(false);
   const shouldRefetchRef = useRef(false);
+  const lastDashboardSignatureRef = useRef('');
 
   const effectiveUserId = isImpersonating ? impersonatedUserId : user?.id;
   const effectiveCut = getEffectiveRevenueCutPercent({ hiddenCut, subLabelCut, isSubLabel: isSubLabelUser });
@@ -340,8 +341,8 @@ export default function UserDashboard() {
         newMonthlyDownloadsData = Object.entries(sparkDlMap).map(([month, count]) => ({ month, count }));
       }
 
-      // Single batch state update — prevents 25+ cascading re-renders
-      setState({
+      // Single batch state update — prevents no-op realtime redraws
+      const nextState: DashboardState = {
         loading: false,
         displayId: newDisplayId,
         releaseStats: newReleaseStats,
@@ -370,7 +371,13 @@ export default function UserDashboard() {
         monthlyDownloadsData: newMonthlyDownloadsData,
         vevoStreams: vevoStr,
         vevoRevenue: Math.round(vevoRev * 100) / 100,
-      });
+      };
+
+      const nextSignature = JSON.stringify(nextState);
+      if (lastDashboardSignatureRef.current !== nextSignature) {
+        lastDashboardSignatureRef.current = nextSignature;
+        setState(nextState);
+      }
     } catch (error) {
       console.error('Failed to load dashboard', error);
       toast.error('Failed to load dashboard data.');
@@ -385,11 +392,12 @@ export default function UserDashboard() {
   }, [effectiveUserId, impersonatedUserId, isImpersonating, role, user?.id]);
 
   const scheduleFetchAll = useCallback(() => {
+    if (typeof document !== 'undefined' && document.hidden) return;
     if (refreshTimeoutRef.current !== null) window.clearTimeout(refreshTimeoutRef.current);
     refreshTimeoutRef.current = window.setTimeout(() => {
       refreshTimeoutRef.current = null;
       void fetchAll();
-    }, 250);
+    }, 1000);
   }, [fetchAll]);
 
   useEffect(() => {
@@ -847,7 +855,27 @@ function RecentTutorialsWidget() {
     refetchOnWindowFocus: false,
   });
 
-  if (isLoading || tutorials.length === 0) return null;
+  if (isLoading) {
+    return (
+      <div className="mt-6">
+        <GlassCard className="!p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm sm:text-lg font-semibold flex items-center gap-2.5">
+              <div className="h-7 w-7 rounded-xl bg-primary/15 flex items-center justify-center"><BookOpen className="h-3.5 w-3.5 text-primary" /></div>
+              Recent Tutorials
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[0, 1, 2].map((item) => (
+              <div key={item} className="min-h-[118px] rounded-xl border border-border/20 bg-muted/15" />
+            ))}
+          </div>
+        </GlassCard>
+      </div>
+    );
+  }
+
+  if (tutorials.length === 0) return null;
   const stripHtml = (html: string) => {
     const tmp = document.createElement('div');
     tmp.innerHTML = html;
