@@ -352,30 +352,52 @@ export default function AdminAllPending() {
               </tbody>
             </table>
           </div>
-          {totalPages > 1 && (
-            <div className="p-3 border-t border-border">
-              <TablePagination page={page} totalPages={totalPages} onPageChange={setPage} />
-            </div>
-          )}
+          <TablePagination
+            totalItems={totalCount}
+            currentPage={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(0); }}
+          />
         </div>
       </div>
 
-      <ConfirmDialog
-        open={!!approveId}
-        onOpenChange={(o) => !o && setApproveId(null)}
-        title="Approve Item"
-        description="Are you sure you want to approve this item?"
-        confirmLabel="Approve"
-        onConfirm={handleApprove}
-        loading={actionLoading}
-      />
+      {/* Approve Confirm Dialog */}
+      <Dialog open={!!approveId} onOpenChange={(o) => !o && setApproveId(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle>Approve Item</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">Are you sure you want to approve this item?</p>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setApproveId(null)}>Cancel</Button>
+            <Button onClick={handleApprove} disabled={actionLoading}>
+              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null} Approve
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      <RejectReasonModal
-        open={!!rejectId}
-        onOpenChange={(o) => !o && setRejectId(null)}
-        onSubmit={handleReject}
-        loading={actionLoading}
-      />
+      {/* Reject Reason Dialog */}
+      <Dialog open={!!rejectId} onOpenChange={(o) => { if (!o) { setRejectId(null); setRejectReason(''); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle>Reject</DialogTitle></DialogHeader>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground">Rejection Reason *</label>
+            <Textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Enter the reason for rejection..."
+              className="min-h-[100px]"
+              autoFocus
+            />
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => { setRejectId(null); setRejectReason(''); }}>Cancel</Button>
+            <Button variant="destructive" onClick={() => handleReject(rejectReason)} disabled={!rejectReason.trim() || actionLoading}>
+              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null} Reject
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
