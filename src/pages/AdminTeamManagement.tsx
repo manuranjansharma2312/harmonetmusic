@@ -633,6 +633,37 @@ export default function AdminTeamManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ---- SET PASSWORD MODAL ---- */}
+      <Dialog open={pwModalOpen} onOpenChange={v => { setPwModalOpen(v); if (!v) { setPwTarget(null); setNewPassword(''); } }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Set Password for {pwTarget?.name}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">Set a new password for <strong>{pwTarget?.email}</strong></p>
+            <div>
+              <Label>New Password *</Label>
+              <div className="relative">
+                <Input
+                  type={showNewPw ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  placeholder="Min 6 characters"
+                />
+                <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showNewPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPwModalOpen(false)}>Cancel</Button>
+            <Button onClick={handleSetPassword} disabled={pwSubmitting}>
+              {pwSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Set Password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
