@@ -78,6 +78,8 @@ export default function AdminDashboard() {
   const [pendingVideoCount, setPendingVideoCount] = useState(0);
   const [pendingVevoCount, setPendingVevoCount] = useState(0);
   const [monthlyVevo, setMonthlyVevo] = useState<{ month: string; count: number }[]>([]);
+  const [vevoTotalRevenue, setVevoTotalRevenue] = useState(0);
+  const [vevoTotalStreams, setVevoTotalStreams] = useState(0);
   const [monthlyCmsLinked, setMonthlyCmsLinked] = useState<{ month: string; count: number }[]>([]);
   const [signatureDocCount, setSignatureDocCount] = useState(0);
   const [transferCount, setTransferCount] = useState(0);
