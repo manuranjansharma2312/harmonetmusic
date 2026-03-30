@@ -77,7 +77,6 @@ const adminLinksTop = [
   { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
   { to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt },
   
-  { to: '/admin/tutorials', label: 'Manage Tutorials', icon: BookOpen },
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
   { to: '/admin/promotion-tools', label: 'Promotional Tools', icon: Megaphone },
   { to: '/admin/payment-settings', label: 'Payment Settings', icon: CreditCard },
