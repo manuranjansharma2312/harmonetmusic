@@ -87,12 +87,8 @@ export default function MyLabels() {
   };
 
   const handleDelete = async () => {
-    if (!deleteLabel) return;
-    const { error } = await supabase.from('labels').delete().eq('id', deleteLabel.id);
-    if (error) { toast.error(error.message); return; }
-    toast.success('Label deleted');
+    toast.error('Only administrators can delete records. Please contact admin.');
     setDeleteLabel(null);
-    fetchLabels();
   };
 
   const handleDownloadB2b = async (b2bPath: string) => {
@@ -197,11 +193,6 @@ export default function MyLabels() {
                   <p className="text-xs text-destructive max-w-[200px]" title={label.rejection_reason}>
                     Reason: {label.rejection_reason}
                   </p>
-                )}
-                {label.status === 'pending' && (
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteLabel(label)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
                 )}
               </div>
             </GlassCard>

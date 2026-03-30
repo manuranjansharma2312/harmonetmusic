@@ -229,17 +229,8 @@ export default function MyReleases() {
   };
 
   const handleDelete = async () => {
-    if (!deleteRelease) return;
-    if (deleteRelease.status !== 'pending') {
-      toast.error('Only pending releases can be deleted.');
-      setDeleteRelease(null);
-      return;
-    }
-    const { error } = await supabase.from('releases').delete().eq('id', deleteRelease.id);
-    if (error) { toast.error(error.message); return; }
-    toast.success('Release deleted');
+    toast.error('Only administrators can delete records. Please contact admin.');
     setDeleteRelease(null);
-    fetchReleases();
   };
 
   if (loading) {
@@ -348,11 +339,6 @@ export default function MyReleases() {
                       {release.status === 'pending' && !release.submitted_by_label && (
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/submit?edit=${release.id}`)}>
                           <Pencil className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {release.status === 'pending' && !release.submitted_by_label && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteRelease(release)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       )}
                     </div>
