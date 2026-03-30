@@ -98,6 +98,7 @@ const CmsAnalytics = lazy(() => import("./pages/CmsAnalytics"));
 const AdminCmsWithdrawals = lazy(() => import("./pages/AdminCmsWithdrawals"));
 const AdminYouTubeCmsSettings = lazy(() => import("./pages/AdminYouTubeCmsSettings"));
 const AdminAccountSecurity = lazy(() => import("./pages/AdminAccountSecurity"));
+const AdminTeamManagement = lazy(() => import("./pages/AdminTeamManagement"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
