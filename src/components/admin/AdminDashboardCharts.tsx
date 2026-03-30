@@ -135,9 +135,9 @@ function AdminDashboardCharts({
                 <YAxis yAxisId="right" orientation="right" tick={axisTickStyle} width={50} axisLine={false} tickLine={false} tickFormatter={(v) => formatStreams(v)} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(value: number, name: string) => [name.includes('Revenue') ? formatRevenue(value) : formatStreams(value), name]} />
                 <Legend wrapperStyle={{ fontSize: '11px', color: 'hsl(0 0% 50%)', paddingTop: '12px' }} />
-                <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(0, 67%, 45%)" fill="url(#admRevGrad)" strokeWidth={2.5} name="Revenue (₹)" dot={{ r: 4, fill: 'hsl(0 0% 6%)', stroke: 'hsl(0, 67%, 45%)', strokeWidth: 2 }} activeDot={{ r: 6, strokeWidth: 2, stroke: 'hsl(0, 67%, 55%)', fill: 'hsl(0, 67%, 45%)' }} />
-                <Area yAxisId="right" type="monotone" dataKey="streams" stroke="hsl(200, 70%, 55%)" fill="url(#admStrGrad)" strokeWidth={2} name="Streams" dot={{ r: 3, fill: 'hsl(0 0% 6%)', stroke: 'hsl(200, 70%, 55%)', strokeWidth: 2 }} />
-                <Line yAxisId="right" type="monotone" dataKey="downloads" stroke="hsl(280, 60%, 55%)" strokeWidth={1.5} strokeDasharray="6 4" name="Downloads" dot={false} />
+                <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(0, 67%, 45%)" fill="url(#admRevGrad)" strokeWidth={2.5} name="Revenue (₹)" isAnimationActive={false} dot={{ r: 4, fill: 'hsl(0 0% 6%)', stroke: 'hsl(0, 67%, 45%)', strokeWidth: 2 }} activeDot={{ r: 6, strokeWidth: 2, stroke: 'hsl(0, 67%, 55%)', fill: 'hsl(0, 67%, 45%)' }} />
+                <Area yAxisId="right" type="monotone" dataKey="streams" stroke="hsl(200, 70%, 55%)" fill="url(#admStrGrad)" strokeWidth={2} name="Streams" isAnimationActive={false} dot={{ r: 3, fill: 'hsl(0 0% 6%)', stroke: 'hsl(200, 70%, 55%)', strokeWidth: 2 }} />
+                <Line yAxisId="right" type="monotone" dataKey="downloads" stroke="hsl(280, 60%, 55%)" strokeWidth={1.5} strokeDasharray="6 4" name="Downloads" dot={false} isAnimationActive={false} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
