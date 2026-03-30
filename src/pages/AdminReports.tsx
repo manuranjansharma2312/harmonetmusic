@@ -586,9 +586,11 @@ export default function AdminReports() {
             <h1 className="text-2xl font-bold">Reports & Analytics</h1>
             <p className="text-muted-foreground text-sm">Import and manage user revenue reports</p>
           </div>
-          <Button variant="outline" size="sm" onClick={openFormatConfig}>
-            <Settings2 className="h-4 w-4 mr-1" /> Report Format
-          </Button>
+          {canChangeSettings && (
+            <Button variant="outline" size="sm" onClick={openFormatConfig}>
+              <Settings2 className="h-4 w-4 mr-1" /> Report Format
+            </Button>
+          )}
         </div>
 
         {showFormatConfig && (
