@@ -193,6 +193,7 @@ export default function PromotionTools() {
         <Card>
           <CardHeader><CardTitle>My Orders</CardTitle></CardHeader>
           <CardContent>
+            <div className="responsive-table-wrap">
             <Table className="min-w-max">
               <TableHeader>
                 <TableRow>

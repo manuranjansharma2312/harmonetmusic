@@ -67,6 +67,7 @@ export default function AdminVideoForms() {
                 ) : filtered.length === 0 ? (
                   <p className="text-center py-8 text-muted-foreground">No forms created yet</p>
                 ) : (
+                  <div className="responsive-table-wrap">
                   <Table className="min-w-max">
                     <TableHeader>
                       <TableRow>
