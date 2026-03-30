@@ -230,11 +230,7 @@ export default function AdminPromotionTools() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 className="text-2xl font-bold">Promotion Tools</h1>
-          <div className="flex items-center gap-3">
-            <Label htmlFor="promo-toggle" className="text-sm">Enable for Users</Label>
-            <Switch id="promo-toggle" checked={isEnabled} onCheckedChange={toggleEnabled} />
-          </div>
+          <h1 className="text-2xl font-bold">Paid Promotions</h1>
         </div>
 
 
