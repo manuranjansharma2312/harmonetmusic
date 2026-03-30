@@ -15,6 +15,7 @@ import { ResetPasswordModal } from '@/components/ResetPasswordModal';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { useNavigate } from 'react-router-dom';
 import { useTeamPermissions } from '@/hooks/useTeamPermissions';
+import { CreateUserModal } from '@/components/CreateUserModal';
 
 import {
   DropdownMenu,
