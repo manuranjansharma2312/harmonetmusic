@@ -35,6 +35,7 @@ type PendingCategory = {
   table: string;
   statusField: string;
   statusValue: string;
+  extraFilter?: { field: string; value: string };
   columns: { key: string; label: string; render?: (row: any) => React.ReactNode }[];
   actions: ('approve' | 'reject' | 'view')[];
   approveStatus: string;
