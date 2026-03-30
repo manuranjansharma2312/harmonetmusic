@@ -52,6 +52,7 @@ export default function MyProfile() {
   const effectiveUserId = isImpersonating ? impersonatedUserId : user?.id;
   const [profile, setProfile] = useState<Profile | null>(null);
   const [bankDetail, setBankDetail] = useState<BankDetail | null>(null);
+  const [parentCut, setParentCut] = useState<{ cut: number; parentName: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -61,8 +62,23 @@ export default function MyProfile() {
         supabase.from('profiles').select('*').eq('user_id', effectiveUserId).maybeSingle(),
         supabase.from('bank_details').select('*').eq('user_id', effectiveUserId).maybeSingle(),
       ]);
-      setProfile(profileRes.data as Profile | null);
+      const prof = profileRes.data as Profile | null;
+      setProfile(prof);
       setBankDetail(bankRes.data as BankDetail | null);
+
+      // Fetch parent label cut for sub-label users
+      if (prof?.user_type === 'sub_label') {
+        const { data: slData } = await supabase
+          .from('sub_labels')
+          .select('percentage_cut, parent_label_name')
+          .eq('sub_user_id', effectiveUserId)
+          .eq('status', 'active')
+          .maybeSingle();
+        if (slData) {
+          setParentCut({ cut: Number(slData.percentage_cut || 0), parentName: slData.parent_label_name });
+        }
+      }
+
       setLoading(false);
     })();
   }, [effectiveUserId]);
