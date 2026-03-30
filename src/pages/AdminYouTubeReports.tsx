@@ -738,7 +738,7 @@ export default function AdminYouTubeReports() {
             </div>
           )}
         </GlassCard>
-
+        )}
         <GlassCard className="p-0 overflow-hidden">
           <div className="p-4 border-b border-border/50 flex items-center justify-between gap-3 flex-wrap">
             <h2 className="text-lg font-semibold">Imported YouTube Reports</h2>

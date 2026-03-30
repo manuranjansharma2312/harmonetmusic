@@ -767,7 +767,7 @@ export default function AdminVevoReports() {
             </div>
           )}
         </GlassCard>
-
+        )}
         <GlassCard className="p-0 overflow-hidden">
           {loading ? (
             <p className="p-6 text-center text-muted-foreground">Loading reports...</p>
