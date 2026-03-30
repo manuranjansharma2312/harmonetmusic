@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, lazy, Suspense, forwardRef } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -13,93 +13,109 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SiteSettingsRuntime } from "@/components/SiteSettingsRuntime";
 import { BrandingHead } from "@/components/BrandingHead";
 
-// Lazy load all pages for code splitting
-const Auth = lazy(() => import("./pages/Auth"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword"));
-const UserDashboard = lazy(() => import("./pages/UserDashboard"));
-const NewRelease = lazy(() => import("./pages/NewRelease"));
-const AdminGenresLanguages = lazy(() => import("./pages/AdminGenresLanguages"));
-const MyReleases = lazy(() => import("./pages/MyReleases"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const AdminAllPending = lazy(() => import("./pages/AdminAllPending"));
-const AdminSubmissions = lazy(() => import("./pages/AdminSubmissions"));
-const AdminTransferHistory = lazy(() => import("./pages/AdminTransferHistory"));
-const AdminUsers = lazy(() => import("./pages/AdminUsers"));
-const MyProfile = lazy(() => import("./pages/MyProfile"));
-const MyLabels = lazy(() => import("./pages/MyLabels"));
-const SubLabels = lazy(() => import("./pages/SubLabels"));
-const AdminSubLabels = lazy(() => import("./pages/AdminSubLabels"));
-const AdminSubLabelWithdrawals = lazy(() => import("./pages/AdminSubLabelWithdrawals"));
-const SubLabelWithdrawals = lazy(() => import("./pages/SubLabelWithdrawals"));
-const AdminLabels = lazy(() => import("./pages/AdminLabels"));
-const AdminContentRequests = lazy(() => import("./pages/AdminContentRequests"));
-const CopyrightClaimRemoval = lazy(() => import("./pages/CopyrightClaimRemoval"));
-const InstagramLinkToSong = lazy(() => import("./pages/InstagramLinkToSong"));
-const ContentIdMerge = lazy(() => import("./pages/ContentIdMerge"));
-const OacApply = lazy(() => import("./pages/OacApply"));
-const Takedown = lazy(() => import("./pages/Takedown"));
-const CustomSupport = lazy(() => import("./pages/CustomSupport"));
-const PlaylistPitching = lazy(() => import("./pages/PlaylistPitching"));
-const Reports = lazy(() => import("./pages/Reports"));
-const YouTubeReports = lazy(() => import("./pages/YouTubeReports"));
-const AdminReports = lazy(() => import("./pages/AdminReports"));
-const AdminYouTubeReports = lazy(() => import("./pages/AdminYouTubeReports"));
-const Analytics = lazy(() => import("./pages/Analytics"));
-const Revenue = lazy(() => import("./pages/Revenue"));
-const AdminRevenue = lazy(() => import("./pages/AdminRevenue"));
-const TermsConditions = lazy(() => import("./pages/TermsConditions"));
-const AdminTermsConditions = lazy(() => import("./pages/AdminTermsConditions"));
-const AdminInvoices = lazy(() => import("./pages/AdminInvoices"));
-const AdminPosterGenerator = lazy(() => import("./pages/AdminPosterGenerator"));
-const AdminNotices = lazy(() => import("./pages/AdminNotices"));
-const AdminTutorials = lazy(() => import("./pages/AdminTutorials"));
-const HelpTutorials = lazy(() => import("./pages/HelpTutorials"));
-const AdminAgreements = lazy(() => import("./pages/AdminAgreements"));
-const AdminAgreementGenerator = lazy(() => import("./pages/AdminAgreementGenerator"));
-const AdminPromotionTools = lazy(() => import("./pages/AdminPromotionTools"));
-const AdminPaymentSettings = lazy(() => import("./pages/AdminPaymentSettings"));
-const AdminPromotionalSettings = lazy(() => import("./pages/AdminPromotionalSettings"));
-const PromotionTools = lazy(() => import("./pages/PromotionTools"));
-const BankDetails = lazy(() => import("./pages/BankDetails"));
-const ContactSupport = lazy(() => import("./pages/ContactSupport"));
-const AdminContactSupport = lazy(() => import("./pages/AdminContactSupport"));
-const AdminAIImageSystem = lazy(() => import("./pages/AdminAIImageSystem"));
-const AIImageGeneration = lazy(() => import("./pages/AIImageGeneration"));
-const SmartLink = lazy(() => import("./pages/SmartLink"));
-const MySmartLinks = lazy(() => import("./pages/MySmartLinks"));
-const AdminSmartLinks = lazy(() => import("./pages/AdminSmartLinks"));
-const AdminEmailSettings = lazy(() => import("./pages/AdminEmailSettings"));
-const AdminSiteSettings = lazy(() => import("./pages/AdminSiteSettings"));
-const AdminBrandingSettings = lazy(() => import("./pages/AdminBrandingSettings"));
-const AdminSignatureDocuments = lazy(() => import("./pages/AdminSignatureDocuments"));
-const AdminSignatureDetail = lazy(() => import("./pages/AdminSignatureDetail"));
-const AdminSignatureFields = lazy(() => import("./pages/AdminSignatureFields"));
-const AdminSignatureSettings = lazy(() => import("./pages/AdminSignatureSettings"));
-const SignDocument = lazy(() => import("./pages/SignDocument"));
-const DownloadSignedPdf = lazy(() => import("./pages/DownloadSignedPdf"));
-const AdminVideoForms = lazy(() => import("./pages/AdminVideoForms"));
-const AdminVideoFormBuilder = lazy(() => import("./pages/AdminVideoFormBuilder"));
-const AdminVideoSubmissions = lazy(() => import("./pages/AdminVideoSubmissions"));
-const AdminVevoChannels = lazy(() => import("./pages/AdminVevoChannels"));
-const VideoSubmit = lazy(() => import("./pages/VideoSubmit"));
-const MyVideos = lazy(() => import("./pages/MyVideos"));
-const VevoChannels = lazy(() => import("./pages/VevoChannels"));
-const AdminVideoGuidelines = lazy(() => import("./pages/AdminVideoGuidelines"));
-const VideoGuidelines = lazy(() => import("./pages/VideoGuidelines"));
-const AdminVevoReports = lazy(() => import("./pages/AdminVevoReports"));
-const VevoReports = lazy(() => import("./pages/VevoReports"));
-const AdminVevoSettings = lazy(() => import("./pages/AdminVevoSettings"));
-const YouTubeCmsLink = lazy(() => import("./pages/YouTubeCmsLink"));
-const AdminYouTubeCmsLinks = lazy(() => import("./pages/AdminYouTubeCmsLinks"));
-const AdminCmsReports = lazy(() => import("./pages/AdminCmsReports"));
-const CmsReports = lazy(() => import("./pages/CmsReports"));
-const CmsBalance = lazy(() => import("./pages/CmsBalance"));
-const CmsAnalytics = lazy(() => import("./pages/CmsAnalytics"));
-const AdminCmsWithdrawals = lazy(() => import("./pages/AdminCmsWithdrawals"));
-const AdminYouTubeCmsSettings = lazy(() => import("./pages/AdminYouTubeCmsSettings"));
-const AdminAccountSecurity = lazy(() => import("./pages/AdminAccountSecurity"));
-const AdminTeamManagement = lazy(() => import("./pages/AdminTeamManagement"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+// Retry wrapper for lazy imports — auto-retries on network failures
+function lazyRetry(fn: () => Promise<any>, retries = 2): ReturnType<typeof lazy> {
+  return lazy(() =>
+    fn().catch((err) => {
+      if (retries > 0) {
+        return new Promise<any>((resolve) => setTimeout(resolve, 1000)).then(() =>
+          lazyRetry(fn, retries - 1) as any
+        );
+      }
+      // Force reload on persistent failure (stale chunk)
+      window.location.reload();
+      throw err;
+    })
+  );
+}
+
+// Lazy load all pages with retry
+const Auth = lazyRetry(() => import("./pages/Auth"));
+const ResetPassword = lazyRetry(() => import("./pages/ResetPassword"));
+const UserDashboard = lazyRetry(() => import("./pages/UserDashboard"));
+const NewRelease = lazyRetry(() => import("./pages/NewRelease"));
+const AdminGenresLanguages = lazyRetry(() => import("./pages/AdminGenresLanguages"));
+const MyReleases = lazyRetry(() => import("./pages/MyReleases"));
+const AdminDashboard = lazyRetry(() => import("./pages/AdminDashboard"));
+const AdminAllPending = lazyRetry(() => import("./pages/AdminAllPending"));
+const AdminSubmissions = lazyRetry(() => import("./pages/AdminSubmissions"));
+const AdminTransferHistory = lazyRetry(() => import("./pages/AdminTransferHistory"));
+const AdminUsers = lazyRetry(() => import("./pages/AdminUsers"));
+const MyProfile = lazyRetry(() => import("./pages/MyProfile"));
+const MyLabels = lazyRetry(() => import("./pages/MyLabels"));
+const SubLabels = lazyRetry(() => import("./pages/SubLabels"));
+const AdminSubLabels = lazyRetry(() => import("./pages/AdminSubLabels"));
+const AdminSubLabelWithdrawals = lazyRetry(() => import("./pages/AdminSubLabelWithdrawals"));
+const SubLabelWithdrawals = lazyRetry(() => import("./pages/SubLabelWithdrawals"));
+const AdminLabels = lazyRetry(() => import("./pages/AdminLabels"));
+const AdminContentRequests = lazyRetry(() => import("./pages/AdminContentRequests"));
+const CopyrightClaimRemoval = lazyRetry(() => import("./pages/CopyrightClaimRemoval"));
+const InstagramLinkToSong = lazyRetry(() => import("./pages/InstagramLinkToSong"));
+const ContentIdMerge = lazyRetry(() => import("./pages/ContentIdMerge"));
+const OacApply = lazyRetry(() => import("./pages/OacApply"));
+const Takedown = lazyRetry(() => import("./pages/Takedown"));
+const CustomSupport = lazyRetry(() => import("./pages/CustomSupport"));
+const PlaylistPitching = lazyRetry(() => import("./pages/PlaylistPitching"));
+const Reports = lazyRetry(() => import("./pages/Reports"));
+const YouTubeReports = lazyRetry(() => import("./pages/YouTubeReports"));
+const AdminReports = lazyRetry(() => import("./pages/AdminReports"));
+const AdminYouTubeReports = lazyRetry(() => import("./pages/AdminYouTubeReports"));
+const Analytics = lazyRetry(() => import("./pages/Analytics"));
+const Revenue = lazyRetry(() => import("./pages/Revenue"));
+const AdminRevenue = lazyRetry(() => import("./pages/AdminRevenue"));
+const TermsConditions = lazyRetry(() => import("./pages/TermsConditions"));
+const AdminTermsConditions = lazyRetry(() => import("./pages/AdminTermsConditions"));
+const AdminInvoices = lazyRetry(() => import("./pages/AdminInvoices"));
+const AdminPosterGenerator = lazyRetry(() => import("./pages/AdminPosterGenerator"));
+const AdminNotices = lazyRetry(() => import("./pages/AdminNotices"));
+const AdminTutorials = lazyRetry(() => import("./pages/AdminTutorials"));
+const HelpTutorials = lazyRetry(() => import("./pages/HelpTutorials"));
+const AdminAgreements = lazyRetry(() => import("./pages/AdminAgreements"));
+const AdminAgreementGenerator = lazyRetry(() => import("./pages/AdminAgreementGenerator"));
+const AdminPromotionTools = lazyRetry(() => import("./pages/AdminPromotionTools"));
+const AdminPaymentSettings = lazyRetry(() => import("./pages/AdminPaymentSettings"));
+const AdminPromotionalSettings = lazyRetry(() => import("./pages/AdminPromotionalSettings"));
+const PromotionTools = lazyRetry(() => import("./pages/PromotionTools"));
+const BankDetails = lazyRetry(() => import("./pages/BankDetails"));
+const ContactSupport = lazyRetry(() => import("./pages/ContactSupport"));
+const AdminContactSupport = lazyRetry(() => import("./pages/AdminContactSupport"));
+const AdminAIImageSystem = lazyRetry(() => import("./pages/AdminAIImageSystem"));
+const AIImageGeneration = lazyRetry(() => import("./pages/AIImageGeneration"));
+const SmartLink = lazyRetry(() => import("./pages/SmartLink"));
+const MySmartLinks = lazyRetry(() => import("./pages/MySmartLinks"));
+const AdminSmartLinks = lazyRetry(() => import("./pages/AdminSmartLinks"));
+const AdminEmailSettings = lazyRetry(() => import("./pages/AdminEmailSettings"));
+const AdminSiteSettings = lazyRetry(() => import("./pages/AdminSiteSettings"));
+const AdminBrandingSettings = lazyRetry(() => import("./pages/AdminBrandingSettings"));
+const AdminSignatureDocuments = lazyRetry(() => import("./pages/AdminSignatureDocuments"));
+const AdminSignatureDetail = lazyRetry(() => import("./pages/AdminSignatureDetail"));
+const AdminSignatureFields = lazyRetry(() => import("./pages/AdminSignatureFields"));
+const AdminSignatureSettings = lazyRetry(() => import("./pages/AdminSignatureSettings"));
+const SignDocument = lazyRetry(() => import("./pages/SignDocument"));
+const DownloadSignedPdf = lazyRetry(() => import("./pages/DownloadSignedPdf"));
+const AdminVideoForms = lazyRetry(() => import("./pages/AdminVideoForms"));
+const AdminVideoFormBuilder = lazyRetry(() => import("./pages/AdminVideoFormBuilder"));
+const AdminVideoSubmissions = lazyRetry(() => import("./pages/AdminVideoSubmissions"));
+const AdminVevoChannels = lazyRetry(() => import("./pages/AdminVevoChannels"));
+const VideoSubmit = lazyRetry(() => import("./pages/VideoSubmit"));
+const MyVideos = lazyRetry(() => import("./pages/MyVideos"));
+const VevoChannels = lazyRetry(() => import("./pages/VevoChannels"));
+const AdminVideoGuidelines = lazyRetry(() => import("./pages/AdminVideoGuidelines"));
+const VideoGuidelines = lazyRetry(() => import("./pages/VideoGuidelines"));
+const AdminVevoReports = lazyRetry(() => import("./pages/AdminVevoReports"));
+const VevoReports = lazyRetry(() => import("./pages/VevoReports"));
+const AdminVevoSettings = lazyRetry(() => import("./pages/AdminVevoSettings"));
+const YouTubeCmsLink = lazyRetry(() => import("./pages/YouTubeCmsLink"));
+const AdminYouTubeCmsLinks = lazyRetry(() => import("./pages/AdminYouTubeCmsLinks"));
+const AdminCmsReports = lazyRetry(() => import("./pages/AdminCmsReports"));
+const CmsReports = lazyRetry(() => import("./pages/CmsReports"));
+const CmsBalance = lazyRetry(() => import("./pages/CmsBalance"));
+const CmsAnalytics = lazyRetry(() => import("./pages/CmsAnalytics"));
+const AdminCmsWithdrawals = lazyRetry(() => import("./pages/AdminCmsWithdrawals"));
+const AdminYouTubeCmsSettings = lazyRetry(() => import("./pages/AdminYouTubeCmsSettings"));
+const AdminAccountSecurity = lazyRetry(() => import("./pages/AdminAccountSecurity"));
+const AdminTeamManagement = lazyRetry(() => import("./pages/AdminTeamManagement"));
+const NotFound = lazyRetry(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -115,13 +131,12 @@ const queryClient = new QueryClient({
   },
 });
 
-function PageLoader() {
-  return (
-    <div className="flex min-h-[100dvh] w-full items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-    </div>
-  );
-}
+const PageLoader = forwardRef<HTMLDivElement>((_props, ref) => (
+  <div ref={ref} className="flex min-h-[100dvh] w-full items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+));
+PageLoader.displayName = 'PageLoader';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(() => {
