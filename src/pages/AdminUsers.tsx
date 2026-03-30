@@ -442,7 +442,8 @@ export default function AdminUsers() {
               </div>
               <Row label="Joined" value={new Date(viewProfile.created_at).toLocaleDateString()} />
 
-              {/* Hidden Cut */}
+              {/* Hidden Cut - only for admins */}
+              {!isTeam && (
               <div className="pt-3 border-t border-border/50">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground font-medium">Hidden Cut %</span>
@@ -472,6 +473,7 @@ export default function AdminUsers() {
                   )}
                 </div>
               </div>
+              )}
 
               {/* ID Proof section with delete buttons */}
               {(viewProfile.id_proof_front_url || viewProfile.id_proof_back_url) && (
