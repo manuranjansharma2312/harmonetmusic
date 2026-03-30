@@ -61,7 +61,7 @@ const adminLinksTop = [
   { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
   { to: '/admin/terms', label: 'Terms & Conditions', icon: FileText },
   { to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt },
-  { to: '/admin/poster-generator', label: 'Poster Generator', icon: ImageIcon },
+  { to: '/admin/poster-generator', label: 'Out Now Poster Generator', icon: ImageIcon },
   { to: '/admin/tutorials', label: 'Manage Tutorials', icon: BookOpen },
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
   { to: '/admin/agreements', label: 'Agreements', icon: FileSignature },
