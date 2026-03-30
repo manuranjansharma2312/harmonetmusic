@@ -153,6 +153,17 @@ export function AppSidebar() {
       });
   }, []);
 
+  // Fetch team member's allowed pages
+  useEffect(() => {
+    if (isTeam && user) {
+      (supabase.from('team_members') as any).select('allowed_pages').eq('user_id', user.id).maybeSingle()
+        .then(({ data }: any) => setTeamAllowedPages(data?.allowed_pages || []));
+    }
+  }, [isTeam, user]);
+
+  // Helper to check if a team user has access to a page key
+  const hasTeamAccess = (key: string) => !isTeam || teamAllowedPages.includes(key);
+
   const effectiveUserType = isImpersonating ? impUserType : userType;
   const effectiveIsSubLabel = isImpersonating ? impIsSubLabel : isSubLabel;
 
