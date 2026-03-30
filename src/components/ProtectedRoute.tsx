@@ -100,7 +100,7 @@ export function ProtectedRoute({
   }
 
   // Block non-admin users who aren't verified
-  if (role !== 'admin' && verificationStatus && verificationStatus !== 'verified') {
+  if (role !== 'admin' && role !== 'team' && verificationStatus && verificationStatus !== 'verified') {
     return <AccountBlockedScreen status={verificationStatus} />;
   }
 
