@@ -50,6 +50,11 @@ const adminSubLabelLinks = [
   { to: '/admin/sub-label-withdrawals', label: 'Withdraw Requests', icon: Wallet },
 ];
 
+const adminPosterLinks = [
+  { to: '/admin/ai-image-system', label: 'AI Poster Generate', icon: Sparkles },
+  { to: '/admin/poster-generator', label: 'Out Now Poster Generator', icon: ImageIcon },
+];
+
 const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'All Users', icon: Users },
