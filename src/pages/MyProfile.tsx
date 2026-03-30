@@ -166,6 +166,7 @@ export default function MyProfile() {
               <ProfileRow icon={Phone} label="WhatsApp" value={`${profile.whatsapp_country_code} ${profile.whatsapp_number}`} />
               <ProfileRow icon={MapPin} label="Address" value={profile.address} />
               <ProfileRow icon={Globe} label="Location" value={`${profile.state}, ${profile.country}`} />
+              <ProfileRow icon={Shield} label="Agreement Ratio" value={`${profile.agreement_ratio || 0}%`} />
             </div>
           </GlassCard>
 
