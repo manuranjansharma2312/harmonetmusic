@@ -216,6 +216,7 @@ export default function AdminTeamManagement() {
   const deselectAllPages = () => setMemberForm(prev => ({ ...prev, allowed_pages: [] }));
 
   const getCategoryName = (id: string | null) => categories.find(c => c.id === id)?.name || '—';
+  const getPageLabel = (key: string) => ALL_ADMIN_PAGES.find(p => p.key === key)?.label || key;
 
   // ---- Govt ID helpers ----
   const addGovtId = () => setMemberForm(prev => ({ ...prev, govt_ids: [...prev.govt_ids, { name: '', number: '' }] }));
