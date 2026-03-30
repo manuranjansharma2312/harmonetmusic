@@ -169,6 +169,13 @@ export default function SubLabels() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
+      // Save allowed_pages if any selected
+      if (data?.user_id && formAllowedPages.length > 0) {
+        await (supabase.from('sub_labels') as any)
+          .update({ allowed_pages: formAllowedPages })
+          .eq('sub_user_id', data.user_id);
+      }
+
       toast.success('Sub label created successfully! Awaiting admin approval.');
       resetForm();
       fetchSubLabels();
