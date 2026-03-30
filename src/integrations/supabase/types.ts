@@ -1091,6 +1091,7 @@ export type Database = {
       profiles: {
         Row: {
           address: string
+          agreement_ratio: number
           artist_name: string | null
           country: string
           created_at: string
@@ -1116,6 +1117,7 @@ export type Database = {
         }
         Insert: {
           address: string
+          agreement_ratio?: number
           artist_name?: string | null
           country: string
           created_at?: string
@@ -1141,6 +1143,7 @@ export type Database = {
         }
         Update: {
           address?: string
+          agreement_ratio?: number
           artist_name?: string | null
           country?: string
           created_at?: string
