@@ -948,18 +948,22 @@ export default function AdminSubmissions() {
             <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleBulkDownloadPoster}>
               <Download className="h-3.5 w-3.5" /> Posters
             </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setConfirmBulkAction('audio')} disabled={bulkDeletingAudio}>
-              {bulkDeletingAudio ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <VolumeX className="h-3.5 w-3.5" />}
-              Del Audio
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setConfirmBulkAction('poster')} disabled={bulkDeletingPoster}>
-              {bulkDeletingPoster ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageOff className="h-3.5 w-3.5" />}
-              Del Posters
-            </Button>
-            <Button variant="destructive" size="sm" className="h-8 text-xs" onClick={handleBulkDelete} disabled={bulkDeleting}>
-              {bulkDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-              Delete ({selected.size})
-            </Button>
+            {canDelete && (
+              <>
+                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setConfirmBulkAction('audio')} disabled={bulkDeletingAudio}>
+                  {bulkDeletingAudio ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <VolumeX className="h-3.5 w-3.5" />}
+                  Del Audio
+                </Button>
+                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setConfirmBulkAction('poster')} disabled={bulkDeletingPoster}>
+                  {bulkDeletingPoster ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageOff className="h-3.5 w-3.5" />}
+                  Del Posters
+                </Button>
+                <Button variant="destructive" size="sm" className="h-8 text-xs" onClick={handleBulkDelete} disabled={bulkDeleting}>
+                  {bulkDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                  Delete ({selected.size})
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>
