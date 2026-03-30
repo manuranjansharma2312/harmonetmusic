@@ -76,16 +76,18 @@ const adminLinksTop = [
   { to: '/admin/users', label: 'All Users', icon: Users },
   { to: '/admin/submissions', label: 'All Releases', icon: ListMusic },
   { to: '/admin/transfer-history', label: 'Transfer History', icon: ArrowRightLeft },
-  { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
   { to: '/admin/labels', label: 'Manage Labels', icon: Tag },
   { to: '/admin/content-requests', label: 'Support Requests', icon: Headset },
   { to: '/admin/revenue', label: 'Revenue', icon: Wallet },
   { to: '/admin/invoices', label: 'Generate Invoice', icon: Receipt },
   
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
-  { to: '/admin/payment-settings', label: 'Tax Settings', icon: CreditCard },
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
-  
+];
+
+const adminGeneralSettingsLinks = [
+  { to: '/admin/genres-languages', label: 'Genres & Languages', icon: Tags },
+  { to: '/admin/payment-settings', label: 'Tax Settings', icon: CreditCard },
   { to: '/admin/email-settings', label: 'Manage Emails', icon: Mail },
 ];
 
