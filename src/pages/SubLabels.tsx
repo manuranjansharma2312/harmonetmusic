@@ -82,6 +82,7 @@ export default function SubLabels() {
   });
   const [b2bFile, setB2bFile] = useState<File | null>(null);
   const [showPw, setShowPw] = useState(false);
+  const [formAllowedPages, setFormAllowedPages] = useState<string[]>([]);
 
   const fetchSubLabels = async () => {
     if (!effectiveUserId) return;
