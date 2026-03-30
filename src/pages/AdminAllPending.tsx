@@ -91,7 +91,7 @@ const categories: PendingCategory[] = [
     key: 'videos', label: 'Videos', icon: Video,
     table: 'video_submissions', statusField: 'status', statusValue: 'pending',
     columns: [
-      { key: 'submission_type', label: 'Type' },
+      { key: 'submission_type', label: 'Type', render: (r: any) => formatLabel(r.submission_type) },
       { key: 'created_at', label: 'Submitted', render: (r) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject', 'view'],
