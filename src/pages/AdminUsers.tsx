@@ -398,7 +398,7 @@ export default function AdminUsers() {
                             )}
                             <DropdownMenuSeparator />
                             {profile.verification_status !== 'verified' && (
-                              <DropdownMenuItem onClick={() => handleVerification(profile.user_id, 'verified')} className="text-green-400 focus:text-green-400">
+                              <DropdownMenuItem onClick={() => setApprovalPopup({ userId: profile.user_id, name: profile.legal_name })} className="text-green-400 focus:text-green-400">
                                 <CheckCircle className="h-4 w-4 mr-2" /> Verify
                               </DropdownMenuItem>
                             )}
