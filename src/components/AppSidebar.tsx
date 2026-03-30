@@ -78,7 +78,6 @@ const adminLinksTop = [
   
   { to: '/admin/tutorials', label: 'Manage Tutorials', icon: BookOpen },
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
-  { to: '/admin/agreements', label: 'Agreements', icon: FileSignature },
   { to: '/admin/promotion-tools', label: 'Promotional Tools', icon: Megaphone },
   { to: '/admin/payment-settings', label: 'Payment Settings', icon: CreditCard },
   
