@@ -503,6 +503,16 @@ export default function UserDashboard() {
         ))}
       </div>
 
+      {/* Sub-label parent cut info */}
+      {isSubLabelUser && subLabelCut > 0 && (
+        <div className="mb-6 sm:mb-8 flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/30 border border-border/30">
+          <PieChartIcon className="h-4 w-4 text-amber-400 shrink-0" />
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Your parent label takes a <span className="font-bold text-foreground">{subLabelCut}%</span> cut on your revenue.
+          </p>
+        </div>
+      )}
+
       {/* Secondary Compact Stats */}
       <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3 mb-6 sm:mb-8">
         {[
