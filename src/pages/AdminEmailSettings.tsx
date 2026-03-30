@@ -1283,7 +1283,7 @@ export default function AdminEmailSettings() {
                   </p>
                 </div>
                 <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg space-y-2">
-                  <h3 className="font-semibold text-yellow-400">⚠️ Important Notes</h3>
+                  <h3 className="font-semibold text-yellow-400 flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> Important Notes</h3>
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                     <li>Never use your main email password — always use App Passwords</li>
                     <li>Gmail allows ~500 emails/day with regular accounts, 2000/day with Workspace</li>
