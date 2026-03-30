@@ -61,6 +61,7 @@ export default function SubLabels() {
     withdrawal_threshold: '1000',
   });
   const [b2bFile, setB2bFile] = useState<File | null>(null);
+  const [showPw, setShowPw] = useState(false);
 
   const fetchSubLabels = async () => {
     if (!effectiveUserId) return;
