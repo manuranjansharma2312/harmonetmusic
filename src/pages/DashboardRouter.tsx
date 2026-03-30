@@ -1,21 +1,24 @@
-import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
+import { lazy, Suspense } from 'react';
+
+const AdminDashboard = lazy(() => import('./AdminDashboard'));
+const UserDashboard = lazy(() => import('./UserDashboard'));
+
+const PageLoader = () => (
+  <div className="flex min-h-[100dvh] w-full items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
 
 export default function DashboardRouter() {
   const { role, loading } = useAuth();
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[100dvh] w-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
-  if (role === 'admin' || role === 'team') {
-    return <Navigate to="/admin" replace />;
-  }
-
-  return <Navigate to="/user-dashboard" replace />;
+  return (
+    <Suspense fallback={<PageLoader />}>
+      {role === 'admin' || role === 'team' ? <AdminDashboard /> : <UserDashboard />}
+    </Suspense>
+  );
 }
