@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -11,6 +11,7 @@ interface AuthContextType {
   loading: boolean;
   userType: string | null;
   isSubLabel: boolean;
+  verificationStatus: string | null;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -23,20 +24,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
   const [userType, setUserType] = useState<string | null>(null);
+  const [verificationStatus, setVerificationStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const isSubLabel = userType === 'sub_label';
+  const fetchedRef = useRef<string | null>(null);
 
   const fetchUserInfo = async (userId: string) => {
-    const { data } = await supabase.rpc('get_user_role', { _user_id: userId });
-    setRole(data as AppRole || 'user');
+    // Skip if already fetched for this user
+    if (fetchedRef.current === userId) return;
+    fetchedRef.current = userId;
 
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('user_type')
-      .eq('user_id', userId)
-      .maybeSingle();
-    setUserType(profileData?.user_type || null);
+    const [roleRes, profileRes] = await Promise.all([
+      supabase.rpc('get_user_role', { _user_id: userId }),
+      supabase.from('profiles').select('user_type, verification_status').eq('user_id', userId).maybeSingle(),
+    ]);
+
+    setRole(roleRes.data as AppRole || 'user');
+    setUserType(profileRes.data?.user_type || null);
+    setVerificationStatus(profileRes.data?.verification_status || null);
   };
 
   useEffect(() => {
@@ -47,9 +53,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchUserInfo(session.user.id);
+        fetchUserInfo(session.user.id).then(() => {
+          if (mounted) setLoading(false);
+        });
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -62,18 +71,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(null);
           setRole(null);
           setUserType(null);
+          setVerificationStatus(null);
+          fetchedRef.current = null;
           return;
         }
         
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          fetchUserInfo(session.user.id);
+          // Reset ref on sign-in so we re-fetch
+          if (event === 'SIGNED_IN') fetchedRef.current = null;
+          fetchUserInfo(session.user.id).then(() => {
+            if (mounted) setLoading(false);
+          });
         } else {
           setRole(null);
           setUserType(null);
+          setVerificationStatus(null);
+          fetchedRef.current = null;
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
@@ -120,10 +137,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setRole(null);
     setUserType(null);
+    setVerificationStatus(null);
+    fetchedRef.current = null;
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, role, loading, userType, isSubLabel, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, role, loading, userType, isSubLabel, verificationStatus, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

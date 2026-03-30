@@ -1,8 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
-import { Loader2, ShieldAlert, Clock, XCircle, Ban } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { Loader2, Clock, XCircle, Ban } from 'lucide-react';
 import { BackgroundBlobs } from '@/components/BackgroundBlobs';
 import { useBranding } from '@/hooks/useBranding';
 
@@ -61,28 +59,9 @@ export function ProtectedRoute({
   children: React.ReactNode;
   requiredRole?: 'admin' | 'user';
 }) {
-  const { user, role, loading } = useAuth();
-  const [verificationStatus, setVerificationStatus] = useState<string | null>(null);
-  const [checkingProfile, setCheckingProfile] = useState(true);
+  const { user, role, loading, verificationStatus } = useAuth();
 
-  useEffect(() => {
-    if (!user || role === 'admin' || role === 'team') {
-      setCheckingProfile(false);
-      return;
-    }
-
-    (async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('verification_status')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      setVerificationStatus(data?.verification_status || 'pending');
-      setCheckingProfile(false);
-    })();
-  }, [user, role]);
-
-  if (loading || checkingProfile) {
+  if (loading) {
     return (
       <div className="flex min-h-[100dvh] w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
