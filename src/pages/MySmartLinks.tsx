@@ -66,11 +66,8 @@ export default function MySmartLinks() {
     return s.platform_links && Object.values(s.platform_links).some(v => v?.trim());
   };
 
-  const deleteSmartLink = async (id: string) => {
-    if (!confirm('Delete this smart link?')) return;
-    await supabase.from('smart_links').delete().eq('id', id);
-    toast.success('Smart link deleted');
-    fetchLinks();
+  const deleteSmartLink = async (_id: string) => {
+    toast.error('Only administrators can delete records. Please contact admin.');
   };
 
   if (systemEnabled === false) {
