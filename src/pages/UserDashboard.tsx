@@ -185,20 +185,22 @@ export default function UserDashboard() {
       }
 
       if (!hasSubLabel) {
-        const [cmsLinks, cmsEntries, cmsWithdrawals] = await Promise.all([
+        const [cmsLinks, cmsWithdrawals] = await Promise.all([
           fetchAllRows('youtube_cms_links', 'channel_name, cut_percent', (query) => query.eq('user_id', effectiveUserId).eq('status', 'linked')),
-          fetchAllRows('cms_report_entries', 'net_generated_revenue, channel_name'),
           fetchAllRows('cms_withdrawal_requests', 'status, amount', (query) => query.eq('user_id', effectiveUserId)),
         ]);
 
         const linkedChannels = (cmsLinks as any[]) || [];
+        const linkedNamesArr = linkedChannels.map((link) => link.channel_name).filter(Boolean);
         setCmsChannels(linkedChannels.length);
-        const linkedNames = new Set(linkedChannels.map((link) => link.channel_name));
-        const userCmsEntries = ((cmsEntries as any[]) || []).filter((entry) => linkedNames.has(entry.channel_name));
+
+        const cmsEntries = linkedNamesArr.length > 0
+          ? await fetchAllRows('cms_report_entries', 'net_generated_revenue, channel_name', (query) => query.in('channel_name', linkedNamesArr))
+          : [];
 
         let cmsGross = 0;
         let cmsNet = 0;
-        userCmsEntries.forEach((entry) => {
+        (cmsEntries as any[]).forEach((entry) => {
           const rev = Number(entry.net_generated_revenue) || 0;
           const cut = Number(linkedChannels.find((link) => link.channel_name === entry.channel_name)?.cut_percent || 0);
           cmsGross += rev;
