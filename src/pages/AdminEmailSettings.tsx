@@ -1229,7 +1229,7 @@ export default function AdminEmailSettings() {
               </div>
               <div className="space-y-6 text-sm">
                 <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-2">
-                  <h3 className="font-semibold">💡 Multiple Email Accounts</h3>
+                  <h3 className="font-semibold flex items-center gap-2"><Lightbulb className="h-4 w-4" /> Multiple Email Accounts</h3>
                   <p className="text-muted-foreground">
                     You can add multiple email accounts for different purposes. For example:
                   </p>
