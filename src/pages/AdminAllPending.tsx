@@ -341,82 +341,81 @@ export default function AdminAllPending() {
         {!activeCategory ? (
           <div className="text-center py-12 text-muted-foreground">No sections available</div>
         ) : (
-
-        {/* Data Table */}
-        <div className="rounded-lg border border-border bg-card/50">
-          <div className="responsive-table-wrap">
-            <table className="w-full text-sm min-w-max">
-              <thead>
-                <tr className="border-b border-border bg-muted/30">
-                  {activeCategory.columns.map(col => (
-                    <th key={col.key} className="px-4 py-3 text-left whitespace-nowrap font-medium text-muted-foreground">
-                      {col.label}
-                    </th>
-                  ))}
-                  <th className="px-4 py-3 text-left whitespace-nowrap font-medium text-muted-foreground">Status</th>
-                  <th className="px-4 py-3 text-right whitespace-nowrap font-medium text-muted-foreground">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={activeCategory.columns.length + 2} className="text-center py-12">
-                      <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
-                    </td>
+          <div className="rounded-lg border border-border bg-card/50">
+            <div className="responsive-table-wrap">
+              <table className="w-full text-sm min-w-max">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    {activeCategory.columns.map(col => (
+                      <th key={col.key} className="px-4 py-3 text-left whitespace-nowrap font-medium text-muted-foreground">
+                        {col.label}
+                      </th>
+                    ))}
+                    <th className="px-4 py-3 text-left whitespace-nowrap font-medium text-muted-foreground">Status</th>
+                    <th className="px-4 py-3 text-right whitespace-nowrap font-medium text-muted-foreground">Actions</th>
                   </tr>
-                ) : data.length === 0 ? (
-                  <tr>
-                    <td colSpan={activeCategory.columns.length + 2} className="text-center py-12 text-muted-foreground">
-                      No pending {activeCategory.label.toLowerCase()} found
-                    </td>
-                  </tr>
-                ) : (
-                  data.map(row => (
-                    <tr key={row.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                      {activeCategory.columns.map(col => (
-                        <td key={col.key} className="px-4 py-3 whitespace-nowrap">
-                          {col.render ? col.render(row) : (row[col.key] ?? '—')}
-                        </td>
-                      ))}
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <StatusBadge status={activeCategory.statusValue} />
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {activeCategory.actions.includes('approve') && (
-                            <Button size="sm" variant="ghost" className="h-8 text-emerald-500 hover:text-emerald-400 hover:bg-accent"
-                              onClick={() => setApproveId(row.id)}>
-                              <CheckCircle className="h-4 w-4 mr-1" /> Approve
-                            </Button>
-                          )}
-                          {activeCategory.actions.includes('reject') && (
-                            <Button size="sm" variant="ghost" className="h-8 text-destructive hover:text-destructive hover:bg-accent"
-                              onClick={() => setRejectId(row.id)}>
-                              <XCircle className="h-4 w-4 mr-1" /> Reject
-                            </Button>
-                          )}
-                          {activeCategory.actions.includes('view') && activeCategory.viewLink && (
-                            <Button size="sm" variant="ghost" className="h-8"
-                              onClick={() => navigate(activeCategory.viewLink!(row))}>
-                              <Eye className="h-4 w-4 mr-1" /> View
-                            </Button>
-                          )}
-                        </div>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={activeCategory.columns.length + 2} className="text-center py-12">
+                        <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : data.length === 0 ? (
+                    <tr>
+                      <td colSpan={activeCategory.columns.length + 2} className="text-center py-12 text-muted-foreground">
+                        No pending {activeCategory.label.toLowerCase()} found
+                      </td>
+                    </tr>
+                  ) : (
+                    data.map(row => (
+                      <tr key={row.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                        {activeCategory.columns.map(col => (
+                          <td key={col.key} className="px-4 py-3 whitespace-nowrap">
+                            {col.render ? col.render(row) : (row[col.key] ?? '—')}
+                          </td>
+                        ))}
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <StatusBadge status={activeCategory.statusValue} />
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {activeCategory.actions.includes('approve') && (
+                              <Button size="sm" variant="ghost" className="h-8 text-emerald-500 hover:text-emerald-400 hover:bg-accent"
+                                onClick={() => setApproveId(row.id)}>
+                                <CheckCircle className="h-4 w-4 mr-1" /> Approve
+                              </Button>
+                            )}
+                            {activeCategory.actions.includes('reject') && (
+                              <Button size="sm" variant="ghost" className="h-8 text-destructive hover:text-destructive hover:bg-accent"
+                                onClick={() => setRejectId(row.id)}>
+                                <XCircle className="h-4 w-4 mr-1" /> Reject
+                              </Button>
+                            )}
+                            {activeCategory.actions.includes('view') && activeCategory.viewLink && (
+                              <Button size="sm" variant="ghost" className="h-8"
+                                onClick={() => navigate(activeCategory.viewLink!(row))}>
+                                <Eye className="h-4 w-4 mr-1" /> View
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <TablePagination
+              totalItems={totalCount}
+              currentPage={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(0); }}
+            />
           </div>
-          <TablePagination
-            totalItems={totalCount}
-            currentPage={page}
-            pageSize={pageSize}
-            onPageChange={setPage}
-            onPageSizeChange={(s) => { setPageSize(s); setPage(0); }}
-          />
-        </div>
+        )}
       </div>
 
       {/* Approve Confirm Dialog */}
