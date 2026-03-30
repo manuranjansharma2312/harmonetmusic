@@ -6,7 +6,7 @@ import {
   BarChart3, MonitorPlay, Wallet, FileText, Receipt,
   Image as ImageIcon, Bell, BookOpen, FileSignature,
   Megaphone, Landmark, CreditCard, UsersRound, Sparkles, Link2, ArrowRightLeft, Mail,
-  Settings, Globe, Video, Tv, KeyRound,
+  Settings, Globe, Video, Tv, KeyRound, Clock,
 } from 'lucide-react';
 import { useBranding } from '@/hooks/useBranding';
 import { supabase } from '@/integrations/supabase/client';
@@ -78,6 +78,7 @@ const adminBillingLinks = [
 
 const adminLinksTop = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/admin/all-pending', label: 'All Pending', icon: Clock },
   { to: '/admin/users', label: 'All Users', icon: Users },
   { to: '/admin/submissions', label: 'All Releases', icon: ListMusic },
   { to: '/admin/content-requests', label: 'Support Requests', icon: Headset },

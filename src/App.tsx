@@ -21,6 +21,7 @@ const NewRelease = lazy(() => import("./pages/NewRelease"));
 const AdminGenresLanguages = lazy(() => import("./pages/AdminGenresLanguages"));
 const MyReleases = lazy(() => import("./pages/MyReleases"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminAllPending = lazy(() => import("./pages/AdminAllPending"));
 const AdminSubmissions = lazy(() => import("./pages/AdminSubmissions"));
 const AdminTransferHistory = lazy(() => import("./pages/AdminTransferHistory"));
 const AdminUsers = lazy(() => import("./pages/AdminUsers"));
@@ -155,6 +156,7 @@ function App() {
                       <Route path="/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
                       <Route path="/bank-details" element={<ProtectedRoute><BankDetails /></ProtectedRoute>} />
                       <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+                      <Route path="/admin/all-pending" element={<ProtectedRoute requiredRole="admin"><AdminAllPending /></ProtectedRoute>} />
                       <Route path="/admin/submissions" element={<ProtectedRoute requiredRole="admin"><AdminSubmissions /></ProtectedRoute>} />
                       <Route path="/admin/transfer-history" element={<ProtectedRoute requiredRole="admin"><AdminTransferHistory /></ProtectedRoute>} />
                       <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
