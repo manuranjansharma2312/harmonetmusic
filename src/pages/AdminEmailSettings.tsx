@@ -18,7 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 import {
   Mail, Settings, FileText, Save, Send, Eye, EyeOff, Search,
   ChevronUp, Info, Code, History, Download, Plus, Trash2, Star, Edit2, BarChart3,
-  Tag, CheckSquare,
+  Tag, CheckSquare, Lightbulb, AlertTriangle, ShieldCheck, CheckCircle,
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -1229,7 +1229,7 @@ export default function AdminEmailSettings() {
               </div>
               <div className="space-y-6 text-sm">
                 <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-2">
-                  <h3 className="font-semibold">💡 Multiple Email Accounts</h3>
+                  <h3 className="font-semibold flex items-center gap-2"><Lightbulb className="h-4 w-4" /> Multiple Email Accounts</h3>
                   <p className="text-muted-foreground">
                     You can add multiple email accounts for different purposes. For example:
                   </p>
@@ -1283,7 +1283,7 @@ export default function AdminEmailSettings() {
                   </p>
                 </div>
                 <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg space-y-2">
-                  <h3 className="font-semibold text-yellow-400">⚠️ Important Notes</h3>
+                  <h3 className="font-semibold text-yellow-400 flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> Important Notes</h3>
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                     <li>Never use your main email password — always use App Passwords</li>
                     <li>Gmail allows ~500 emails/day with regular accounts, 2000/day with Workspace</li>
@@ -1294,7 +1294,7 @@ export default function AdminEmailSettings() {
 
                 {/* Anti-Spam / Deliverability Checklist */}
                 <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg space-y-3">
-                  <h3 className="font-semibold text-green-400 text-base">🛡️ Anti-Spam & Deliverability Checklist</h3>
+                  <h3 className="font-semibold text-green-400 text-base flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Anti-Spam & Deliverability Checklist</h3>
                   <p className="text-muted-foreground text-sm">
                     Follow these DNS configurations at your domain registrar to ensure emails don't land in spam:
                   </p>
@@ -1341,7 +1341,7 @@ export default function AdminEmailSettings() {
 
                 {/* Built-in Anti-Spam Features */}
                 <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg space-y-2">
-                  <h3 className="font-semibold text-blue-400 text-base">✅ Built-in Anti-Spam Features (Already Active)</h3>
+                  <h3 className="font-semibold text-blue-400 text-base flex items-center gap-2"><CheckCircle className="h-4 w-4" /> Built-in Anti-Spam Features (Already Active)</h3>
                   <p className="text-muted-foreground text-sm mb-2">
                     The following anti-spam measures are automatically applied to all outgoing emails:
                   </p>
@@ -1361,7 +1361,7 @@ export default function AdminEmailSettings() {
 
                 {/* Verification Tools */}
                 <div className="p-4 bg-muted/30 border border-border/30 rounded-lg space-y-2">
-                  <h3 className="font-semibold text-sm">🔍 Verify Your Setup</h3>
+                  <h3 className="font-semibold text-sm flex items-center gap-2"><Search className="h-4 w-4" /> Verify Your Setup</h3>
                   <p className="text-muted-foreground text-xs">Use these free tools to check your email deliverability:</p>
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground text-xs">
                     <li><strong>mail-tester.com</strong> — Send a test email and get a spam score (aim for 9+/10)</li>

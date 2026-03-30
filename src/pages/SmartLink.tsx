@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, ExternalLink } from 'lucide-react';
+import { Loader2, ExternalLink, Music } from 'lucide-react';
 import logoWhite from '@/assets/logo-white.png';
 
 type LinkData = {
@@ -156,7 +156,7 @@ export default function SmartLink() {
           </div>
         ) : (
           <div className="w-64 h-64 sm:w-72 sm:h-72 rounded-2xl bg-muted/30 border border-border flex items-center justify-center">
-            <span className="text-5xl">🎵</span>
+            <Music className="h-12 w-12 text-muted-foreground" />
           </div>
         )}
 
@@ -197,7 +197,7 @@ export default function SmartLink() {
                   {platform.icon_url ? (
                     <img src={platform.icon_url} alt={platform.name} className="h-5 w-5 rounded object-contain" />
                   ) : (
-                    <span className="text-lg">🎵</span>
+                    <Music className="h-5 w-5 text-white/70" />
                   )}
                   <span className="text-white font-medium text-sm sm:text-base">{platform.name}</span>
                 </div>
