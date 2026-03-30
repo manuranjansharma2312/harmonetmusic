@@ -183,7 +183,7 @@ export default function Auth() {
       if (profileError) throw profileError;
 
       toast.success('Account created successfully!');
-      navigate('/dashboard');
+      navigate('/user-dashboard');
     } catch (err: any) {
       toast.error(err.message || 'Signup failed');
     } finally {
