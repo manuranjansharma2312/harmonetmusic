@@ -586,9 +586,11 @@ export default function AdminYouTubeReports() {
             <h1 className="text-2xl font-bold">YouTube Reports</h1>
             <p className="text-muted-foreground text-sm">Import and manage YouTube revenue reports</p>
           </div>
+          {canChangeSettings && (
           <Button variant="outline" size="sm" onClick={openFormatConfig}>
             <Settings2 className="h-4 w-4 mr-1" /> Report Format
           </Button>
+          )}
         </div>
 
         {showFormatConfig && (
