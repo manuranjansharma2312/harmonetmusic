@@ -46,7 +46,7 @@ const categories: PendingCategory[] = [
       { key: 'display_id', label: '#ID', render: (r) => `#${r.display_id}` },
       { key: 'legal_name', label: 'Name' },
       { key: 'email', label: 'Email' },
-      { key: 'user_type', label: 'Type' },
+      { key: 'user_type', label: 'Type', render: (r: any) => formatLabel(r.user_type) },
       { key: 'created_at', label: 'Registered', render: (r) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject'],
