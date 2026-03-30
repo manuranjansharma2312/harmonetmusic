@@ -188,9 +188,12 @@ export default function AdminSignatureDocuments() {
                 <SelectItem value="completed">Completed</SelectItem>
               </SelectContent>
             </Select>
+            {canChangeSettings && (
             <Button variant="outline" onClick={() => navigate('/admin/signature-settings')}>
               <Settings2 className="h-4 w-4 mr-2" /> Settings
             </Button>
+            )}
+            {canChangeSettings && (
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-2" /> New Document</Button>
