@@ -35,6 +35,7 @@ type PendingCategory = {
   table: string;
   statusField: string;
   statusValue: string;
+  extraFilter?: { field: string; value: string };
   columns: { key: string; label: string; render?: (row: any) => React.ReactNode }[];
   actions: ('approve' | 'reject' | 'view')[];
   approveStatus: string;
@@ -94,13 +95,24 @@ const categories: PendingCategory[] = [
   {
     key: 'videos', label: 'Videos', icon: Video,
     table: 'video_submissions', statusField: 'status', statusValue: 'pending',
+    extraFilter: { field: 'submission_type', value: 'upload_video' },
     columns: [
-      { key: 'submission_type', label: 'Type', render: (r: any) => formatLabel(r.submission_type) },
       { key: 'created_at', label: 'Submitted', render: (r) => safeFormat(r.created_at) },
     ],
     actions: ['approve', 'reject', 'view'],
     approveStatus: 'approved', rejectStatus: 'rejected',
     viewLink: () => '/admin/video-submissions',
+  },
+  {
+    key: 'vevo_channels', label: 'Vevo Channels', icon: Video,
+    table: 'video_submissions', statusField: 'status', statusValue: 'pending',
+    extraFilter: { field: 'submission_type', value: 'vevo_channel' },
+    columns: [
+      { key: 'created_at', label: 'Submitted', render: (r) => safeFormat(r.created_at) },
+    ],
+    actions: ['approve', 'reject', 'view'],
+    approveStatus: 'approved', rejectStatus: 'rejected',
+    viewLink: () => '/admin/vevo-channels',
   },
   {
     key: 'withdrawals', label: 'Withdrawals', icon: Wallet,
@@ -228,9 +240,11 @@ export default function AdminAllPending() {
       const results: Record<string, number> = {};
       await Promise.all(
         visibleCategories.map(async (cat) => {
-          const { count } = await (supabase.from(cat.table as any) as any)
+          let query = (supabase.from(cat.table as any) as any)
             .select('id', { count: 'exact', head: true })
             .eq(cat.statusField, cat.statusValue);
+          if (cat.extraFilter) query = query.eq(cat.extraFilter.field, cat.extraFilter.value);
+          const { count } = await query;
           results[cat.key] = count || 0;
         })
       );
@@ -248,9 +262,11 @@ export default function AdminAllPending() {
       setLoading(true);
       const from = page * effectivePageSize;
       const to = from + effectivePageSize - 1;
-      const { data: rows } = await (supabase.from(activeCategory.table as any) as any)
+      let query = (supabase.from(activeCategory.table as any) as any)
         .select('*')
-        .eq(activeCategory.statusField, activeCategory.statusValue)
+        .eq(activeCategory.statusField, activeCategory.statusValue);
+      if (activeCategory.extraFilter) query = query.eq(activeCategory.extraFilter.field, activeCategory.extraFilter.value);
+      const { data: rows } = await query
         .order('created_at', { ascending: false })
         .range(from, to);
       setData(rows || []);
