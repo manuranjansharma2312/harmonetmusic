@@ -68,12 +68,34 @@ export default function Auth() {
   const selectedWhatsAppCountry = countries.find((item) => item.dialCode === whatsappCode);
   const availableStates = country ? getStatesForCountry(country) : [];
 
+  // Login rate limiting
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (lockoutUntil && Date.now() < lockoutUntil) {
+      const secs = Math.ceil((lockoutUntil - Date.now()) / 1000);
+      toast.error(`Too many attempts. Try again in ${secs}s`);
+      return;
+    }
     setSubmitting(true);
     const { error } = await signIn(loginEmail, loginPassword);
     setSubmitting(false);
-    if (error) toast.error(error.message);
+    if (error) {
+      const next = loginAttempts + 1;
+      setLoginAttempts(next);
+      if (next >= 5) {
+        setLockoutUntil(Date.now() + 60_000); // 1 min lockout
+        setLoginAttempts(0);
+        toast.error('Too many failed attempts. Locked for 60 seconds.');
+      } else {
+        toast.error(error.message);
+      }
+    } else {
+      setLoginAttempts(0);
+      setLockoutUntil(null);
+    }
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
