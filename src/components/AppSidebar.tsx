@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   LayoutDashboard, Upload, ListMusic, LogOut, Shield, Users,
   UserCircle, Tags, Tag, Headset, ShieldAlert, Instagram,
@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useImpersonate } from '@/hooks/useImpersonate';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { NavLink } from '@/components/NavLink';
+import { useAdminPendingCounts } from '@/hooks/useAdminPendingCounts';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
   SidebarGroupLabel, SidebarMenu, SidebarMenuItem,
@@ -103,6 +104,20 @@ export function AppSidebar() {
   const { logoSrc, branding } = useBranding();
   const { settings } = useSiteSettings();
   const showUserView = isImpersonating || role !== 'admin';
+  const pending = useAdminPendingCounts(role === 'admin' && !isImpersonating);
+
+  // Map routes to pending counts for dot indicators
+  const pendingDotRoutes = useMemo<Record<string, boolean>>(() => ({
+    '/admin/submissions': pending.releases > 0,
+    '/admin/content-requests': pending.contentRequests > 0,
+    '/admin/labels': pending.labels > 0,
+    '/admin/promotion-tools': pending.promotionOrders > 0,
+    '/admin/cms-withdrawals': pending.cmsWithdrawals > 0,
+    '/admin/sub-label-withdrawals': pending.subLabelWithdrawals > 0,
+    '/admin/video-submissions': pending.videoSubmissions > 0,
+    '/admin/vevo-channels': pending.vevoChannels > 0,
+    '/admin/youtube-cms-links': pending.ytCmsLinks > 0,
+  }), [pending]);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
   const [adminSubLabelsOpen, setAdminSubLabelsOpen] = useState(false);
@@ -240,6 +255,9 @@ export function AppSidebar() {
     }
   };
 
+  const hasDot = (to: string) => !showUserView && pendingDotRoutes[to];
+  const dotEl = <span className="h-2 w-2 rounded-full bg-destructive flex-shrink-0 animate-pulse" />;
+
   const renderNavLink = (link: { to: string; label: string; icon: any }) => (
     <SidebarMenuItem key={link.to}>
       <SidebarMenuButton asChild tooltip={link.label}>
@@ -251,7 +269,8 @@ export function AppSidebar() {
           activeClassName="bg-primary/10 text-foreground font-semibold"
         >
           <link.icon className="h-5 w-5 flex-shrink-0" />
-          {!collapsed && <span>{link.label}</span>}
+          {!collapsed && <span className="flex-1">{link.label}</span>}
+          {hasDot(link.to) && dotEl}
         </NavLink>
       </SidebarMenuButton>
     </SidebarMenuItem>
@@ -265,6 +284,7 @@ export function AppSidebar() {
     setOpen: (v: boolean) => void,
   ) => {
     const Icon = icon;
+    const groupHasDot = !showUserView && links.some(l => pendingDotRoutes[l.to]);
     if (collapsed) {
       return links.map(renderNavLink);
     }
@@ -275,6 +295,7 @@ export function AppSidebar() {
             <span className="flex items-center gap-3">
               <Icon className="h-5 w-5 flex-shrink-0" />
               {label}
+              {groupHasDot && !open && dotEl}
             </span>
             <ChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
@@ -290,7 +311,8 @@ export function AppSidebar() {
                       activeClassName="bg-primary/10 text-foreground font-semibold"
                     >
                       <link.icon className="h-4 w-4 flex-shrink-0" />
-                      <span>{link.label}</span>
+                      <span className="flex-1">{link.label}</span>
+                      {hasDot(link.to) && dotEl}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
