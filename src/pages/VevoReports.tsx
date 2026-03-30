@@ -278,7 +278,7 @@ export default function VevoReports() {
                     />
                   </div>
                 </div>
-                <Table>
+                <Table className="min-w-max">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Reporting Month</TableHead>

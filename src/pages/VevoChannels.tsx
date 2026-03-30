@@ -84,13 +84,14 @@ export default function VevoChannels() {
         </div>
 
         <Card>
-          <CardContent className="p-0 overflow-x-hidden">
+          <CardContent className="p-0">
             {loading ? (
               <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
             ) : paginated.length === 0 ? (
               <p className="text-center py-12 text-muted-foreground">No Vevo channel requests yet</p>
             ) : (
-              <Table>
+              <div className="responsive-table-wrap">
+              <Table className="min-w-max">
                 <TableHeader>
                   <TableRow>
                     <TableHead>#</TableHead>
@@ -116,6 +117,7 @@ export default function VevoChannels() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>

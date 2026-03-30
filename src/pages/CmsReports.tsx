@@ -245,7 +245,7 @@ export default function CmsReports() {
                     <Input placeholder="Search months..." value={monthSearch} onChange={e => { setMonthSearch(e.target.value); setMonthPage(0); }} className="pl-9 h-9" />
                   </div>
                 </div>
-                <Table>
+                <Table className="min-w-max">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Reporting Month</TableHead>

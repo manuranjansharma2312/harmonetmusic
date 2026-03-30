@@ -393,7 +393,7 @@ export default function AdminCmsReports() {
                 <Button size="sm" onClick={saveFormat}><Save className="h-4 w-4 mr-1" /> Save</Button>
               </div>
             </div>
-            <Table>
+            <Table className="min-w-max">
               <TableHeader>
                 <TableRow>
                   <TableHead>Order</TableHead>
@@ -451,7 +451,7 @@ export default function AdminCmsReports() {
                     <Input placeholder="Search months..." value={monthSearch} onChange={e => { setMonthSearch(e.target.value); setMonthPage(0); }} className="pl-9 h-9" />
                   </div>
                 </div>
-                <Table>
+                <Table className="min-w-max">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Reporting Month</TableHead>

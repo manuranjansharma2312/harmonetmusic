@@ -610,7 +610,7 @@ export default function AdminYouTubeReports() {
               Enable/disable columns and customize CSV header names. Required columns (ISRC, Net Generated Revenue, Reporting Month) cannot be disabled.
             </p>
             <div className="border rounded-lg overflow-hidden">
-              <Table>
+              <Table className="min-w-max">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12">Enabled</TableHead>
@@ -710,7 +710,7 @@ export default function AdminYouTubeReports() {
             <div className="space-y-3">
               <p className="text-sm font-medium">{preview.length} rows parsed. Preview (first 5):</p>
               <div className="overflow-x-auto rounded border border-border">
-                <Table>
+                <Table className="min-w-max">
                   <TableHeader>
                     <TableRow>
                       {Object.keys(preview[0] || {}).map((h) => (
@@ -758,7 +758,7 @@ export default function AdminYouTubeReports() {
             <p className="p-6 text-center text-muted-foreground">No YouTube reports imported yet.</p>
           ) : (
             <>
-              <Table>
+              <Table className="min-w-max">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Reporting Month</TableHead>

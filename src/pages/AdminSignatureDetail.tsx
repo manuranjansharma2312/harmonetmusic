@@ -217,7 +217,8 @@ export default function AdminSignatureDetail() {
           <div className="p-4 border-b">
             <h2 className="font-semibold">Recipients</h2>
           </div>
-          <Table>
+          <div className="responsive-table-wrap">
+          <Table className="min-w-max">
             <TableHeader>
               <TableRow>
                 <TableHead>#</TableHead>
@@ -262,7 +263,8 @@ export default function AdminSignatureDetail() {
           <div className="p-4 border-b">
             <h2 className="font-semibold">Audit Trail</h2>
           </div>
-          <Table>
+          <div className="responsive-table-wrap">
+          <Table className="min-w-max">
             <TableHeader>
               <TableRow>
                 <TableHead>Action</TableHead>

@@ -632,7 +632,7 @@ export default function AdminInvoices() {
             <DialogTitle>{editingId ? 'Edit Invoice' : 'Create Invoice'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <Label>Billing Name *</Label>
                 <Input value={form.billing_name} onChange={e => setForm(f => ({ ...f, billing_name: e.target.value }))} placeholder="Client name" />
@@ -748,7 +748,7 @@ export default function AdminInvoices() {
 
                 <div>
                   <p className="text-sm font-semibold mb-2">Items</p>
-                  <Table>
+                  <Table className="min-w-max">
                     <TableHeader><TableRow><TableHead>#</TableHead><TableHead>Description</TableHead><TableHead className="text-right">Amount</TableHead></TableRow></TableHeader>
                     <TableBody>
                       {previewInvoice.items.map((item, i) => (

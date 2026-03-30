@@ -396,7 +396,7 @@ export default function AIImageGeneration() {
               <CardHeader><CardTitle>My Orders</CardTitle></CardHeader>
               <CardContent>
                 <div className="overflow-auto">
-                  <Table>
+                  <Table className="min-w-max">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Plan</TableHead>
