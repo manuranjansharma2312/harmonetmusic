@@ -240,7 +240,7 @@ export default function AdminPromotionTools() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Services</CardTitle>
-            <Button size="sm" onClick={() => openProductModal()}><Plus className="h-4 w-4 mr-1" /> Add Service</Button>
+            {canChangeSettings && <Button size="sm" onClick={() => openProductModal()}><Plus className="h-4 w-4 mr-1" /> Add Service</Button>}
           </CardHeader>
           <CardContent>
             <Table>
