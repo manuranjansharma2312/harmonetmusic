@@ -916,7 +916,7 @@ export default function AdminEmailSettings() {
                 )}
               </div>
 
-              <div className="space-y-3 responsive-table-wrap">
+              <div className="responsive-table-wrap"><div className="min-w-[700px] space-y-3">
                 {paginatedTemplates.map(template => {
                   const assignedName = getAccountName(template.email_account_id);
                   return (
