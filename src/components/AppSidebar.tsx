@@ -107,7 +107,7 @@ export function AppSidebar() {
   const isTeam = role === 'team';
   const showUserView = isImpersonating || (role !== 'admin' && role !== 'team');
   const [teamAllowedPages, setTeamAllowedPages] = useState<string[]>([]);
-
+  const [subLabelAllowedPages, setSubLabelAllowedPages] = useState<string[] | null>(null);
 
   const [toolsOpen, setToolsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
