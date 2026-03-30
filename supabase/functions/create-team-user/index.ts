@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
     const { data: roleData } = await adminClient.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle();
     if (!roleData) return new Response(JSON.stringify({ error: "Admin only" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const { email, password, name, category_id, allowed_pages, govt_ids } = await req.json();
+    const { email, password, name, category_id, allowed_pages, govt_ids, phone_country_code, phone_number } = await req.json();
 
     // Create user in auth
     const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
