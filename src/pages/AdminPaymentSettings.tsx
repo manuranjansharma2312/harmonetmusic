@@ -104,7 +104,7 @@ export default function AdminPaymentSettings() {
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto space-y-6">
-        <h1 className="text-2xl font-bold text-foreground">Payment Settings</h1>
+        <h1 className="text-2xl font-bold text-foreground">Tax Settings</h1>
 
         {/* Enable/Disable Toggles */}
         <Card>
