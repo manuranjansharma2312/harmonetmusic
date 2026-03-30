@@ -2167,6 +2167,7 @@ export type Database = {
           category_id: string | null
           created_at: string
           email: string
+          govt_ids: Json
           id: string
           name: string
           updated_at: string
@@ -2177,6 +2178,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           email: string
+          govt_ids?: Json
           id?: string
           name: string
           updated_at?: string
@@ -2187,6 +2189,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           email?: string
+          govt_ids?: Json
           id?: string
           name?: string
           updated_at?: string

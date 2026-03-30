@@ -1,0 +1,1 @@
+ALTER TABLE public.team_members ADD COLUMN govt_ids JSONB NOT NULL DEFAULT '[]'::jsonb;

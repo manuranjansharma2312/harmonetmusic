@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import {
   Users, Plus, Trash2, Pencil, Loader2, Shield, FolderOpen, Eye, EyeOff,
+  Download, LogIn, CreditCard,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -41,6 +42,8 @@ const ALL_ADMIN_PAGES = [
   { key: 'settings', label: 'Settings', path: '/admin/branding-settings' },
 ];
 
+interface GovtId { name: string; number: string; }
+
 interface TeamCategory {
   id: string;
   name: string;
@@ -55,6 +58,7 @@ interface TeamMember {
   name: string;
   email: string;
   allowed_pages: string[];
+  govt_ids: GovtId[];
   created_at: string;
 }
 
@@ -70,12 +74,19 @@ export default function AdminTeamManagement() {
 
   // Member form
   const [memberOpen, setMemberOpen] = useState(false);
-  const [memberForm, setMemberForm] = useState({ name: '', email: '', password: '', category_id: '', allowed_pages: [] as string[] });
+  const [memberForm, setMemberForm] = useState({
+    name: '', email: '', password: '', category_id: '',
+    allowed_pages: [] as string[],
+    govt_ids: [{ name: '', number: '' }] as GovtId[],
+  });
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [showPw, setShowPw] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'cat' | 'member'; id: string } | null>(null);
+
+  // Selection & export
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const fetchAll = async () => {
     setLoading(true);
@@ -84,7 +95,7 @@ export default function AdminTeamManagement() {
       (supabase.from('team_members') as any).select('*').order('created_at', { ascending: false }),
     ]);
     setCategories(cats || []);
-    setMembers(mems || []);
+    setMembers((mems || []).map((m: any) => ({ ...m, govt_ids: Array.isArray(m.govt_ids) ? m.govt_ids : [] })));
     setLoading(false);
   };
 
@@ -118,26 +129,27 @@ export default function AdminTeamManagement() {
   // ---- Members ----
   const handleSaveMember = async () => {
     if (!memberForm.name.trim() || !memberForm.email.trim()) { toast.error('Name and email required'); return; }
+    const cleanGovtIds = memberForm.govt_ids.filter(g => g.name.trim() && g.number.trim());
     setSubmitting(true);
 
     if (editingMember) {
-      // Update existing member
       const { error } = await (supabase.from('team_members') as any).update({
         name: memberForm.name.trim(),
         category_id: memberForm.category_id || null,
         allowed_pages: memberForm.allowed_pages,
+        govt_ids: cleanGovtIds,
         updated_at: new Date().toISOString(),
       }).eq('id', editingMember.id);
       if (error) toast.error('Failed to update'); else toast.success('Team member updated');
     } else {
-      // Create new auth user + team member
       if (!memberForm.password || memberForm.password.length < 6) { toast.error('Password must be at least 6 characters'); setSubmitting(false); return; }
-
-      // Sign up the team user via edge function to avoid logging out admin
       const { data: fnData, error: fnError } = await supabase.functions.invoke('create-team-user', {
-        body: { email: memberForm.email.trim(), password: memberForm.password, name: memberForm.name.trim(), category_id: memberForm.category_id || null, allowed_pages: memberForm.allowed_pages },
+        body: {
+          email: memberForm.email.trim(), password: memberForm.password,
+          name: memberForm.name.trim(), category_id: memberForm.category_id || null,
+          allowed_pages: memberForm.allowed_pages, govt_ids: cleanGovtIds,
+        },
       });
-
       if (fnError || fnData?.error) {
         toast.error(fnData?.error || fnError?.message || 'Failed to create team user');
         setSubmitting(false);
@@ -149,23 +161,28 @@ export default function AdminTeamManagement() {
     setSubmitting(false);
     setMemberOpen(false);
     setEditingMember(null);
-    setMemberForm({ name: '', email: '', password: '', category_id: '', allowed_pages: [] });
+    resetMemberForm();
     fetchAll();
   };
 
   const handleDeleteMember = async (id: string) => {
     const member = members.find(m => m.id === id);
     if (!member) return;
-    // Delete from auth + team_members via edge function
     const { error } = await supabase.functions.invoke('delete-users', { body: { userIds: [member.user_id] } });
     if (error) toast.error('Failed to delete'); else toast.success('Team member deleted');
     setDeleteConfirm(null);
     fetchAll();
   };
 
+  const resetMemberForm = () => setMemberForm({ name: '', email: '', password: '', category_id: '', allowed_pages: [], govt_ids: [{ name: '', number: '' }] });
+
   const openEditMember = (m: TeamMember) => {
     setEditingMember(m);
-    setMemberForm({ name: m.name, email: m.email, password: '', category_id: m.category_id || '', allowed_pages: m.allowed_pages });
+    setMemberForm({
+      name: m.name, email: m.email, password: '', category_id: m.category_id || '',
+      allowed_pages: m.allowed_pages,
+      govt_ids: m.govt_ids.length ? m.govt_ids : [{ name: '', number: '' }],
+    });
     setMemberOpen(true);
   };
 
@@ -182,6 +199,51 @@ export default function AdminTeamManagement() {
   const deselectAllPages = () => setMemberForm(prev => ({ ...prev, allowed_pages: [] }));
 
   const getCategoryName = (id: string | null) => categories.find(c => c.id === id)?.name || '—';
+
+  // ---- Govt ID helpers ----
+  const addGovtId = () => setMemberForm(prev => ({ ...prev, govt_ids: [...prev.govt_ids, { name: '', number: '' }] }));
+  const removeGovtId = (idx: number) => setMemberForm(prev => ({ ...prev, govt_ids: prev.govt_ids.filter((_, i) => i !== idx) }));
+  const updateGovtId = (idx: number, field: 'name' | 'number', value: string) => {
+    setMemberForm(prev => ({
+      ...prev,
+      govt_ids: prev.govt_ids.map((g, i) => i === idx ? { ...g, [field]: value } : g),
+    }));
+  };
+
+  // ---- Selection ----
+  const toggleSelect = (id: string) => setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleSelectAll = () => setSelected(prev => prev.size === members.length ? new Set() : new Set(members.map(m => m.id)));
+
+  // ---- Login as team member ----
+  const handleLoginAs = async (member: TeamMember) => {
+    const confirmLogin = window.confirm(`Login as ${member.name} (${member.email})? You will be signed out of your current session.`);
+    if (!confirmLogin) return;
+    await supabase.auth.signOut();
+    // We can't log in as them without their password, so redirect to auth with prefilled email
+    window.location.href = `/auth?email=${encodeURIComponent(member.email)}`;
+  };
+
+  // ---- CSV Export ----
+  const exportCSV = () => {
+    const rows = selected.size > 0 ? members.filter(m => selected.has(m.id)) : members;
+    if (!rows.length) { toast.error('No data to export'); return; }
+    const headers = ['Name', 'Email', 'Department', 'Pages Access', 'Govt IDs', 'Created'];
+    const csvRows = [headers.join(',')];
+    rows.forEach(m => {
+      const govtStr = (m.govt_ids || []).map(g => `${g.name}: ${g.number}`).join(' | ');
+      csvRows.push([
+        `"${m.name}"`, `"${m.email}"`, `"${getCategoryName(m.category_id)}"`,
+        `"${m.allowed_pages.join(', ')}"`, `"${govtStr}"`,
+        `"${format(new Date(m.created_at), 'dd MMM yyyy')}"`,
+      ].join(','));
+    });
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `team-members-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+    toast.success(`Exported ${rows.length} members`);
+  };
 
   if (loading) {
     return <DashboardLayout><div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div></DashboardLayout>;
@@ -210,39 +272,77 @@ export default function AdminTeamManagement() {
 
           {/* ---- TEAM MEMBERS TAB ---- */}
           <TabsContent value="members" className="space-y-4 mt-4">
-            <div className="flex justify-end">
-              <Button onClick={() => { setEditingMember(null); setMemberForm({ name: '', email: '', password: '', category_id: '', allowed_pages: [] }); setMemberOpen(true); }}>
-                <Plus className="h-4 w-4 mr-2" /> Add Team Member
-              </Button>
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-2">
+                {selected.size > 0 && (
+                  <span className="text-sm text-muted-foreground">{selected.size} selected</span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={exportCSV}>
+                  <Download className="h-4 w-4 mr-2" /> Export CSV
+                </Button>
+                <Button onClick={() => { setEditingMember(null); resetMemberForm(); setMemberOpen(true); }}>
+                  <Plus className="h-4 w-4 mr-2" /> Add Team Member
+                </Button>
+              </div>
             </div>
             <GlassCard>
               <div className="responsive-table-wrap">
-                <Table>
+                <Table className="min-w-max">
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Department</TableHead>
-                      <TableHead>Pages Access</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="w-10">
+                        <Checkbox
+                          checked={selected.size === members.length && members.length > 0}
+                          onCheckedChange={toggleSelectAll}
+                        />
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap">Name</TableHead>
+                      <TableHead className="whitespace-nowrap">Email</TableHead>
+                      <TableHead className="whitespace-nowrap">Department</TableHead>
+                      <TableHead className="whitespace-nowrap">Pages Access</TableHead>
+                      <TableHead className="whitespace-nowrap">Govt IDs</TableHead>
+                      <TableHead className="whitespace-nowrap">Created</TableHead>
+                      <TableHead className="whitespace-nowrap text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {members.length === 0 ? (
-                      <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No team members yet</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No team members yet</TableCell></TableRow>
                     ) : members.map(m => (
-                      <TableRow key={m.id}>
-                        <TableCell className="font-medium">{m.name}</TableCell>
-                        <TableCell>{m.email}</TableCell>
-                        <TableCell>{getCategoryName(m.category_id)}</TableCell>
+                      <TableRow key={m.id} className={selected.has(m.id) ? 'bg-primary/5' : ''}>
                         <TableCell>
-                          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">{m.allowed_pages.length} pages</span>
+                          <Checkbox checked={selected.has(m.id)} onCheckedChange={() => toggleSelect(m.id)} />
                         </TableCell>
-                        <TableCell>{format(new Date(m.created_at), 'dd MMM yyyy')}</TableCell>
-                        <TableCell className="text-right space-x-2">
-                          <Button variant="outline" size="sm" onClick={() => openEditMember(m)}><Pencil className="h-3.5 w-3.5" /></Button>
-                          <Button variant="destructive" size="sm" onClick={() => setDeleteConfirm({ type: 'member', id: m.id })}><Trash2 className="h-3.5 w-3.5" /></Button>
+                        <TableCell className="font-medium whitespace-nowrap">{m.name}</TableCell>
+                        <TableCell className="whitespace-nowrap">{m.email}</TableCell>
+                        <TableCell className="whitespace-nowrap">{getCategoryName(m.category_id)}</TableCell>
+                        <TableCell>
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded whitespace-nowrap">{m.allowed_pages.length} pages</span>
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {m.govt_ids?.length ? (
+                            <div className="space-y-0.5">
+                              {m.govt_ids.map((g, i) => (
+                                <div key={i} className="text-xs">
+                                  <span className="text-muted-foreground">{g.name}:</span> {g.number}
+                                </div>
+                              ))}
+                            </div>
+                          ) : <span className="text-muted-foreground text-xs">—</span>}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">{format(new Date(m.created_at), 'dd MMM yyyy')}</TableCell>
+                        <TableCell className="text-right whitespace-nowrap space-x-1">
+                          <Button variant="outline" size="sm" title="Login as this member" onClick={() => handleLoginAs(m)}>
+                            <LogIn className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => openEditMember(m)}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="destructive" size="sm" onClick={() => setDeleteConfirm({ type: 'member', id: m.id })}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -260,37 +360,39 @@ export default function AdminTeamManagement() {
               </Button>
             </div>
             <GlassCard>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Members</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {categories.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No departments yet</TableCell></TableRow>
-                  ) : categories.map(cat => (
-                    <TableRow key={cat.id}>
-                      <TableCell className="font-medium">{cat.name}</TableCell>
-                      <TableCell className="text-muted-foreground">{cat.description || '—'}</TableCell>
-                      <TableCell>{members.filter(m => m.category_id === cat.id).length}</TableCell>
-                      <TableCell>{format(new Date(cat.created_at), 'dd MMM yyyy')}</TableCell>
-                      <TableCell className="text-right space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => { setEditingCat(cat); setCatForm({ name: cat.name, description: cat.description }); setCatOpen(true); }}>
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button variant="destructive" size="sm" onClick={() => setDeleteConfirm({ type: 'cat', id: cat.id })}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </TableCell>
+              <div className="responsive-table-wrap">
+                <Table className="min-w-max">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="whitespace-nowrap">Name</TableHead>
+                      <TableHead className="whitespace-nowrap">Description</TableHead>
+                      <TableHead className="whitespace-nowrap">Members</TableHead>
+                      <TableHead className="whitespace-nowrap">Created</TableHead>
+                      <TableHead className="whitespace-nowrap text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {categories.length === 0 ? (
+                      <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No departments yet</TableCell></TableRow>
+                    ) : categories.map(cat => (
+                      <TableRow key={cat.id}>
+                        <TableCell className="font-medium whitespace-nowrap">{cat.name}</TableCell>
+                        <TableCell className="text-muted-foreground whitespace-nowrap">{cat.description || '—'}</TableCell>
+                        <TableCell>{members.filter(m => m.category_id === cat.id).length}</TableCell>
+                        <TableCell className="whitespace-nowrap">{format(new Date(cat.created_at), 'dd MMM yyyy')}</TableCell>
+                        <TableCell className="text-right space-x-2 whitespace-nowrap">
+                          <Button variant="outline" size="sm" onClick={() => { setEditingCat(cat); setCatForm({ name: cat.name, description: cat.description }); setCatOpen(true); }}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="destructive" size="sm" onClick={() => setDeleteConfirm({ type: 'cat', id: cat.id })}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </GlassCard>
           </TabsContent>
         </Tabs>
@@ -340,6 +442,39 @@ export default function AdminTeamManagement() {
                 <option value="">— No Department —</option>
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
+            </div>
+
+            {/* Govt Issued IDs */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="flex items-center gap-2"><CreditCard className="h-4 w-4" /> Govt Issued IDs</Label>
+                <button type="button" onClick={addGovtId} className="text-xs text-primary hover:underline flex items-center gap-1">
+                  <Plus className="h-3 w-3" /> Add ID
+                </button>
+              </div>
+              <div className="space-y-2">
+                {memberForm.govt_ids.map((g, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <Input
+                      value={g.name}
+                      onChange={e => updateGovtId(idx, 'name', e.target.value)}
+                      placeholder="ID Name (e.g. Aadhaar, PAN)"
+                      className="flex-1"
+                    />
+                    <Input
+                      value={g.number}
+                      onChange={e => updateGovtId(idx, 'number', e.target.value)}
+                      placeholder="ID Number"
+                      className="flex-1"
+                    />
+                    {memberForm.govt_ids.length > 1 && (
+                      <Button type="button" variant="ghost" size="sm" onClick={() => removeGovtId(idx)} className="text-destructive px-2">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Page Access */}
