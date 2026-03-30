@@ -64,7 +64,7 @@ export default function Auth() {
   }
 
   if (user && role) {
-    return <Navigate to={(role === 'admin' || role === 'team') ? '/admin' : '/dashboard'} replace />;
+    return <Navigate to={(role === 'admin' || role === 'team') ? '/admin' : '/user-dashboard'} replace />;
   }
 
   const selectedWhatsAppCountry = countries.find((item) => item.dialCode === whatsappCode);
