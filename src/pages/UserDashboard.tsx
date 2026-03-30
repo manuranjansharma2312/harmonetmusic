@@ -211,6 +211,7 @@ export default function UserDashboard() {
       } else {
         setCmsChannels(0);
         setCmsRevenue(0);
+        setCmsNetPayable(0);
         setCmsPaid(0);
         setCmsPending(0);
       }
