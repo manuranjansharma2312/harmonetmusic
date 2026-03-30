@@ -75,6 +75,9 @@ export default function AdminUsers() {
   const [viewBankDetails, setViewBankDetails] = useState<any>(null);
   const [deleting, setDeleting] = useState(false);
   const [editingCut, setEditingCut] = useState<{ userId: string; value: string } | null>(null);
+  const [approvalPopup, setApprovalPopup] = useState<{ userId: string; name: string } | null>(null);
+  const [approvalRatio, setApprovalRatio] = useState('');
+  const [editingRatio, setEditingRatio] = useState<{ userId: string; value: string } | null>(null);
   const { startImpersonating } = useImpersonate();
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
