@@ -89,6 +89,13 @@ export default function AdminTeamManagement() {
   // Selection & export
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
+  // Password management
+  const [pwModalOpen, setPwModalOpen] = useState(false);
+  const [pwTarget, setPwTarget] = useState<TeamMember | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [pwSubmitting, setPwSubmitting] = useState(false);
+
   const fetchAll = async () => {
     setLoading(true);
     const [{ data: cats }, { data: mems }] = await Promise.all([
