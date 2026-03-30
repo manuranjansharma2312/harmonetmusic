@@ -160,7 +160,7 @@ export default function AdminNotices() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-2xl font-bold">Notice Updates</h1>
-          {!showForm && (
+          {!showForm && !isTeam && (
             <Button onClick={() => { resetForm(); setShowForm(true); }} className="gap-2">
               <Plus className="h-4 w-4" /> New Notice
             </Button>
