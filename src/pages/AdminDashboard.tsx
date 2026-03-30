@@ -353,9 +353,9 @@ export default function AdminDashboard() {
           { label: 'Vevo Streams', value: formatStreams(vevoTotalStreams), icon: Headphones, accent: 'text-pink-300' },
           { label: 'Transfers', value: transferCount, icon: TrendingUp, accent: 'text-sky-400' },
         ].map((stat) => (
-          <GlassCard key={stat.label} className="!p-3 group hover:scale-[1.02] transition-transform duration-300 overflow-hidden">
+          <GlassCard key={stat.label} className="!p-3 group hover:scale-[1.02] transition-transform duration-300">
             <stat.icon className={`h-3.5 w-3.5 ${stat.accent} mb-1`} />
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wider leading-tight whitespace-nowrap">{stat.label}</p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wider leading-tight">{stat.label}</p>
             <p className="text-xs sm:text-sm font-bold text-foreground mt-0.5 whitespace-nowrap">{stat.value}</p>
           </GlassCard>
         ))}
