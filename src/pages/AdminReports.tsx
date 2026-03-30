@@ -688,6 +688,7 @@ export default function AdminReports() {
           </GlassCard>
         )}
 
+        {canChangeSettings && (
         <GlassCard className="p-5 space-y-4">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5" /> Import Report
@@ -737,6 +738,7 @@ export default function AdminReports() {
             </div>
           )}
         </GlassCard>
+        )}
 
         <GlassCard className="p-0 overflow-hidden">
           <div className="p-4 border-b border-border/50 flex items-center justify-between gap-3 flex-wrap">
