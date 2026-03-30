@@ -33,6 +33,7 @@ function lazyRetry(fn: () => Promise<any>, retries = 2): ReturnType<typeof lazy>
 const Auth = lazyRetry(() => import("./pages/Auth"));
 const ResetPassword = lazyRetry(() => import("./pages/ResetPassword"));
 const UserDashboard = lazyRetry(() => import("./pages/UserDashboard"));
+const DashboardRouter = lazyRetry(() => import("./pages/DashboardRouter"));
 const NewRelease = lazyRetry(() => import("./pages/NewRelease"));
 const AdminGenresLanguages = lazyRetry(() => import("./pages/AdminGenresLanguages"));
 const MyReleases = lazyRetry(() => import("./pages/MyReleases"));
