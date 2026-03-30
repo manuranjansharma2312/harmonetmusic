@@ -1,0 +1,1 @@
+ALTER TABLE public.sub_labels ADD COLUMN IF NOT EXISTS allowed_pages text[] NOT NULL DEFAULT '{}'::text[];
