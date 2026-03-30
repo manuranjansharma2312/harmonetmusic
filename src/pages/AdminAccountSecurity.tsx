@@ -3,7 +3,7 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Mail, KeyRound, CheckCircle, Shield } from 'lucide-react';
+import { Loader2, Mail, KeyRound, CheckCircle, Shield, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AdminAccountSecurity() {

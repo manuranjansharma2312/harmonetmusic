@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { X, Loader2, KeyRound, Mail } from 'lucide-react';
+import { X, Loader2, KeyRound, Mail, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { countries, getStatesForCountry } from '@/data/locations';
 
