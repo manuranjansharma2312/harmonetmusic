@@ -209,7 +209,7 @@ export default function AdminUsers() {
       `#${p.display_id}`,
       p.user_type === 'artist' ? p.artist_name || '' : p.record_label_name || '',
       p.legal_name,
-      p.user_type === 'record_label' ? 'Label' : 'Artist',
+      p.user_type === 'record_label' ? 'Record Label' : 'Artist',
       p.email,
       `${p.whatsapp_country_code} ${p.whatsapp_number}`,
       p.instagram_link || '',
