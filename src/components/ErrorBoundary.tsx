@@ -1,5 +1,4 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
-import { BackgroundBlobs } from '@/components/BackgroundBlobs';
 
 interface Props {
   children: ReactNode;
