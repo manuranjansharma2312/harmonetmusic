@@ -597,7 +597,6 @@ export default function AdminSmartLinks() {
                 </div>
               );
             })()}
-            )}
           </TabsContent>
 
           {/* === PLATFORMS TAB === */}
