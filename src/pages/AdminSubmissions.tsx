@@ -988,7 +988,7 @@ export default function AdminSubmissions() {
         ) : (
           <>
           <div className="responsive-table-wrap">
-            <table className="w-full min-w-[750px] text-sm">
+            <table className="w-full min-w-[700px] text-sm">
               <thead>
                 <tr className="border-b border-border/50 text-muted-foreground">
                   <th className="py-3 px-3 text-left w-8">
@@ -1026,10 +1026,10 @@ export default function AdminSubmissions() {
                               <div className="h-10 w-10 rounded bg-muted/50 flex items-center justify-center"><Music className="h-4 w-4 text-muted-foreground" /></div>
                             )}
                             <div>
-                              <div className="flex items-center gap-1.5">
-                                <p className="font-medium text-foreground">{getReleaseName(release)}</p>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <p className="font-medium text-foreground truncate max-w-[120px] sm:max-w-[180px]">{getReleaseName(release)}</p>
                                 {release.was_transferred && (
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/50 text-accent-foreground font-medium">Transferred</span>
+                                  <span className="text-[10px] leading-none px-1.5 py-0.5 rounded bg-accent/50 text-accent-foreground font-medium whitespace-nowrap shrink-0">Transferred</span>
                                 )}
                               </div>
                               <p className="text-xs text-muted-foreground">{release.tracks?.length || 0} track(s)</p>
@@ -1101,11 +1101,11 @@ export default function AdminSubmissions() {
                           {new Date(release.created_at).toLocaleDateString()}
                         </td>
                         <td className="py-3 px-3">
-                          <div className="flex items-center justify-end gap-0.5">
-                            {!isTeam && <button onClick={() => setTransferRelease(release)} className="p-1.5 rounded-lg hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all" title="Transfer Ownership"><ArrowRightLeft className="h-4 w-4" /></button>}
-                            <button onClick={() => navigate(`/submit?edit=${release.id}`)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"><Pencil className="h-4 w-4" /></button>
-                            <button onClick={() => setViewRelease(release)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"><Eye className="h-4 w-4" /></button>
-                            {canDelete && <button onClick={() => setDeleteRelease(release)} className="p-1.5 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all"><Trash2 className="h-4 w-4" /></button>}
+                          <div className="flex items-center justify-end gap-0.5 flex-nowrap">
+                            {!isTeam && <button onClick={() => setTransferRelease(release)} className="p-1 sm:p-1.5 rounded-lg hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all" title="Transfer Ownership"><ArrowRightLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" /></button>}
+                            <button onClick={() => navigate(`/submit?edit=${release.id}`)} className="p-1 sm:p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"><Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" /></button>
+                            <button onClick={() => setViewRelease(release)} className="p-1 sm:p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"><Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" /></button>
+                            {canDelete && <button onClick={() => setDeleteRelease(release)} className="p-1 sm:p-1.5 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all"><Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" /></button>}
                           </div>
                         </td>
                       </tr>
