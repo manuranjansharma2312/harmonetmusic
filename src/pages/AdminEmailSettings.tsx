@@ -161,17 +161,17 @@ function EmailAnalytics({ logs }: { logs: EmailLog[] }) {
   return (
     <div className="space-y-6">
       {/* Time range selector */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-primary/10">
             <BarChart3 className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold">Email Analytics</h2>
+            <h2 className="text-base sm:text-lg font-semibold">Email Analytics</h2>
             <p className="text-xs text-muted-foreground">Overview of email delivery performance</p>
           </div>
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 flex-wrap">
           {[{ key: '24h', label: '24h' }, { key: '7d', label: '7 Days' }, { key: '30d', label: '30 Days' }, { key: '90d', label: '90 Days' }].map(r => (
             <Button key={r.key} size="sm" variant={timeRange === r.key ? 'default' : 'outline'}
               onClick={() => setTimeRange(r.key)}>{r.label}</Button>
@@ -180,7 +180,7 @@ function EmailAnalytics({ logs }: { logs: EmailLog[] }) {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
         {[
           { label: 'Total Emails', value: stats.total, color: 'text-foreground' },
           { label: 'Sent', value: stats.sent, color: 'text-green-400' },
@@ -188,9 +188,9 @@ function EmailAnalytics({ logs }: { logs: EmailLog[] }) {
           { label: 'Pending', value: stats.pending, color: 'text-yellow-400' },
           { label: 'Success Rate', value: `${stats.successRate}%`, color: 'text-primary' },
         ].map(s => (
-          <GlassCard key={s.label} className="p-4 text-center">
-            <p className="text-xs text-muted-foreground">{s.label}</p>
-            <p className={`text-2xl font-bold mt-1 ${s.color}`}>{s.value}</p>
+          <GlassCard key={s.label} className="p-3 sm:p-4 text-center">
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{s.label}</p>
+            <p className={`text-xl sm:text-2xl font-bold mt-1 ${s.color}`}>{s.value}</p>
           </GlassCard>
         ))}
       </div>
@@ -241,15 +241,19 @@ function EmailAnalytics({ logs }: { logs: EmailLog[] }) {
       <GlassCard className="p-4">
         <h3 className="text-sm font-semibold mb-3">Top Email Templates</h3>
         {templateData.length > 0 ? (
+          <div className="responsive-table-wrap">
+          <div className="min-w-[400px]">
           <ResponsiveContainer width="100%" height={Math.max(200, templateData.length * 40)}>
-            <BarChart data={templateData} layout="vertical" margin={{ left: 120 }}>
+            <BarChart data={templateData} layout="vertical" margin={{ left: 100, right: 10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis type="number" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" width={120} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={100} />
               <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} />
               <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} name="Emails Sent" />
             </BarChart>
           </ResponsiveContainer>
+          </div>
+          </div>
         ) : (
           <div className="text-center text-muted-foreground text-sm py-8">No template data</div>
         )}
@@ -614,10 +618,13 @@ export default function AdminEmailSettings() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div>
-          <h1 className="text-2xl font-bold">Email Settings</h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+            <Mail className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+            Manage Emails
+          </h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-1">
             Manage email accounts, assign them to triggers, and customize templates
           </p>
         </div>
@@ -646,18 +653,18 @@ export default function AdminEmailSettings() {
 
           {/* =============== Email Accounts Tab =============== */}
           <TabsContent value="accounts">
-            <GlassCard className="p-6 space-y-4">
-              <div className="flex items-center justify-between">
+            <GlassCard className="p-4 sm:p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-primary/10">
-                    <Mail className="h-5 w-5 text-primary" />
+                  <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10">
+                    <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold">Email Accounts</h2>
-                    <p className="text-xs text-muted-foreground">Add multiple SMTP accounts and assign each to specific email triggers</p>
+                    <h2 className="text-base sm:text-lg font-semibold">Email Accounts</h2>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Add multiple SMTP accounts and assign each to specific email triggers</p>
                   </div>
                 </div>
-                <Button size="sm" className="gap-2" onClick={openNewAccount}>
+                <Button size="sm" className="gap-2 w-fit" onClick={openNewAccount}>
                   <Plus className="h-4 w-4" /> Add Account
                 </Button>
               </div>
@@ -745,15 +752,15 @@ export default function AdminEmailSettings() {
 
           {/* =============== Categories Tab =============== */}
           <TabsContent value="categories">
-            <GlassCard className="p-6 space-y-4">
-              <div className="flex items-center justify-between">
+            <GlassCard className="p-4 sm:p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-primary/10">
-                    <Tag className="h-5 w-5 text-primary" />
+                  <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10">
+                    <Tag className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold">Email Categories</h2>
-                    <p className="text-xs text-muted-foreground">Create categories and assign a default email account to each one</p>
+                    <h2 className="text-base sm:text-lg font-semibold">Email Categories</h2>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Create categories and assign a default email account to each one</p>
                   </div>
                 </div>
               </div>
@@ -772,7 +779,7 @@ export default function AdminEmailSettings() {
               {/* Category list */}
               <div className="space-y-2">
                 {categories.map((cat, idx) => (
-                  <div key={cat.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border bg-muted/20">
+                  <div key={cat.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 p-3 rounded-lg border border-border bg-muted/20">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <Badge variant="outline" className={`text-[10px] shrink-0 ${CATEGORY_COLORS[idx % CATEGORY_COLORS.length]}`}>
                         {cat.key}
@@ -796,12 +803,12 @@ export default function AdminEmailSettings() {
                         ({templates.filter(t => t.category === cat.key).length} templates)
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <Select
                         value={cat.default_account_id || '_none'}
                         onValueChange={(v) => updateCategory(cat.id, { default_account_id: v === '_none' ? null : v })}
                       >
-                        <SelectTrigger className="w-[220px] h-8 text-xs">
+                        <SelectTrigger className="w-full sm:w-[220px] h-8 text-xs">
                           <SelectValue placeholder="No default account" />
                         </SelectTrigger>
                         <SelectContent>
@@ -813,12 +820,14 @@ export default function AdminEmailSettings() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <Button size="sm" variant="ghost" onClick={() => { setEditingCategoryId(cat.id); setEditCategoryName(cat.name); }}>
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => deleteCategory(cat.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => { setEditingCategoryId(cat.id); setEditCategoryName(cat.name); }}>
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => deleteCategory(cat.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -838,14 +847,14 @@ export default function AdminEmailSettings() {
 
           {/* =============== Templates Tab =============== */}
           <TabsContent value="templates">
-            <GlassCard className="p-6 space-y-4">
+            <GlassCard className="p-4 sm:p-6 space-y-4">
               <div className="flex items-center gap-3 mb-2">
-                <div className="p-2.5 rounded-xl bg-primary/10">
-                  <FileText className="h-5 w-5 text-primary" />
+                <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10">
+                  <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold">Email Templates & Account Assignment</h2>
-                  <p className="text-xs text-muted-foreground">Customize templates and assign which email account sends each type</p>
+                  <h2 className="text-base sm:text-lg font-semibold">Email Templates & Account Assignment</h2>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Customize templates and assign which email account sends each type</p>
                 </div>
               </div>
 
@@ -1078,15 +1087,15 @@ export default function AdminEmailSettings() {
 
           {/* =============== Email Logs Tab =============== */}
           <TabsContent value="logs">
-            <GlassCard className="p-6 space-y-4">
+            <GlassCard className="p-4 sm:p-6 space-y-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-primary/10">
-                    <History className="h-5 w-5 text-primary" />
+                  <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10">
+                    <History className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold">Email Sending Logs</h2>
-                    <p className="text-xs text-muted-foreground">Track all sent emails · Logs auto-delete after 14 days</p>
+                    <h2 className="text-base sm:text-lg font-semibold">Email Sending Logs</h2>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Track all sent emails · Logs auto-delete after 14 days</p>
                   </div>
                 </div>
                 <div className="flex gap-2 flex-wrap">
@@ -1220,12 +1229,12 @@ export default function AdminEmailSettings() {
 
           {/* =============== Setup Guide Tab =============== */}
           <TabsContent value="guide">
-            <GlassCard className="p-6 space-y-6">
+            <GlassCard className="p-4 sm:p-6 space-y-6">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-primary/10">
-                  <Info className="h-5 w-5 text-primary" />
+                <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10">
+                  <Info className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 </div>
-                <h2 className="text-lg font-semibold">Self-Hosting Email Setup Guide</h2>
+                <h2 className="text-base sm:text-lg font-semibold">Self-Hosting Email Setup Guide</h2>
               </div>
               <div className="space-y-6 text-sm">
                 <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-2">
@@ -1391,7 +1400,7 @@ export default function AdminEmailSettings() {
                   value={editingAccount.account_name || ''}
                   onChange={(e) => setEditingAccount({ ...editingAccount, account_name: e.target.value })} />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>Provider Preset</Label>
                   <Select value={editingAccount.provider || 'smtp'}
@@ -1428,7 +1437,7 @@ export default function AdminEmailSettings() {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>SMTP Host *</Label>
                   <Input placeholder="smtp.gmail.com" value={editingAccount.smtp_host || ''}
@@ -1440,7 +1449,7 @@ export default function AdminEmailSettings() {
                     onChange={(e) => setEditingAccount({ ...editingAccount, smtp_port: parseInt(e.target.value) || 587 })} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>Username</Label>
                   <Input placeholder="your-email@gmail.com" value={editingAccount.smtp_username || ''}
@@ -1461,7 +1470,7 @@ export default function AdminEmailSettings() {
               </div>
               <div className="border-t border-border pt-3 space-y-3">
                 <h4 className="text-sm font-medium">Sender Information</h4>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label>From Email</Label>
                     <Input placeholder="notifications@yourdomain.com" value={editingAccount.from_email || ''}
@@ -1548,7 +1557,7 @@ export default function AdminEmailSettings() {
           </DialogHeader>
           {viewingLog && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div>
                   <Label className="text-xs text-muted-foreground">Template</Label>
                   <p className="font-medium">{viewingLog.template_label || viewingLog.template_key}</p>
