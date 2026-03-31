@@ -505,6 +505,19 @@ export default function VideoSubmit() {
                   />
                 )}
 
+                {field.field_type === 'isrc' && (
+                  <div>
+                    <Input
+                      placeholder={field.placeholder || 'e.g. USRC11234567'}
+                      value={values[field.id] || ''}
+                      onChange={e => setValues(prev => ({ ...prev, [field.id]: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12) }))}
+                      maxLength={12}
+                      className="font-mono tracking-wider"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">12-character ISRC code (e.g. USRC11234567)</p>
+                  </div>
+                )}
+
                 {field.field_type === 'video_upload' && (
                   <div>
                     <Input

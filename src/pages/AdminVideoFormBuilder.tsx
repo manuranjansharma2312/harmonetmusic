@@ -31,6 +31,7 @@ const FIELD_TYPES = [
   { value: 'document_upload', label: 'Document Upload' },
   { value: 'drag_drop_upload', label: 'Drag & Drop Upload' },
   { value: 'link', label: 'Link / URL' },
+  { value: 'isrc', label: 'ISRC Code (with Validation)' },
   { value: 'vevo_channel', label: 'Select Vevo Channel (User\'s Approved)' },
 ];
 
