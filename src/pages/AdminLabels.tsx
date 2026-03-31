@@ -228,8 +228,23 @@ export default function AdminLabels() {
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Manage Labels</h1>
         <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-          Review, approve, or reject user label submissions. {labels.length} total labels.
+          Review, approve, or reject user label submissions. {filteredLabels.length} total labels.
         </p>
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            className={`${inputClass} pl-9`}
+            placeholder="Search by label name, user, status..."
+            value={searchQuery}
+            onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
+          />
+        </div>
+        <Button variant="outline" onClick={handleExportCSV} className="gap-2 shrink-0">
+          <Download className="h-4 w-4" /> Export CSV
+        </Button>
       </div>
 
       {selected.size > 0 && canDelete && (
