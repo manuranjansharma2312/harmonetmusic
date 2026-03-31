@@ -533,9 +533,12 @@ export default function AdminTeamManagement() {
                           <Button variant="outline" size="sm" title="Login as this member" onClick={() => handleLoginAs(m)}>
                             <LogIn className="h-3.5 w-3.5" />
                           </Button>
-                          <Button variant="outline" size="sm" onClick={() => openEditMember(m)}>
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
+                          <Button variant="outline" size="sm" title="View Details" onClick={() => setViewMember(m)}>
+                             <Eye className="h-3.5 w-3.5" />
+                           </Button>
+                           <Button variant="outline" size="sm" title="Edit" onClick={() => openEditMember(m)}>
+                             <Pencil className="h-3.5 w-3.5" />
+                           </Button>
                           <Button variant="destructive" size="sm" onClick={() => setDeleteConfirm({ type: 'member', id: m.id })}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
