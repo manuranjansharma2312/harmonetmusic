@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Loader2, ArrowRight, Search, AlertTriangle } from 'lucide-react';
+import { computeReleaseFreezeIds } from '@/lib/transferFreezeLogic';
 
 interface TransferOwnershipModalProps {
   open: boolean;
@@ -92,23 +93,31 @@ export function TransferOwnershipModal({ open, onClose, release, onTransferred }
         .eq('release_id', release.id);
       if (trackErr) throw trackErr;
 
-      // 4. Mark existing report entries for these ISRCs as frozen & reassign to new user
+      // 4. Smart freeze: only freeze entries that were effectively paid to old owner
       if (isrcs.length > 0) {
-        // OTT reports - mark as frozen and reassign
-        const { error: ottErr } = await supabase
-          .from('report_entries')
-          .update({ user_id: newUserId, revenue_frozen: true } as any)
+        const { data: oldProfile } = await supabase
+          .from('profiles')
+          .select('hidden_cut_percent')
           .eq('user_id', oldUserId)
-          .in('isrc', isrcs);
-        if (ottErr) console.error('OTT report transfer error:', ottErr);
+          .single();
+        const fallbackCut = Number(oldProfile?.hidden_cut_percent) || 0;
 
-        // YouTube reports - mark as frozen and reassign
-        const { error: ytErr } = await supabase
-          .from('youtube_report_entries')
-          .update({ user_id: newUserId, revenue_frozen: true } as any)
-          .eq('user_id', oldUserId)
-          .in('isrc', isrcs);
-        if (ytErr) console.error('YT report transfer error:', ytErr);
+        const { freezeIds, unfreezeIds } = await computeReleaseFreezeIds(oldUserId, isrcs, fallbackCut);
+
+        // Reassign frozen entries (paid to old owner → view-only for new owner)
+        for (const group of freezeIds) {
+          await supabase
+            .from(group.table as any)
+            .update({ user_id: newUserId, revenue_frozen: true } as any)
+            .in('id', group.ids);
+        }
+        // Reassign unfrozen entries (unpaid → active revenue for new owner)
+        for (const group of unfreezeIds) {
+          await supabase
+            .from(group.table as any)
+            .update({ user_id: newUserId, revenue_frozen: false } as any)
+            .in('id', group.ids);
+        }
       }
 
       // 5. Log the transfer

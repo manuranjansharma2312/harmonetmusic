@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Loader2, ArrowRightLeft, Search, AlertTriangle } from 'lucide-react';
+import { computeCmsFreezeIds } from '@/lib/transferFreezeLogic';
 
 interface TransferCmsModalProps {
   open: boolean;
@@ -70,14 +71,24 @@ export function TransferCmsModal({ open, onClose, cmsLink, onTransferred }: Tran
         .eq('id', cmsLink.id);
       if (error) throw error;
 
-      // Freeze all existing CMS report entries for this channel
-      // so old revenue doesn't count towards the new owner's balance
-      const { error: freezeErr } = await supabase
-        .from('cms_report_entries' as any)
-        .update({ revenue_frozen: true })
-        .eq('channel_name', cmsLink.channel_name)
-        .eq('revenue_frozen', false);
-      if (freezeErr) console.error('CMS report freeze error:', freezeErr);
+      // Smart freeze: only freeze entries that were effectively paid to old owner
+      const { data: linkData } = await supabase
+        .from('youtube_cms_links' as any)
+        .select('cut_percent')
+        .eq('id', cmsLink.id)
+        .single();
+      const cutPercent = Number((linkData as any)?.cut_percent) || 0;
+
+      const { freezeIds, unfreezeIds } = await computeCmsFreezeIds(oldUserId, cmsLink.channel_name, cutPercent);
+
+      // Freeze paid entries (view-only for new owner)
+      if (freezeIds.length > 0) {
+        await supabase
+          .from('cms_report_entries' as any)
+          .update({ revenue_frozen: true })
+          .in('id', freezeIds);
+      }
+      // Unfrozen entries remain active revenue for new owner (no update needed)
 
       // Log the transfer
       const { data: sessionData } = await supabase.auth.getSession();
