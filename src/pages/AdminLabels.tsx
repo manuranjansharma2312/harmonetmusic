@@ -3,7 +3,7 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { StatusBadge } from '@/components/StatusBadge';
-import { Loader2, Tag, FileText, Trash2, Pencil, Check, X, CheckSquare, Search, Download } from 'lucide-react';
+import { Loader2, Tag, FileText, Trash2, Pencil, Check, X, CheckSquare, Search, Download, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
@@ -42,6 +42,9 @@ export default function AdminLabels() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importing, setImporting] = useState(false);
 
   const filteredLabels = useMemo(() => {
     if (!searchQuery.trim()) return labels;
@@ -222,6 +225,91 @@ export default function AdminLabels() {
     window.open(data.signedUrl, '_blank');
   };
 
+  const handleDownloadTemplate = () => {
+    const csv = 'User ID,Label Name\n1,My Label Name\n2,Another Label';
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'labels-import-template.csv'; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportCSV = async () => {
+    if (!importFile) return;
+    setImporting(true);
+    try {
+      const text = await importFile.text();
+      const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+      if (lines.length < 2) { toast.error('CSV must have a header row and at least one data row'); setImporting(false); return; }
+
+      const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+      const userIdIdx = headers.findIndex(h => h === 'user id' || h === 'userid' || h === 'display_id' || h === 'user_id');
+      const labelNameIdx = headers.findIndex(h => h === 'label name' || h === 'labelname' || h === 'label_name');
+
+      if (userIdIdx === -1 || labelNameIdx === -1) {
+        toast.error('CSV must have "User ID" and "Label Name" columns');
+        setImporting(false);
+        return;
+      }
+
+      // Parse rows
+      const rows: { displayId: number; labelName: string }[] = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+        const displayId = parseInt(cols[userIdIdx], 10);
+        const labelName = cols[labelNameIdx];
+        if (!displayId || !labelName) continue;
+        rows.push({ displayId, labelName });
+      }
+
+      if (rows.length === 0) { toast.error('No valid rows found in CSV'); setImporting(false); return; }
+
+      // Resolve display_ids to user_ids
+      const displayIds = [...new Set(rows.map(r => r.displayId))];
+      const { data: profiles } = await supabase.from('profiles').select('user_id, display_id').in('display_id', displayIds);
+      const idMap: Record<number, string> = {};
+      profiles?.forEach((p: any) => { idMap[p.display_id] = p.user_id; });
+
+      const unmapped = displayIds.filter(id => !idMap[id]);
+      if (unmapped.length > 0) {
+        toast.error(`User IDs not found: ${unmapped.join(', ')}`);
+        setImporting(false);
+        return;
+      }
+
+      // Check for duplicate label names
+      const labelNames = rows.map(r => r.labelName);
+      const duplicateChecks = await Promise.all(
+        labelNames.map(name => supabase.rpc('label_name_exists' as any, { _name: name }))
+      );
+      const duplicates = labelNames.filter((_, i) => duplicateChecks[i].data === true);
+      if (duplicates.length > 0) {
+        toast.error(`These labels already exist: ${duplicates.slice(0, 5).join(', ')}${duplicates.length > 5 ? '...' : ''}`);
+        setImporting(false);
+        return;
+      }
+
+      // Insert labels
+      const inserts = rows.map(r => ({
+        user_id: idMap[r.displayId],
+        label_name: r.labelName,
+        status: 'approved',
+      }));
+
+      const { error } = await supabase.from('labels').insert(inserts);
+      if (error) throw error;
+
+      toast.success(`${rows.length} label(s) imported successfully`);
+      setShowImportModal(false);
+      setImportFile(null);
+      fetchLabels();
+    } catch (err: any) {
+      toast.error(err.message || 'Import failed');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -254,6 +342,10 @@ export default function AdminLabels() {
               onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
             />
           </div>
+          <Button variant="outline" onClick={() => setShowImportModal(true)} className="gap-2 shrink-0 h-9 text-xs sm:text-sm">
+            <Upload className="h-4 w-4" />
+            <span>Import CSV</span>
+          </Button>
           <Button variant="outline" onClick={handleExportCSV} className="gap-2 shrink-0 h-9 text-xs sm:text-sm">
             <Download className="h-4 w-4" />
             <span>{selected.size > 0 ? `Export ${selected.size} Selected` : 'Export CSV'}</span>
@@ -448,6 +540,43 @@ export default function AdminLabels() {
         onConfirm={handleRejectConfirm}
         onCancel={() => setRejectTarget(null)}
       />
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <GlassCard glow className="w-full max-w-md animate-fade-in">
+            <h2 className="text-lg font-semibold text-foreground mb-1">Import Labels from CSV</h2>
+            <p className="text-xs text-muted-foreground mb-4">
+              Upload a CSV with <strong>User ID</strong> (display #ID) and <strong>Label Name</strong> columns. Labels will be imported as <strong>Approved</strong>.
+            </p>
+            <button onClick={handleDownloadTemplate} className="text-xs text-primary hover:text-primary/80 underline mb-4 inline-block">
+              Download template CSV
+            </button>
+            <div className="mb-4">
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                className="hidden"
+                id="import-csv-upload"
+              />
+              <label htmlFor="import-csv-upload" className={`${inputClass} flex min-w-0 cursor-pointer items-center gap-2`}>
+                <Upload className="h-4 w-4 shrink-0" />
+                <span className="truncate">{importFile?.name || 'Choose CSV file'}</span>
+              </label>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1" onClick={() => { setShowImportModal(false); setImportFile(null); }}>
+                Cancel
+              </Button>
+              <Button className="flex-1 btn-primary-gradient font-semibold text-primary-foreground" disabled={!importFile || importing} onClick={handleImportCSV}>
+                {importing && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                Import
+              </Button>
+            </div>
+          </GlassCard>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
