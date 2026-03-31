@@ -59,12 +59,8 @@ export default function MyLabels() {
     setSubmitting(true);
     try {
       // Check if label name already exists system-wide (case-insensitive)
-      const { data: existing } = await supabase
-        .from('labels')
-        .select('id')
-        .ilike('label_name', labelName.trim())
-        .limit(1);
-      if (existing && existing.length > 0) {
+      const { data: exists } = await supabase.rpc('label_name_exists' as any, { _name: labelName.trim() });
+      if (exists) {
         toast.error('This label name already exists under our system. Please choose a different name.');
         setSubmitting(false);
         return;
