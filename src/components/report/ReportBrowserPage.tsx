@@ -355,7 +355,7 @@ export function ReportBrowserPage({
               {selectedMonth ? `Viewing report for ${selectedMonth}` : introText} · All amounts in ₹ (INR)
             </p>
           </div>
-          {selectedMonth && (
+          {selectedMonth ? (
             <div className="flex items-center gap-3 flex-wrap">
               <div className="text-right">
                 <p className="text-xs text-muted-foreground">Net Revenue (Filtered)</p>
@@ -364,6 +364,11 @@ export function ReportBrowserPage({
               <Button size="sm" variant="outline" onClick={exportCSV} disabled={detailLoading}>
                 <Download className="h-4 w-4 mr-1" /> Export CSV
               </Button>
+            </div>
+          ) : monthlyGroups.length > 0 && (
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">Total Net Revenue</p>
+              <p className="text-lg font-bold text-primary">{formatRevenue(monthlyGroups.reduce((sum, [, g]) => sum + g.totalRevenue, 0))}</p>
             </div>
           )}
         </div>
