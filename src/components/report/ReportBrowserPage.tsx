@@ -302,6 +302,11 @@ export function ReportBrowserPage({
     return filtered;
   }, [filters, selectedEntries]);
 
+  const filteredTotal = useMemo(() =>
+    filteredSelectedEntries.reduce((sum, entry) => sum + applyRevenueCut(entry), 0),
+    [filteredSelectedEntries, applyRevenueCut],
+  );
+
   const filterOptions = useMemo(() => {
     const options: Record<string, string[]> = {};
     FILTERABLE.forEach(({ key }) => {
