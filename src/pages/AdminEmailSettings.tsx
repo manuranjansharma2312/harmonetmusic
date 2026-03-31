@@ -739,7 +739,7 @@ export default function AdminEmailSettings() {
                             <Button size="sm" variant="ghost" onClick={() => openEditAccount(acc)}>
                               <Edit2 className="h-4 w-4" />
                             </Button>
-                            <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => deleteAccount(acc.id)}>
+                            <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setDeleteConfirmAction({ title: 'Delete Email Account', message: 'Delete this email account? Templates using it will fall back to the default account.', onConfirm: () => deleteAccount(acc.id) })}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
