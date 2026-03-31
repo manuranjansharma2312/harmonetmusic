@@ -481,6 +481,11 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
             </DropdownMenu>
           )}
 
+          {someSelected && (
+            <Button variant="outline" onClick={() => handleExport(true)}>
+              <Download className="h-4 w-4 mr-1" /> Export Selected ({selected.size})
+            </Button>
+          )}
           <Button variant="outline" onClick={() => handleExport(false)} disabled={filtered.length === 0}>
             <Download className="h-4 w-4 mr-1" /> Export All
           </Button>
