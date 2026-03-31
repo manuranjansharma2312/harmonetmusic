@@ -473,104 +473,110 @@ export default function AdminSmartLinks() {
                 <p className="text-muted-foreground">No custom smart links yet</p>
               </GlassCard>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {customLinks.filter(c => c.title.toLowerCase().includes(customSearch.toLowerCase()) && (statusFilter === 'all' || c.status === statusFilter)).map(c => {
                   const url = c.slug ? `${window.location.origin}/r/${c.slug}` : `${window.location.origin}/r/${c.id}`;
                   const active = c.platform_links && Object.values(c.platform_links).some((v: any) => v?.trim());
                   const linkCount = active ? Object.values(c.platform_links).filter((v: any) => v?.trim()).length : 0;
 
                   return (
-                    <GlassCard key={c.id} className={`p-4 space-y-3 ${selectedIds.has(c.id) ? 'ring-2 ring-primary' : ''}`}>
-                      <div className="flex items-start gap-3">
-                        <Checkbox
-                          checked={selectedIds.has(c.id)}
-                          onCheckedChange={(checked) => {
-                            const next = new Set(selectedIds);
-                            checked ? next.add(c.id) : next.delete(c.id);
-                            setSelectedIds(next);
-                          }}
-                          className="mt-1"
-                        />
-                        {c.poster_url ? (
-                          <img src={c.poster_url} alt={c.title} className="h-14 w-14 rounded-lg object-cover flex-shrink-0" />
-                        ) : (
-                          <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                            <Music className="h-6 w-6 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm text-foreground truncate">{c.title}</p>
-                          <p className="text-xs text-muted-foreground">{c.artist_name || 'Unknown Artist'}</p>
-                          {/* Created by info */}
-                          {c._profile && (
-                            <div className="mt-1">
-                              <p className="text-[10px] text-muted-foreground/80 flex items-center gap-1">
-                                <User className="h-3 w-3" />
-                                {c._profile.artist_name || c._profile.record_label_name || c._profile.legal_name}
-                                <span className="text-muted-foreground/50">#{c._profile.display_id}</span>
-                              </p>
-                              {c._subLabel && (
-                                <p className="text-[10px] text-muted-foreground/60 ml-4">
-                                  ↳ Under: {c._subLabel.parent_label_name}
-                                </p>
-                              )}
+                    <GlassCard key={c.id} className={`p-0 overflow-hidden transition-shadow hover:shadow-lg hover:shadow-primary/5 ${selectedIds.has(c.id) ? 'ring-2 ring-primary' : ''}`}>
+                      <div className="p-4 pb-3">
+                        <div className="flex items-start gap-3">
+                          <Checkbox
+                            checked={selectedIds.has(c.id)}
+                            onCheckedChange={(checked) => {
+                              const next = new Set(selectedIds);
+                              checked ? next.add(c.id) : next.delete(c.id);
+                              setSelectedIds(next);
+                            }}
+                            className="mt-1"
+                          />
+                          {c.poster_url ? (
+                            <img src={c.poster_url} alt={c.title} className="h-14 w-14 rounded-xl object-cover flex-shrink-0 ring-1 ring-border" />
+                          ) : (
+                            <div className="h-14 w-14 rounded-xl bg-muted/80 flex items-center justify-center flex-shrink-0 ring-1 ring-border">
+                              <Music className="h-6 w-6 text-muted-foreground/60" />
                             </div>
                           )}
-                          {active ? (
-                            <Badge variant="outline" className="mt-1 text-[10px]">{linkCount} platforms</Badge>
-                          ) : (
-                            <Badge variant="outline" className="mt-1 text-[10px]">No links</Badge>
-                          )}
-                          {/* Status badge */}
-                          {c.status === 'pending' && (
-                            <Badge variant="secondary" className="mt-1 text-[10px] gap-0.5"><Clock className="h-2.5 w-2.5" /> Pending</Badge>
-                          )}
-                          {c.status === 'approved' && (
-                            <Badge className="mt-1 text-[10px] gap-0.5 bg-green-600"><CheckCircle className="h-2.5 w-2.5" /> Approved</Badge>
-                          )}
-                          {c.status === 'rejected' && (
-                            <Badge variant="destructive" className="mt-1 text-[10px] gap-0.5"><XCircle className="h-2.5 w-2.5" /> Rejected</Badge>
-                          )}
-                          {c.status === 'rejected' && c.rejection_reason && (
-                            <p className="text-[10px] text-destructive/80 mt-0.5 truncate" title={c.rejection_reason}>Reason: {c.rejection_reason}</p>
-                          )}
-                        </div>
-                        <div className="flex flex-wrap gap-1 shrink-0">
-                          {c.status === 'approved' && c.slug && (
-                            <a href={`/r/${c.slug}`} target="_blank" rel="noopener noreferrer">
-                              <Button size="icon" variant="ghost" className="h-7 w-7" title="View Smart Link">
-                                <Eye className="h-3.5 w-3.5" />
-                              </Button>
-                            </a>
-                          )}
-                          {c.status !== 'approved' && (
-                            <Button size="icon" variant="ghost" className="h-7 w-7 text-green-500 hover:text-green-600" onClick={() => approveSmartLink(c.id)} title="Approve">
-                              <CheckCircle className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                          {c.status !== 'rejected' && (
-                            <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => setRejectingId(c.id)} title="Reject">
-                              <XCircle className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditCustom(c)}>
-                            <Edit className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteSmartLink(c.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-sm text-foreground truncate leading-tight">{c.title}</p>
+                            <p className="text-xs text-muted-foreground">{c.artist_name || 'Unknown Artist'}</p>
+                            {/* Created by info */}
+                            {c._profile && (
+                              <p className="text-[10px] text-muted-foreground/70 flex items-center gap-1 mt-0.5">
+                                <User className="h-2.5 w-2.5" />
+                                {c._profile.artist_name || c._profile.record_label_name || c._profile.legal_name}
+                                <span className="opacity-50">#{c._profile.display_id}</span>
+                              </p>
+                            )}
+                            {c._subLabel && (
+                              <p className="text-[10px] text-muted-foreground/50 ml-3.5">
+                                ↳ Under: {c._subLabel.parent_label_name}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                              {c.status === 'pending' && (
+                                <Badge variant="secondary" className="text-[10px] gap-0.5 px-1.5"><Clock className="h-2.5 w-2.5" /> Pending</Badge>
+                              )}
+                              {c.status === 'approved' && (
+                                <Badge className="text-[10px] gap-0.5 px-1.5 bg-green-600"><CheckCircle className="h-2.5 w-2.5" /> Approved</Badge>
+                              )}
+                              {c.status === 'rejected' && (
+                                <Badge variant="destructive" className="text-[10px] gap-0.5 px-1.5"><XCircle className="h-2.5 w-2.5" /> Rejected</Badge>
+                              )}
+                              {active && (
+                                <Badge variant="outline" className="text-[10px] px-1.5">{linkCount} platform{linkCount !== 1 ? 's' : ''}</Badge>
+                              )}
+                            </div>
+                            {c.status === 'rejected' && c.rejection_reason && (
+                              <p className="text-[10px] text-destructive/80 mt-1 line-clamp-2" title={c.rejection_reason}>Reason: {c.rejection_reason}</p>
+                            )}
+                          </div>
                         </div>
                       </div>
+                      {/* URL bar */}
                       {active && (
-                        <div className="flex items-center gap-2 p-2 rounded-md bg-primary/5 border border-primary/20">
+                        <div className="mx-4 mb-3 flex items-center gap-1.5 p-2 rounded-lg bg-primary/5 border border-primary/15">
                           <Link2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
                           <span className="text-[11px] text-muted-foreground flex-1 truncate font-mono">{url}</span>
                           <CopyButton value={url} />
-                          <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80">
+                          <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors">
                             <ExternalLink className="h-3.5 w-3.5" />
                           </a>
                         </div>
                       )}
+                      {/* Action bar */}
+                      <div className="flex items-center border-t border-border/50 bg-muted/20">
+                        <span className="text-[10px] text-muted-foreground/60 px-4 flex-1">
+                          {new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </span>
+                        <div className="flex items-center divide-x divide-border/50">
+                          {c.status === 'approved' && c.slug && (
+                            <a href={`/r/${c.slug}`} target="_blank" rel="noopener noreferrer">
+                              <Button size="sm" variant="ghost" className="rounded-none h-8 px-2.5 text-[11px] gap-1 text-muted-foreground hover:text-primary">
+                                <Eye className="h-3 w-3" /> View
+                              </Button>
+                            </a>
+                          )}
+                          {c.status !== 'approved' && (
+                            <Button size="sm" variant="ghost" className="rounded-none h-8 px-2.5 text-[11px] gap-1 text-green-600 hover:text-green-700" onClick={() => approveSmartLink(c.id)}>
+                              <CheckCircle className="h-3 w-3" /> Approve
+                            </Button>
+                          )}
+                          {c.status !== 'rejected' && (
+                            <Button size="sm" variant="ghost" className="rounded-none h-8 px-2.5 text-[11px] gap-1 text-destructive hover:text-destructive" onClick={() => setRejectingId(c.id)}>
+                              <XCircle className="h-3 w-3" /> Reject
+                            </Button>
+                          )}
+                          <Button size="sm" variant="ghost" className="rounded-none h-8 px-2.5 text-[11px] gap-1 text-muted-foreground hover:text-primary" onClick={() => setEditCustom(c)}>
+                            <Edit className="h-3 w-3" /> Edit
+                          </Button>
+                          <Button size="sm" variant="ghost" className="rounded-none h-8 px-2.5 text-[11px] gap-1 text-destructive hover:text-destructive" onClick={() => deleteSmartLink(c.id)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
                     </GlassCard>
                   );
                 })}
