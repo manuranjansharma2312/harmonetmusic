@@ -453,6 +453,7 @@ export default function AdminCmsReports() {
                     <Input placeholder="Search months..." value={monthSearch} onChange={e => { setMonthSearch(e.target.value); setMonthPage(0); }} className="pl-9 h-9" />
                   </div>
                 </div>
+                <div className="responsive-table-wrap">
                 <Table className="min-w-max">
                   <TableHeader>
                     <TableRow>
