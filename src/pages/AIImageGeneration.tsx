@@ -358,7 +358,7 @@ export default function AIImageGeneration() {
 
           {/* PLANS */}
           <TabsContent value="plans">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {plans.map(plan => (
                 <Card key={plan.id} className="relative flex flex-col">
                   {plan.tag && (
