@@ -168,7 +168,10 @@ export default function AdminLabels() {
   const allPageSelected = paginatedLabels.length > 0 && paginatedLabels.every(l => selected.has(l.id));
 
   const handleExportCSV = () => {
-    const rows = filteredLabels.map(l => ({
+    const source = selected.size > 0
+      ? filteredLabels.filter(l => selected.has(l.id))
+      : filteredLabels;
+    const rows = source.map(l => ({
       'Label Name': l.label_name,
       'Status': l.status,
       'Submitted By': userEmails[l.user_id] || l.user_id,
@@ -186,7 +189,7 @@ export default function AdminLabels() {
     const a = document.createElement('a');
     a.href = url; a.download = `labels-export-${Date.now()}.csv`; a.click();
     URL.revokeObjectURL(url);
-    toast.success('CSV exported');
+    toast.success(`${source.length} label(s) exported`);
   };
 
   const toggleSelectAll = () => {
