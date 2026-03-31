@@ -699,6 +699,15 @@ export default function AdminAIImageSystem() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {deletePlanId && (
+        <ConfirmDialog
+          title="Delete Plan"
+          message="Are you sure you want to delete this plan? This action cannot be undone."
+          onConfirm={() => deletePlan(deletePlanId)}
+          onCancel={() => setDeletePlanId(null)}
+        />
+      )}
     </DashboardLayout>
   );
 }
