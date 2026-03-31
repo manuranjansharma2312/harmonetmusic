@@ -670,6 +670,13 @@ export default function AdminYouTubeCmsLinks() {
           onCancel={() => setDeleteConfirm(null)}
         />
       )}
+      {/* Transfer CMS Modal */}
+      <TransferCmsModal
+        open={!!transferItem}
+        onClose={() => setTransferItem(null)}
+        cmsLink={transferItem ? { id: transferItem.id, user_id: transferItem.user_id, channel_name: transferItem.channel_name } : null}
+        onTransferred={() => { setTransferItem(null); fetchAll(); }}
+      />
     </DashboardLayout>
   );
 }
