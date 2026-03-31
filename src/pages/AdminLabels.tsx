@@ -349,16 +349,21 @@ export default function AdminLabels() {
                           </span>
                           {userEmails[label.user_id] && <CopyButton value={userEmails[label.user_id]} />}
                         </div>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex flex-wrap items-center gap-1.5">
                           {userDisplayIds[label.user_id] && (
                             <span className="font-mono text-[11px] font-bold text-primary">#{userDisplayIds[label.user_id]}</span>
                           )}
-                          {userTypes[label.user_id] === 'sub_label' && subLabelInfo[label.user_id] && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[10px]">
+                        </div>
+                        {userTypes[label.user_id] === 'sub_label' && subLabelInfo[label.user_id] && (
+                          <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-medium">
                               {subLabelInfo[label.user_id].sub_label_name}
                             </span>
-                          )}
-                        </div>
+                            <span className="text-[10px] text-muted-foreground">
+                              ↳ Under: {subLabelInfo[label.user_id].parent_label_name}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </td>
                     {/* B2B */}
