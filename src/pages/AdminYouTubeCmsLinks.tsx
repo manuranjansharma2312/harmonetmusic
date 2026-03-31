@@ -101,6 +101,7 @@ export default function AdminYouTubeCmsLinks() {
   // Reject & Delete modals
   const [rejectItem, setRejectItem] = useState<CmsLink | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ ids: string[] } | null>(null);
+  const [transferItem, setTransferItem] = useState<CmsLink | null>(null);
 
   // Bulk status change
   const [bulkStatus, setBulkStatus] = useState('');
