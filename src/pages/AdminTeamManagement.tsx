@@ -34,7 +34,7 @@ const ALL_ADMIN_PAGES = [
   { key: 'contracts', label: 'Contracts & E-Sign', path: '/admin/agreements' },
   { key: 'promotions', label: 'Promotional Tools', path: '/admin/promotion-tools' },
   { key: 'poster', label: 'Poster Generator', path: '/admin/poster-generator' },
-  { key: 'transfer-history', label: 'Release Transfers', path: '/admin/transfer-history' },
+  { key: 'transfer-history', label: 'Transfers', path: '/admin/transfer-history' },
   { key: 'notices', label: 'Notice Updates', path: '/admin/notices' },
   { key: 'smart-links', label: 'Smart Links', path: '/admin/smart-links' },
   { key: 'email-settings', label: 'Manage Emails', path: '/admin/email-settings' },

@@ -101,7 +101,7 @@ const adminLinksTop = [
 ];
 
 const adminLinksMiddle = [
-  { to: '/admin/transfer-history', label: 'Release Transfers', icon: ArrowRightLeft },
+  { to: '/admin/transfer-history', label: 'Transfers', icon: ArrowRightLeft },
   { to: '/admin/notices', label: 'Notice Updates', icon: Bell },
   { to: '/admin/smart-links', label: 'Smart Links', icon: Link2 },
   { to: '/admin/email-settings', label: 'Manage Emails', icon: Mail },
