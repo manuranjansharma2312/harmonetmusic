@@ -110,6 +110,67 @@ export default function AdminInvoices() {
   const [companyForm, setCompanyForm] = useState<CompanyDetails>(emptyCompany);
   const [savingCompany, setSavingCompany] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [zipping, setZipping] = useState(false);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filtered.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map(i => i.id)));
+    }
+  };
+
+  const downloadSelectedZip = async () => {
+    const selected = invoices.filter(i => selectedIds.has(i.id));
+    if (selected.length === 0) { toast.error('No invoices selected'); return; }
+
+    setZipping(true);
+    try {
+      const zip = new JSZip();
+      // Group by user_display_id
+      const grouped = new Map<number, Invoice[]>();
+      selected.forEach(inv => {
+        const arr = grouped.get(inv.user_display_id) || [];
+        arr.push(inv);
+        grouped.set(inv.user_display_id, arr);
+      });
+
+      grouped.forEach((invs, userId) => {
+        const folder = zip.folder(`User ID - ${userId} Invoices`)!;
+        invs.forEach(inv => {
+          const doc = generatePDF(inv);
+          const pdfBlob = doc.output('arraybuffer');
+          folder.file(`Invoice_${userId}_${inv.invoice_date}.pdf`, pdfBlob);
+        });
+      });
+
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const userIds = [...grouped.keys()].join('_');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = grouped.size === 1
+        ? `User ID - ${[...grouped.keys()][0]} Invoices.zip`
+        : `Invoices_${userIds}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Downloaded ${selected.length} invoice(s) as ZIP`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to create ZIP');
+    } finally {
+      setZipping(false);
+    }
+  };
 
   // Load logo base64 from URL
   const loadLogoFromUrl = (url: string): Promise<string> => {
