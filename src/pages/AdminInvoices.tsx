@@ -14,9 +14,11 @@ import { toast } from 'sonner';
 import { Plus, Trash2, Download, Eye, Pencil, X, FileText, Search, Settings, PackageOpen } from 'lucide-react';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import JSZip from 'jszip';
 
 interface InvoiceItem {
   description: string;
