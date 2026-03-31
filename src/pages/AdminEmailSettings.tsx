@@ -558,12 +558,17 @@ export default function AdminEmailSettings() {
       toast.error(`Cannot delete: ${usedBy} template(s) are using this category. Reassign them first.`);
       return;
     }
-    if (!confirm(`Delete category "${cat.name}"?`)) return;
-    const { error } = await supabase.from('email_categories').delete().eq('id', id);
-    if (error) { toast.error(error.message); return; }
-    toast.success('Category deleted');
-    fetchData();
-  }
+    setDeleteConfirmAction({
+      title: 'Delete Category',
+      message: `Delete category "${cat.name}"?`,
+      onConfirm: async () => {
+        const { error } = await supabase.from('email_categories').delete().eq('id', id);
+        if (error) { toast.error(error.message); setDeleteConfirmAction(null); return; }
+        toast.success('Category deleted');
+        fetchData();
+        setDeleteConfirmAction(null);
+      }
+    });
 
   const categoriesWithAll = useMemo(() =>
     [{ key: 'all', name: 'All' } as any, ...categories],
