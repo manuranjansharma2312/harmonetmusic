@@ -535,7 +535,14 @@ export default function AdminSmartLinks() {
                             <p className="text-[10px] text-destructive/80 mt-0.5 truncate" title={c.rejection_reason}>Reason: {c.rejection_reason}</p>
                           )}
                         </div>
-                        <div className="flex gap-1">
+                        <div className="flex flex-wrap gap-1 shrink-0">
+                          {c.status === 'approved' && c.slug && (
+                            <a href={`/r/${c.slug}`} target="_blank" rel="noopener noreferrer">
+                              <Button size="icon" variant="ghost" className="h-7 w-7" title="View Smart Link">
+                                <Eye className="h-3.5 w-3.5" />
+                              </Button>
+                            </a>
+                          )}
                           {c.status !== 'approved' && (
                             <Button size="icon" variant="ghost" className="h-7 w-7 text-green-500 hover:text-green-600" onClick={() => approveSmartLink(c.id)} title="Approve">
                               <CheckCircle className="h-3.5 w-3.5" />
