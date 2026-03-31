@@ -41,6 +41,18 @@ export default function AdminLabels() {
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredLabels = useMemo(() => {
+    if (!searchQuery.trim()) return labels;
+    const q = searchQuery.toLowerCase();
+    return labels.filter(l =>
+      l.label_name.toLowerCase().includes(q) ||
+      l.status.toLowerCase().includes(q) ||
+      (userEmails[l.user_id] || '').toLowerCase().includes(q) ||
+      (userDisplayIds[l.user_id]?.toString() || '').includes(q)
+    );
+  }, [labels, searchQuery, userEmails, userDisplayIds]);
 
   const inputClass =
     'w-full px-3 py-2 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm';
