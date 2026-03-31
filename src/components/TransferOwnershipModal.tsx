@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Loader2, ArrowRight, Search, AlertTriangle } from 'lucide-react';
+import { computeReleaseFreezeIds } from '@/lib/transferFreezeLogic';
 
 interface TransferOwnershipModalProps {
   open: boolean;
