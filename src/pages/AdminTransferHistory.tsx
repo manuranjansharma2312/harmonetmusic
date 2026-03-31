@@ -241,7 +241,7 @@ function CmsTransferSection() {
       .order('transferred_at', { ascending: false });
 
     if (data && data.length > 0) {
-      const userIds = [...new Set(data.flatMap((d: any) => [d.from_user_id, d.to_user_id]))];
+      const userIds = [...new Set(data.flatMap((d: any) => [d.from_user_id, d.to_user_id]))] as string[];
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, legal_name, display_id')
