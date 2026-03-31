@@ -97,6 +97,7 @@ export default function AdminSmartLinks() {
   const [creatingCustom, setCreatingCustom] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
+  const [deleteConfirmAction, setDeleteConfirmAction] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null);
 
   // ─── System enable/disable ───
   const [systemEnabled, setSystemEnabled] = useState(true);
