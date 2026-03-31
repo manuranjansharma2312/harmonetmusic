@@ -18,6 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, CreditCard, History, BarChart3, Settings, Users, Image as ImageIcon, CheckCircle, Eye, EyeOff, Save } from 'lucide-react';
 import { format } from 'date-fns';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 type AIPlan = { id: string; name: string; price: number; credits: number; description: string; tag: string | null; is_active: boolean; created_at: string };
 type AIOrder = { id: string; user_id: string; plan_id: string; screenshot_url: string | null; transaction_id: string; status: string; rejection_reason: string | null; payment_note: string | null; created_at: string; ai_plans?: { name: string; credits: number; price: number } };
