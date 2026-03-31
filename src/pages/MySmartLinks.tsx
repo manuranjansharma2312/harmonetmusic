@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Link2, ExternalLink, Search, Music, Plus, Edit, Trash2, Share2, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, Link2, ExternalLink, Search, Music, Plus, Edit, Trash2, Share2, Clock, CheckCircle, XCircle, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SmartLinkItem {
@@ -88,12 +88,12 @@ export default function MySmartLinks() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">My Smart Links</h1>
-            <p className="text-sm text-muted-foreground mt-1">Create & share one link — fans choose their platform</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">My Smart Links</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">Create & share one link — fans choose their platform</p>
           </div>
-          <Button size="sm" onClick={() => setCreating(true)}>
+          <Button size="sm" onClick={() => setCreating(true)} className="w-fit">
             <Plus className="h-3.5 w-3.5 mr-1" /> Create Smart Link
           </Button>
         </div>
@@ -114,7 +114,7 @@ export default function MySmartLinks() {
             <p className="text-xs text-muted-foreground mt-1">Click "Create Smart Link" to get started.</p>
           </GlassCard>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {filtered.map(s => {
               const active = hasLinks(s);
               const url = getUrl(s);
@@ -151,7 +151,14 @@ export default function MySmartLinks() {
                         )}
                       </div>
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 shrink-0">
+                      {active && s.slug && (
+                        <a href={`/r/${s.slug}`} target="_blank" rel="noopener noreferrer">
+                          <Button size="icon" variant="ghost" className="h-7 w-7" title="View Smart Link">
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
+                        </a>
+                      )}
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditLink(s)}>
                         <Edit className="h-3.5 w-3.5" />
                       </Button>

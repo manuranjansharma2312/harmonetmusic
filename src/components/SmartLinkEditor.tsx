@@ -276,9 +276,9 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
   const getPlatformKey = (p: Platform) => p.name.toLowerCase().replace(/\s+/g, '_');
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 overflow-x-hidden">
       {/* Title & Artist */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <div>
           <Label className="text-xs text-muted-foreground">Song / Release Title *</Label>
           <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. My Song Name" className="mt-1" />
@@ -329,7 +329,7 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
             </h3>
             <Badge variant="secondary" className="text-[10px]">API Connected</Badge>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Input
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
@@ -376,7 +376,7 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
             <p className="text-xs text-muted-foreground">No platforms configured. Admin needs to add platforms first.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3">
             {platforms.map(p => {
               const key = getPlatformKey(p);
               return (

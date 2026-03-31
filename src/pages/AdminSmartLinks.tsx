@@ -358,10 +358,10 @@ export default function AdminSmartLinks() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-         <div className="flex items-center justify-between">
+         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Smart Links</h1>
-            <p className="text-sm text-muted-foreground mt-1">Manage platform links for all approved releases</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Smart Links</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">Manage platform links for all approved releases</p>
           </div>
           {canChangeSettings && (
             <div className="flex items-center gap-3">
@@ -386,9 +386,9 @@ export default function AdminSmartLinks() {
 
 
           <TabsContent value="custom" className="space-y-4 mt-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">Standalone smart links created by users or admin.</p>
-              {!isTeam && <Button size="sm" onClick={() => setCreatingCustom(true)}><Plus className="h-3.5 w-3.5 mr-1" /> Create Smart Link</Button>}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <p className="text-xs sm:text-sm text-muted-foreground">Standalone smart links created by users or admin.</p>
+              {!isTeam && <Button size="sm" onClick={() => setCreatingCustom(true)} className="w-fit"><Plus className="h-3.5 w-3.5 mr-1" /> Create Smart Link</Button>}
             </div>
             <div className="flex items-center gap-3 flex-wrap">
               <div className="relative max-w-sm flex-1 min-w-[200px]">
@@ -535,7 +535,14 @@ export default function AdminSmartLinks() {
                             <p className="text-[10px] text-destructive/80 mt-0.5 truncate" title={c.rejection_reason}>Reason: {c.rejection_reason}</p>
                           )}
                         </div>
-                        <div className="flex gap-1">
+                        <div className="flex flex-wrap gap-1 shrink-0">
+                          {c.status === 'approved' && c.slug && (
+                            <a href={`/r/${c.slug}`} target="_blank" rel="noopener noreferrer">
+                              <Button size="icon" variant="ghost" className="h-7 w-7" title="View Smart Link">
+                                <Eye className="h-3.5 w-3.5" />
+                              </Button>
+                            </a>
+                          )}
                           {c.status !== 'approved' && (
                             <Button size="icon" variant="ghost" className="h-7 w-7 text-green-500 hover:text-green-600" onClick={() => approveSmartLink(c.id)} title="Approve">
                               <CheckCircle className="h-3.5 w-3.5" />
