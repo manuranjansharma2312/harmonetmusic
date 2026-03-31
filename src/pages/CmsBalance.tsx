@@ -46,10 +46,11 @@ export default function CmsBalance() {
 
       const cmsLinks = (links as any[]) || [];
 
-      // Get all CMS report entries (RLS filters by channel)
+      // Get all CMS report entries (RLS filters by channel), exclude frozen
       const { data: entries } = await supabase
         .from('cms_report_entries' as any)
-        .select('channel_name, net_generated_revenue');
+        .select('channel_name, net_generated_revenue')
+        .eq('revenue_frozen', false);
 
       let total = 0;
       ((entries as any[]) || []).forEach((e: any) => {

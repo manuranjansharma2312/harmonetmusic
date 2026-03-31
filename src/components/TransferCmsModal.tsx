@@ -70,8 +70,14 @@ export function TransferCmsModal({ open, onClose, cmsLink, onTransferred }: Tran
         .eq('id', cmsLink.id);
       if (error) throw error;
 
-      // Also transfer related CMS report entries matching the channel name
-      // (reports are matched by channel_name, so just the link ownership matters)
+      // Freeze all existing CMS report entries for this channel
+      // so old revenue doesn't count towards the new owner's balance
+      const { error: freezeErr } = await supabase
+        .from('cms_report_entries' as any)
+        .update({ revenue_frozen: true })
+        .eq('channel_name', cmsLink.channel_name)
+        .eq('revenue_frozen', false);
+      if (freezeErr) console.error('CMS report freeze error:', freezeErr);
 
       // Log the transfer
       const { data: sessionData } = await supabase.auth.getSession();
