@@ -399,6 +399,7 @@ export type Database = {
           label: string | null
           net_generated_revenue: number | null
           reporting_month: string
+          revenue_frozen: boolean
           streams: number | null
           track: string | null
         }
@@ -414,6 +415,7 @@ export type Database = {
           label?: string | null
           net_generated_revenue?: number | null
           reporting_month: string
+          revenue_frozen?: boolean
           streams?: number | null
           track?: string | null
         }
@@ -429,6 +431,7 @@ export type Database = {
           label?: string | null
           net_generated_revenue?: number | null
           reporting_month?: string
+          revenue_frozen?: boolean
           streams?: number | null
           track?: string | null
         }
