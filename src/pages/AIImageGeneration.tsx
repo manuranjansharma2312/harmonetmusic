@@ -239,19 +239,19 @@ export default function AIImageGeneration() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2"><Sparkles className="h-6 w-6 text-primary" />AI Poster Generate</h1>
-            <p className="text-sm text-muted-foreground mt-1 ml-8 italic">Create Ultra-Realistic, Studio-Quality Posters — Powered by Harmonet Music Image Generation AI ✨</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2"><Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-primary shrink-0" />AI Poster Generate</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:ml-8 italic line-clamp-2">Create Ultra-Realistic, Studio-Quality Posters — Powered by Harmonet Music Image Generation AI ✨</p>
           </div>
-          <Card className="px-4 py-2 flex items-center gap-3">
-            <CreditCard className="h-5 w-5 text-primary" />
+          <Card className="px-3 sm:px-4 py-2 flex items-center gap-2 sm:gap-3 shrink-0 w-fit">
+            <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             <div>
               <p className="text-xs text-muted-foreground">Credits</p>
               {isLifetimeFree ? (
-                <p className="font-bold text-lg text-green-600">Unlimited <span className="text-xs text-muted-foreground font-normal">(Free Plan)</span></p>
+                <p className="font-bold text-base sm:text-lg text-green-600">Unlimited <span className="text-xs text-muted-foreground font-normal">(Free Plan)</span></p>
               ) : (
-                <p className="font-bold text-lg">{remaining} <span className="text-xs text-muted-foreground font-normal">remaining</span></p>
+                <p className="font-bold text-base sm:text-lg">{remaining} <span className="text-xs text-muted-foreground font-normal">remaining</span></p>
               )}
             </div>
           </Card>
@@ -330,25 +330,25 @@ export default function AIImageGeneration() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Preview</CardTitle>
+                  <CardTitle className="text-base sm:text-lg">Preview</CardTitle>
                 </CardHeader>
-                <CardContent className="flex items-center justify-center min-h-[300px]">
+                <CardContent className="flex items-center justify-center min-h-[200px] sm:min-h-[300px]">
                   {generating ? (
                     <div className="text-center space-y-3">
-                      <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-                      <p className="text-muted-foreground">Creating your poster...</p>
+                      <Loader2 className="h-10 w-10 sm:h-12 sm:w-12 animate-spin text-primary mx-auto" />
+                      <p className="text-sm text-muted-foreground">Creating your poster...</p>
                     </div>
                   ) : generatedImage ? (
                     <div className="space-y-3 w-full">
-                      <img src={generatedImage} alt="Generated poster" className="w-full rounded-lg border max-h-[400px] object-contain" />
+                      <img src={generatedImage} alt="Generated poster" className="w-full rounded-lg border max-h-[300px] sm:max-h-[400px] object-contain" />
                       <Button variant="outline" className="w-full" onClick={() => downloadImage(generatedImage, `ai-poster-${Date.now()}.png`)}>
                         <Download className="h-4 w-4 mr-2" />Download Poster
                       </Button>
                     </div>
                   ) : (
                     <div className="text-center text-muted-foreground space-y-2">
-                      <ImageIcon className="h-16 w-16 mx-auto opacity-30" />
-                      <p>Your generated poster will appear here</p>
+                      <ImageIcon className="h-12 w-12 sm:h-16 sm:w-16 mx-auto opacity-30" />
+                      <p className="text-sm">Your generated poster will appear here</p>
                     </div>
                   )}
                 </CardContent>
@@ -358,7 +358,7 @@ export default function AIImageGeneration() {
 
           {/* PLANS */}
           <TabsContent value="plans">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {plans.map(plan => (
                 <Card key={plan.id} className="relative flex flex-col">
                   {plan.tag && (
@@ -394,8 +394,8 @@ export default function AIImageGeneration() {
           <TabsContent value="orders">
             <Card>
               <CardHeader><CardTitle>My Orders</CardTitle></CardHeader>
-              <CardContent>
-                <div className="overflow-auto">
+              <CardContent className="p-0 sm:p-6">
+                <div className="responsive-table-wrap">
                   <Table className="min-w-max">
                     <TableHeader>
                       <TableRow>
@@ -432,15 +432,15 @@ export default function AIImageGeneration() {
                 {images.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">No images generated yet. Purchase credits to start!</p>
                 ) : (
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     {images.map(img => (
                       <Card key={img.id} className="overflow-hidden">
                         {img.image_url ? (
-                          <img src={img.image_url} alt={img.prompt} className="w-full h-48 object-cover" />
+                          <img src={img.image_url} alt={img.prompt} className="w-full h-40 sm:h-48 object-cover" />
                         ) : (
-                          <div className="w-full h-48 bg-muted flex items-center justify-center"><ImageIcon className="h-12 w-12 text-muted-foreground" /></div>
+                          <div className="w-full h-40 sm:h-48 bg-muted flex items-center justify-center"><ImageIcon className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground" /></div>
                         )}
-                        <CardContent className="p-3">
+                        <CardContent className="p-2.5 sm:p-3">
                           <p className="text-sm truncate">{img.prompt}</p>
                           <p className="text-xs text-muted-foreground">{format(new Date(img.created_at), 'dd MMM yyyy HH:mm')}</p>
                           {isAfter(addHours(new Date(img.created_at), 12), new Date()) ? (
