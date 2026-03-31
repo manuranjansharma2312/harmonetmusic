@@ -345,7 +345,7 @@ export default function AdminLabels() {
             </GlassCard>
           ))}
           <div className="rounded-lg bg-card/50 border border-border/50 overflow-hidden">
-            <TablePagination totalItems={labels.length} currentPage={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} itemLabel="labels" />
+            <TablePagination totalItems={filteredLabels.length} currentPage={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} itemLabel="labels" />
           </div>
         </div>
       )}
