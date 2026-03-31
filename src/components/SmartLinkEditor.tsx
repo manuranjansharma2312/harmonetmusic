@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CopyButton } from '@/components/CopyButton';
 import { toast } from 'sonner';
-import { Save, Link, ExternalLink, Loader2, Music, Upload, ImageIcon, AlertCircle, Zap, Search } from 'lucide-react';
+import { Save, Link, ExternalLink, Loader2, Music, ImageIcon, Zap, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface Platform {
@@ -82,7 +82,6 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
     if (!searchQuery.trim()) { toast.error('Enter an ISRC, UPC, or link to auto-fetch'); return; }
     setAutoFetching(true);
     try {
-      // Fetch the first enabled API config
       const { data: apis } = await supabase
         .from('smart_link_api_configs')
         .select('api_name, api_key, api_url')
@@ -95,7 +94,6 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
         return;
       }
 
-      // Try calling the API (generic pattern - works with Odesli/Songlink style)
       const apiUrl = (apis as any).api_url;
       const apiKey = (apis as any).api_key;
       const url = `${apiUrl}?key=${encodeURIComponent(apiKey)}&q=${encodeURIComponent(searchQuery.trim())}`;
@@ -108,14 +106,12 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
       
       const result = await response.json();
       
-      // Try to extract platform links from common API response patterns
       if (result.linksByPlatform || result.links) {
         const apiLinks = result.linksByPlatform || result.links;
         const newLinks: Record<string, string> = { ...links };
         platforms.forEach(p => {
           const key = getPlatformKey(p);
           const platformName = p.name.toLowerCase();
-          // Try matching platform names to API response keys
           for (const [apiKey, value] of Object.entries(apiLinks)) {
             if (apiKey.toLowerCase().includes(platformName) || platformName.includes(apiKey.toLowerCase())) {
               const linkUrl = typeof value === 'string' ? value : (value as any)?.url;
@@ -163,7 +159,6 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
       
       const result = await response.json();
       
-      // Try to extract song info
       if (result.entitiesByUniqueId || result.title || result.name) {
         const entities = result.entitiesByUniqueId ? Object.values(result.entitiesByUniqueId) : [result];
         const firstEntity = (entities as any[])[0];
@@ -276,44 +271,49 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
   const getPlatformKey = (p: Platform) => p.name.toLowerCase().replace(/\s+/g, '_');
 
   return (
-    <div className="space-y-4 overflow-x-hidden">
-      {/* Title & Artist */}
-      <div className="grid grid-cols-1 gap-3">
-        <div>
-          <Label className="text-xs text-muted-foreground">Song / Release Title *</Label>
-          <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. My Song Name" className="mt-1" />
+    <div className="space-y-5 overflow-x-hidden">
+      {/* Release Info Section */}
+      <div className="space-y-4">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Release Info</h3>
+        
+        <div className="space-y-3">
+          <div>
+            <Label className="text-sm font-medium">Song / Release Title <span className="text-destructive">*</span></Label>
+            <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. My Song Name" className="mt-1.5" />
+          </div>
+          <div>
+            <Label className="text-sm font-medium">Artist Name</Label>
+            <Input value={artistName} onChange={e => setArtistName(e.target.value)} placeholder="e.g. Artist Name" className="mt-1.5" />
+          </div>
         </div>
-        <div>
-          <Label className="text-xs text-muted-foreground">Artist Name</Label>
-          <Input value={artistName} onChange={e => setArtistName(e.target.value)} placeholder="e.g. Artist Name" className="mt-1" />
-        </div>
-      </div>
 
-      {/* Poster */}
-      <div>
-        <Label className="text-xs text-muted-foreground">Cover Art / Poster (auto-compressed to 500×500)</Label>
-        <div className="flex items-center gap-3 mt-1">
-          {posterUrl ? (
-            <img src={posterUrl} alt="poster" className="h-16 w-16 rounded-lg object-cover border border-border" />
-          ) : (
-            <div className="h-16 w-16 rounded-lg border border-dashed border-border flex items-center justify-center">
-              <ImageIcon className="h-5 w-5 text-muted-foreground" />
+        {/* Poster */}
+        <div>
+          <Label className="text-sm font-medium">Cover Art</Label>
+          <p className="text-[11px] text-muted-foreground mt-0.5 mb-2">Auto-compressed to 500×500 JPEG</p>
+          <div className="flex items-center gap-3">
+            {posterUrl ? (
+              <img src={posterUrl} alt="poster" className="h-16 w-16 rounded-xl object-cover ring-1 ring-border" />
+            ) : (
+              <div className="h-16 w-16 rounded-xl border-2 border-dashed border-border flex items-center justify-center bg-muted/30">
+                <ImageIcon className="h-5 w-5 text-muted-foreground/50" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <Input type="file" accept="image/*" onChange={handlePosterUpload} className="text-xs" disabled={uploadingPoster} />
+              {uploadingPoster && <p className="text-[10px] text-primary mt-1.5 flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Uploading...</p>}
             </div>
-          )}
-          <div className="flex-1">
-            <Input type="file" accept="image/*" onChange={handlePosterUpload} className="text-xs h-8" disabled={uploadingPoster} />
-            {uploadingPoster && <p className="text-[10px] text-primary mt-1 flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Uploading...</p>}
           </div>
         </div>
       </div>
 
       {/* Smart Link URL (if editing) */}
       {isEdit && smartLinkUrl && hasAnyLink && (
-        <div className="flex items-center gap-2 p-2 rounded-md bg-primary/5 border border-primary/20">
+        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/15">
           <Link className="h-3.5 w-3.5 text-primary flex-shrink-0" />
           <span className="text-xs text-muted-foreground flex-1 truncate font-mono">{smartLinkUrl}</span>
           <CopyButton value={smartLinkUrl} />
-          <a href={smartLinkUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80">
+          <a href={smartLinkUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors">
             <ExternalLink className="h-3.5 w-3.5" />
           </a>
         </div>
@@ -321,35 +321,39 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
 
       {/* Auto-fetch / Search section */}
       {(autoFetchEnabled || searchEnabled) && (
-        <div className="p-3 rounded-lg border border-border bg-muted/30 space-y-2">
+        <div className="p-3.5 rounded-xl border border-border bg-muted/20 space-y-3">
           <div className="flex items-center gap-2">
-            <Zap className="h-4 w-4 text-primary" />
+            <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Zap className="h-3.5 w-3.5 text-primary" />
+            </div>
             <h3 className="text-sm font-semibold text-foreground">
               {autoFetchEnabled && searchEnabled ? 'Search & Auto-fetch' : autoFetchEnabled ? 'Auto-fetch Links' : 'Search Song'}
             </h3>
-            <Badge variant="secondary" className="text-[10px]">API Connected</Badge>
+            <Badge variant="secondary" className="text-[10px] ml-auto">API Connected</Badge>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="space-y-2">
             <Input
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Enter ISRC, UPC, or song link..."
-              className="text-xs h-8 flex-1"
+              className="text-sm"
             />
-            {searchEnabled && (
-              <Button size="sm" variant="outline" className="h-8 text-xs" onClick={handleSearch} disabled={searching || !searchQuery.trim()}>
-                {searching ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Search className="h-3 w-3 mr-1" />}
-                Search
-              </Button>
-            )}
-            {autoFetchEnabled && (
-              <Button size="sm" className="h-8 text-xs" onClick={handleAutoFetch} disabled={autoFetching || !searchQuery.trim()}>
-                {autoFetching ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Zap className="h-3 w-3 mr-1" />}
-                Auto-fill
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {searchEnabled && (
+                <Button size="sm" variant="outline" className="flex-1 text-xs" onClick={handleSearch} disabled={searching || !searchQuery.trim()}>
+                  {searching ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Search className="h-3 w-3 mr-1" />}
+                  Search
+                </Button>
+              )}
+              {autoFetchEnabled && (
+                <Button size="sm" className="flex-1 text-xs" onClick={handleAutoFetch} disabled={autoFetching || !searchQuery.trim()}>
+                  {autoFetching ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Zap className="h-3 w-3 mr-1" />}
+                  Auto-fill
+                </Button>
+              )}
+            </div>
           </div>
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[10px] text-muted-foreground leading-relaxed">
             {autoFetchEnabled && searchEnabled
               ? 'Search to find song details, or Auto-fill to fetch all platform links automatically.'
               : autoFetchEnabled
@@ -360,38 +364,42 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
       )}
 
       {/* Platform Links */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Link className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-semibold text-foreground">Platform URLs</h3>
-        </div>
+      <div className="space-y-3">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+          <Link className="h-3.5 w-3.5 text-primary" />
+          Platform URLs
+        </h3>
 
         {loadingPlatforms ? (
-          <div className="flex justify-center py-6">
+          <div className="flex justify-center py-8">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
         ) : platforms.length === 0 ? (
-          <div className="text-center py-6">
-            <Music className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+          <div className="text-center py-8 rounded-xl border border-dashed border-border bg-muted/10">
+            <Music className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
             <p className="text-xs text-muted-foreground">No platforms configured. Admin needs to add platforms first.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-3">
+          <div className="space-y-2.5">
             {platforms.map(p => {
               const key = getPlatformKey(p);
               return (
-                <div key={p.id}>
-                  <div className="flex items-center gap-1.5 mb-1">
+                <div key={p.id} className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-1.5 w-24 sm:w-28 shrink-0">
                     {p.icon_url ? (
-                      <img src={p.icon_url} alt={p.name} className="h-4 w-4 rounded object-contain" />
-                    ) : null}
-                    <Label className="text-xs text-muted-foreground">{p.name}</Label>
+                      <img src={p.icon_url} alt={p.name} className="h-5 w-5 rounded object-contain shrink-0" />
+                    ) : (
+                      <div className="h-5 w-5 rounded bg-muted flex items-center justify-center shrink-0">
+                        <Music className="h-3 w-3 text-muted-foreground" />
+                      </div>
+                    )}
+                    <span className="text-xs text-foreground font-medium truncate">{p.name}</span>
                   </div>
                   <Input
                     value={links[key] || ''}
                     onChange={e => setLinks(prev => ({ ...prev, [key]: e.target.value }))}
                     placeholder={p.placeholder || `https://...`}
-                    className="text-xs h-8"
+                    className="text-xs flex-1 min-w-0"
                   />
                 </div>
               );
@@ -400,8 +408,9 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
         )}
       </div>
 
-      <Button size="sm" onClick={handleSave} disabled={saving}>
-        {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Save className="h-3.5 w-3.5 mr-1" />}
+      {/* Save Button */}
+      <Button onClick={handleSave} disabled={saving} className="w-full gap-1.5">
+        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
         {isEdit ? 'Save Smart Link' : 'Create Smart Link'}
       </Button>
     </div>

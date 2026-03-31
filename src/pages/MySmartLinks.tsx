@@ -9,9 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Link2, ExternalLink, Search, Music, Plus, Edit, Trash2, Share2, Clock, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { Loader2, Link2, ExternalLink, Search, Music, Plus, Edit, Share2, Clock, CheckCircle, XCircle, Eye, LinkIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 
 interface SmartLinkItem {
   id: string;
@@ -66,19 +66,15 @@ export default function MySmartLinks() {
     return s.platform_links && Object.values(s.platform_links).some(v => v?.trim());
   };
 
-  const deleteSmartLink = async (_id: string) => {
-    toast.error('Only administrators can delete records. Please contact admin.');
-  };
-
   if (systemEnabled === false) {
     return (
       <DashboardLayout>
         <div className="space-y-6">
-          <h1 className="text-2xl font-bold text-foreground">My Smart Links</h1>
-          <GlassCard className="p-8 text-center">
-            <Link2 className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground font-medium">Smart Links system is currently disabled</p>
-            <p className="text-xs text-muted-foreground mt-1">Please check back later or contact your admin.</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">My Smart Links</h1>
+          <GlassCard className="py-12 text-center">
+            <Link2 className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-40" />
+            <p className="text-muted-foreground font-medium text-lg">Smart Links system is currently disabled</p>
+            <p className="text-sm text-muted-foreground mt-2">Please check back later or contact your admin.</p>
           </GlassCard>
         </div>
       </DashboardLayout>
@@ -87,31 +83,54 @@ export default function MySmartLinks() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="space-y-5">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">My Smart Links</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+              <LinkIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+              My Smart Links
+            </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">Create & share one link — fans choose their platform</p>
           </div>
-          <Button size="sm" onClick={() => setCreating(true)} className="w-fit">
-            <Plus className="h-3.5 w-3.5 mr-1" /> Create Smart Link
+          <Button onClick={() => setCreating(true)} className="w-fit gap-1.5">
+            <Plus className="h-4 w-4" /> Create Smart Link
           </Button>
         </div>
 
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search smart links..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+        {/* Search + Stats bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Search by title or artist..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          </div>
+          {!loading && smartLinks.length > 0 && (
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <span>{smartLinks.length} total</span>
+              <span className="text-border">•</span>
+              <span>{smartLinks.filter(s => s.status === 'approved').length} approved</span>
+              <span className="text-border">•</span>
+              <span>{smartLinks.filter(s => s.status === 'pending').length} pending</span>
+            </div>
+          )}
         </div>
 
+        {/* Content */}
         {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Loading your smart links...</p>
           </div>
         ) : filtered.length === 0 ? (
-          <GlassCard className="p-8 text-center">
-            <Music className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">No smart links yet</p>
-            <p className="text-xs text-muted-foreground mt-1">Click "Create Smart Link" to get started.</p>
+          <GlassCard className="py-14 text-center">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+              <Music className="h-8 w-8 text-primary" />
+            </div>
+            <p className="text-foreground font-semibold text-lg">No smart links yet</p>
+            <p className="text-sm text-muted-foreground mt-1 mb-5">Click the button below to create your first smart link.</p>
+            <Button onClick={() => setCreating(true)} className="gap-1.5">
+              <Plus className="h-4 w-4" /> Create Smart Link
+            </Button>
           </GlassCard>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -124,86 +143,107 @@ export default function MySmartLinks() {
               const isRejected = s.status === 'rejected';
 
               return (
-                <GlassCard key={s.id} className="p-4 space-y-3">
-                  <div className="flex items-start gap-3">
-                    {s.poster_url ? (
-                      <img src={s.poster_url} alt={s.title} className="h-14 w-14 rounded-lg object-cover flex-shrink-0" />
-                    ) : (
-                      <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                        <Music className="h-6 w-6 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-foreground truncate">{s.title}</p>
-                      <p className="text-xs text-muted-foreground">{s.artist_name || 'Unknown Artist'}</p>
-                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                        {isPending && (
-                          <Badge variant="secondary" className="text-[10px] gap-0.5"><Clock className="h-2.5 w-2.5" /> Pending</Badge>
-                        )}
-                        {isApproved && (
-                          <Badge variant="default" className="text-[10px] gap-0.5 bg-green-600"><CheckCircle className="h-2.5 w-2.5" /> Approved</Badge>
-                        )}
-                        {isRejected && (
-                          <Badge variant="destructive" className="text-[10px] gap-0.5"><XCircle className="h-2.5 w-2.5" /> Rejected</Badge>
-                        )}
-                        {active && (
-                          <Badge variant="outline" className="text-[10px]">{linkCount} platforms</Badge>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex gap-1 shrink-0">
-                      {active && s.slug && (
-                        <a href={`/r/${s.slug}`} target="_blank" rel="noopener noreferrer">
-                          <Button size="icon" variant="ghost" className="h-7 w-7" title="View Smart Link">
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
-                        </a>
+                <GlassCard key={s.id} className="p-0 overflow-hidden transition-shadow hover:shadow-lg hover:shadow-primary/5">
+                  {/* Card Header with cover art */}
+                  <div className="p-4 pb-3">
+                    <div className="flex items-start gap-3">
+                      {s.poster_url ? (
+                        <img src={s.poster_url} alt={s.title} className="h-16 w-16 rounded-xl object-cover flex-shrink-0 ring-1 ring-border" />
+                      ) : (
+                        <div className="h-16 w-16 rounded-xl bg-muted/80 flex items-center justify-center flex-shrink-0 ring-1 ring-border">
+                          <Music className="h-7 w-7 text-muted-foreground/60" />
+                        </div>
                       )}
-                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditLink(s)}>
-                        <Edit className="h-3.5 w-3.5" />
-                      </Button>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-foreground truncate leading-tight">{s.title}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{s.artist_name || 'Unknown Artist'}</p>
+                        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                          {isPending && (
+                            <Badge variant="secondary" className="text-[10px] gap-0.5 px-1.5"><Clock className="h-2.5 w-2.5" /> Pending</Badge>
+                          )}
+                          {isApproved && (
+                            <Badge variant="default" className="text-[10px] gap-0.5 px-1.5 bg-green-600"><CheckCircle className="h-2.5 w-2.5" /> Approved</Badge>
+                          )}
+                          {isRejected && (
+                            <Badge variant="destructive" className="text-[10px] gap-0.5 px-1.5"><XCircle className="h-2.5 w-2.5" /> Rejected</Badge>
+                          )}
+                          {active && (
+                            <Badge variant="outline" className="text-[10px] px-1.5">{linkCount} platform{linkCount !== 1 ? 's' : ''}</Badge>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  {isApproved && active && (
-                    <div className="flex items-center gap-2 p-2 rounded-md bg-primary/5 border border-primary/20">
-                      <Link2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-                      <span className="text-[11px] text-muted-foreground flex-1 truncate font-mono">{url}</span>
-                      <CopyButton value={url} />
-                      <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80">
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
-                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => {
-                        if (navigator.share) {
-                          navigator.share({ title: s.title, url });
-                        } else {
-                          navigator.clipboard.writeText(url);
-                          toast.success('Link copied!');
-                        }
-                      }}>
-                        <Share2 className="h-3.5 w-3.5 text-primary" />
-                      </Button>
-                    </div>
-                  )}
-
-                  {isPending && (
-                    <p className="text-[11px] text-muted-foreground text-center py-1">Waiting for admin approval before sharing.</p>
-                  )}
-
+                  {/* Rejection notice */}
                   {isRejected && (
-                    <div className="p-2 rounded-md bg-destructive/10 border border-destructive/20">
+                    <div className="mx-4 mb-3 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20">
                       <p className="text-[11px] text-destructive font-medium">Rejected — will be removed automatically</p>
                       {s.rejection_reason && (
-                        <p className="text-[10px] text-destructive/80 mt-0.5">Reason: {s.rejection_reason}</p>
+                        <p className="text-[10px] text-destructive/80 mt-0.5 line-clamp-2">Reason: {s.rejection_reason}</p>
                       )}
                     </div>
                   )}
 
-                  {!active && !isPending && (
-                    <Button size="sm" variant="outline" className="w-full text-xs" onClick={() => setEditLink(s)}>
-                      <Link2 className="h-3.5 w-3.5 mr-1" /> Add Platform Links
-                    </Button>
+                  {/* Pending notice */}
+                  {isPending && (
+                    <div className="mx-4 mb-3 p-2.5 rounded-lg bg-muted/50 border border-border">
+                      <p className="text-[11px] text-muted-foreground text-center">Waiting for admin approval before sharing.</p>
+                    </div>
                   )}
+
+                  {/* Smart Link URL */}
+                  {isApproved && active && (
+                    <div className="mx-4 mb-3 flex items-center gap-1.5 p-2 rounded-lg bg-primary/5 border border-primary/15">
+                      <Link2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                      <span className="text-[11px] text-muted-foreground flex-1 truncate font-mono">{url}</span>
+                      <CopyButton value={url} />
+                      <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors">
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    </div>
+                  )}
+
+                  {/* Action bar */}
+                  <div className="flex items-center border-t border-border/50 bg-muted/20">
+                    <span className="text-[10px] text-muted-foreground/60 px-4 flex-1">
+                      {format(new Date(s.created_at), 'dd MMM yyyy')}
+                    </span>
+                    <div className="flex items-center divide-x divide-border/50">
+                      {isApproved && active && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="rounded-none h-9 px-3 text-xs gap-1.5 text-muted-foreground hover:text-primary"
+                          onClick={() => {
+                            if (navigator.share) {
+                              navigator.share({ title: s.title, url });
+                            } else {
+                              navigator.clipboard.writeText(url);
+                              toast.success('Link copied!');
+                            }
+                          }}
+                        >
+                          <Share2 className="h-3.5 w-3.5" /> Share
+                        </Button>
+                      )}
+                      {active && s.slug && (
+                        <a href={`/r/${s.slug}`} target="_blank" rel="noopener noreferrer">
+                          <Button size="sm" variant="ghost" className="rounded-none h-9 px-3 text-xs gap-1.5 text-muted-foreground hover:text-primary">
+                            <Eye className="h-3.5 w-3.5" /> View
+                          </Button>
+                        </a>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="rounded-none h-9 px-3 text-xs gap-1.5 text-muted-foreground hover:text-primary"
+                        onClick={() => setEditLink(s)}
+                      >
+                        <Edit className="h-3.5 w-3.5" /> Edit
+                      </Button>
+                    </div>
+                  </div>
                 </GlassCard>
               );
             })}
@@ -213,9 +253,12 @@ export default function MySmartLinks() {
 
       {/* Create Dialog */}
       <Dialog open={creating} onOpenChange={open => !open && setCreating(false)}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Smart Link</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5 text-primary" />
+              Create Smart Link
+            </DialogTitle>
           </DialogHeader>
           {user && (
             <SmartLinkEditor
@@ -228,9 +271,12 @@ export default function MySmartLinks() {
 
       {/* Edit Dialog */}
       <Dialog open={!!editLink} onOpenChange={open => !open && setEditLink(null)}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Smart Link — {editLink?.title}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5 text-primary" />
+              Edit Smart Link
+            </DialogTitle>
           </DialogHeader>
           {editLink && user && (
             <SmartLinkEditor
