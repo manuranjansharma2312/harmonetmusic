@@ -134,23 +134,25 @@ export default function MyTransfers() {
         </div>
 
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList className="flex flex-wrap gap-1">
-            <TabsTrigger value="releases" className="gap-2">
-              <Music className="h-4 w-4" /> Releases
-              {releaseTransfers.length > 0 && <Badge variant="secondary" className="ml-1 text-xs">{releaseTransfers.length}</Badge>}
-            </TabsTrigger>
-            <TabsTrigger value="videos" className="gap-2">
-              <Video className="h-4 w-4" /> Videos / Vevo
-              {videoTransfers.length > 0 && <Badge variant="secondary" className="ml-1 text-xs">{videoTransfers.length}</Badge>}
-            </TabsTrigger>
-            <TabsTrigger value="cms" className="gap-2">
-              <Youtube className="h-4 w-4" /> CMS Links
-              {cmsTransfers.length > 0 && <Badge variant="secondary" className="ml-1 text-xs">{cmsTransfers.length}</Badge>}
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-1 px-1">
+            <TabsList className="inline-flex w-auto min-w-full sm:min-w-0 gap-1">
+              <TabsTrigger value="releases" className="gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                <Music className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Releases
+                {releaseTransfers.length > 0 && <Badge variant="secondary" className="ml-1 text-[10px] sm:text-xs">{releaseTransfers.length}</Badge>}
+              </TabsTrigger>
+              <TabsTrigger value="videos" className="gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                <Video className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Videos
+                {videoTransfers.length > 0 && <Badge variant="secondary" className="ml-1 text-[10px] sm:text-xs">{videoTransfers.length}</Badge>}
+              </TabsTrigger>
+              <TabsTrigger value="cms" className="gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                <Youtube className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> CMS
+                {cmsTransfers.length > 0 && <Badge variant="secondary" className="ml-1 text-[10px] sm:text-xs">{cmsTransfers.length}</Badge>}
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <div className="mt-4">
-            <div className="relative max-w-xs mb-4">
+            <div className="relative w-full sm:max-w-xs mb-4">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder="Search transfers..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-9" />
             </div>

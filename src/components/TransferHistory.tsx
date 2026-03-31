@@ -304,22 +304,22 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
   return (
     <>
       <GlassCard className="p-0 overflow-hidden">
-        <div className="p-4 border-b border-border/50 space-y-3">
-          <div className="flex items-center justify-between">
+        <div className="p-3 sm:p-4 border-b border-border/50 space-y-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div>
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <ArrowRightLeft className="h-5 w-5 text-primary" />
+              <h2 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+                <ArrowRightLeft className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 Release Transfers
               </h2>
               <p className="text-xs text-muted-foreground mt-1">Log of all release ownership transfers</p>
             </div>
-            <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting} className="w-full sm:w-auto">
               {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
               {selected.size > 0 ? `Export (${selected.size})` : 'Export CSV'}
             </Button>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2">
+            <div className="relative w-full sm:flex-1 sm:min-w-[200px] sm:max-w-sm">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search release, user..."
@@ -328,33 +328,35 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
                 className="pl-9 h-9"
               />
             </div>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", dateFrom && "text-foreground")}>
-                  <CalendarIcon className="h-3.5 w-3.5" />
-                  {dateFrom ? format(dateFrom, 'dd MMM yyyy') : 'From'}
+            <div className="flex flex-wrap items-center gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className={cn("h-9 gap-1.5 flex-1 sm:flex-none", dateFrom && "text-foreground")}>
+                    <CalendarIcon className="h-3.5 w-3.5" />
+                    {dateFrom ? format(dateFrom, 'dd MMM yyyy') : 'From'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={dateFrom} onSelect={(d) => { setDateFrom(d); setPage(0); }} className="p-3 pointer-events-auto" />
+                </PopoverContent>
+              </Popover>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className={cn("h-9 gap-1.5 flex-1 sm:flex-none", dateTo && "text-foreground")}>
+                    <CalendarIcon className="h-3.5 w-3.5" />
+                    {dateTo ? format(dateTo, 'dd MMM yyyy') : 'To'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={dateTo} onSelect={(d) => { setDateTo(d); setPage(0); }} className="p-3 pointer-events-auto" />
+                </PopoverContent>
+              </Popover>
+              {hasFilters && (
+                <Button variant="ghost" size="sm" className="h-9 gap-1 text-muted-foreground" onClick={() => { setSearchQuery(''); setDateFrom(undefined); setDateTo(undefined); setPage(0); }}>
+                  <X className="h-3.5 w-3.5" /> Clear
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={dateFrom} onSelect={(d) => { setDateFrom(d); setPage(0); }} className="p-3 pointer-events-auto" />
-              </PopoverContent>
-            </Popover>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", dateTo && "text-foreground")}>
-                  <CalendarIcon className="h-3.5 w-3.5" />
-                  {dateTo ? format(dateTo, 'dd MMM yyyy') : 'To'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={dateTo} onSelect={(d) => { setDateTo(d); setPage(0); }} className="p-3 pointer-events-auto" />
-              </PopoverContent>
-            </Popover>
-            {hasFilters && (
-              <Button variant="ghost" size="sm" className="h-9 gap-1 text-muted-foreground" onClick={() => { setSearchQuery(''); setDateFrom(undefined); setDateTo(undefined); setPage(0); }}>
-                <X className="h-3.5 w-3.5" /> Clear
-              </Button>
-            )}
+              )}
+            </div>
           </div>
         </div>
         <div className="responsive-table-wrap">
