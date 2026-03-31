@@ -276,9 +276,9 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
   const getPlatformKey = (p: Platform) => p.name.toLowerCase().replace(/\s+/g, '_');
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 overflow-x-hidden">
       {/* Title & Artist */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <div>
           <Label className="text-xs text-muted-foreground">Song / Release Title *</Label>
           <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. My Song Name" className="mt-1" />
