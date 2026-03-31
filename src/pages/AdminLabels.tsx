@@ -164,8 +164,30 @@ export default function AdminLabels() {
     setBulkDeleteConfirm(false);
   };
 
-  const paginatedLabels = paginateItems(labels, page, pageSize);
+  const paginatedLabels = paginateItems(filteredLabels, page, pageSize);
   const allPageSelected = paginatedLabels.length > 0 && paginatedLabels.every(l => selected.has(l.id));
+
+  const handleExportCSV = () => {
+    const rows = filteredLabels.map(l => ({
+      'Label Name': l.label_name,
+      'Status': l.status,
+      'Submitted By': userEmails[l.user_id] || l.user_id,
+      'User #ID': userDisplayIds[l.user_id] || '',
+      'User Type': userTypes[l.user_id] || '',
+      'Rejection Reason': l.rejection_reason || '',
+      'B2B Document': l.b2b_url ? 'Yes' : 'No',
+      'Created At': new Date(l.created_at).toLocaleDateString(),
+    }));
+    if (rows.length === 0) { toast.error('No data to export'); return; }
+    const headers = Object.keys(rows[0]);
+    const csv = [headers.join(','), ...rows.map(r => headers.map(h => `"${String((r as any)[h]).replace(/"/g, '""')}"`).join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `labels-export-${Date.now()}.csv`; a.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV exported');
+  };
 
   const toggleSelectAll = () => {
     if (allPageSelected) {
