@@ -116,21 +116,22 @@ export default function CmsReports() {
     fetchAll();
   }, [user, activeUserId]);
 
-  // Get cut percent for a channel
-  const getCutPercent = (channelName: string) => {
-    const link = cmsLinks.find(l => l.channel_name === channelName);
+  // Get cut percent: use frozen snapshot if available, otherwise fallback to live
+  const getEffectiveCut = (entry: ReportEntry) => {
+    if (entry.cut_percent_snapshot != null) return Number(entry.cut_percent_snapshot) || 0;
+    const link = cmsLinks.find(l => l.channel_name === entry.channel_name);
     return Number(link?.cut_percent) || 0;
   };
 
   const calcNetPayable = (entry: ReportEntry) => {
     const revenue = Number(entry.net_generated_revenue) || 0;
-    const cut = getCutPercent(entry.channel_name);
+    const cut = getEffectiveCut(entry);
     return Number((revenue - (revenue * cut / 100)).toFixed(4));
   };
 
   const calcCutAmount = (entry: ReportEntry) => {
     const revenue = Number(entry.net_generated_revenue) || 0;
-    const cut = getCutPercent(entry.channel_name);
+    const cut = getEffectiveCut(entry);
     return Number((revenue * cut / 100).toFixed(4));
   };
 
