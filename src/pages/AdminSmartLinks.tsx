@@ -275,10 +275,10 @@ export default function AdminSmartLinks() {
   };
 
   const deletePlatform = async (id: string) => {
-    if (!confirm('Remove this platform?')) return;
     await supabase.from('smart_link_platforms').delete().eq('id', id);
     toast.success('Platform removed');
     fetchPlatforms();
+    setDeleteConfirmAction(null);
   };
 
   const togglePlatform = async (p: Platform) => {
