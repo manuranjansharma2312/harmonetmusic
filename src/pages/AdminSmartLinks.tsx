@@ -326,10 +326,10 @@ export default function AdminSmartLinks() {
   };
 
   const deleteApi = async (id: string) => {
-    if (!confirm('Remove this API configuration?')) return;
     await supabase.from('smart_link_api_configs').delete().eq('id', id);
     toast.success('API config removed');
     fetchApiConfigs();
+    setDeleteConfirmAction(null);
   };
 
   const toggleApi = async (a: ApiConfig) => {
