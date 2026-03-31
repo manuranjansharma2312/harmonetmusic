@@ -1087,15 +1087,15 @@ export default function AdminEmailSettings() {
 
           {/* =============== Email Logs Tab =============== */}
           <TabsContent value="logs">
-            <GlassCard className="p-6 space-y-4">
+            <GlassCard className="p-4 sm:p-6 space-y-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-primary/10">
-                    <History className="h-5 w-5 text-primary" />
+                  <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10">
+                    <History className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold">Email Sending Logs</h2>
-                    <p className="text-xs text-muted-foreground">Track all sent emails · Logs auto-delete after 14 days</p>
+                    <h2 className="text-base sm:text-lg font-semibold">Email Sending Logs</h2>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Track all sent emails · Logs auto-delete after 14 days</p>
                   </div>
                 </div>
                 <div className="flex gap-2 flex-wrap">
