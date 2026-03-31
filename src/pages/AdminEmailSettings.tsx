@@ -803,12 +803,12 @@ export default function AdminEmailSettings() {
                         ({templates.filter(t => t.category === cat.key).length} templates)
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <Select
                         value={cat.default_account_id || '_none'}
                         onValueChange={(v) => updateCategory(cat.id, { default_account_id: v === '_none' ? null : v })}
                       >
-                        <SelectTrigger className="w-[220px] h-8 text-xs">
+                        <SelectTrigger className="w-full sm:w-[220px] h-8 text-xs">
                           <SelectValue placeholder="No default account" />
                         </SelectTrigger>
                         <SelectContent>
@@ -820,12 +820,14 @@ export default function AdminEmailSettings() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <Button size="sm" variant="ghost" onClick={() => { setEditingCategoryId(cat.id); setEditCategoryName(cat.name); }}>
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => deleteCategory(cat.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => { setEditingCategoryId(cat.id); setEditCategoryName(cat.name); }}>
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => deleteCategory(cat.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
