@@ -228,7 +228,7 @@ export default function CmsReports() {
               {selectedMonth ? `Viewing report for ${selectedMonth}` : 'Monthly CMS revenue reports'} · All amounts in ₹ (INR)
             </p>
           </div>
-          {selectedMonth && (
+          {selectedMonth ? (
             <div className="flex items-center gap-3 flex-wrap">
               <div className="text-right">
                 <p className="text-xs text-muted-foreground">Net Payable (Filtered)</p>
@@ -237,6 +237,11 @@ export default function CmsReports() {
               <Button size="sm" variant="outline" onClick={exportCSV}>
                 <Download className="h-4 w-4 mr-1" /> Export CSV
               </Button>
+            </div>
+          ) : monthlyGroups.length > 0 && (
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">Total Net Payable</p>
+              <p className="text-lg font-bold text-primary">₹{monthlyGroups.reduce((sum, [, g]) => sum + g.totalNetPayable, 0).toFixed(2)}</p>
             </div>
           )}
         </div>
