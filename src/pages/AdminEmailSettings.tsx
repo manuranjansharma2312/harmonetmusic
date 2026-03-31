@@ -1470,7 +1470,7 @@ export default function AdminEmailSettings() {
               </div>
               <div className="border-t border-border pt-3 space-y-3">
                 <h4 className="text-sm font-medium">Sender Information</h4>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label>From Email</Label>
                     <Input placeholder="notifications@yourdomain.com" value={editingAccount.from_email || ''}
