@@ -258,7 +258,7 @@ export default function AdminLabels() {
         </div>
       )}
 
-      {labels.length === 0 ? (
+      {filteredLabels.length === 0 ? (
         <GlassCard className="animate-fade-in text-center py-12">
           <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground">No labels submitted yet.</p>
