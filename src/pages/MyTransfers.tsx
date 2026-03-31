@@ -118,7 +118,7 @@ export default function MyTransfers() {
   }, [cmsTransfers, search]);
 
   const currentItems = tab === 'releases' ? filteredReleases : tab === 'videos' ? filteredVideos : filteredCms;
-  const paged = paginateItems(currentItems, page, pageSize);
+  const paged = paginateItems(currentItems as any[], page, pageSize);
 
   return (
     <DashboardLayout>
