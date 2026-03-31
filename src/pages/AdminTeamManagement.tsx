@@ -92,6 +92,7 @@ export default function AdminTeamManagement() {
     govt_ids: [{ name: '', number: '' }] as GovtId[],
   });
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [viewMember, setViewMember] = useState<TeamMember | null>(null);
   const [showPw, setShowPw] = useState(false);
   const [phoneSearch, setPhoneSearch] = useState('');
 
@@ -532,9 +533,12 @@ export default function AdminTeamManagement() {
                           <Button variant="outline" size="sm" title="Login as this member" onClick={() => handleLoginAs(m)}>
                             <LogIn className="h-3.5 w-3.5" />
                           </Button>
-                          <Button variant="outline" size="sm" onClick={() => openEditMember(m)}>
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
+                          <Button variant="outline" size="sm" title="View Details" onClick={() => setViewMember(m)}>
+                             <Eye className="h-3.5 w-3.5" />
+                           </Button>
+                           <Button variant="outline" size="sm" title="Edit" onClick={() => openEditMember(m)}>
+                             <Pencil className="h-3.5 w-3.5" />
+                           </Button>
                           <Button variant="destructive" size="sm" onClick={() => setDeleteConfirm({ type: 'member', id: m.id })}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
@@ -732,6 +736,83 @@ export default function AdminTeamManagement() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setMemberOpen(false)}>Cancel</Button>
             <Button onClick={handleSaveMember} disabled={submitting}>{submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}{editingMember ? 'Update' : 'Create'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ---- VIEW MEMBER DETAIL MODAL ---- */}
+      <Dialog open={!!viewMember} onOpenChange={() => setViewMember(null)}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Team Member Details</DialogTitle></DialogHeader>
+          {viewMember && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-muted-foreground">Full Name</p>
+                  <p className="text-sm font-medium text-foreground">{viewMember.name}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Email</p>
+                  <p className="text-sm font-medium text-foreground">{viewMember.email}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Phone</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {viewMember.phone_country_code && viewMember.phone_number
+                      ? `${viewMember.phone_country_code} ${viewMember.phone_number}`
+                      : '—'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Department</p>
+                  <p className="text-sm font-medium text-foreground">{getCategoryName(viewMember.category_id)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Status</p>
+                  <span className={statusBadge(viewMember.status || 'pending')}>{viewMember.status || 'pending'}</span>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Created</p>
+                  <p className="text-sm font-medium text-foreground">{format(new Date(viewMember.created_at), 'dd MMM yyyy, hh:mm a')}</p>
+                </div>
+              </div>
+
+              {/* Govt IDs */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-1.5">Government IDs</p>
+                {viewMember.govt_ids?.length ? (
+                  <div className="space-y-1.5">
+                    {viewMember.govt_ids.map((g, i) => (
+                      <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/40 border border-border/50">
+                        <CreditCard className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span className="text-sm"><span className="text-muted-foreground">{g.name}:</span> <span className="font-medium">{g.number}</span></span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No IDs added</p>
+                )}
+              </div>
+
+              {/* Pages Access */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-1.5">Pages Access ({viewMember.allowed_pages.length})</p>
+                {viewMember.allowed_pages.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {viewMember.allowed_pages.map(key => (
+                      <span key={key} className="inline-flex items-center px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium border border-primary/20">
+                        {getPageLabel(key)}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No pages assigned</p>
+                )}
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewMember(null)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
