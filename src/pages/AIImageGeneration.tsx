@@ -394,8 +394,8 @@ export default function AIImageGeneration() {
           <TabsContent value="orders">
             <Card>
               <CardHeader><CardTitle>My Orders</CardTitle></CardHeader>
-              <CardContent>
-                <div className="overflow-auto">
+              <CardContent className="p-0 sm:p-6">
+                <div className="responsive-table-wrap">
                   <Table className="min-w-max">
                     <TableHeader>
                       <TableRow>
