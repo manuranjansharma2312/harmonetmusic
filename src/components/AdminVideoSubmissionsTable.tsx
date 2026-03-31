@@ -554,6 +554,7 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
                   })}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>
