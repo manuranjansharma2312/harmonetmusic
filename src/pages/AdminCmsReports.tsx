@@ -342,7 +342,7 @@ export default function AdminCmsReports() {
     const rows = selectedEntries.map(e => [
       e.reporting_month,
       ...COLUMNS.map(c => {
-        if (c.key === 'cms_cut') return `${getCutPercent(e.channel_name)}%`;
+        if (c.key === 'cms_cut') return `${getEffectiveCut(e)}%`;
         if (c.key === 'cut_amount') return String(calcCutAmount(e));
         if (c.key === 'net_payable') return String(calcNetPayable(e));
         if (c.key.startsWith('custom_')) return String((e.extra_data as Record<string, string>)?.[c.key] ?? '');
