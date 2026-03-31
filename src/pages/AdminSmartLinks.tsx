@@ -837,9 +837,12 @@ export default function AdminSmartLinks() {
 
       {/* Create Custom Smart Link Dialog */}
       <Dialog open={creatingCustom} onOpenChange={open => !open && setCreatingCustom(false)}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Smart Link</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5 text-primary" />
+              Create Smart Link
+            </DialogTitle>
             <DialogDescription>Create a standalone smart link for any song.</DialogDescription>
           </DialogHeader>
           {user && (
@@ -853,9 +856,12 @@ export default function AdminSmartLinks() {
 
       {/* Edit Custom Smart Link Dialog */}
       <Dialog open={!!editCustom} onOpenChange={open => !open && setEditCustom(null)}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Smart Link — {editCustom?.title}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5 text-primary" />
+              Edit Smart Link
+            </DialogTitle>
             <DialogDescription>Update the smart link details and platform URLs.</DialogDescription>
           </DialogHeader>
           {editCustom && user && (
