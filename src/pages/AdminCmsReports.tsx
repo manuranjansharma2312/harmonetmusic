@@ -428,6 +428,7 @@ export default function AdminCmsReports() {
                 ))}
               </TableBody>
             </Table>
+            </div>
             <div className="flex gap-2">
               <Input placeholder="New column header..." value={newColHeader} onChange={e => setNewColHeader(e.target.value)} className="max-w-xs" />
               <Button size="sm" variant="outline" onClick={addCustomCol}><Plus className="h-4 w-4 mr-1" /> Add Column</Button>
