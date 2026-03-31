@@ -176,7 +176,7 @@ export default function MyTransfers() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {tab === 'releases' && (paged as ReleaseTransfer[]).map(t => (
+                      {tab === 'releases' && (paged as unknown as ReleaseTransfer[]).map(t => (
                         <TableRow key={t.id}>
                           <TableCell><DirectionBadge fromId={t.from_user_id} /></TableCell>
                           <TableCell className="font-medium">{t.release_name || '-'}</TableCell>
