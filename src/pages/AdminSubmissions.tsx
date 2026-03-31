@@ -988,7 +988,7 @@ export default function AdminSubmissions() {
         ) : (
           <>
           <div className="responsive-table-wrap">
-            <table className="w-full min-w-[750px] text-sm">
+            <table className="w-full min-w-[700px] text-sm">
               <thead>
                 <tr className="border-b border-border/50 text-muted-foreground">
                   <th className="py-3 px-3 text-left w-8">
