@@ -329,7 +329,7 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
             </h3>
             <Badge variant="secondary" className="text-[10px]">API Connected</Badge>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Input
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
