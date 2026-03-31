@@ -354,10 +354,10 @@ export default function AdminSmartLinks() {
   };
 
   const deleteSmartLink = async (id: string) => {
-    if (!confirm('Delete this smart link permanently?')) return;
     await supabase.from('smart_links').delete().eq('id', id);
     toast.success('Smart link deleted');
     fetchCustomLinks();
+    setDeleteConfirmAction(null);
   };
 
   return (
