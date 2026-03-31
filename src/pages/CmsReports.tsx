@@ -227,9 +227,15 @@ export default function CmsReports() {
             </p>
           </div>
           {selectedMonth && (
-            <Button size="sm" variant="outline" onClick={exportCSV}>
-              <Download className="h-4 w-4 mr-1" /> Export CSV
-            </Button>
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">Net Payable (Filtered)</p>
+                <p className="text-lg font-bold text-primary">₹{filteredNetPayableTotal.toFixed(2)}</p>
+              </div>
+              <Button size="sm" variant="outline" onClick={exportCSV}>
+                <Download className="h-4 w-4 mr-1" /> Export CSV
+              </Button>
+            </div>
           )}
         </div>
 
