@@ -653,18 +653,18 @@ export default function AdminEmailSettings() {
 
           {/* =============== Email Accounts Tab =============== */}
           <TabsContent value="accounts">
-            <GlassCard className="p-6 space-y-4">
-              <div className="flex items-center justify-between">
+            <GlassCard className="p-4 sm:p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-primary/10">
-                    <Mail className="h-5 w-5 text-primary" />
+                  <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10">
+                    <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold">Email Accounts</h2>
-                    <p className="text-xs text-muted-foreground">Add multiple SMTP accounts and assign each to specific email triggers</p>
+                    <h2 className="text-base sm:text-lg font-semibold">Email Accounts</h2>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Add multiple SMTP accounts and assign each to specific email triggers</p>
                   </div>
                 </div>
-                <Button size="sm" className="gap-2" onClick={openNewAccount}>
+                <Button size="sm" className="gap-2 w-fit" onClick={openNewAccount}>
                   <Plus className="h-4 w-4" /> Add Account
                 </Button>
               </div>
