@@ -303,6 +303,7 @@ export default function AdminEmailSettings() {
   const [logPageSize, setLogPageSize] = useState<number | 'all'>(10);
   const [selectedLogs, setSelectedLogs] = useState<Set<string>>(new Set());
   const [deletingLogs, setDeletingLogs] = useState(false);
+  const [deleteConfirmAction, setDeleteConfirmAction] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null);
 
   // Test email
   const [showTestDialog, setShowTestDialog] = useState(false);
