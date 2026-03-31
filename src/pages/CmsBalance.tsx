@@ -49,14 +49,20 @@ export default function CmsBalance() {
       // Get all CMS report entries (RLS filters by channel), exclude frozen
       const { data: entries } = await supabase
         .from('cms_report_entries' as any)
-        .select('channel_name, net_generated_revenue')
+        .select('channel_name, net_generated_revenue, cut_percent_snapshot')
         .eq('revenue_frozen', false);
 
       let total = 0;
       ((entries as any[]) || []).forEach((e: any) => {
         const revenue = Number(e.net_generated_revenue) || 0;
-        const link = cmsLinks.find((l: any) => l.channel_name === e.channel_name);
-        const cut = Number(link?.cut_percent) || 0;
+        // Use frozen snapshot if available, otherwise fallback to live cut
+        let cut: number;
+        if (e.cut_percent_snapshot != null) {
+          cut = Number(e.cut_percent_snapshot) || 0;
+        } else {
+          const link = cmsLinks.find((l: any) => l.channel_name === e.channel_name);
+          cut = Number(link?.cut_percent) || 0;
+        }
         total += revenue - (revenue * cut / 100);
       });
 

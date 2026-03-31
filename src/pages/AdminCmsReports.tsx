@@ -37,6 +37,7 @@ interface ReportEntry {
   net_generated_revenue: number;
   imported_at: string;
   extra_data?: Record<string, string>;
+  cut_percent_snapshot?: number | null;
 }
 
 const ALL_COLUMNS: Record<string, string> = {
@@ -107,18 +108,19 @@ export default function AdminCmsReports() {
     return baseCols;
   }, [formatColumns]);
 
-  // CMS cut helpers
-  const getCutPercent = (channelName: string) => {
-    const link = cmsLinks.find(l => l.channel_name === channelName);
+  // Use frozen snapshot if available, otherwise fallback to live cut
+  const getEffectiveCut = (entry: ReportEntry) => {
+    if (entry.cut_percent_snapshot != null) return Number(entry.cut_percent_snapshot) || 0;
+    const link = cmsLinks.find(l => l.channel_name === entry.channel_name);
     return Number(link?.cut_percent) || 0;
   };
   const calcCutAmount = (entry: ReportEntry) => {
     const revenue = Number(entry.net_generated_revenue) || 0;
-    return Number((revenue * getCutPercent(entry.channel_name) / 100).toFixed(4));
+    return Number((revenue * getEffectiveCut(entry) / 100).toFixed(4));
   };
   const calcNetPayable = (entry: ReportEntry) => {
     const revenue = Number(entry.net_generated_revenue) || 0;
-    const cut = getCutPercent(entry.channel_name);
+    const cut = getEffectiveCut(entry);
     return Number((revenue - (revenue * cut / 100)).toFixed(4));
   };
 
@@ -211,6 +213,11 @@ export default function AdminCmsReports() {
       const missing = requiredKeys.filter(k => !mappedHeaders.includes(k));
       if (missing.length > 0) throw new Error(`Missing required columns: ${missing.join(', ')}`);
 
+      // Build a channel->cut_percent lookup from all linked CMS links
+      const { data: allLinks } = await supabase.from('youtube_cms_links' as any).select('channel_name, cut_percent').eq('status', 'linked');
+      const cutLookup: Record<string, number> = {};
+      ((allLinks as any[]) || []).forEach((l: any) => { cutLookup[l.channel_name] = Number(l.cut_percent) || 0; });
+
       const rows: any[] = [];
       for (let i = 1; i < lines.length; i++) {
         const values = lines[i].split(',').map(v => v.replace(/^"|"$/g, '').trim());
@@ -230,6 +237,8 @@ export default function AdminCmsReports() {
         });
 
         if (!row.reporting_month || !row.channel_name) continue;
+        // Snapshot the current cut_percent for this channel at import time
+        row.cut_percent_snapshot = cutLookup[row.channel_name] ?? 0;
         rows.push(row);
       }
 
@@ -333,7 +342,7 @@ export default function AdminCmsReports() {
     const rows = selectedEntries.map(e => [
       e.reporting_month,
       ...COLUMNS.map(c => {
-        if (c.key === 'cms_cut') return `${getCutPercent(e.channel_name)}%`;
+        if (c.key === 'cms_cut') return `${getEffectiveCut(e)}%`;
         if (c.key === 'cut_amount') return String(calcCutAmount(e));
         if (c.key === 'net_payable') return String(calcNetPayable(e));
         if (c.key.startsWith('custom_')) return String((e.extra_data as Record<string, string>)?.[c.key] ?? '');
@@ -527,7 +536,7 @@ export default function AdminCmsReports() {
                         {COLUMNS.map(col => (
                           <TableCell key={col.key} className={`whitespace-nowrap ${col.key === 'net_payable' ? 'font-semibold text-primary' : col.key === 'cut_amount' ? 'text-destructive' : ''}`}>
                             {col.key === 'net_generated_revenue' ? `₹${(Number(entry.net_generated_revenue) || 0).toFixed(4)}`
-                              : col.key === 'cms_cut' ? `${getCutPercent(entry.channel_name)}%`
+                              : col.key === 'cms_cut' ? `${getEffectiveCut(entry)}%`
                               : col.key === 'cut_amount' ? `₹${calcCutAmount(entry).toFixed(4)}`
                               : col.key === 'net_payable' ? `₹${calcNetPayable(entry).toFixed(4)}`
                               : col.key.startsWith('custom_') ? String((entry.extra_data as Record<string, string>)?.[col.key] ?? '-')

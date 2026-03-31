@@ -1,0 +1,1 @@
+ALTER TABLE public.cms_report_entries ADD COLUMN cut_percent_snapshot numeric DEFAULT NULL;

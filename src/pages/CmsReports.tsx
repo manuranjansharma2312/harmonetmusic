@@ -35,6 +35,7 @@ interface ReportEntry {
   net_generated_revenue: number;
   imported_at: string;
   extra_data?: Record<string, string>;
+  cut_percent_snapshot?: number | null;
 }
 
 interface CmsLink {
@@ -115,21 +116,22 @@ export default function CmsReports() {
     fetchAll();
   }, [user, activeUserId]);
 
-  // Get cut percent for a channel
-  const getCutPercent = (channelName: string) => {
-    const link = cmsLinks.find(l => l.channel_name === channelName);
+  // Get cut percent: use frozen snapshot if available, otherwise fallback to live
+  const getEffectiveCut = (entry: ReportEntry) => {
+    if (entry.cut_percent_snapshot != null) return Number(entry.cut_percent_snapshot) || 0;
+    const link = cmsLinks.find(l => l.channel_name === entry.channel_name);
     return Number(link?.cut_percent) || 0;
   };
 
   const calcNetPayable = (entry: ReportEntry) => {
     const revenue = Number(entry.net_generated_revenue) || 0;
-    const cut = getCutPercent(entry.channel_name);
+    const cut = getEffectiveCut(entry);
     return Number((revenue - (revenue * cut / 100)).toFixed(4));
   };
 
   const calcCutAmount = (entry: ReportEntry) => {
     const revenue = Number(entry.net_generated_revenue) || 0;
-    const cut = getCutPercent(entry.channel_name);
+    const cut = getEffectiveCut(entry);
     return Number((revenue * cut / 100).toFixed(4));
   };
 
@@ -187,7 +189,7 @@ export default function CmsReports() {
     const rows = selectedEntries.map(e => [
       e.reporting_month,
       ...COLUMNS.map(c => {
-        if (c.key === 'cms_cut') return `${getCutPercent(e.channel_name)}%`;
+        if (c.key === 'cms_cut') return `${getEffectiveCut(e)}%`;
         if (c.key === 'cut_amount') return String(calcCutAmount(e));
         if (c.key === 'net_payable') return String(calcNetPayable(e));
         if (c.key.startsWith('custom_')) return String((e.extra_data as Record<string, string>)?.[c.key] ?? '');
@@ -204,7 +206,7 @@ export default function CmsReports() {
 
   const getCellValue = (entry: ReportEntry, colKey: string) => {
     if (colKey === 'net_generated_revenue') return `₹${(Number(entry.net_generated_revenue) || 0).toFixed(4)}`;
-    if (colKey === 'cms_cut') return `${getCutPercent(entry.channel_name)}%`;
+    if (colKey === 'cms_cut') return `${getEffectiveCut(entry)}%`;
     if (colKey === 'cut_amount') return `₹${calcCutAmount(entry).toFixed(4)}`;
     if (colKey === 'net_payable') return `₹${calcNetPayable(entry).toFixed(4)}`;
     if (colKey.startsWith('custom_')) return String((entry.extra_data as Record<string, string>)?.[colKey] ?? '-');
