@@ -1400,7 +1400,7 @@ export default function AdminEmailSettings() {
                   value={editingAccount.account_name || ''}
                   onChange={(e) => setEditingAccount({ ...editingAccount, account_name: e.target.value })} />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>Provider Preset</Label>
                   <Select value={editingAccount.provider || 'smtp'}
