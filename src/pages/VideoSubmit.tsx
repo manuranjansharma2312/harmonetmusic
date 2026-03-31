@@ -159,6 +159,17 @@ export default function VideoSubmit() {
   const handleSubmit = async () => {
     if (!form || !user) return;
 
+    // Validate ISRC fields
+    for (const field of fields) {
+      if (field.field_type === 'isrc' && values[field.id]?.trim()) {
+        const isrcVal = values[field.id].trim().toUpperCase();
+        const isrcRegex = /^[A-Z]{2}[A-Z0-9]{3}\d{2}\d{5}$/;
+        if (!isrcRegex.test(isrcVal)) {
+          toast.error(`${field.label}: Invalid ISRC format. Expected format: CCXXXYYNNNNN (e.g. USRC11234567)`);
+          return;
+        }
+      }
+    }
     // Validate vevo_channel fields
     for (const field of fields) {
       if (field.field_type === 'vevo_channel' && field.is_required && !values[field.id]?.trim()) {
