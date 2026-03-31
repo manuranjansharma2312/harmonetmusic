@@ -259,7 +259,7 @@ export function AppSidebar() {
 
   const adminVideoLinks = [
     { to: '/admin/video-forms', label: 'Video Form Builder', icon: Video },
-    { to: '/admin/video-submissions', label: 'Video Submissions', icon: Video },
+    { to: '/admin/video-submissions', label: 'Video Releases', icon: Video },
     { to: '/admin/vevo-channels', label: 'Vevo Channels', icon: Tv },
     { to: '/admin/video-guidelines', label: 'Video Guidelines', icon: FileText },
     { to: '/admin/vevo-settings', label: 'Vevo Settings', icon: Settings },
