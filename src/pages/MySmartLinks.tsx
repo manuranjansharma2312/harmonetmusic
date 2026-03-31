@@ -5,6 +5,7 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { CopyButton } from '@/components/CopyButton';
 import { SmartLinkEditor } from '@/components/SmartLinkEditor';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,8 @@ export default function MySmartLinks() {
   const [editLink, setEditLink] = useState<SmartLinkItem | null>(null);
   const [creating, setCreating] = useState(false);
   const [systemEnabled, setSystemEnabled] = useState<boolean | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const fetchSystemSetting = async () => {
     const { data } = await supabase.from('smart_link_settings').select('is_enabled').limit(1).single();
@@ -56,6 +59,7 @@ export default function MySmartLinks() {
     s.title.toLowerCase().includes(search.toLowerCase()) ||
     s.artist_name.toLowerCase().includes(search.toLowerCase())
   );
+  const paginated = paginateItems(filtered, currentPage, pageSize);
 
   const getUrl = (s: SmartLinkItem) => {
     const base = window.location.origin;
@@ -133,8 +137,9 @@ export default function MySmartLinks() {
             </Button>
           </GlassCard>
         ) : (
+          <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filtered.map(s => {
+            {paginated.map(s => {
               const active = hasLinks(s);
               const url = getUrl(s);
               const linkCount = active ? Object.values(s.platform_links).filter(v => v?.trim()).length : 0;
@@ -247,6 +252,15 @@ export default function MySmartLinks() {
                 </GlassCard>
               );
             })}
+          </div>
+          <TablePagination
+            totalItems={filtered.length}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(s) => { setPageSize(s); setCurrentPage(0); }}
+            itemLabel="smart links"
+          />
           </div>
         )}
       </div>
