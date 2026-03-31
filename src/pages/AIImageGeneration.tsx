@@ -432,15 +432,15 @@ export default function AIImageGeneration() {
                 {images.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">No images generated yet. Purchase credits to start!</p>
                 ) : (
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     {images.map(img => (
                       <Card key={img.id} className="overflow-hidden">
                         {img.image_url ? (
-                          <img src={img.image_url} alt={img.prompt} className="w-full h-48 object-cover" />
+                          <img src={img.image_url} alt={img.prompt} className="w-full h-40 sm:h-48 object-cover" />
                         ) : (
-                          <div className="w-full h-48 bg-muted flex items-center justify-center"><ImageIcon className="h-12 w-12 text-muted-foreground" /></div>
+                          <div className="w-full h-40 sm:h-48 bg-muted flex items-center justify-center"><ImageIcon className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground" /></div>
                         )}
-                        <CardContent className="p-3">
+                        <CardContent className="p-2.5 sm:p-3">
                           <p className="text-sm truncate">{img.prompt}</p>
                           <p className="text-xs text-muted-foreground">{format(new Date(img.created_at), 'dd MMM yyyy HH:mm')}</p>
                           {isAfter(addHours(new Date(img.created_at), 12), new Date()) ? (
