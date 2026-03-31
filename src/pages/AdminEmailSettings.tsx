@@ -1109,21 +1109,28 @@ export default function AdminEmailSettings() {
                 <div className="flex gap-2 flex-wrap">
                   {selectedLogs.size > 0 && (
                     <Button variant="destructive" size="sm" className="gap-2" disabled={deletingLogs}
-                      onClick={async () => {
-                        if (!confirm(`Delete ${selectedLogs.size} selected log(s)?`)) return;
-                        setDeletingLogs(true);
-                        try {
-                          const ids = Array.from(selectedLogs);
-                          const { error } = await supabase.from('email_send_logs').delete().in('id', ids);
-                          if (error) throw error;
-                          setEmailLogs(prev => prev.filter(l => !selectedLogs.has(l.id)));
-                          setSelectedLogs(new Set());
-                          toast.success(`${ids.length} log(s) deleted`);
-                        } catch (err: any) {
-                          toast.error(err.message || 'Failed to delete logs');
-                        } finally {
-                          setDeletingLogs(false);
-                        }
+                      onClick={() => {
+                        const count = selectedLogs.size;
+                        setDeleteConfirmAction({
+                          title: 'Delete Logs',
+                          message: `Delete ${count} selected log(s)? This action cannot be undone.`,
+                          onConfirm: async () => {
+                            setDeleteConfirmAction(null);
+                            setDeletingLogs(true);
+                            try {
+                              const ids = Array.from(selectedLogs);
+                              const { error } = await supabase.from('email_send_logs').delete().in('id', ids);
+                              if (error) throw error;
+                              setEmailLogs(prev => prev.filter(l => !selectedLogs.has(l.id)));
+                              setSelectedLogs(new Set());
+                              toast.success(`${ids.length} log(s) deleted`);
+                            } catch (err: any) {
+                              toast.error(err.message || 'Failed to delete logs');
+                            } finally {
+                              setDeletingLogs(false);
+                            }
+                          }
+                        });
                       }}>
                       <Trash2 className="h-4 w-4" /> Delete ({selectedLogs.size})
                     </Button>
