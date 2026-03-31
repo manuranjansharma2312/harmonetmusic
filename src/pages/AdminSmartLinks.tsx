@@ -897,6 +897,15 @@ export default function AdminSmartLinks() {
         onConfirm={(reason) => rejectingId && rejectSmartLink(rejectingId, reason)}
         onCancel={() => setRejectingId(null)}
       />
+
+      {deleteConfirmAction && (
+        <ConfirmDialog
+          title={deleteConfirmAction.title}
+          message={deleteConfirmAction.message}
+          onConfirm={deleteConfirmAction.onConfirm}
+          onCancel={() => setDeleteConfirmAction(null)}
+        />
+      )}
     </DashboardLayout>
   );
 }
