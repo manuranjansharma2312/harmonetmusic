@@ -5,6 +5,7 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { CopyButton } from '@/components/CopyButton';
 import { SmartLinkEditor } from '@/components/SmartLinkEditor';
+import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
