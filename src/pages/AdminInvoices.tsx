@@ -11,12 +11,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Dialog as ConfirmDialogWrapper, DialogContent as ConfirmContent, DialogHeader as ConfirmHeader, DialogTitle as ConfirmTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Plus, Trash2, Download, Eye, Pencil, X, FileText, Search, Settings } from 'lucide-react';
+import { Plus, Trash2, Download, Eye, Pencil, X, FileText, Search, Settings, PackageOpen } from 'lucide-react';
 import { TablePagination, paginateItems } from '@/components/TablePagination';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import JSZip from 'jszip';
 
 interface InvoiceItem {
   description: string;
@@ -108,6 +110,67 @@ export default function AdminInvoices() {
   const [companyForm, setCompanyForm] = useState<CompanyDetails>(emptyCompany);
   const [savingCompany, setSavingCompany] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [zipping, setZipping] = useState(false);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filtered.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map(i => i.id)));
+    }
+  };
+
+  const downloadSelectedZip = async () => {
+    const selected = invoices.filter(i => selectedIds.has(i.id));
+    if (selected.length === 0) { toast.error('No invoices selected'); return; }
+
+    setZipping(true);
+    try {
+      const zip = new JSZip();
+      // Group by user_display_id
+      const grouped = new Map<number, Invoice[]>();
+      selected.forEach(inv => {
+        const arr = grouped.get(inv.user_display_id) || [];
+        arr.push(inv);
+        grouped.set(inv.user_display_id, arr);
+      });
+
+      grouped.forEach((invs, userId) => {
+        const folder = zip.folder(`User ID - ${userId} Invoices`)!;
+        invs.forEach(inv => {
+          const doc = generatePDF(inv);
+          const pdfBlob = doc.output('arraybuffer');
+          folder.file(`Invoice_${userId}_${inv.invoice_date}.pdf`, pdfBlob);
+        });
+      });
+
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const userIds = [...grouped.keys()].join('_');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = grouped.size === 1
+        ? `User ID - ${[...grouped.keys()][0]} Invoices.zip`
+        : `Invoices_${userIds}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Downloaded ${selected.length} invoice(s) as ZIP`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to create ZIP');
+    } finally {
+      setZipping(false);
+    }
+  };
 
   // Load logo base64 from URL
   const loadLogoFromUrl = (url: string): Promise<string> => {
@@ -537,7 +600,13 @@ export default function AdminInvoices() {
             <h1 className="text-2xl font-bold text-foreground">Generate Invoice</h1>
             <p className="text-muted-foreground text-sm">Create and manage invoices</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {selectedIds.size > 0 && (
+              <Button variant="outline" onClick={downloadSelectedZip} disabled={zipping} className="gap-2">
+                <PackageOpen className="h-4 w-4" />
+                {zipping ? 'Creating ZIP...' : `Download ${selectedIds.size} as ZIP`}
+              </Button>
+            )}
             {canChangeSettings && (
             <Button variant="outline" onClick={openCompanySettings} className="gap-2">
               <Settings className="h-4 w-4" /> Company Details
@@ -567,6 +636,12 @@ export default function AdminInvoices() {
             <Table className="min-w-max">
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={filtered.length > 0 && selectedIds.size === filtered.length}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                  </TableHead>
                   <TableHead>Billing Name</TableHead>
                   <TableHead>User ID</TableHead>
                   <TableHead>Date</TableHead>
@@ -577,13 +652,19 @@ export default function AdminInvoices() {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
                 ) : paged.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{search ? 'No matching invoices' : 'No invoices yet'}</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">{search ? 'No matching invoices' : 'No invoices yet'}</TableCell></TableRow>
                 ) : paged.map(inv => {
                   const { net } = calcTotals(inv.amount, inv.harmonet_share_percent, inv.taxes);
                   return (
                     <TableRow key={inv.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedIds.has(inv.id)}
+                          onCheckedChange={() => toggleSelect(inv.id)}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">{inv.billing_name}</TableCell>
                       <TableCell>{inv.user_display_id}</TableCell>
                       <TableCell>{format(new Date(inv.invoice_date), 'dd MMM yyyy')}</TableCell>
