@@ -1437,7 +1437,7 @@ export default function AdminEmailSettings() {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>SMTP Host *</Label>
                   <Input placeholder="smtp.gmail.com" value={editingAccount.smtp_host || ''}
