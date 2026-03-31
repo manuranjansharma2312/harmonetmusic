@@ -579,7 +579,7 @@ export default function AdminSmartLinks() {
                               <Button size="sm" variant="ghost" className="rounded-none h-8 px-2.5 text-[11px] gap-1 text-muted-foreground hover:text-primary" onClick={() => setEditCustom(c)}>
                                 <Edit className="h-3 w-3" /> Edit
                               </Button>
-                              <Button size="sm" variant="ghost" className="rounded-none h-8 px-2.5 text-[11px] gap-1 text-destructive hover:text-destructive" onClick={() => deleteSmartLink(c.id)}>
+                              <Button size="sm" variant="ghost" className="rounded-none h-8 px-2.5 text-[11px] gap-1 text-destructive hover:text-destructive" onClick={() => setDeleteConfirmAction({ title: 'Delete Smart Link', message: 'Delete this smart link permanently? This cannot be undone.', onConfirm: () => deleteSmartLink(c.id) })}>
                                 <Trash2 className="h-3 w-3" />
                               </Button>
                             </div>
