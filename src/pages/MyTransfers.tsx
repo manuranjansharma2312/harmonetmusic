@@ -129,7 +129,7 @@ export default function MyTransfers() {
             My Transfers
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            View ownership transfers involving your account.
+            Here you can view all ownership transfers between you and other users of Harmonet Music — including releases, videos, and CMS channels.
           </p>
         </div>
 
