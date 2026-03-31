@@ -40,6 +40,8 @@ export default function YouTubeCmsLink() {
   const [isMonetized, setIsMonetized] = useState(false);
   const [nocFile, setNocFile] = useState<File | null>(null);
   const [ytReportsFile, setYtReportsFile] = useState<File | null>(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const fetchLinks = async () => {
     if (!user) return;
