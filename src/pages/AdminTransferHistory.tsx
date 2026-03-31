@@ -63,11 +63,13 @@ const AdminTransferHistory = () => {
         </div>
 
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList className="flex flex-wrap gap-1">
-            <TabsTrigger value="releases" className="gap-2"><Music className="h-4 w-4" /> Release Transfers</TabsTrigger>
-            <TabsTrigger value="videos" className="gap-2"><Video className="h-4 w-4" /> Video / Vevo Transfers</TabsTrigger>
-            <TabsTrigger value="cms" className="gap-2"><Youtube className="h-4 w-4" /> CMS Transfers</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-1 px-1">
+            <TabsList className="inline-flex w-auto min-w-full sm:min-w-0 gap-1">
+              <TabsTrigger value="releases" className="gap-1.5 text-xs sm:text-sm whitespace-nowrap"><Music className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden xs:inline">Release</span> Transfers</TabsTrigger>
+              <TabsTrigger value="videos" className="gap-1.5 text-xs sm:text-sm whitespace-nowrap"><Video className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Video / Vevo</TabsTrigger>
+              <TabsTrigger value="cms" className="gap-1.5 text-xs sm:text-sm whitespace-nowrap"><Youtube className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> CMS</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="releases" className="mt-4">
             <TransferHistory />

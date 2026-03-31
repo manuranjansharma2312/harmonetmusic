@@ -319,7 +319,7 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
             </Button>
           </div>
           <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2">
-            <div className="relative flex-1 min-w-[200px] max-w-sm">
+            <div className="relative w-full sm:flex-1 sm:min-w-[200px] sm:max-w-sm">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search release, user..."
