@@ -19,7 +19,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
 import { TablePagination } from '@/components/TablePagination';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { Loader2, Youtube, ExternalLink, FileText, CalendarIcon, Pencil, Trash2, Download, Eye, Image as ImageIcon, FileX, ImageOff } from 'lucide-react';
+import { Loader2, Youtube, ExternalLink, FileText, CalendarIcon, Pencil, Trash2, Download, Eye, Image as ImageIcon, FileX, ImageOff, ArrowRightLeft } from 'lucide-react';
+import { TransferCmsModal } from '@/components/TransferCmsModal';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
