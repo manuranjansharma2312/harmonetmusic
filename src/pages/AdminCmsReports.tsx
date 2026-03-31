@@ -385,9 +385,15 @@ export default function AdminCmsReports() {
               </>
             )}
             {selectedMonth && (
-              <Button size="sm" variant="outline" onClick={exportCSV}>
-                <Download className="h-4 w-4 mr-1" /> Export CSV
-              </Button>
+              <>
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">Net Payable (Filtered)</p>
+                  <p className="text-lg font-bold text-primary">₹{selectedEntries.reduce((sum, e) => sum + calcNetPayable(e), 0).toFixed(2)}</p>
+                </div>
+                <Button size="sm" variant="outline" onClick={exportCSV}>
+                  <Download className="h-4 w-4 mr-1" /> Export CSV
+                </Button>
+              </>
             )}
           </div>
         </div>

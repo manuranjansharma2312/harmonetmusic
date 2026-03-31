@@ -490,9 +490,15 @@ export default function AdminReports() {
               <h1 className="text-2xl font-bold">Reports & Analytics</h1>
               <p className="text-muted-foreground text-sm">Viewing report for {selectedMonth}</p>
             </div>
-            <Button size="sm" variant="outline" onClick={exportCSV}>
-              <Download className="h-4 w-4 mr-1" /> Export CSV
-            </Button>
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">Net Revenue (Filtered)</p>
+                <p className="text-lg font-bold text-primary">₹{filteredEntries.reduce((sum, e) => sum + applyUserCut(e), 0).toFixed(2)}</p>
+              </div>
+              <Button size="sm" variant="outline" onClick={exportCSV}>
+                <Download className="h-4 w-4 mr-1" /> Export CSV
+              </Button>
+            </div>
           </div>
 
           <GlassCard className="p-4">
