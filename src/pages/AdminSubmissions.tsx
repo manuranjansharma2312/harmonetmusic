@@ -1026,10 +1026,10 @@ export default function AdminSubmissions() {
                               <div className="h-10 w-10 rounded bg-muted/50 flex items-center justify-center"><Music className="h-4 w-4 text-muted-foreground" /></div>
                             )}
                             <div>
-                              <div className="flex items-center gap-1.5">
-                                <p className="font-medium text-foreground">{getReleaseName(release)}</p>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <p className="font-medium text-foreground truncate max-w-[120px] sm:max-w-[180px]">{getReleaseName(release)}</p>
                                 {release.was_transferred && (
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/50 text-accent-foreground font-medium">Transferred</span>
+                                  <span className="text-[10px] leading-none px-1.5 py-0.5 rounded bg-accent/50 text-accent-foreground font-medium whitespace-nowrap shrink-0">Transferred</span>
                                 )}
                               </div>
                               <p className="text-xs text-muted-foreground">{release.tracks?.length || 0} track(s)</p>
