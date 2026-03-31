@@ -58,6 +58,14 @@ export default function MyLabels() {
 
     setSubmitting(true);
     try {
+      // Check if label name already exists system-wide (case-insensitive)
+      const { data: exists } = await supabase.rpc('label_name_exists' as any, { _name: labelName.trim() });
+      if (exists) {
+        toast.error('This label name already exists under our system. Please choose a different name.');
+        setSubmitting(false);
+        return;
+      }
+
       let b2b_url: string | null = null;
 
       if (b2bFile) {
