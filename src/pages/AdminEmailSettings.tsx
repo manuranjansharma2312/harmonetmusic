@@ -752,15 +752,15 @@ export default function AdminEmailSettings() {
 
           {/* =============== Categories Tab =============== */}
           <TabsContent value="categories">
-            <GlassCard className="p-6 space-y-4">
-              <div className="flex items-center justify-between">
+            <GlassCard className="p-4 sm:p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-primary/10">
-                    <Tag className="h-5 w-5 text-primary" />
+                  <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10">
+                    <Tag className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold">Email Categories</h2>
-                    <p className="text-xs text-muted-foreground">Create categories and assign a default email account to each one</p>
+                    <h2 className="text-base sm:text-lg font-semibold">Email Categories</h2>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Create categories and assign a default email account to each one</p>
                   </div>
                 </div>
               </div>
