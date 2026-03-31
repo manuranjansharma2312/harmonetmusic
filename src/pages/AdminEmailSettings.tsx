@@ -1618,6 +1618,15 @@ export default function AdminEmailSettings() {
           )}
         </DialogContent>
       </Dialog>
+
+      {deleteConfirmAction && (
+        <ConfirmDialog
+          title={deleteConfirmAction.title}
+          message={deleteConfirmAction.message}
+          onConfirm={deleteConfirmAction.onConfirm}
+          onCancel={() => setDeleteConfirmAction(null)}
+        />
+      )}
     </DashboardLayout>
   );
 }
