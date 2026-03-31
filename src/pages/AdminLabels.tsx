@@ -228,129 +228,186 @@ export default function AdminLabels() {
 
   return (
     <DashboardLayout>
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Manage Labels</h1>
-        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+      {/* Header */}
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold text-foreground">Manage Labels</h1>
+        <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
           Review, approve, or reject user label submissions. {filteredLabels.length} total labels.
         </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            className={`${inputClass} pl-9`}
-            placeholder="Search by label name, user, status..."
-            value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
-          />
-        </div>
-        <Button variant="outline" onClick={handleExportCSV} className="gap-2 shrink-0">
-          <Download className="h-4 w-4" /> Export CSV
-        </Button>
-      </div>
-
-      {selected.size > 0 && canDelete && (
-        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border mb-3">
-          <CheckSquare className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium">{selected.size} selected</span>
-          <Button size="sm" variant="destructive" onClick={() => setBulkDeleteConfirm(true)}>
-            <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete Selected
+      {/* Search + Export Bar */}
+      <GlassCard className="mb-4 !p-3 sm:!p-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              className={`${inputClass} pl-9`}
+              placeholder="Search by label name, user, status..."
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
+            />
+          </div>
+          <Button variant="outline" onClick={handleExportCSV} className="gap-2 shrink-0 h-9 text-xs sm:text-sm">
+            <Download className="h-4 w-4" />
+            <span>{selected.size > 0 ? `Export ${selected.size} Selected` : 'Export CSV'}</span>
           </Button>
-          <Button size="sm" variant="outline" onClick={() => setSelected(new Set())}>Clear</Button>
+        </div>
+      </GlassCard>
+
+      {/* Bulk Action Bar */}
+      {selected.size > 0 && canDelete && (
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg bg-primary/5 border border-primary/20 mb-4 animate-fade-in">
+          <CheckSquare className="h-4 w-4 text-primary shrink-0" />
+          <span className="text-xs sm:text-sm font-medium text-foreground">{selected.size} selected</span>
+          <div className="flex gap-2 ml-auto">
+            <Button size="sm" variant="destructive" onClick={() => setBulkDeleteConfirm(true)} className="h-7 sm:h-8 text-xs">
+              <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setSelected(new Set())} className="h-7 sm:h-8 text-xs">
+              Clear
+            </Button>
+          </div>
         </div>
       )}
 
       {filteredLabels.length === 0 ? (
         <GlassCard className="animate-fade-in text-center py-12">
-          <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No labels submitted yet.</p>
+          <Tag className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm">{searchQuery ? 'No labels match your search.' : 'No labels submitted yet.'}</p>
         </GlassCard>
       ) : (
-        <div className="space-y-3">
-          {canDelete && (
-            <div className="flex items-center gap-2 px-1">
-              <Checkbox checked={allPageSelected} onCheckedChange={toggleSelectAll} />
-              <span className="text-xs text-muted-foreground">Select All</span>
-            </div>
-          )}
-          {paginatedLabels.map((label) => (
-            <GlassCard key={label.id} className="animate-fade-in">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                {canDelete && (
-                  <Checkbox checked={selected.has(label.id)} onCheckedChange={() => toggleSelect(label.id)} className="shrink-0" />
-                )}
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
-                  <Tag className="h-5 w-5" />
-                </div>
-
-                <div className="flex-1 min-w-0 space-y-1">
-                  {editingId === label.id ? (
-                    <div className="flex items-center gap-2">
-                      <input className={inputClass} value={editName} onChange={(e) => setEditName(e.target.value)} autoFocus />
-                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => handleSaveEdit(label)}><Check className="h-4 w-4 text-green-500" /></Button>
-                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setEditingId(null)}><X className="h-4 w-4" /></Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-foreground">{label.label_name}</p>
-                      <CopyButton value={label.label_name} />
-                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEditingId(label.id); setEditName(label.label_name); }}>
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    By: <span className="text-foreground font-medium">{userEmails[label.user_id] || label.user_id.slice(0, 8)}</span>
-                    {userEmails[label.user_id] && <CopyButton value={userEmails[label.user_id]} />}
-                    {userDisplayIds[label.user_id] ? <span className="font-mono font-bold text-primary ml-1">(#{userDisplayIds[label.user_id]})</span> : null} • {new Date(label.created_at).toLocaleDateString()}
-                  </p>
-                  {userTypes[label.user_id] === 'sub_label' && subLabelInfo[label.user_id] && (
-                    <div className="text-xs mt-0.5">
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary">
-                        {subLabelInfo[label.user_id].sub_label_name}
-                      </span>
-                      <span className="text-muted-foreground ml-1">↳ Under: {subLabelInfo[label.user_id].parent_label_name}</span>
-                    </div>
-                  )}
-                  {label.status === 'rejected' && label.rejection_reason && (
-                    <p className="text-xs text-destructive mt-1">Reason: {label.rejection_reason}</p>
-                  )}
-                  {label.b2b_url && (
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => handleDownloadB2b(label.b2b_url!)} className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors">
-                        <FileText className="h-3 w-3" /> View B2B
-                      </button>
-                      {canDelete && (
-                        <button onClick={() => setDeleteTarget({ type: 'b2b', label })} className="text-xs text-destructive hover:text-destructive/80 transition-colors">
-                          Delete B2B
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <select
-                    className="px-3 py-1.5 rounded-lg bg-muted/50 border border-border text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary"
-                    value={label.status}
-                    onChange={(e) => handleStatusChange(label, e.target.value)}
-                  >
-                    {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
-                  </select>
+        <GlassCard className="!p-0 overflow-hidden">
+          {/* Table view */}
+          <div className="responsive-table-wrap">
+            <table className="w-full min-w-[700px] text-sm">
+              <thead>
+                <tr className="border-b border-border/50 bg-muted/30">
                   {canDelete && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteTarget({ type: 'label', label })}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                    <th className="p-3 w-10">
+                      <Checkbox checked={allPageSelected} onCheckedChange={toggleSelectAll} />
+                    </th>
                   )}
-                </div>
-              </div>
-            </GlassCard>
-          ))}
-          <div className="rounded-lg bg-card/50 border border-border/50 overflow-hidden">
-            <TablePagination totalItems={filteredLabels.length} currentPage={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} itemLabel="labels" />
+                  <th className="p-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Label</th>
+                  <th className="p-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Submitted By</th>
+                  <th className="p-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">B2B</th>
+                  <th className="p-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
+                  <th className="p-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                  <th className="p-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/30">
+                {paginatedLabels.map((label) => (
+                  <tr key={label.id} className="hover:bg-muted/20 transition-colors group">
+                    {canDelete && (
+                      <td className="p-3">
+                        <Checkbox checked={selected.has(label.id)} onCheckedChange={() => toggleSelect(label.id)} />
+                      </td>
+                    )}
+                    {/* Label Name */}
+                    <td className="p-3">
+                      {editingId === label.id ? (
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            className="px-2 py-1 rounded bg-muted/50 border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary w-full max-w-[200px]"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            autoFocus
+                            onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit(label)}
+                          />
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleSaveEdit(label)}>
+                            <Check className="h-3.5 w-3.5 text-emerald-500" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditingId(null)}>
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5">
+                            <Tag className="h-3.5 w-3.5 text-primary shrink-0" />
+                            <span className="font-semibold text-foreground truncate max-w-[180px]">{label.label_name}</span>
+                            <CopyButton value={label.label_name} />
+                            <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => { setEditingId(label.id); setEditName(label.label_name); }}>
+                              <Pencil className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          {label.status === 'rejected' && label.rejection_reason && (
+                            <p className="text-[11px] text-destructive truncate max-w-[220px]" title={label.rejection_reason}>
+                              Reason: {label.rejection_reason}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                    {/* Submitted By */}
+                    <td className="p-3">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1">
+                          <span className="text-foreground text-xs font-medium truncate max-w-[150px]">
+                            {userEmails[label.user_id] || label.user_id.slice(0, 8)}
+                          </span>
+                          {userEmails[label.user_id] && <CopyButton value={userEmails[label.user_id]} />}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          {userDisplayIds[label.user_id] && (
+                            <span className="font-mono text-[11px] font-bold text-primary">#{userDisplayIds[label.user_id]}</span>
+                          )}
+                          {userTypes[label.user_id] === 'sub_label' && subLabelInfo[label.user_id] && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[10px]">
+                              {subLabelInfo[label.user_id].sub_label_name}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    {/* B2B */}
+                    <td className="p-3">
+                      {label.b2b_url ? (
+                        <div className="flex items-center gap-1.5">
+                          <button onClick={() => handleDownloadB2b(label.b2b_url!)} className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors">
+                            <FileText className="h-3.5 w-3.5" /> View
+                          </button>
+                          {canDelete && (
+                            <button onClick={() => setDeleteTarget({ type: 'b2b', label })} className="text-[11px] text-destructive hover:text-destructive/80 transition-colors">
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    {/* Date */}
+                    <td className="p-3">
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">{new Date(label.created_at).toLocaleDateString()}</span>
+                    </td>
+                    {/* Status */}
+                    <td className="p-3">
+                      <select
+                        className="px-2.5 py-1.5 rounded-md bg-muted/50 border border-border text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
+                        value={label.status}
+                        onChange={(e) => handleStatusChange(label, e.target.value)}
+                      >
+                        {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                      </select>
+                    </td>
+                    {/* Actions */}
+                    <td className="p-3 text-right">
+                      {canDelete && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDeleteTarget({ type: 'label', label })}>
+                          <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
+          {/* Pagination */}
+          <TablePagination totalItems={filteredLabels.length} currentPage={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} itemLabel="labels" />
+        </GlassCard>
       )}
 
       {deleteTarget && (
