@@ -245,6 +245,7 @@ export default function CmsReports() {
                     <Input placeholder="Search months..." value={monthSearch} onChange={e => { setMonthSearch(e.target.value); setMonthPage(0); }} className="pl-9 h-9" />
                   </div>
                 </div>
+                <div className="responsive-table-wrap">
                 <Table className="min-w-max">
                   <TableHeader>
                     <TableRow>
@@ -271,6 +272,7 @@ export default function CmsReports() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
                 <TablePagination totalItems={filteredMonthlyGroups.length} currentPage={monthPage} pageSize={monthPageSize} onPageChange={setMonthPage} onPageSizeChange={setMonthPageSize} itemLabel="months" />
               </>
             )}

@@ -393,6 +393,7 @@ export default function AdminCmsReports() {
                 <Button size="sm" onClick={saveFormat}><Save className="h-4 w-4 mr-1" /> Save</Button>
               </div>
             </div>
+            <div className="responsive-table-wrap">
             <Table className="min-w-max">
               <TableHeader>
                 <TableRow>
@@ -427,6 +428,7 @@ export default function AdminCmsReports() {
                 ))}
               </TableBody>
             </Table>
+            </div>
             <div className="flex gap-2">
               <Input placeholder="New column header..." value={newColHeader} onChange={e => setNewColHeader(e.target.value)} className="max-w-xs" />
               <Button size="sm" variant="outline" onClick={addCustomCol}><Plus className="h-4 w-4 mr-1" /> Add Column</Button>
@@ -451,6 +453,7 @@ export default function AdminCmsReports() {
                     <Input placeholder="Search months..." value={monthSearch} onChange={e => { setMonthSearch(e.target.value); setMonthPage(0); }} className="pl-9 h-9" />
                   </div>
                 </div>
+                <div className="responsive-table-wrap">
                 <Table className="min-w-max">
                   <TableHeader>
                     <TableRow>
@@ -478,6 +481,7 @@ export default function AdminCmsReports() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
                 <TablePagination totalItems={filteredMonthlyGroups.length} currentPage={monthPage} pageSize={monthPageSize} onPageChange={setMonthPage} onPageSizeChange={setMonthPageSize} itemLabel="months" />
               </>
             )}
