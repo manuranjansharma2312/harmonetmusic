@@ -652,13 +652,19 @@ export default function AdminInvoices() {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
                 ) : paged.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">{search ? 'No matching invoices' : 'No invoices yet'}</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">{search ? 'No matching invoices' : 'No invoices yet'}</TableCell></TableRow>
                 ) : paged.map(inv => {
                   const { net } = calcTotals(inv.amount, inv.harmonet_share_percent, inv.taxes);
                   return (
                     <TableRow key={inv.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedIds.has(inv.id)}
+                          onCheckedChange={() => toggleSelect(inv.id)}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">{inv.billing_name}</TableCell>
                       <TableCell>{inv.user_display_id}</TableCell>
                       <TableCell>{format(new Date(inv.invoice_date), 'dd MMM yyyy')}</TableCell>
