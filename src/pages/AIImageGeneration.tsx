@@ -239,19 +239,19 @@ export default function AIImageGeneration() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2"><Sparkles className="h-6 w-6 text-primary" />AI Poster Generate</h1>
-            <p className="text-sm text-muted-foreground mt-1 ml-8 italic">Create Ultra-Realistic, Studio-Quality Posters — Powered by Harmonet Music Image Generation AI ✨</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2"><Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-primary shrink-0" />AI Poster Generate</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:ml-8 italic line-clamp-2">Create Ultra-Realistic, Studio-Quality Posters — Powered by Harmonet Music Image Generation AI ✨</p>
           </div>
-          <Card className="px-4 py-2 flex items-center gap-3">
-            <CreditCard className="h-5 w-5 text-primary" />
+          <Card className="px-3 sm:px-4 py-2 flex items-center gap-2 sm:gap-3 shrink-0 w-fit">
+            <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             <div>
               <p className="text-xs text-muted-foreground">Credits</p>
               {isLifetimeFree ? (
-                <p className="font-bold text-lg text-green-600">Unlimited <span className="text-xs text-muted-foreground font-normal">(Free Plan)</span></p>
+                <p className="font-bold text-base sm:text-lg text-green-600">Unlimited <span className="text-xs text-muted-foreground font-normal">(Free Plan)</span></p>
               ) : (
-                <p className="font-bold text-lg">{remaining} <span className="text-xs text-muted-foreground font-normal">remaining</span></p>
+                <p className="font-bold text-base sm:text-lg">{remaining} <span className="text-xs text-muted-foreground font-normal">remaining</span></p>
               )}
             </div>
           </Card>
