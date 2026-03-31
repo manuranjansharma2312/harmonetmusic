@@ -88,12 +88,12 @@ export default function MySmartLinks() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">My Smart Links</h1>
-            <p className="text-sm text-muted-foreground mt-1">Create & share one link — fans choose their platform</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">My Smart Links</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">Create & share one link — fans choose their platform</p>
           </div>
-          <Button size="sm" onClick={() => setCreating(true)}>
+          <Button size="sm" onClick={() => setCreating(true)} className="w-fit">
             <Plus className="h-3.5 w-3.5 mr-1" /> Create Smart Link
           </Button>
         </div>
