@@ -94,6 +94,8 @@ export default function AdminSmartLinks() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editCustom, setEditCustom] = useState<any | null>(null);
   const [creatingCustom, setCreatingCustom] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   // ─── System enable/disable ───
   const [systemEnabled, setSystemEnabled] = useState(true);
