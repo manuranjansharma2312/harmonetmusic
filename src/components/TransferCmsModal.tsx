@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Loader2, ArrowRightLeft, Search, AlertTriangle } from 'lucide-react';
+import { computeCmsFreezeIds } from '@/lib/transferFreezeLogic';
 
 interface TransferCmsModalProps {
   open: boolean;
