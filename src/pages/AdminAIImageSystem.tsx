@@ -167,10 +167,10 @@ export default function AdminAIImageSystem() {
   };
 
   const deletePlan = async (id: string) => {
-    if (!confirm('Delete this plan?')) return;
     await supabase.from('ai_plans').delete().eq('id', id);
     fetchPlans();
     toast.success('Plan deleted');
+    setDeletePlanId(null);
   };
 
   // Order actions
