@@ -161,17 +161,17 @@ function EmailAnalytics({ logs }: { logs: EmailLog[] }) {
   return (
     <div className="space-y-6">
       {/* Time range selector */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-primary/10">
             <BarChart3 className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold">Email Analytics</h2>
+            <h2 className="text-base sm:text-lg font-semibold">Email Analytics</h2>
             <p className="text-xs text-muted-foreground">Overview of email delivery performance</p>
           </div>
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 flex-wrap">
           {[{ key: '24h', label: '24h' }, { key: '7d', label: '7 Days' }, { key: '30d', label: '30 Days' }, { key: '90d', label: '90 Days' }].map(r => (
             <Button key={r.key} size="sm" variant={timeRange === r.key ? 'default' : 'outline'}
               onClick={() => setTimeRange(r.key)}>{r.label}</Button>
