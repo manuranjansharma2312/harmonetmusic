@@ -112,7 +112,7 @@ export default function MyVideos() {
             {loading ? (
               <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
             ) : paginated.length === 0 ? (
-              <p className="text-center py-12 text-muted-foreground">No video submissions yet</p>
+              <p className="text-center py-12 text-muted-foreground">No video releases yet</p>
             ) : (
               <div className="responsive-table-wrap">
               <Table className="min-w-max">
