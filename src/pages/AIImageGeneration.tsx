@@ -330,25 +330,25 @@ export default function AIImageGeneration() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Preview</CardTitle>
+                  <CardTitle className="text-base sm:text-lg">Preview</CardTitle>
                 </CardHeader>
-                <CardContent className="flex items-center justify-center min-h-[300px]">
+                <CardContent className="flex items-center justify-center min-h-[200px] sm:min-h-[300px]">
                   {generating ? (
                     <div className="text-center space-y-3">
-                      <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-                      <p className="text-muted-foreground">Creating your poster...</p>
+                      <Loader2 className="h-10 w-10 sm:h-12 sm:w-12 animate-spin text-primary mx-auto" />
+                      <p className="text-sm text-muted-foreground">Creating your poster...</p>
                     </div>
                   ) : generatedImage ? (
                     <div className="space-y-3 w-full">
-                      <img src={generatedImage} alt="Generated poster" className="w-full rounded-lg border max-h-[400px] object-contain" />
+                      <img src={generatedImage} alt="Generated poster" className="w-full rounded-lg border max-h-[300px] sm:max-h-[400px] object-contain" />
                       <Button variant="outline" className="w-full" onClick={() => downloadImage(generatedImage, `ai-poster-${Date.now()}.png`)}>
                         <Download className="h-4 w-4 mr-2" />Download Poster
                       </Button>
                     </div>
                   ) : (
                     <div className="text-center text-muted-foreground space-y-2">
-                      <ImageIcon className="h-16 w-16 mx-auto opacity-30" />
-                      <p>Your generated poster will appear here</p>
+                      <ImageIcon className="h-12 w-12 sm:h-16 sm:w-16 mx-auto opacity-30" />
+                      <p className="text-sm">Your generated poster will appear here</p>
                     </div>
                   )}
                 </CardContent>
