@@ -206,7 +206,7 @@ export default function CmsReports() {
 
   const getCellValue = (entry: ReportEntry, colKey: string) => {
     if (colKey === 'net_generated_revenue') return `₹${(Number(entry.net_generated_revenue) || 0).toFixed(4)}`;
-    if (colKey === 'cms_cut') return `${getCutPercent(entry.channel_name)}%`;
+    if (colKey === 'cms_cut') return `${getEffectiveCut(entry)}%`;
     if (colKey === 'cut_amount') return `₹${calcCutAmount(entry).toFixed(4)}`;
     if (colKey === 'net_payable') return `₹${calcNetPayable(entry).toFixed(4)}`;
     if (colKey.startsWith('custom_')) return String((entry.extra_data as Record<string, string>)?.[colKey] ?? '-');

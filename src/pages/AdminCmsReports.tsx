@@ -211,6 +211,11 @@ export default function AdminCmsReports() {
       const missing = requiredKeys.filter(k => !mappedHeaders.includes(k));
       if (missing.length > 0) throw new Error(`Missing required columns: ${missing.join(', ')}`);
 
+      // Build a channel->cut_percent lookup from all linked CMS links
+      const { data: allLinks } = await supabase.from('youtube_cms_links' as any).select('channel_name, cut_percent').eq('status', 'linked');
+      const cutLookup: Record<string, number> = {};
+      ((allLinks as any[]) || []).forEach((l: any) => { cutLookup[l.channel_name] = Number(l.cut_percent) || 0; });
+
       const rows: any[] = [];
       for (let i = 1; i < lines.length; i++) {
         const values = lines[i].split(',').map(v => v.replace(/^"|"$/g, '').trim());
@@ -230,6 +235,8 @@ export default function AdminCmsReports() {
         });
 
         if (!row.reporting_month || !row.channel_name) continue;
+        // Snapshot the current cut_percent for this channel at import time
+        row.cut_percent_snapshot = cutLookup[row.channel_name] ?? 0;
         rows.push(row);
       }
 
