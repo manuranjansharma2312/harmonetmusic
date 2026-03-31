@@ -184,7 +184,7 @@ export default function MyTransfers() {
                           <TableCell>{format(new Date(t.transferred_at), 'dd MMM yyyy, hh:mm a')}</TableCell>
                         </TableRow>
                       ))}
-                      {tab === 'videos' && (paged as VideoTransfer[]).map(t => (
+                      {tab === 'videos' && (paged as unknown as VideoTransfer[]).map(t => (
                         <TableRow key={t.id}>
                           <TableCell><DirectionBadge fromId={t.from_user_id} /></TableCell>
                           <TableCell className="font-medium">{t.submission_name || '-'}</TableCell>
