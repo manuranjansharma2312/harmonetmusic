@@ -120,6 +120,17 @@ export default function AdminLabels() {
 
   const handleSaveEdit = async (label: Label) => {
     if (!editName.trim()) return;
+    // Check uniqueness (case-insensitive), excluding the current label
+    const { data: existing } = await supabase
+      .from('labels')
+      .select('id')
+      .ilike('label_name', editName.trim())
+      .neq('id', label.id)
+      .limit(1);
+    if (existing && existing.length > 0) {
+      toast.error('This label name already exists in the system.');
+      return;
+    }
     const { error } = await supabase.from('labels').update({ label_name: editName.trim() }).eq('id', label.id);
     if (error) { toast.error(error.message); return; }
     toast.success('Label name updated');
