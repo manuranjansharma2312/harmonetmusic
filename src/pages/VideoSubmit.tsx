@@ -159,6 +159,17 @@ export default function VideoSubmit() {
   const handleSubmit = async () => {
     if (!form || !user) return;
 
+    // Validate ISRC fields
+    for (const field of fields) {
+      if (field.field_type === 'isrc' && values[field.id]?.trim()) {
+        const isrcVal = values[field.id].trim().toUpperCase();
+        const isrcRegex = /^[A-Z]{2}[A-Z0-9]{3}\d{2}\d{5}$/;
+        if (!isrcRegex.test(isrcVal)) {
+          toast.error(`${field.label}: Invalid ISRC format. Expected format: CCXXXYYNNNNN (e.g. USRC11234567)`);
+          return;
+        }
+      }
+    }
     // Validate vevo_channel fields
     for (const field of fields) {
       if (field.field_type === 'vevo_channel' && field.is_required && !values[field.id]?.trim()) {
@@ -492,6 +503,19 @@ export default function VideoSubmit() {
                     value={values[field.id] || ''}
                     onChange={e => setValues(prev => ({ ...prev, [field.id]: e.target.value }))}
                   />
+                )}
+
+                {field.field_type === 'isrc' && (
+                  <div>
+                    <Input
+                      placeholder={field.placeholder || 'e.g. USRC11234567'}
+                      value={values[field.id] || ''}
+                      onChange={e => setValues(prev => ({ ...prev, [field.id]: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12) }))}
+                      maxLength={12}
+                      className="font-mono tracking-wider"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">12-character ISRC code (e.g. USRC11234567)</p>
+                  </div>
                 )}
 
                 {field.field_type === 'video_upload' && (
