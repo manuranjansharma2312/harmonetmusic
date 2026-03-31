@@ -92,6 +92,7 @@ export default function AdminTeamManagement() {
     govt_ids: [{ name: '', number: '' }] as GovtId[],
   });
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [viewMember, setViewMember] = useState<TeamMember | null>(null);
   const [showPw, setShowPw] = useState(false);
   const [phoneSearch, setPhoneSearch] = useState('');
 
