@@ -302,6 +302,11 @@ export function ReportBrowserPage({
     return filtered;
   }, [filters, selectedEntries]);
 
+  const filteredTotal = useMemo(() =>
+    filteredSelectedEntries.reduce((sum, entry) => sum + applyRevenueCut(entry), 0),
+    [filteredSelectedEntries, applyRevenueCut],
+  );
+
   const filterOptions = useMemo(() => {
     const options: Record<string, string[]> = {};
     FILTERABLE.forEach(({ key }) => {
@@ -351,9 +356,15 @@ export function ReportBrowserPage({
             </p>
           </div>
           {selectedMonth && (
-            <Button size="sm" variant="outline" onClick={exportCSV} disabled={detailLoading}>
-              <Download className="h-4 w-4 mr-1" /> Export CSV
-            </Button>
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">Net Revenue (Filtered)</p>
+                <p className="text-lg font-bold text-primary">{formatRevenue(filteredTotal)}</p>
+              </div>
+              <Button size="sm" variant="outline" onClick={exportCSV} disabled={detailLoading}>
+                <Download className="h-4 w-4 mr-1" /> Export CSV
+              </Button>
+            </div>
           )}
         </div>
 
