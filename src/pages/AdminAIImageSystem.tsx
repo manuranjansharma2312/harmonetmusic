@@ -568,14 +568,14 @@ export default function AdminAIImageSystem() {
                   <Button variant="outline" size="sm" onClick={addImageSize}><Plus className="h-4 w-4 mr-1" />Add Size</Button>
                 </div>
 
-                {/* Lifetime Free Plan */}
+                {/* Unlimited Free Plan */}
                 <div className="space-y-3 pt-2 border-t">
-                  <Label className="text-base">Lifetime Free Plan (Unlimited)</Label>
+                  <Label className="text-base">Unlimited Free Plan</Label>
                   <p className="text-xs text-muted-foreground">When enabled, selected users (or all users) can generate unlimited images without credits. Premium plans will be hidden for those users.</p>
                   
                   <div className="flex items-center justify-between rounded-lg border p-3">
                     <div>
-                      <Label>Enable Lifetime Free Plan</Label>
+                      <Label>Enable Unlimited Free Plan</Label>
                       <p className="text-xs text-muted-foreground">Turn on/off the unlimited free generation.</p>
                     </div>
                     <Switch checked={aiSettings.lifetime_free_enabled} onCheckedChange={v => setAiSettings(s => ({ ...s, lifetime_free_enabled: v }))} />

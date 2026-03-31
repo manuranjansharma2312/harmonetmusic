@@ -249,7 +249,7 @@ export default function AIImageGeneration() {
             <div>
               <p className="text-xs text-muted-foreground">Credits</p>
               {isLifetimeFree ? (
-                <p className="font-bold text-base sm:text-lg text-green-600">Unlimited <span className="text-xs text-muted-foreground font-normal">(Free Plan)</span></p>
+                <p className="font-bold text-base sm:text-lg text-green-600">Unlimited <span className="text-xs text-muted-foreground font-normal">(Unlimited Plan)</span></p>
               ) : (
                 <p className="font-bold text-base sm:text-lg">{remaining} <span className="text-xs text-muted-foreground font-normal">remaining</span></p>
               )}
