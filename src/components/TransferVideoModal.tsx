@@ -86,6 +86,22 @@ export function TransferVideoModal({ open, onClose, submission, onTransferred }:
         }
       }
 
+      // Log the transfer
+      const { data: sessionData } = await supabase.auth.getSession();
+      const adminId = sessionData?.session?.user?.id || newUserId;
+      const linkedCount = submission.submission_type === 'vevo_channel'
+        ? ((await supabase.from('video_submissions').select('id').eq('vevo_channel_id', submission.id)).data?.length || 0)
+        : 0;
+      await (supabase.from('video_transfers') as any).insert({
+        submission_id: submission.id,
+        submission_type: submission.submission_type,
+        submission_name: submission.form_name || 'Submission',
+        from_user_id: submission.user_id,
+        to_user_id: newUserId,
+        transferred_by: adminId,
+        linked_video_count: linkedCount,
+      });
+
       toast.success(
         `${submission.submission_type === 'vevo_channel' ? 'Vevo Channel' : 'Video'} transferred to ${selectedUser.legal_name} (#${selectedUser.display_id})${
           submission.submission_type === 'vevo_channel' ? ' along with linked videos' : ''

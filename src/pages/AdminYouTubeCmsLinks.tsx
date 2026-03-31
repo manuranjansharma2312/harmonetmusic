@@ -19,7 +19,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
 import { TablePagination } from '@/components/TablePagination';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { Loader2, Youtube, ExternalLink, FileText, CalendarIcon, Pencil, Trash2, Download, Eye, Image as ImageIcon, FileX, ImageOff } from 'lucide-react';
+import { Loader2, Youtube, ExternalLink, FileText, CalendarIcon, Pencil, Trash2, Download, Eye, Image as ImageIcon, FileX, ImageOff, ArrowRightLeft } from 'lucide-react';
+import { TransferCmsModal } from '@/components/TransferCmsModal';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -100,6 +101,7 @@ export default function AdminYouTubeCmsLinks() {
   // Reject & Delete modals
   const [rejectItem, setRejectItem] = useState<CmsLink | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ ids: string[] } | null>(null);
+  const [transferItem, setTransferItem] = useState<CmsLink | null>(null);
 
   // Bulk status change
   const [bulkStatus, setBulkStatus] = useState('');
@@ -513,6 +515,11 @@ export default function AdminYouTubeCmsLinks() {
                               <Button size="sm" variant="outline" onClick={() => openEdit(l)} className="gap-1">
                                 <Pencil className="h-3.5 w-3.5" /> Edit
                               </Button>
+                              {!isTeam && (
+                                <Button size="sm" variant="outline" onClick={() => setTransferItem(l)} className="gap-1">
+                                  <ArrowRightLeft className="h-3.5 w-3.5" /> Transfer
+                                </Button>
+                              )}
                               {canDelete && <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ ids: [l.id] })} className="gap-1">
                                 <Trash2 className="h-3.5 w-3.5" /> Delete
                               </Button>}
@@ -663,6 +670,13 @@ export default function AdminYouTubeCmsLinks() {
           onCancel={() => setDeleteConfirm(null)}
         />
       )}
+      {/* Transfer CMS Modal */}
+      <TransferCmsModal
+        open={!!transferItem}
+        onClose={() => setTransferItem(null)}
+        cmsLink={transferItem ? { id: transferItem.id, user_id: transferItem.user_id, channel_name: transferItem.channel_name } : null}
+        onTransferred={() => { setTransferItem(null); fetchAll(); }}
+      />
     </DashboardLayout>
   );
 }
