@@ -1229,12 +1229,12 @@ export default function AdminEmailSettings() {
 
           {/* =============== Setup Guide Tab =============== */}
           <TabsContent value="guide">
-            <GlassCard className="p-6 space-y-6">
+            <GlassCard className="p-4 sm:p-6 space-y-6">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-primary/10">
-                  <Info className="h-5 w-5 text-primary" />
+                <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10">
+                  <Info className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 </div>
-                <h2 className="text-lg font-semibold">Self-Hosting Email Setup Guide</h2>
+                <h2 className="text-base sm:text-lg font-semibold">Self-Hosting Email Setup Guide</h2>
               </div>
               <div className="space-y-6 text-sm">
                 <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-2">
