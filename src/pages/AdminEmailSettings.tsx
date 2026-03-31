@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 interface EmailAccount {
   id: string;
@@ -302,6 +303,7 @@ export default function AdminEmailSettings() {
   const [logPageSize, setLogPageSize] = useState<number | 'all'>(10);
   const [selectedLogs, setSelectedLogs] = useState<Set<string>>(new Set());
   const [deletingLogs, setDeletingLogs] = useState(false);
+  const [deleteConfirmAction, setDeleteConfirmAction] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null);
 
   // Test email
   const [showTestDialog, setShowTestDialog] = useState(false);
@@ -408,11 +410,11 @@ export default function AdminEmailSettings() {
   }
 
   async function deleteAccount(id: string) {
-    if (!confirm('Delete this email account? Templates using it will fall back to the default account.')) return;
     const { error } = await supabase.from('email_accounts').delete().eq('id', id);
     if (error) { toast.error(error.message); return; }
     toast.success('Account deleted');
     fetchData();
+    setDeleteConfirmAction(null);
   }
 
   async function setDefault(id: string) {
@@ -556,11 +558,17 @@ export default function AdminEmailSettings() {
       toast.error(`Cannot delete: ${usedBy} template(s) are using this category. Reassign them first.`);
       return;
     }
-    if (!confirm(`Delete category "${cat.name}"?`)) return;
-    const { error } = await supabase.from('email_categories').delete().eq('id', id);
-    if (error) { toast.error(error.message); return; }
-    toast.success('Category deleted');
-    fetchData();
+    setDeleteConfirmAction({
+      title: 'Delete Category',
+      message: `Delete category "${cat.name}"?`,
+      onConfirm: async () => {
+        const { error } = await supabase.from('email_categories').delete().eq('id', id);
+        if (error) { toast.error(error.message); setDeleteConfirmAction(null); return; }
+        toast.success('Category deleted');
+        fetchData();
+        setDeleteConfirmAction(null);
+      }
+    });
   }
 
   const categoriesWithAll = useMemo(() =>
@@ -731,7 +739,7 @@ export default function AdminEmailSettings() {
                             <Button size="sm" variant="ghost" onClick={() => openEditAccount(acc)}>
                               <Edit2 className="h-4 w-4" />
                             </Button>
-                            <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => deleteAccount(acc.id)}>
+                            <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setDeleteConfirmAction({ title: 'Delete Email Account', message: 'Delete this email account? Templates using it will fall back to the default account.', onConfirm: () => deleteAccount(acc.id) })}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
@@ -1101,21 +1109,28 @@ export default function AdminEmailSettings() {
                 <div className="flex gap-2 flex-wrap">
                   {selectedLogs.size > 0 && (
                     <Button variant="destructive" size="sm" className="gap-2" disabled={deletingLogs}
-                      onClick={async () => {
-                        if (!confirm(`Delete ${selectedLogs.size} selected log(s)?`)) return;
-                        setDeletingLogs(true);
-                        try {
-                          const ids = Array.from(selectedLogs);
-                          const { error } = await supabase.from('email_send_logs').delete().in('id', ids);
-                          if (error) throw error;
-                          setEmailLogs(prev => prev.filter(l => !selectedLogs.has(l.id)));
-                          setSelectedLogs(new Set());
-                          toast.success(`${ids.length} log(s) deleted`);
-                        } catch (err: any) {
-                          toast.error(err.message || 'Failed to delete logs');
-                        } finally {
-                          setDeletingLogs(false);
-                        }
+                      onClick={() => {
+                        const count = selectedLogs.size;
+                        setDeleteConfirmAction({
+                          title: 'Delete Logs',
+                          message: `Delete ${count} selected log(s)? This action cannot be undone.`,
+                          onConfirm: async () => {
+                            setDeleteConfirmAction(null);
+                            setDeletingLogs(true);
+                            try {
+                              const ids = Array.from(selectedLogs);
+                              const { error } = await supabase.from('email_send_logs').delete().in('id', ids);
+                              if (error) throw error;
+                              setEmailLogs(prev => prev.filter(l => !selectedLogs.has(l.id)));
+                              setSelectedLogs(new Set());
+                              toast.success(`${ids.length} log(s) deleted`);
+                            } catch (err: any) {
+                              toast.error(err.message || 'Failed to delete logs');
+                            } finally {
+                              setDeletingLogs(false);
+                            }
+                          }
+                        });
                       }}>
                       <Trash2 className="h-4 w-4" /> Delete ({selectedLogs.size})
                     </Button>
@@ -1603,6 +1618,15 @@ export default function AdminEmailSettings() {
           )}
         </DialogContent>
       </Dialog>
+
+      {deleteConfirmAction && (
+        <ConfirmDialog
+          title={deleteConfirmAction.title}
+          message={deleteConfirmAction.message}
+          onConfirm={deleteConfirmAction.onConfirm}
+          onCancel={() => setDeleteConfirmAction(null)}
+        />
+      )}
     </DashboardLayout>
   );
 }

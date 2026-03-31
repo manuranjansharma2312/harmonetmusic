@@ -19,6 +19,7 @@ import { Loader2, Link2, ExternalLink, Search, Music, Edit, Plus, Trash2, GripVe
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 
 // ─── Types ───
@@ -96,6 +97,7 @@ export default function AdminSmartLinks() {
   const [creatingCustom, setCreatingCustom] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
+  const [deleteConfirmAction, setDeleteConfirmAction] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null);
 
   // ─── System enable/disable ───
   const [systemEnabled, setSystemEnabled] = useState(true);
@@ -273,10 +275,10 @@ export default function AdminSmartLinks() {
   };
 
   const deletePlatform = async (id: string) => {
-    if (!confirm('Remove this platform?')) return;
     await supabase.from('smart_link_platforms').delete().eq('id', id);
     toast.success('Platform removed');
     fetchPlatforms();
+    setDeleteConfirmAction(null);
   };
 
   const togglePlatform = async (p: Platform) => {
@@ -324,10 +326,10 @@ export default function AdminSmartLinks() {
   };
 
   const deleteApi = async (id: string) => {
-    if (!confirm('Remove this API configuration?')) return;
     await supabase.from('smart_link_api_configs').delete().eq('id', id);
     toast.success('API config removed');
     fetchApiConfigs();
+    setDeleteConfirmAction(null);
   };
 
   const toggleApi = async (a: ApiConfig) => {
@@ -352,10 +354,10 @@ export default function AdminSmartLinks() {
   };
 
   const deleteSmartLink = async (id: string) => {
-    if (!confirm('Delete this smart link permanently?')) return;
     await supabase.from('smart_links').delete().eq('id', id);
     toast.success('Smart link deleted');
     fetchCustomLinks();
+    setDeleteConfirmAction(null);
   };
 
   return (
@@ -577,7 +579,7 @@ export default function AdminSmartLinks() {
                               <Button size="sm" variant="ghost" className="rounded-none h-8 px-2.5 text-[11px] gap-1 text-muted-foreground hover:text-primary" onClick={() => setEditCustom(c)}>
                                 <Edit className="h-3 w-3" /> Edit
                               </Button>
-                              <Button size="sm" variant="ghost" className="rounded-none h-8 px-2.5 text-[11px] gap-1 text-destructive hover:text-destructive" onClick={() => deleteSmartLink(c.id)}>
+                              <Button size="sm" variant="ghost" className="rounded-none h-8 px-2.5 text-[11px] gap-1 text-destructive hover:text-destructive" onClick={() => setDeleteConfirmAction({ title: 'Delete Smart Link', message: 'Delete this smart link permanently? This cannot be undone.', onConfirm: () => deleteSmartLink(c.id) })}>
                                 <Trash2 className="h-3 w-3" />
                               </Button>
                             </div>
@@ -635,7 +637,7 @@ export default function AdminSmartLinks() {
                     <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEditPlatform(p)}>
                       <Edit className="h-3.5 w-3.5" />
                     </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deletePlatform(p.id)}>
+                    <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirmAction({ title: 'Remove Platform', message: 'Are you sure you want to remove this platform?', onConfirm: () => deletePlatform(p.id) })}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </GlassCard>
@@ -716,7 +718,7 @@ export default function AdminSmartLinks() {
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEditApi(a)}>
                         <Edit className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteApi(a.id)}>
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirmAction({ title: 'Remove API Config', message: 'Are you sure you want to remove this API configuration?', onConfirm: () => deleteApi(a.id) })}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -895,6 +897,15 @@ export default function AdminSmartLinks() {
         onConfirm={(reason) => rejectingId && rejectSmartLink(rejectingId, reason)}
         onCancel={() => setRejectingId(null)}
       />
+
+      {deleteConfirmAction && (
+        <ConfirmDialog
+          title={deleteConfirmAction.title}
+          message={deleteConfirmAction.message}
+          onConfirm={deleteConfirmAction.onConfirm}
+          onCancel={() => setDeleteConfirmAction(null)}
+        />
+      )}
     </DashboardLayout>
   );
 }

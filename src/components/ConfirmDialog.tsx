@@ -1,7 +1,7 @@
 export function ConfirmDialog({
-  title, message, onConfirm, onCancel,
+  title, message, onConfirm, onCancel, confirmLabel = 'Delete',
 }: {
-  title: string; message: string; onConfirm: () => void; onCancel: () => void;
+  title: string; message: string; onConfirm: () => void; onCancel: () => void; confirmLabel?: string;
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onCancel}>
@@ -14,7 +14,7 @@ export function ConfirmDialog({
             Cancel
           </button>
           <button onClick={onConfirm} className="flex-1 py-2.5 rounded-lg bg-destructive text-destructive-foreground font-medium hover:opacity-90 transition-all">
-            Delete
+            {confirmLabel}
           </button>
         </div>
       </div>

@@ -18,6 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, CreditCard, History, BarChart3, Settings, Users, Image as ImageIcon, CheckCircle, Eye, EyeOff, Save } from 'lucide-react';
 import { format } from 'date-fns';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 type AIPlan = { id: string; name: string; price: number; credits: number; description: string; tag: string | null; is_active: boolean; created_at: string };
 type AIOrder = { id: string; user_id: string; plan_id: string; screenshot_url: string | null; transaction_id: string; status: string; rejection_reason: string | null; payment_note: string | null; created_at: string; ai_plans?: { name: string; credits: number; price: number } };
@@ -63,6 +64,7 @@ export default function AdminAIImageSystem() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [apiKeySaving, setApiKeySaving] = useState(false);
   const [apiKeyLoaded, setApiKeyLoaded] = useState(false);
+  const [deletePlanId, setDeletePlanId] = useState<string | null>(null);
   const profileMap = useMemo(() => {
     const m: Record<string, Profile> = {};
     profiles.forEach(p => { m[p.user_id] = p; });
@@ -165,10 +167,10 @@ export default function AdminAIImageSystem() {
   };
 
   const deletePlan = async (id: string) => {
-    if (!confirm('Delete this plan?')) return;
     await supabase.from('ai_plans').delete().eq('id', id);
     fetchPlans();
     toast.success('Plan deleted');
+    setDeletePlanId(null);
   };
 
   // Order actions
@@ -338,7 +340,7 @@ export default function AdminAIImageSystem() {
                           </TableCell>
                           <TableCell className="flex gap-1">
                             <Button variant="ghost" size="icon" onClick={() => openPlanModal(p)}><Pencil className="h-4 w-4" /></Button>
-                            <Button variant="ghost" size="icon" onClick={() => deletePlan(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => setDeletePlanId(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -697,6 +699,15 @@ export default function AdminAIImageSystem() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {deletePlanId && (
+        <ConfirmDialog
+          title="Delete Plan"
+          message="Are you sure you want to delete this plan? This action cannot be undone."
+          onConfirm={() => deletePlan(deletePlanId)}
+          onCancel={() => setDeletePlanId(null)}
+        />
+      )}
     </DashboardLayout>
   );
 }
