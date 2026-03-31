@@ -41,6 +41,7 @@ const AdminDashboard = lazyRetry(() => import("./pages/AdminDashboard"));
 const AdminAllPending = lazyRetry(() => import("./pages/AdminAllPending"));
 const AdminSubmissions = lazyRetry(() => import("./pages/AdminSubmissions"));
 const AdminTransferHistory = lazyRetry(() => import("./pages/AdminTransferHistory"));
+const MyTransfers = lazyRetry(() => import("./pages/MyTransfers"));
 const AdminUsers = lazyRetry(() => import("./pages/AdminUsers"));
 const MyProfile = lazyRetry(() => import("./pages/MyProfile"));
 const MyLabels = lazyRetry(() => import("./pages/MyLabels"));
@@ -187,6 +188,7 @@ function App() {
                       <Route path="/admin/reports/vevo" element={<ProtectedRoute requiredRole="admin"><AdminVevoReports /></ProtectedRoute>} />
                       <Route path="/admin/reports" element={<Navigate to="/admin/reports/ott" replace />} />
                       <Route path="/revenue" element={<ProtectedRoute><Revenue /></ProtectedRoute>} />
+                      <Route path="/my-transfers" element={<ProtectedRoute><MyTransfers /></ProtectedRoute>} />
                       <Route path="/admin/revenue" element={<ProtectedRoute requiredRole="admin"><AdminRevenue /></ProtectedRoute>} />
                       <Route path="/admin/terms" element={<ProtectedRoute requiredRole="admin"><AdminTermsConditions /></ProtectedRoute>} />
                       <Route path="/admin/invoices" element={<ProtectedRoute requiredRole="admin"><AdminInvoices /></ProtectedRoute>} />
