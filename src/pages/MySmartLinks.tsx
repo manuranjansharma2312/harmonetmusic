@@ -253,6 +253,15 @@ export default function MySmartLinks() {
               );
             })}
           </div>
+          <TablePagination
+            totalItems={filtered.length}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(s) => { setPageSize(s); setCurrentPage(0); }}
+            itemLabel="smart links"
+          />
+          </div>
         )}
       </div>
 
