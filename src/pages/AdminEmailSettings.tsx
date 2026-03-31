@@ -1557,7 +1557,7 @@ export default function AdminEmailSettings() {
           </DialogHeader>
           {viewingLog && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div>
                   <Label className="text-xs text-muted-foreground">Template</Label>
                   <p className="font-medium">{viewingLog.template_label || viewingLog.template_key}</p>
