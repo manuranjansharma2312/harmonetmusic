@@ -779,7 +779,7 @@ export default function AdminEmailSettings() {
               {/* Category list */}
               <div className="space-y-2">
                 {categories.map((cat, idx) => (
-                  <div key={cat.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border bg-muted/20">
+                  <div key={cat.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 p-3 rounded-lg border border-border bg-muted/20">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <Badge variant="outline" className={`text-[10px] shrink-0 ${CATEGORY_COLORS[idx % CATEGORY_COLORS.length]}`}>
                         {cat.key}
