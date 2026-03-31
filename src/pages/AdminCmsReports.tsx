@@ -393,6 +393,7 @@ export default function AdminCmsReports() {
                 <Button size="sm" onClick={saveFormat}><Save className="h-4 w-4 mr-1" /> Save</Button>
               </div>
             </div>
+            <div className="responsive-table-wrap">
             <Table className="min-w-max">
               <TableHeader>
                 <TableRow>
