@@ -386,9 +386,9 @@ export default function AdminSmartLinks() {
 
 
           <TabsContent value="custom" className="space-y-4 mt-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">Standalone smart links created by users or admin.</p>
-              {!isTeam && <Button size="sm" onClick={() => setCreatingCustom(true)}><Plus className="h-3.5 w-3.5 mr-1" /> Create Smart Link</Button>}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <p className="text-xs sm:text-sm text-muted-foreground">Standalone smart links created by users or admin.</p>
+              {!isTeam && <Button size="sm" onClick={() => setCreatingCustom(true)} className="w-fit"><Plus className="h-3.5 w-3.5 mr-1" /> Create Smart Link</Button>}
             </div>
             <div className="flex items-center gap-3 flex-wrap">
               <div className="relative max-w-sm flex-1 min-w-[200px]">
