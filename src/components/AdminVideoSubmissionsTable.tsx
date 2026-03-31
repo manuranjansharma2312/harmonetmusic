@@ -321,7 +321,7 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `video-submissions-${submissionType}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    link.download = `video-releases-${submissionType}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
     link.click();
     URL.revokeObjectURL(url);
     toast.success(`Exported ${toExport.length} submission(s)`);
