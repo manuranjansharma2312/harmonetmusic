@@ -294,6 +294,7 @@ export function AppSidebar() {
   ];
 
   const userLinksAfterGroups = [
+    { to: '/my-transfers', label: 'Transfers', icon: ArrowRightLeft },
     { to: '/smart-links', label: 'Smart Links', icon: Link2 },
   ];
 
