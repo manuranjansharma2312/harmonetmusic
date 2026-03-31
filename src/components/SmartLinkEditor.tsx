@@ -376,7 +376,7 @@ export function SmartLinkEditor({ smartLink, onSaved, userId }: SmartLinkEditorP
             <p className="text-xs text-muted-foreground">No platforms configured. Admin needs to add platforms first.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3">
             {platforms.map(p => {
               const key = getPlatformKey(p);
               return (

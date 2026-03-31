@@ -151,7 +151,14 @@ export default function MySmartLinks() {
                         )}
                       </div>
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 shrink-0">
+                      {active && s.slug && (
+                        <a href={`/r/${s.slug}`} target="_blank" rel="noopener noreferrer">
+                          <Button size="icon" variant="ghost" className="h-7 w-7" title="View Smart Link">
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
+                        </a>
+                      )}
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditLink(s)}>
                         <Edit className="h-3.5 w-3.5" />
                       </Button>
