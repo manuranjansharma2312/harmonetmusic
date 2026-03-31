@@ -140,61 +140,63 @@ export default function YouTubeCmsLink() {
           ) : links.length === 0 ? (
             <p className="text-center py-12 text-muted-foreground">No YouTube CMS Link requests yet.</p>
           ) : (
-            <div className="responsive-table-wrap">
-              <Table className="min-w-max">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Channel Name</TableHead>
-                    <TableHead>Channel URL</TableHead>
-                    <TableHead>Monetized</TableHead>
-                    <TableHead>NOC</TableHead>
-                    <TableHead>YT Reports</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>CMS Company</TableHead>
-                    <TableHead>CMS Linked Date</TableHead>
-                    <TableHead>Submitted</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginateItems(links, page, pageSize).map((l) => (
-                    <TableRow key={l.id}>
-                      <TableCell className="font-medium">{l.channel_name}</TableCell>
-                      <TableCell>
-                        <a href={l.channel_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
-                          <ExternalLink className="h-3 w-3" /> Link
-                        </a>
-                      </TableCell>
-                      <TableCell>{l.is_monetized ? 'On' : 'Off'}</TableCell>
-                      <TableCell>
-                        {l.noc_file_url ? (
-                          <a href={l.noc_file_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
-                            <FileText className="h-3 w-3" /> View
-                          </a>
-                        ) : '—'}
-                      </TableCell>
-                      <TableCell>
-                        {l.yt_reports_screenshot_url ? (
-                          <a href={l.yt_reports_screenshot_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
-                            <ImageIcon className="h-3 w-3" /> View
-                          </a>
-                        ) : '—'}
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={statusMap[l.status] || l.status} />
-                        <span className="ml-1 text-xs text-muted-foreground">{statusLabel[l.status] || l.status}</span>
-                        {l.status === 'rejected' && l.rejection_reason && (
-                          <p className="text-xs text-destructive mt-1">{l.rejection_reason}</p>
-                        )}
-                      </TableCell>
-                      <TableCell>{l.cms_company || '—'}</TableCell>
-                      <TableCell>{l.cms_linked_date ? format(new Date(l.cms_linked_date), 'dd MMM yyyy') : '—'}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{format(new Date(l.created_at), 'dd MMM yyyy')}</TableCell>
+            <>
+              <div className="responsive-table-wrap">
+                <Table className="min-w-max">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Channel Name</TableHead>
+                      <TableHead>Channel URL</TableHead>
+                      <TableHead>Monetized</TableHead>
+                      <TableHead>NOC</TableHead>
+                      <TableHead>YT Reports</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>CMS Company</TableHead>
+                      <TableHead>CMS Linked Date</TableHead>
+                      <TableHead>Submitted</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-            <TablePagination totalItems={links.length} currentPage={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={v => { setPageSize(v); setPage(0); }} />
+                  </TableHeader>
+                  <TableBody>
+                    {paginateItems(links, page, pageSize).map((l) => (
+                      <TableRow key={l.id}>
+                        <TableCell className="font-medium">{l.channel_name}</TableCell>
+                        <TableCell>
+                          <a href={l.channel_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                            <ExternalLink className="h-3 w-3" /> Link
+                          </a>
+                        </TableCell>
+                        <TableCell>{l.is_monetized ? 'On' : 'Off'}</TableCell>
+                        <TableCell>
+                          {l.noc_file_url ? (
+                            <a href={l.noc_file_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                              <FileText className="h-3 w-3" /> View
+                            </a>
+                          ) : '—'}
+                        </TableCell>
+                        <TableCell>
+                          {l.yt_reports_screenshot_url ? (
+                            <a href={l.yt_reports_screenshot_url} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                              <ImageIcon className="h-3 w-3" /> View
+                            </a>
+                          ) : '—'}
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge status={statusMap[l.status] || l.status} />
+                          <span className="ml-1 text-xs text-muted-foreground">{statusLabel[l.status] || l.status}</span>
+                          {l.status === 'rejected' && l.rejection_reason && (
+                            <p className="text-xs text-destructive mt-1">{l.rejection_reason}</p>
+                          )}
+                        </TableCell>
+                        <TableCell>{l.cms_company || '—'}</TableCell>
+                        <TableCell>{l.cms_linked_date ? format(new Date(l.cms_linked_date), 'dd MMM yyyy') : '—'}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{format(new Date(l.created_at), 'dd MMM yyyy')}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <TablePagination totalItems={links.length} currentPage={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={v => { setPageSize(v); setPage(0); }} />
+            </>
           )}
         </GlassCard>
       </div>
