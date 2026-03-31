@@ -636,6 +636,12 @@ export default function AdminInvoices() {
             <Table className="min-w-max">
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={filtered.length > 0 && selectedIds.size === filtered.length}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                  </TableHead>
                   <TableHead>Billing Name</TableHead>
                   <TableHead>User ID</TableHead>
                   <TableHead>Date</TableHead>
