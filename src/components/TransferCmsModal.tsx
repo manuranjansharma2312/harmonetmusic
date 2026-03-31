@@ -152,7 +152,7 @@ export function TransferCmsModal({ open, onClose, cmsLink, onTransferred }: Tran
                   <p className="font-medium text-destructive">Confirm CMS Link Transfer</p>
                   <p>Channel <strong>{cmsLink?.channel_name}</strong> will be transferred to:</p>
                   <p className="font-medium">{selectedUser.legal_name} <span className="text-primary font-mono">#{selectedUser.display_id}</span></p>
-                  <p className="text-xs text-muted-foreground">The new owner will see CMS reports for this channel going forward.</p>
+                  <p className="text-xs text-muted-foreground">The new owner will see CMS reports for this channel going forward. Historical report entries will be frozen and won't count towards the new owner's revenue balance.</p>
                 </div>
               </div>
             </div>
