@@ -392,6 +392,7 @@ export type Database = {
           channel_name: string
           created_at: string | null
           currency: string | null
+          cut_percent_snapshot: number | null
           downloads: number | null
           extra_data: Json | null
           id: string
@@ -408,6 +409,7 @@ export type Database = {
           channel_name: string
           created_at?: string | null
           currency?: string | null
+          cut_percent_snapshot?: number | null
           downloads?: number | null
           extra_data?: Json | null
           id?: string
@@ -424,6 +426,7 @@ export type Database = {
           channel_name?: string
           created_at?: string | null
           currency?: string | null
+          cut_percent_snapshot?: number | null
           downloads?: number | null
           extra_data?: Json | null
           id?: string
