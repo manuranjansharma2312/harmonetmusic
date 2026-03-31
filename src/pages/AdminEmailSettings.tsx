@@ -241,15 +241,19 @@ function EmailAnalytics({ logs }: { logs: EmailLog[] }) {
       <GlassCard className="p-4">
         <h3 className="text-sm font-semibold mb-3">Top Email Templates</h3>
         {templateData.length > 0 ? (
+          <div className="responsive-table-wrap">
+          <div className="min-w-[400px]">
           <ResponsiveContainer width="100%" height={Math.max(200, templateData.length * 40)}>
-            <BarChart data={templateData} layout="vertical" margin={{ left: 120 }}>
+            <BarChart data={templateData} layout="vertical" margin={{ left: 100, right: 10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis type="number" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" width={120} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={100} />
               <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }} />
               <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} name="Emails Sent" />
             </BarChart>
           </ResponsiveContainer>
+          </div>
+          </div>
         ) : (
           <div className="text-center text-muted-foreground text-sm py-8">No template data</div>
         )}
