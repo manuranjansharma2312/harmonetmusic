@@ -569,6 +569,7 @@ export default function AdminEmailSettings() {
         setDeleteConfirmAction(null);
       }
     });
+  }
 
   const categoriesWithAll = useMemo(() =>
     [{ key: 'all', name: 'All' } as any, ...categories],
