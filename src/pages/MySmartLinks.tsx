@@ -59,6 +59,7 @@ export default function MySmartLinks() {
     s.title.toLowerCase().includes(search.toLowerCase()) ||
     s.artist_name.toLowerCase().includes(search.toLowerCase())
   );
+  const paginated = paginateItems(filtered, currentPage, pageSize);
 
   const getUrl = (s: SmartLinkItem) => {
     const base = window.location.origin;
