@@ -491,9 +491,10 @@ export default function AdminVideoSubmissionsTable({ submissionType, title }: Pr
             {loading ? (
               <p className="text-center py-8 text-muted-foreground">Loading...</p>
             ) : paginated.length === 0 ? (
-              <p className="text-center py-8 text-muted-foreground">No submissions found</p>
+              <p className="text-center py-8 text-muted-foreground">No releases found</p>
             ) : (
-              <Table>
+              <div className="responsive-table-wrap">
+              <Table className="min-w-max">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-10">
