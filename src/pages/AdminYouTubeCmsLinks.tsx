@@ -515,6 +515,11 @@ export default function AdminYouTubeCmsLinks() {
                               <Button size="sm" variant="outline" onClick={() => openEdit(l)} className="gap-1">
                                 <Pencil className="h-3.5 w-3.5" /> Edit
                               </Button>
+                              {!isTeam && (
+                                <Button size="sm" variant="outline" onClick={() => setTransferItem(l)} className="gap-1">
+                                  <ArrowRightLeft className="h-3.5 w-3.5" /> Transfer
+                                </Button>
+                              )}
                               {canDelete && <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ ids: [l.id] })} className="gap-1">
                                 <Trash2 className="h-3.5 w-3.5" /> Delete
                               </Button>}
