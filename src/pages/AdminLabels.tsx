@@ -225,6 +225,91 @@ export default function AdminLabels() {
     window.open(data.signedUrl, '_blank');
   };
 
+  const handleDownloadTemplate = () => {
+    const csv = 'User ID,Label Name\n1,My Label Name\n2,Another Label';
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'labels-import-template.csv'; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportCSV = async () => {
+    if (!importFile) return;
+    setImporting(true);
+    try {
+      const text = await importFile.text();
+      const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+      if (lines.length < 2) { toast.error('CSV must have a header row and at least one data row'); setImporting(false); return; }
+
+      const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+      const userIdIdx = headers.findIndex(h => h === 'user id' || h === 'userid' || h === 'display_id' || h === 'user_id');
+      const labelNameIdx = headers.findIndex(h => h === 'label name' || h === 'labelname' || h === 'label_name');
+
+      if (userIdIdx === -1 || labelNameIdx === -1) {
+        toast.error('CSV must have "User ID" and "Label Name" columns');
+        setImporting(false);
+        return;
+      }
+
+      // Parse rows
+      const rows: { displayId: number; labelName: string }[] = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+        const displayId = parseInt(cols[userIdIdx], 10);
+        const labelName = cols[labelNameIdx];
+        if (!displayId || !labelName) continue;
+        rows.push({ displayId, labelName });
+      }
+
+      if (rows.length === 0) { toast.error('No valid rows found in CSV'); setImporting(false); return; }
+
+      // Resolve display_ids to user_ids
+      const displayIds = [...new Set(rows.map(r => r.displayId))];
+      const { data: profiles } = await supabase.from('profiles').select('user_id, display_id').in('display_id', displayIds);
+      const idMap: Record<number, string> = {};
+      profiles?.forEach((p: any) => { idMap[p.display_id] = p.user_id; });
+
+      const unmapped = displayIds.filter(id => !idMap[id]);
+      if (unmapped.length > 0) {
+        toast.error(`User IDs not found: ${unmapped.join(', ')}`);
+        setImporting(false);
+        return;
+      }
+
+      // Check for duplicate label names
+      const labelNames = rows.map(r => r.labelName);
+      const duplicateChecks = await Promise.all(
+        labelNames.map(name => supabase.rpc('label_name_exists' as any, { _name: name }))
+      );
+      const duplicates = labelNames.filter((_, i) => duplicateChecks[i].data === true);
+      if (duplicates.length > 0) {
+        toast.error(`These labels already exist: ${duplicates.slice(0, 5).join(', ')}${duplicates.length > 5 ? '...' : ''}`);
+        setImporting(false);
+        return;
+      }
+
+      // Insert labels
+      const inserts = rows.map(r => ({
+        user_id: idMap[r.displayId],
+        label_name: r.labelName,
+        status: 'approved',
+      }));
+
+      const { error } = await supabase.from('labels').insert(inserts);
+      if (error) throw error;
+
+      toast.success(`${rows.length} label(s) imported successfully`);
+      setShowImportModal(false);
+      setImportFile(null);
+      fetchLabels();
+    } catch (err: any) {
+      toast.error(err.message || 'Import failed');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
