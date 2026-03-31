@@ -304,21 +304,21 @@ export function TransferHistory({ onReversed }: TransferHistoryProps = {}) {
   return (
     <>
       <GlassCard className="p-0 overflow-hidden">
-        <div className="p-4 border-b border-border/50 space-y-3">
-          <div className="flex items-center justify-between">
+        <div className="p-3 sm:p-4 border-b border-border/50 space-y-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div>
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <ArrowRightLeft className="h-5 w-5 text-primary" />
+              <h2 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+                <ArrowRightLeft className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 Release Transfers
               </h2>
               <p className="text-xs text-muted-foreground mt-1">Log of all release ownership transfers</p>
             </div>
-            <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting} className="w-full sm:w-auto">
               {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
               {selected.size > 0 ? `Export (${selected.size})` : 'Export CSV'}
             </Button>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2">
             <div className="relative flex-1 min-w-[200px] max-w-sm">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
