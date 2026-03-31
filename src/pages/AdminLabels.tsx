@@ -540,6 +540,43 @@ export default function AdminLabels() {
         onConfirm={handleRejectConfirm}
         onCancel={() => setRejectTarget(null)}
       />
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <GlassCard glow className="w-full max-w-md animate-fade-in">
+            <h2 className="text-lg font-semibold text-foreground mb-1">Import Labels from CSV</h2>
+            <p className="text-xs text-muted-foreground mb-4">
+              Upload a CSV with <strong>User ID</strong> (display #ID) and <strong>Label Name</strong> columns. Labels will be imported as <strong>Approved</strong>.
+            </p>
+            <button onClick={handleDownloadTemplate} className="text-xs text-primary hover:text-primary/80 underline mb-4 inline-block">
+              Download template CSV
+            </button>
+            <div className="mb-4">
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                className="hidden"
+                id="import-csv-upload"
+              />
+              <label htmlFor="import-csv-upload" className={`${inputClass} flex min-w-0 cursor-pointer items-center gap-2`}>
+                <Upload className="h-4 w-4 shrink-0" />
+                <span className="truncate">{importFile?.name || 'Choose CSV file'}</span>
+              </label>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1" onClick={() => { setShowImportModal(false); setImportFile(null); }}>
+                Cancel
+              </Button>
+              <Button className="flex-1 btn-primary-gradient font-semibold text-primary-foreground" disabled={!importFile || importing} onClick={handleImportCSV}>
+                {importing && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                Import
+              </Button>
+            </div>
+          </GlassCard>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
