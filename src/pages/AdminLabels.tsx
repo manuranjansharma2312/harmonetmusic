@@ -342,6 +342,10 @@ export default function AdminLabels() {
               onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
             />
           </div>
+          <Button variant="outline" onClick={() => setShowImportModal(true)} className="gap-2 shrink-0 h-9 text-xs sm:text-sm">
+            <Upload className="h-4 w-4" />
+            <span>Import CSV</span>
+          </Button>
           <Button variant="outline" onClick={handleExportCSV} className="gap-2 shrink-0 h-9 text-xs sm:text-sm">
             <Download className="h-4 w-4" />
             <span>{selected.size > 0 ? `Export ${selected.size} Selected` : 'Export CSV'}</span>
