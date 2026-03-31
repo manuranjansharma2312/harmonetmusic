@@ -847,14 +847,14 @@ export default function AdminEmailSettings() {
 
           {/* =============== Templates Tab =============== */}
           <TabsContent value="templates">
-            <GlassCard className="p-6 space-y-4">
+            <GlassCard className="p-4 sm:p-6 space-y-4">
               <div className="flex items-center gap-3 mb-2">
-                <div className="p-2.5 rounded-xl bg-primary/10">
-                  <FileText className="h-5 w-5 text-primary" />
+                <div className="p-2 sm:p-2.5 rounded-xl bg-primary/10">
+                  <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold">Email Templates & Account Assignment</h2>
-                  <p className="text-xs text-muted-foreground">Customize templates and assign which email account sends each type</p>
+                  <h2 className="text-base sm:text-lg font-semibold">Email Templates & Account Assignment</h2>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Customize templates and assign which email account sends each type</p>
                 </div>
               </div>
 
