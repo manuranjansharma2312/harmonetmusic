@@ -177,6 +177,11 @@ export default function CmsReports() {
   const clearFilters = () => { setFilters({}); setEntryPage(0); };
   const pagedEntries = paginateItems(selectedEntries, entryPage, entryPageSize);
 
+  const filteredNetPayableTotal = useMemo(() =>
+    selectedEntries.reduce((sum, e) => sum + calcNetPayable(e), 0),
+    [selectedEntries, cmsLinks],
+  );
+
   const exportCSV = () => {
     const headers = ['Reporting Month', ...COLUMNS.map(c => c.label)];
     const rows = selectedEntries.map(e => [
