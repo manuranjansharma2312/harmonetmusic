@@ -41,6 +41,7 @@ const AdminDashboard = lazyRetry(() => import("./pages/AdminDashboard"));
 const AdminAllPending = lazyRetry(() => import("./pages/AdminAllPending"));
 const AdminSubmissions = lazyRetry(() => import("./pages/AdminSubmissions"));
 const AdminTransferHistory = lazyRetry(() => import("./pages/AdminTransferHistory"));
+const MyTransfers = lazyRetry(() => import("./pages/MyTransfers"));
 const AdminUsers = lazyRetry(() => import("./pages/AdminUsers"));
 const MyProfile = lazyRetry(() => import("./pages/MyProfile"));
 const MyLabels = lazyRetry(() => import("./pages/MyLabels"));
