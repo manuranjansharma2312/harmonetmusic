@@ -404,7 +404,7 @@ export default function AdminAIImageSystem() {
                 <div className="flex items-center gap-3">
                   <CardTitle>User Credits</CardTitle>
                   {aiSettings.lifetime_free_enabled && (
-                    <span className="inline-flex items-center rounded-full bg-green-600 px-2.5 py-0.5 text-xs font-semibold text-white">Unlimited Free Plan Active — All users have unlimited credits</span>
+                    <span className="inline-flex items-center rounded-full bg-green-600 px-2.5 py-0.5 text-xs font-semibold text-white">Unlimited Credits Enabled</span>
                   )}
                 </div>
                 <Button size="sm" onClick={() => setManualCreditModal(true)}><Plus className="h-4 w-4 mr-1" />Add Credits</Button>
