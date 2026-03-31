@@ -34,6 +34,8 @@ export default function MySmartLinks() {
   const [editLink, setEditLink] = useState<SmartLinkItem | null>(null);
   const [creating, setCreating] = useState(false);
   const [systemEnabled, setSystemEnabled] = useState<boolean | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const fetchSystemSetting = async () => {
     const { data } = await supabase.from('smart_link_settings').select('is_enabled').limit(1).single();
