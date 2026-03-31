@@ -407,7 +407,8 @@ export function AppSidebar() {
                   {hasSubLabelAccess('support') && renderCollapsibleGroup('Support', Headset, contentToolLinks, toolsOpen, setToolsOpen)}
                   {!effectiveIsSubLabel && renderNavLink({ to: '/promotion-tools', label: 'Paid Promotions', icon: Megaphone })}
                   {hasSubLabelAccess('poster') && renderCollapsibleGroup('Poster Generator', ImageIcon, userPosterLinks, userPosterOpen, setUserPosterOpen)}
-                  {hasSubLabelAccess('smart-links') && userLinksAfterGroups.map(renderNavLink)}
+                  {!effectiveIsSubLabel && renderNavLink({ to: '/my-transfers', label: 'Transfers', icon: ArrowRightLeft })}
+                  {hasSubLabelAccess('smart-links') && renderNavLink({ to: '/smart-links', label: 'Smart Links', icon: Link2 })}
                   {renderCollapsibleGroup('Contact & Policies', FileText, userContactPoliciesLinks, userContactPoliciesOpen, setUserContactPoliciesOpen)}
                   {hasSubLabelAccess('profile') && userLinksBottom.map(renderNavLink)}
                 </>
