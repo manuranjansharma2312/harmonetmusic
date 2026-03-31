@@ -410,11 +410,11 @@ export default function AdminEmailSettings() {
   }
 
   async function deleteAccount(id: string) {
-    if (!confirm('Delete this email account? Templates using it will fall back to the default account.')) return;
     const { error } = await supabase.from('email_accounts').delete().eq('id', id);
     if (error) { toast.error(error.message); return; }
     toast.success('Account deleted');
     fetchData();
+    setDeleteConfirmAction(null);
   }
 
   async function setDefault(id: string) {
