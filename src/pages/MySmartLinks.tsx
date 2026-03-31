@@ -137,8 +137,9 @@ export default function MySmartLinks() {
             </Button>
           </GlassCard>
         ) : (
+          <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filtered.map(s => {
+            {paginated.map(s => {
               const active = hasLinks(s);
               const url = getUrl(s);
               const linkCount = active ? Object.values(s.platform_links).filter(v => v?.trim()).length : 0;
