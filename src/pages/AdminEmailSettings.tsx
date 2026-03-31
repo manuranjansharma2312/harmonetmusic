@@ -180,7 +180,7 @@ function EmailAnalytics({ logs }: { logs: EmailLog[] }) {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
         {[
           { label: 'Total Emails', value: stats.total, color: 'text-foreground' },
           { label: 'Sent', value: stats.sent, color: 'text-green-400' },
@@ -188,9 +188,9 @@ function EmailAnalytics({ logs }: { logs: EmailLog[] }) {
           { label: 'Pending', value: stats.pending, color: 'text-yellow-400' },
           { label: 'Success Rate', value: `${stats.successRate}%`, color: 'text-primary' },
         ].map(s => (
-          <GlassCard key={s.label} className="p-4 text-center">
-            <p className="text-xs text-muted-foreground">{s.label}</p>
-            <p className={`text-2xl font-bold mt-1 ${s.color}`}>{s.value}</p>
+          <GlassCard key={s.label} className="p-3 sm:p-4 text-center">
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{s.label}</p>
+            <p className={`text-xl sm:text-2xl font-bold mt-1 ${s.color}`}>{s.value}</p>
           </GlassCard>
         ))}
       </div>
