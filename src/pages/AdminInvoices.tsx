@@ -600,7 +600,13 @@ export default function AdminInvoices() {
             <h1 className="text-2xl font-bold text-foreground">Generate Invoice</h1>
             <p className="text-muted-foreground text-sm">Create and manage invoices</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {selectedIds.size > 0 && (
+              <Button variant="outline" onClick={downloadSelectedZip} disabled={zipping} className="gap-2">
+                <PackageOpen className="h-4 w-4" />
+                {zipping ? 'Creating ZIP...' : `Download ${selectedIds.size} as ZIP`}
+              </Button>
+            )}
             {canChangeSettings && (
             <Button variant="outline" onClick={openCompanySettings} className="gap-2">
               <Settings className="h-4 w-4" /> Company Details
