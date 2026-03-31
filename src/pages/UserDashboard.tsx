@@ -224,7 +224,7 @@ export default function UserDashboard() {
         newCmsChannels = linkedChannels.length;
 
         const cmsEntries = linkedNamesArr.length > 0
-          ? await fetchAllRows('cms_report_entries', 'net_generated_revenue, channel_name', (query) => query.in('channel_name', linkedNamesArr))
+          ? await fetchAllRows('cms_report_entries', 'net_generated_revenue, channel_name, revenue_frozen', (query) => query.in('channel_name', linkedNamesArr).eq('revenue_frozen', false))
           : [];
 
         let cmsGross = 0;

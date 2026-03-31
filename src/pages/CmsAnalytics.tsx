@@ -207,11 +207,12 @@ export default function CmsAnalytics() {
 
     const channelNames = myLinks.map(l => l.channel_name);
 
-    // Fetch CMS report entries for those channels
+    // Fetch CMS report entries for those channels (exclude frozen)
     const { data: reportData } = await supabase
       .from('cms_report_entries' as any)
       .select('*')
-      .in('channel_name', channelNames);
+      .in('channel_name', channelNames)
+      .eq('revenue_frozen', false);
 
     const raw = (reportData as any[]) || [];
     const mapped: CmsEntry[] = raw.map((e: any) => ({
