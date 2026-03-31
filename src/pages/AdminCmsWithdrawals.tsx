@@ -42,7 +42,7 @@ export default function AdminCmsWithdrawals() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState<number | 'all'>(20);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
   const [rejectItem, setRejectItem] = useState<WithdrawalRequest | null>(null);
   const [threshold, setThreshold] = useState(1000);
   const [editThreshold, setEditThreshold] = useState('1000');

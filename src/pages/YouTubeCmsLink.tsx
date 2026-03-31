@@ -156,7 +156,7 @@ export default function YouTubeCmsLink() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {links.map((l) => (
+                  {paginateItems(links, page, pageSize).map((l) => (
                     <TableRow key={l.id}>
                       <TableCell className="font-medium">{l.channel_name}</TableCell>
                       <TableCell>
@@ -194,6 +194,7 @@ export default function YouTubeCmsLink() {
                 </TableBody>
               </Table>
             </div>
+            <TablePagination totalItems={links.length} currentPage={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={v => { setPageSize(v); setPage(0); }} />
           )}
         </GlassCard>
       </div>

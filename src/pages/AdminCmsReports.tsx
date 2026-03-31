@@ -481,6 +481,7 @@ export default function AdminCmsReports() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
                 <TablePagination totalItems={filteredMonthlyGroups.length} currentPage={monthPage} pageSize={monthPageSize} onPageChange={setMonthPage} onPageSizeChange={setMonthPageSize} itemLabel="months" />
               </>
             )}
