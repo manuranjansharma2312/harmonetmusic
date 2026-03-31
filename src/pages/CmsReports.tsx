@@ -35,6 +35,7 @@ interface ReportEntry {
   net_generated_revenue: number;
   imported_at: string;
   extra_data?: Record<string, string>;
+  cut_percent_snapshot?: number | null;
 }
 
 interface CmsLink {
