@@ -1449,7 +1449,7 @@ export default function AdminEmailSettings() {
                     onChange={(e) => setEditingAccount({ ...editingAccount, smtp_port: parseInt(e.target.value) || 587 })} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>Username</Label>
                   <Input placeholder="your-email@gmail.com" value={editingAccount.smtp_username || ''}
