@@ -404,7 +404,7 @@ export default function AdminAIImageSystem() {
                 <div className="flex items-center gap-3">
                   <CardTitle>User Credits</CardTitle>
                   {aiSettings.lifetime_free_enabled && (
-                    <span className="inline-flex items-center rounded-full bg-green-600 px-2.5 py-0.5 text-xs font-semibold text-white">Lifetime Free Active — All users have unlimited credits</span>
+                    <span className="inline-flex items-center rounded-full bg-green-600 px-2.5 py-0.5 text-xs font-semibold text-white">Unlimited Free Plan Active — All users have unlimited credits</span>
                   )}
                 </div>
                 <Button size="sm" onClick={() => setManualCreditModal(true)}><Plus className="h-4 w-4 mr-1" />Add Credits</Button>
@@ -568,14 +568,14 @@ export default function AdminAIImageSystem() {
                   <Button variant="outline" size="sm" onClick={addImageSize}><Plus className="h-4 w-4 mr-1" />Add Size</Button>
                 </div>
 
-                {/* Lifetime Free Plan */}
+                {/* Unlimited Free Plan */}
                 <div className="space-y-3 pt-2 border-t">
-                  <Label className="text-base">Lifetime Free Plan (Unlimited)</Label>
+                  <Label className="text-base">Unlimited Free Plan</Label>
                   <p className="text-xs text-muted-foreground">When enabled, selected users (or all users) can generate unlimited images without credits. Premium plans will be hidden for those users.</p>
                   
                   <div className="flex items-center justify-between rounded-lg border p-3">
                     <div>
-                      <Label>Enable Lifetime Free Plan</Label>
+                      <Label>Enable Unlimited Free Plan</Label>
                       <p className="text-xs text-muted-foreground">Turn on/off the unlimited free generation.</p>
                     </div>
                     <Switch checked={aiSettings.lifetime_free_enabled} onCheckedChange={v => setAiSettings(s => ({ ...s, lifetime_free_enabled: v }))} />
