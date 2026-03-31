@@ -3,7 +3,7 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { GlassCard } from '@/components/GlassCard';
 import { supabase } from '@/integrations/supabase/client';
 import { StatusBadge } from '@/components/StatusBadge';
-import { Loader2, Tag, FileText, Trash2, Pencil, Check, X, CheckSquare } from 'lucide-react';
+import { Loader2, Tag, FileText, Trash2, Pencil, Check, X, CheckSquare, Search, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { RejectReasonModal } from '@/components/RejectReasonModal';
