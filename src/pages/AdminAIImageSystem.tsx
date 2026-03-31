@@ -64,6 +64,7 @@ export default function AdminAIImageSystem() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [apiKeySaving, setApiKeySaving] = useState(false);
   const [apiKeyLoaded, setApiKeyLoaded] = useState(false);
+  const [deletePlanId, setDeletePlanId] = useState<string | null>(null);
   const profileMap = useMemo(() => {
     const m: Record<string, Profile> = {};
     profiles.forEach(p => { m[p.user_id] = p; });
