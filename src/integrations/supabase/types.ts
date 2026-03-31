@@ -488,6 +488,36 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_transfers: {
+        Row: {
+          channel_name: string
+          cms_link_id: string
+          from_user_id: string
+          id: string
+          to_user_id: string
+          transferred_at: string
+          transferred_by: string
+        }
+        Insert: {
+          channel_name?: string
+          cms_link_id: string
+          from_user_id: string
+          id?: string
+          to_user_id: string
+          transferred_at?: string
+          transferred_by: string
+        }
+        Update: {
+          channel_name?: string
+          cms_link_id?: string
+          from_user_id?: string
+          id?: string
+          to_user_id?: string
+          transferred_at?: string
+          transferred_by?: string
+        }
+        Relationships: []
+      }
       cms_withdrawal_requests: {
         Row: {
           amount: number
@@ -2679,6 +2709,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      video_transfers: {
+        Row: {
+          from_user_id: string
+          id: string
+          linked_video_count: number
+          submission_id: string
+          submission_name: string
+          submission_type: string
+          to_user_id: string
+          transferred_at: string
+          transferred_by: string
+        }
+        Insert: {
+          from_user_id: string
+          id?: string
+          linked_video_count?: number
+          submission_id: string
+          submission_name?: string
+          submission_type?: string
+          to_user_id: string
+          transferred_at?: string
+          transferred_by: string
+        }
+        Update: {
+          from_user_id?: string
+          id?: string
+          linked_video_count?: number
+          submission_id?: string
+          submission_name?: string
+          submission_type?: string
+          to_user_id?: string
+          transferred_at?: string
+          transferred_by?: string
+        }
+        Relationships: []
       }
       withdrawal_requests: {
         Row: {
