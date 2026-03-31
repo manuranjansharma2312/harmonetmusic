@@ -1101,11 +1101,11 @@ export default function AdminSubmissions() {
                           {new Date(release.created_at).toLocaleDateString()}
                         </td>
                         <td className="py-3 px-3">
-                          <div className="flex items-center justify-end gap-0.5">
-                            {!isTeam && <button onClick={() => setTransferRelease(release)} className="p-1.5 rounded-lg hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all" title="Transfer Ownership"><ArrowRightLeft className="h-4 w-4" /></button>}
-                            <button onClick={() => navigate(`/submit?edit=${release.id}`)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"><Pencil className="h-4 w-4" /></button>
-                            <button onClick={() => setViewRelease(release)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"><Eye className="h-4 w-4" /></button>
-                            {canDelete && <button onClick={() => setDeleteRelease(release)} className="p-1.5 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all"><Trash2 className="h-4 w-4" /></button>}
+                          <div className="flex items-center justify-end gap-0.5 flex-nowrap">
+                            {!isTeam && <button onClick={() => setTransferRelease(release)} className="p-1 sm:p-1.5 rounded-lg hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all" title="Transfer Ownership"><ArrowRightLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" /></button>}
+                            <button onClick={() => navigate(`/submit?edit=${release.id}`)} className="p-1 sm:p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"><Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" /></button>
+                            <button onClick={() => setViewRelease(release)} className="p-1 sm:p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all"><Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" /></button>
+                            {canDelete && <button onClick={() => setDeleteRelease(release)} className="p-1 sm:p-1.5 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all"><Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" /></button>}
                           </div>
                         </td>
                       </tr>
