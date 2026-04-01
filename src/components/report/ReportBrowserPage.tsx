@@ -458,15 +458,17 @@ export function ReportBrowserPage({
               </div>
             </GlassCard>
 
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div>
-                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Net Revenue (Filtered)</p>
-                <p className="text-xl font-bold text-primary">{formatRevenue(filteredTotal)}</p>
+            <GlassCard className="p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Net Revenue (Filtered)</p>
+                  <p className="text-xl sm:text-2xl font-bold text-primary">{formatRevenue(filteredTotal)}</p>
+                </div>
+                <Button size="sm" variant="outline" onClick={exportCSV} disabled={detailLoading} className="w-full sm:w-auto">
+                  <Download className="h-4 w-4 mr-1" /> Export CSV
+                </Button>
               </div>
-              <Button size="sm" variant="outline" onClick={exportCSV} disabled={detailLoading}>
-                <Download className="h-4 w-4 mr-1" /> Export CSV
-              </Button>
-            </div>
+            </GlassCard>
 
             <GlassCard className="p-0 overflow-hidden rounded-lg">
               {detailLoading ? (

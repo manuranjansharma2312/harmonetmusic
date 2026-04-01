@@ -515,6 +515,18 @@ export default function AdminCmsReports() {
               </div>
             </GlassCard>
 
+            <GlassCard className="p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Net Payable (Filtered)</p>
+                  <p className="text-xl sm:text-2xl font-bold text-primary">₹{selectedEntries.reduce((sum, e) => sum + calcNetPayable(e), 0).toFixed(2)}</p>
+                </div>
+                <Button size="sm" variant="outline" onClick={exportCSV} className="w-full sm:w-auto">
+                  <Download className="h-4 w-4 mr-1" /> Export CSV
+                </Button>
+              </div>
+            </GlassCard>
+
             <GlassCard className="p-0 overflow-hidden">
               <div className="responsive-table-wrap">
                 <Table className="min-w-max">
