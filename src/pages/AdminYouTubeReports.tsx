@@ -482,22 +482,13 @@ export default function AdminYouTubeReports() {
     return (
       <DashboardLayout>
         <div className="space-y-6">
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={handleBackToList}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold">YouTube Reports</h1>
-              <p className="text-muted-foreground text-sm">Viewing report for {selectedMonth}</p>
-            </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground">Net Revenue (Filtered)</p>
-                <p className="text-lg font-bold text-primary">₹{filteredEntries.reduce((sum, e) => sum + applyUserCut(e), 0).toFixed(2)}</p>
-              </div>
-              <Button size="sm" variant="outline" onClick={exportCSV}>
-                <Download className="h-4 w-4 mr-1" /> Export CSV
-              </Button>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold">YouTube Reports</h1>
+              <p className="text-muted-foreground text-xs sm:text-sm">Viewing report for {selectedMonth}</p>
             </div>
           </div>
 
@@ -529,6 +520,18 @@ export default function AdminYouTubeReports() {
                   </SelectContent>
                 </Select>
               ))}
+            </div>
+          </GlassCard>
+
+          <GlassCard className="p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Net Revenue (Filtered)</p>
+                <p className="text-xl sm:text-2xl font-bold text-primary">₹{filteredEntries.reduce((sum, e) => sum + applyUserCut(e), 0).toFixed(2)}</p>
+              </div>
+              <Button size="sm" variant="outline" onClick={exportCSV} className="w-full sm:w-auto">
+                <Download className="h-4 w-4 mr-1" /> Export CSV
+              </Button>
             </div>
           </GlassCard>
 
