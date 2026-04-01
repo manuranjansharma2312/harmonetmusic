@@ -367,8 +367,8 @@ export default function AdminCmsReports() {
             </Button>
           )}
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold">YouTube CMS Reports</h1>
-            <p className="text-muted-foreground text-sm">
+            <h1 className="text-xl sm:text-2xl font-bold">YouTube CMS Reports</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm">
               {selectedMonth ? `Viewing ${selectedMonth}` : 'Manage CMS revenue reports'} · Channel-based filtering
             </p>
           </div>
@@ -382,17 +382,6 @@ export default function AdminCmsReports() {
                   <Upload className="h-4 w-4 mr-1" /> {importing ? 'Importing...' : 'Import CSV'}
                 </Button>
                 <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={handleImport} />
-              </>
-            )}
-            {selectedMonth && (
-              <>
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Net Payable (Filtered)</p>
-                  <p className="text-lg font-bold text-primary">₹{selectedEntries.reduce((sum, e) => sum + calcNetPayable(e), 0).toFixed(2)}</p>
-                </div>
-                <Button size="sm" variant="outline" onClick={exportCSV}>
-                  <Download className="h-4 w-4 mr-1" /> Export CSV
-                </Button>
               </>
             )}
           </div>
