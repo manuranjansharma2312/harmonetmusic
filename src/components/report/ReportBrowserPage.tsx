@@ -424,6 +424,7 @@ export function ReportBrowserPage({
                     ))}
                   </TableBody>
                 </Table>
+                </div>
                 <TablePagination
                   totalItems={filteredMonthlyGroups.length}
                   currentPage={monthPage}
