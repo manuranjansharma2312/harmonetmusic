@@ -343,8 +343,8 @@ export function ReportBrowserPage({
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             {selectedMonth && (
               <Button variant="ghost" size="icon" className="shrink-0" onClick={() => { setSelectedMonth(null); setSelectedEntries([]); clearFilters(); }}>
                 <ArrowLeft className="h-5 w-5" />
@@ -358,8 +358,8 @@ export function ReportBrowserPage({
             </div>
           </div>
           {selectedMonth ? (
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="text-left sm:text-right">
+            <div className="flex items-center justify-between gap-3 flex-wrap p-3 rounded-lg bg-muted/50">
+              <div>
                 <p className="text-xs text-muted-foreground">Net Revenue (Filtered)</p>
                 <p className="text-lg font-bold text-primary">{formatRevenue(filteredTotal)}</p>
               </div>
@@ -368,7 +368,7 @@ export function ReportBrowserPage({
               </Button>
             </div>
           ) : monthlyGroups.length > 0 && (
-            <div className="text-left sm:text-right">
+            <div className="p-3 rounded-lg bg-muted/50">
               <p className="text-xs text-muted-foreground">Total Net Revenue</p>
               <p className="text-lg font-bold text-primary">{formatRevenue(monthlyGroups.reduce((sum, [, g]) => sum + g.totalRevenue, 0))}</p>
             </div>

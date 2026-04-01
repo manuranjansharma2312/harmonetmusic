@@ -216,8 +216,8 @@ export default function CmsReports() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             {selectedMonth && (
               <Button variant="ghost" size="icon" className="shrink-0" onClick={() => { setSelectedMonth(null); clearFilters(); }}>
                 <ArrowLeft className="h-5 w-5" />
@@ -231,8 +231,8 @@ export default function CmsReports() {
             </div>
           </div>
           {selectedMonth ? (
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="text-left sm:text-right">
+            <div className="flex items-center justify-between gap-3 flex-wrap p-3 rounded-lg bg-muted/50">
+              <div>
                 <p className="text-xs text-muted-foreground">Net Payable (Filtered)</p>
                 <p className="text-lg font-bold text-primary">₹{filteredNetPayableTotal.toFixed(2)}</p>
               </div>
@@ -241,7 +241,7 @@ export default function CmsReports() {
               </Button>
             </div>
           ) : monthlyGroups.length > 0 && (
-            <div className="text-left sm:text-right">
+            <div className="p-3 rounded-lg bg-muted/50">
               <p className="text-xs text-muted-foreground">Total Net Payable</p>
               <p className="text-lg font-bold text-primary">₹{monthlyGroups.reduce((sum, [, g]) => sum + g.totalNetPayable, 0).toFixed(2)}</p>
             </div>
