@@ -282,7 +282,7 @@ export default function CmsReports() {
                         <TableCell className="font-medium">{month}</TableCell>
                         <TableCell>{group.entries.length}</TableCell>
                         <TableCell className="font-medium">₹{group.totalNetPayable.toFixed(2)}</TableCell>
-                        <TableCell>{format(new Date(group.latestImport), 'dd MMM yyyy, hh:mm a')}</TableCell>
+                        <TableCell className="hidden sm:table-cell">{format(new Date(group.latestImport), 'dd MMM yyyy, hh:mm a')}</TableCell>
                         <TableCell className="text-right">
                           <Button size="sm" variant="outline" onClick={() => setSelectedMonth(month)}>
                             <Eye className="h-4 w-4 mr-1" /> View
