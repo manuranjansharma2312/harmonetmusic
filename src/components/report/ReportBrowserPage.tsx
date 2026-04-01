@@ -343,37 +343,26 @@ export function ReportBrowserPage({
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            {selectedMonth && (
-              <Button variant="ghost" size="icon" className="shrink-0" onClick={() => { setSelectedMonth(null); setSelectedEntries([]); clearFilters(); }}>
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            )}
-            <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold">{title}</h1>
-              <p className="text-muted-foreground text-xs sm:text-sm">
-                {selectedMonth ? `Viewing report for ${selectedMonth}` : introText} · All amounts in ₹ (INR)
-              </p>
-            </div>
-          </div>
-          {selectedMonth ? (
-            <div className="flex items-center gap-4 shrink-0">
-              <div className="text-left sm:text-right">
-                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Net Revenue (Filtered)</p>
-                <p className="text-xl font-bold text-primary">{formatRevenue(filteredTotal)}</p>
-              </div>
-              <Button size="sm" variant="outline" onClick={exportCSV} disabled={detailLoading}>
-                <Download className="h-4 w-4 mr-1" /> Export
-              </Button>
-            </div>
-          ) : monthlyGroups.length > 0 && (
-            <div className="text-left sm:text-right shrink-0">
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Total Net Revenue</p>
-              <p className="text-xl font-bold text-primary">{formatRevenue(monthlyGroups.reduce((sum, [, g]) => sum + g.totalRevenue, 0))}</p>
-            </div>
+        <div className="flex items-center gap-3">
+          {selectedMonth && (
+            <Button variant="ghost" size="icon" className="shrink-0" onClick={() => { setSelectedMonth(null); setSelectedEntries([]); clearFilters(); }}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
           )}
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold">{title}</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm">
+              {selectedMonth ? `Viewing report for ${selectedMonth}` : introText} · All amounts in ₹ (INR)
+            </p>
+          </div>
         </div>
+
+        {!selectedMonth && monthlyGroups.length > 0 && (
+          <div className="text-left">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Total Net Revenue</p>
+            <p className="text-xl font-bold text-primary">{formatRevenue(monthlyGroups.reduce((sum, [, g]) => sum + g.totalRevenue, 0))}</p>
+          </div>
+        )}
 
         {loading ? (
           <GlassCard className="p-8 text-center text-muted-foreground">Loading reports...</GlassCard>
@@ -468,6 +457,16 @@ export function ReportBrowserPage({
                 ))}
               </div>
             </GlassCard>
+
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Net Revenue (Filtered)</p>
+                <p className="text-xl font-bold text-primary">{formatRevenue(filteredTotal)}</p>
+              </div>
+              <Button size="sm" variant="outline" onClick={exportCSV} disabled={detailLoading}>
+                <Download className="h-4 w-4 mr-1" /> Export CSV
+              </Button>
+            </div>
 
             <GlassCard className="p-0 overflow-hidden rounded-lg">
               {detailLoading ? (
