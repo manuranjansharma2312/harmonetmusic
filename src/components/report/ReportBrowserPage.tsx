@@ -397,13 +397,14 @@ export function ReportBrowserPage({
                     />
                   </div>
                 </div>
+                <div className="responsive-table-wrap">
                 <Table className="min-w-max">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Reporting Month</TableHead>
                       <TableHead>Records</TableHead>
                       <TableHead>Net Revenue</TableHead>
-                      <TableHead>Last Updated</TableHead>
+                      <TableHead className="hidden sm:table-cell">Last Updated</TableHead>
                       <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                   </TableHeader>
