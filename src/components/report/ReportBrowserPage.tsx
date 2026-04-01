@@ -458,6 +458,16 @@ export function ReportBrowserPage({
               </div>
             </GlassCard>
 
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Net Revenue (Filtered)</p>
+                <p className="text-xl font-bold text-primary">{formatRevenue(filteredTotal)}</p>
+              </div>
+              <Button size="sm" variant="outline" onClick={exportCSV} disabled={detailLoading}>
+                <Download className="h-4 w-4 mr-1" /> Export CSV
+              </Button>
+            </div>
+
             <GlassCard className="p-0 overflow-hidden rounded-lg">
               {detailLoading ? (
                 <div className="p-8 text-center text-muted-foreground">Loading report details...</div>
