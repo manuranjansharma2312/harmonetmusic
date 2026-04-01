@@ -414,7 +414,7 @@ export function ReportBrowserPage({
                         <TableCell className="font-medium">{month}</TableCell>
                         <TableCell>{group.count}</TableCell>
                         <TableCell className="font-medium">{formatRevenue(group.totalRevenue)}</TableCell>
-                        <TableCell>{format(new Date(group.latestImport), 'dd MMM yyyy, hh:mm a')}</TableCell>
+                        <TableCell className="hidden sm:table-cell">{format(new Date(group.latestImport), 'dd MMM yyyy, hh:mm a')}</TableCell>
                         <TableCell className="text-right">
                           <Button size="sm" variant="outline" onClick={() => void loadMonthEntries(month)}>
                             <Eye className="h-4 w-4 mr-1" /> View
