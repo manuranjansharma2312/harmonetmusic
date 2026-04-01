@@ -343,21 +343,23 @@ export function ReportBrowserPage({
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center gap-3 flex-wrap">
-          {selectedMonth && (
-            <Button variant="ghost" size="icon" onClick={() => { setSelectedMonth(null); setSelectedEntries([]); clearFilters(); }}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          )}
-          <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold">{title}</h1>
-            <p className="text-muted-foreground text-sm">
-              {selectedMonth ? `Viewing report for ${selectedMonth}` : introText} · All amounts in ₹ (INR)
-            </p>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            {selectedMonth && (
+              <Button variant="ghost" size="icon" className="shrink-0" onClick={() => { setSelectedMonth(null); setSelectedEntries([]); clearFilters(); }}>
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            )}
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold truncate">{title}</h1>
+              <p className="text-muted-foreground text-xs sm:text-sm truncate">
+                {selectedMonth ? `Viewing report for ${selectedMonth}` : introText} · All amounts in ₹ (INR)
+              </p>
+            </div>
           </div>
           {selectedMonth ? (
             <div className="flex items-center gap-3 flex-wrap">
-              <div className="text-right">
+              <div className="text-left sm:text-right">
                 <p className="text-xs text-muted-foreground">Net Revenue (Filtered)</p>
                 <p className="text-lg font-bold text-primary">{formatRevenue(filteredTotal)}</p>
               </div>
@@ -366,7 +368,7 @@ export function ReportBrowserPage({
               </Button>
             </div>
           ) : monthlyGroups.length > 0 && (
-            <div className="text-right">
+            <div className="text-left sm:text-right">
               <p className="text-xs text-muted-foreground">Total Net Revenue</p>
               <p className="text-lg font-bold text-primary">{formatRevenue(monthlyGroups.reduce((sum, [, g]) => sum + g.totalRevenue, 0))}</p>
             </div>
@@ -395,13 +397,14 @@ export function ReportBrowserPage({
                     />
                   </div>
                 </div>
+                <div className="responsive-table-wrap">
                 <Table className="min-w-max">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Reporting Month</TableHead>
                       <TableHead>Records</TableHead>
                       <TableHead>Net Revenue</TableHead>
-                      <TableHead>Last Updated</TableHead>
+                      <TableHead className="hidden sm:table-cell">Last Updated</TableHead>
                       <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -411,7 +414,7 @@ export function ReportBrowserPage({
                         <TableCell className="font-medium">{month}</TableCell>
                         <TableCell>{group.count}</TableCell>
                         <TableCell className="font-medium">{formatRevenue(group.totalRevenue)}</TableCell>
-                        <TableCell>{format(new Date(group.latestImport), 'dd MMM yyyy, hh:mm a')}</TableCell>
+                        <TableCell className="hidden sm:table-cell">{format(new Date(group.latestImport), 'dd MMM yyyy, hh:mm a')}</TableCell>
                         <TableCell className="text-right">
                           <Button size="sm" variant="outline" onClick={() => void loadMonthEntries(month)}>
                             <Eye className="h-4 w-4 mr-1" /> View
@@ -421,6 +424,7 @@ export function ReportBrowserPage({
                     ))}
                   </TableBody>
                 </Table>
+                </div>
                 <TablePagination
                   totalItems={filteredMonthlyGroups.length}
                   currentPage={monthPage}
