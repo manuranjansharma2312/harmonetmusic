@@ -216,7 +216,7 @@ export default function CmsReports() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             {selectedMonth && (
               <Button variant="ghost" size="icon" className="shrink-0" onClick={() => { setSelectedMonth(null); clearFilters(); }}>
@@ -224,26 +224,26 @@ export default function CmsReports() {
               </Button>
             )}
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold truncate">YouTube CMS Reports</h1>
-              <p className="text-muted-foreground text-xs sm:text-sm truncate">
+              <h1 className="text-xl sm:text-2xl font-bold">YouTube CMS Reports</h1>
+              <p className="text-muted-foreground text-xs sm:text-sm">
                 {selectedMonth ? `Viewing report for ${selectedMonth}` : 'Monthly CMS revenue reports'} · All amounts in ₹ (INR)
               </p>
             </div>
           </div>
           {selectedMonth ? (
-            <div className="flex items-center justify-between gap-3 flex-wrap p-3 rounded-lg bg-muted/50">
-              <div>
-                <p className="text-xs text-muted-foreground">Net Payable (Filtered)</p>
-                <p className="text-lg font-bold text-primary">₹{filteredNetPayableTotal.toFixed(2)}</p>
+            <div className="flex items-center gap-4 shrink-0">
+              <div className="text-left sm:text-right">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Net Payable (Filtered)</p>
+                <p className="text-xl font-bold text-primary">₹{filteredNetPayableTotal.toFixed(2)}</p>
               </div>
               <Button size="sm" variant="outline" onClick={exportCSV}>
-                <Download className="h-4 w-4 mr-1" /> Export CSV
+                <Download className="h-4 w-4 mr-1" /> Export
               </Button>
             </div>
           ) : monthlyGroups.length > 0 && (
-            <div className="p-3 rounded-lg bg-muted/50">
-              <p className="text-xs text-muted-foreground">Total Net Payable</p>
-              <p className="text-lg font-bold text-primary">₹{monthlyGroups.reduce((sum, [, g]) => sum + g.totalNetPayable, 0).toFixed(2)}</p>
+            <div className="text-left sm:text-right shrink-0">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Total Net Payable</p>
+              <p className="text-xl font-bold text-primary">₹{monthlyGroups.reduce((sum, [, g]) => sum + g.totalNetPayable, 0).toFixed(2)}</p>
             </div>
           )}
         </div>
